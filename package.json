@@ -1,0 +1,36 @@
+{
+  "name": "vchatbe",
+  "version": "1.0.0",
+  "description": "SimpleBE",
+  "main": "index.js",
+  "scripts": {
+    "start": "cp .env.template .env && npm run clean && npm run build && nodemon index.js",
+    "build": "browserify public/customer.js > public/js/customer.js",
+    "clean": "rimraf public/js/customer.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ketler",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^6.1.0",
+    "eslint-plugin-jsx-a11y": "^6.1.2",
+    "express": "^4.16.4",
+    "socket.io": "^2.1.1",
+    "twilio": "^3.24.0",
+    "twilio-video": "^2.0.0-beta3"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.0.1",
+    "body-parser": "^1.18.3",
+    "browserify": "^16.2.3",
+    "copyfiles": "^2.1.0",
+    "eslint": "^5.9.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-react": "^7.11.1",
+    "rimraf": "^2.6.2"
+  }
+}

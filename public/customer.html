@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Socket chat Twilio</title>
+    <link rel="stylesheet" href="/css/customer.css">
+  </head>
+  <body>
+    <div class="app-wrapper">
+      <div class="device-wrapper">
+        <div class="screen">
+          <div id="operators-info" class="operators-info">
+              <p class="active-operators">all: <span>0</span></p>
+              <p class="all-operators">active: <span>0</span></p>
+          </div>
+          <div id="local-media" class="local-media"></div>
+          <div id="remote-media" class="remote-media"></div>
+          <button id="button-preview" class="button-preview">Camera Preview</button>
+          <div id="room-controls" class="room-controls">
+            <button id="button-join" class="button-join">Call</button>
+            <button id="button-leave" class="button-leave">End</button>
+          </div>
+        </div>
+        <div class="control">
+          <button class="ipad-button"><div class="inner-square"></div></button>
+        </div>
+      </div>
+    </div>
+    <!-- <div id="remote-media"></div>
+    <div id="controls">
+      <div id="preview">
+        <p class="instructions">Hello Beautiful</p>
+        <div id="local-media"></div>
+        <button id="button-preview">Preview My Camera</button>
+      </div>
+      <div id="room-controls">
+        <p class="instructions">Room Name:</p>
+        <input id="room-name" type="text" placeholder="Enter a room name" />
+        <button id="button-join" class="button-join">Join Room</button>
+        <button id="button-leave">Leave Room</button>
+      </div>
+      <div id="log"></div>
+    </div> -->
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="/js/customer.js"></script>
+  </body>
+</html>

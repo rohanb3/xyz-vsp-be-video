@@ -1,0 +1,145 @@
+@import url(https://fonts.googleapis.com/css?family=Share+Tech+Mono);
+
+body,
+p {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: #4f5b66;
+}
+
+.app-wrapper {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.device-wrapper {
+  width: 60vw;
+  height: 40vw;
+  position: relative;
+  display: flex;
+  flex-flow: row;
+  justify-content: space-around;
+  align-items: center;
+  background-color: black;
+  border-radius: 20px;
+  background-color: #c0c5ce;
+}
+
+.screen {
+  width: 90%;
+  height: 95%;
+  background-color: white;
+  position: relative;
+  display: flex;
+  flex-flow: column;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.ipad-button {
+  width: 3vw;
+  height: 3vw;
+  background-color: '';
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.inner-square {
+  width: 1.5vw;
+  height: 1.5vw;
+  border: 1px solid #c0c5ce;
+}
+
+.operators-info {
+  position: absolute;
+  top: 30px;
+  right: 30px;
+  text-transform: uppercase;
+}
+
+.operators-info .all-operators {
+  color: white;
+}
+
+.operators-info .active-operators {
+  color: green;
+}
+
+.local-media {
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  width: 200px;
+  height: 150px;
+  max-width: 200px;
+  max-height: 150px;
+  background-color: black;
+  border: 1px solid white;
+}
+
+.local-media video {
+  max-width: 200px;
+  max-height: 150px;
+}
+
+.remote-media {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  background-color: black;
+}
+
+.remote-media video {
+  width: 100%;
+  height: 100%;
+}
+
+.room-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  flex-flow: row;
+  justify-content: center;
+  padding: 10px;
+}
+
+.button-join, .button-leave {
+  width: 5vw;
+  height: 5vw;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: white;
+  font-size: 24px;
+  text-transform: uppercase;
+}
+
+.button-join {
+  background-color: orange;
+}
+
+.button-leave {
+  display: none;
+  background-color: red;
+}
+
+.button-preview {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  border: none;
+  background-color: transparent;
+  color: white;
+}

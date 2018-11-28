@@ -1,0 +1,15 @@
+{
+  parserOptions: {
+    parser: 'babel-eslint'
+  },
+  "extends": "airbnb-base",
+  "rules": {
+    // Additional, per-project rules...
+  },
+  "globals": {
+    "window": true,
+    "document": true,
+    "io": true,
+    "$": true
+  }
+}
