@@ -16,7 +16,7 @@ module.exports = (request, response) => {
   const token = new AccessToken(
     TWILIO_ACCOUNT_SID,
     TWILIO_API_KEY,
-    TWILIO_API_SECRET
+    TWILIO_API_SECRET,
   );
 
   token.identity = identity;
