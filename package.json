@@ -4,7 +4,8 @@
   "description": "SimpleBE",
   "main": "index.js",
   "scripts": {
-    "start": "cp .env.template .env && npm run clean && npm run build && nodemon index.js",
+    "start": "cp .env.template .env && npm run clean && npm run build && node index.js",
+    "start:dev": "cp .env.template .env && npm run clean && npm run build && nodemon index.js",
     "build": "browserify public/customer.js > public/js/customer.js",
     "clean": "rimraf public/js/customer.js",
     "test": "echo \"Error: no test specified\" && exit 1"
