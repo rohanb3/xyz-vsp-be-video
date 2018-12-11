@@ -36346,6 +36346,14 @@ const Video = require('twilio-video');
 
 const socket = io('/customers');
 
+socket.on('connect', () => {
+  socket.emit('authentication', { user: 123 });
+  socket.on('authenticated', () => {
+    console.log('authenticated');
+  });
+  socket.on('unauthorized', err => console.log(err));
+});
+
 setTimeout(() => {
   socket.emit('operators length');
 }, 100);
