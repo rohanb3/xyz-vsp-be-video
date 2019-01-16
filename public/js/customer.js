@@ -36346,19 +36346,12 @@ const Video = require('twilio-video');
 
 const socket = io('/customers');
 
-setTimeout(() => {
-  socket.emit('operators length');
-}, 100);
-
-socket.on('operators length', ({ all = 0, active = 0 }) => {
-  console.log('operators length', all, active);
-  const allOperators = document
-    .querySelector('.operators-info .all-operators span');
-  const activeOperators = document
-    .querySelector('.operators-info .active-operators span');
-
-  allOperators.innerHTML = all;
-  activeOperators.innerHTML = active;
+socket.on('connect', () => {
+  socket.emit('authentication', { user: 123 });
+  socket.on('authenticated', () => {
+    console.log('authenticated');
+  });
+  socket.on('unauthorized', err => console.log(err));
 });
 
 let activeRoom;
@@ -36369,8 +36362,7 @@ function attachTracks(tracks, container) {
     tracks.forEach((track) => {
       if (track.attach || (track.track && track.track.attach)) {
         container.appendChild(
-          (track.attach && track.attach())
-          || (track.track.attach && track.track.attach()),
+          (track.attach && track.attach()) || (track.track.attach && track.track.attach()),
         );
       }
     });
@@ -36385,12 +36377,8 @@ function attachParticipantTracks(participant, container) {
 function detachTracks(tracks) {
   tracks.forEach((track) => {
     if (track.detach || (track.track && track.track.detach)) {
-      const detachedElements = (
-        (track.detach && track.detach)
-        || (track.track.detach && track.track.detach())
-        || []
-      );
-      detachedElements.forEach(detachedElement => detachedElement.remove());
+      const detachedElements = (track.detach && track.detach()) || (track.track.detach && track.track.detach()) || [];
+      (detachedElements || []).forEach(detachedElement => detachedElement.remove());
     }
   });
 }
@@ -36412,8 +36400,8 @@ function onTokenReceived(data) {
 }
 
 function requestConnection(token) {
-  socket.emit('request call', { query: token });
-  socket.on('call accepted', roomName => connectToRoom(roomName, token));
+  socket.emit('request.call', { query: token });
+  socket.on('call.accepted', roomName => connectToRoom(roomName, token));
 }
 
 function connectToRoom(name, token) {
@@ -36425,7 +36413,10 @@ function connectToRoom(name, token) {
     connectOptions.tracks = previewTracks;
   }
 
-  return Video.connect(token, connectOptions)
+  return Video.connect(
+    token,
+    connectOptions,
+  )
     .then(roomJoined)
     .catch(error => console.error('Could not connect: ', error.message));
 }
@@ -36434,7 +36425,7 @@ function roomJoined(room) {
   window.room = room;
   activeRoom = room;
 
-  socket.on('operator disconnected', leaveRoomIfJoined);
+  socket.on('operator.disconnected', leaveRoomIfJoined);
 
   document.getElementById('button-join').style.display = 'none';
   document.getElementById('button-leave').style.display = 'inline';
@@ -36446,24 +36437,27 @@ function roomJoined(room) {
 
   room.participants.forEach((participant) => {
     const container = document.getElementById('remote-media');
-    attachParticipantTracks(participant, container);
+    // attachParticipantTracks(participant, container);
   });
 
   room.on('participantConnected', (participant) => {
     console.log('Joining: ', participant.identity);
   });
 
-  room.on('trackAdded', (track) => {
+  room.on('trackSubscribed', (track) => {
+    console.log('trackSubscribed', track);
     const container = document.getElementById('remote-media');
     attachTracks([track], container);
   });
 
-  room.on('trackRemoved', (track) => {
+  room.on('trackUnsubscribed', (track) => {
+    console.log('trackUnsubscribed');
     detachTracks([track]);
   });
 
   room.on('participantDisconnected', (participant) => {
     detachParticipantTracks(participant);
+    leaveRoomIfJoined();
   });
 
   room.on('disconnected', () => {

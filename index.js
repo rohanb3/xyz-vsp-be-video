@@ -10,7 +10,7 @@ const middlewares = fs.readdirSync(path.join(__dirname, 'middlewares'))
 /* eslint-disable-next-line global-require, import/no-dynamic-require */
 middlewares.forEach(m => require(`./middlewares/${m}`).init(app));
 
-const socket = require('./socket');
+const socket = require('./lib/socket');
 
 const token = require('./routes/token');
 const roomLogs = require('./routes/roomLogs');
