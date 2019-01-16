@@ -36377,8 +36377,8 @@ function attachParticipantTracks(participant, container) {
 function detachTracks(tracks) {
   tracks.forEach((track) => {
     if (track.detach || (track.track && track.track.detach)) {
-      const detachedElements = (track.detach && track.detach) || (track.track.detach && track.track.detach()) || [];
-      detachedElements.forEach(detachedElement => detachedElement.remove());
+      const detachedElements = (track.detach && track.detach()) || (track.track.detach && track.track.detach()) || [];
+      (detachedElements || []).forEach(detachedElement => detachedElement.remove());
     }
   });
 }
@@ -36437,24 +36437,27 @@ function roomJoined(room) {
 
   room.participants.forEach((participant) => {
     const container = document.getElementById('remote-media');
-    attachParticipantTracks(participant, container);
+    // attachParticipantTracks(participant, container);
   });
 
   room.on('participantConnected', (participant) => {
     console.log('Joining: ', participant.identity);
   });
 
-  room.on('trackAdded', (track) => {
+  room.on('trackSubscribed', (track) => {
+    console.log('trackSubscribed', track);
     const container = document.getElementById('remote-media');
     attachTracks([track], container);
   });
 
-  room.on('trackRemoved', (track) => {
+  room.on('trackUnsubscribed', (track) => {
+    console.log('trackUnsubscribed');
     detachTracks([track]);
   });
 
   room.on('participantDisconnected', (participant) => {
     detachParticipantTracks(participant);
+    leaveRoomIfJoined();
   });
 
   room.on('disconnected', () => {
