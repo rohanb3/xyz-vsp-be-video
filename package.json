@@ -17,7 +17,9 @@
     "dotenv": "^6.1.0",
     "eslint-plugin-jsx-a11y": "^6.1.2",
     "express": "^4.16.4",
+    "moment": "^2.22.2",
     "socket.io": "^2.1.1",
+    "socketio-auth": "^0.1.1",
     "twilio": "^3.24.0",
     "twilio-video": "^2.0.0-beta3"
   },
