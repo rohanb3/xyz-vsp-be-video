@@ -36400,7 +36400,7 @@ function onTokenReceived(data) {
 }
 
 function requestConnection(token) {
-  socket.emit('request.call', { query: token });
+  socket.emit('call.requested', { query: token });
   socket.on('call.accepted', roomName => connectToRoom(roomName, token));
 }
 
