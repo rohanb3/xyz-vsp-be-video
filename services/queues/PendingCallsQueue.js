@@ -3,8 +3,8 @@ const Queue = require('./Queue');
 const CALL_ACCEPTED = 'CALL_ACCEPTED';
 
 class PendingCallsQueue extends Queue {
-  constructor(name, client) {
-    super(name, client);
+  constructor(options) {
+    super(options);
     this.addEventsNames([CALL_ACCEPTED]);
   }
 

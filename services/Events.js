@@ -1,6 +1,6 @@
 const EventEmitter = require('events');
 
-export default class Events {
+class Events {
   constructor() {
     this.emitter = new EventEmitter();
   }
@@ -18,3 +18,5 @@ export default class Events {
     this.emitter.emit(eventName, ...args);
   }
 }
+
+module.exports = Events;
