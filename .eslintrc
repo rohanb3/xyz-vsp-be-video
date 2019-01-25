@@ -5,7 +5,8 @@
   "extends": "airbnb-base",
   "rules": {
     // Additional, per-project rules...
-    "no-underscore-dangle": "off"
+    "no-underscore-dangle": "off",
+    "no-param-reassign": "off"
   },
   "globals": {
     "window": true,
