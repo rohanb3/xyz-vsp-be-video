@@ -19,6 +19,7 @@ app.get('/token', token);
 app.get('room-logs', roomLogs);
 
 http.listen(process.env.PORT || 3000, () => {
+  /* eslint-disable-next-line no-console */
   console.log('App is running at port 3000');
 });
 
