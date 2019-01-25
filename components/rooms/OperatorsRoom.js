@@ -15,6 +15,7 @@ const {
 } = require('../../constants/socket');
 const { checkAndCreateRoom } = require('../../services/twilio');
 const { authenticateOperator } = require('../../services/socketAuth');
+const logger = require('../../services/logger');
 
 class OperatorsRoom {
   constructor(io, pendingCalls) {
@@ -43,14 +44,14 @@ class OperatorsRoom {
       .then((rawCall) => {
         call = JSON.parse(rawCall);
 
-        console.log('onOperatorAcceptCall', operatorId, call);
+        logger.debug('onOperatorAcceptCall', operatorId, call);
 
         call.acceptedBy = operatorId;
         call.acceptedAt = moment.utc().format();
       })
       .then(() => checkAndCreateRoom(operatorId))
       .then(() => {
-        // console.log('room', room);
+        // logger.debug('room', room);
         operator.emit(ROOM_CREATED, operatorId);
         call.roomId = operatorId;
         return this.pendingCalls.acceptCall(call);
@@ -64,7 +65,7 @@ class OperatorsRoom {
 
   onOperatorDisconnected(operator) {
     const operatorId = operator.id;
-    console.log('OPERATOR_DISCONNECTED', operatorId, this.pendingCallsQueue);
+    logger.debug('OPERATOR_DISCONNECTED', operatorId, this.pendingCallsQueue);
   }
 
   updateEldestPendingCall() {
@@ -78,13 +79,13 @@ class OperatorsRoom {
 
   addOperatorToActive(operator) {
     const operatorId = operator.id;
-    console.log('addOperatorToActive', operatorId);
+    logger.debug('addOperatorToActive', operatorId);
     this.operators.connected[operatorId].join(ACTIVE_OPERATORS);
   }
 
   removeOperatorFromActive(operator) {
     const operatorId = operator.id;
-    console.log('removeOperatorFromActive', operatorId);
+    logger.debug('removeOperatorFromActive', operatorId);
     this.operators.connected[operatorId].leave(ACTIVE_OPERATORS);
   }
 }

@@ -12,6 +12,7 @@ const {
   CUSTOMERS,
 } = require('../../constants/socket');
 const { authenticateCustomer } = require('../../services/socketAuth');
+const logger = require('../../services/logger');
 
 class CustomersRoom {
   constructor(io, pendingCalls) {
@@ -35,19 +36,19 @@ class CustomersRoom {
     };
     return this.pendingCalls.enqueue(call)
       .then(() => {
-        console.log('CUSTOMER CALL_REQUESTED', call);
+        logger.debug('CUSTOMER CALL_REQUESTED', call);
         customer.pendingCall = call;
       });
   }
 
   onCustomerFinishedCall(customer) {
-    console.log('CUSTOMER_FINISHED_CALL', customer.id);
+    logger.debug('CUSTOMER_FINISHED_CALL', customer.id);
     return this.onCustomerDisconnected(customer);
   }
 
   onCustomerDisconnected(customer) {
     const customerId = customer.id;
-    console.log('CUSTOMER_DISCONNECTED', customerId);
+    logger.debug('CUSTOMER_DISCONNECTED', customerId);
     return this.checkCustomerPendingCallAndMarkAsMissed(customer);
   }
 
@@ -57,10 +58,10 @@ class CustomersRoom {
       return this.pendingCalls.remove(pendingCall)
         .then((wasCallPending) => {
           if (wasCallPending) {
-            console.log('Success. Call was removed from queue and can be marked as missed', pendingCall);
+            logger.debug('Success. Call was removed from queue and can be marked as missed', pendingCall);
             customer.pendingCall = null;
           } else {
-            console.log('Fail. Call was not in pending', pendingCall);
+            logger.debug('Fail. Call was not in pending', pendingCall);
           }
         });
     }
