@@ -1,6 +1,7 @@
 /* eslint-disable no-use-before-define, no-param-reassign */
 
 const moment = require('moment');
+const socketIOAuth = require('socketio-auth');
 
 const {
   CONNECTION,
@@ -8,15 +9,16 @@ const {
   CALL_REQUESTED,
   CALL_ACCEPTED,
   CALL_FINISHED,
-} = require('./constants');
-
-// const pendingCalls = require('./pendingCalls');
+  CUSTOMERS,
+} = require('../constants/socket');
+const { authenticateCustomer } = require('./socketAuth');
 
 class CustomersRoom {
-  constructor(customersSocket, pendingCalls) {
+  constructor(io, pendingCalls) {
+    this.customers = io.of(CUSTOMERS);
+    socketIOAuth(this.customers, { authenticate: authenticateCustomer });
     this.pendingCalls = pendingCalls;
     this.pendingCalls.subscribeToCallAccepting(this.onCallAccepted);
-    this.customers = customersSocket;
     this.customers.on(CONNECTION, this.onCustomerConnected.bind(this));
   }
 
@@ -31,8 +33,9 @@ class CustomersRoom {
       requestedBy: customer.id,
       requestedAt: moment.utc().format(),
     };
-    return this.pendingCalls.add(call)
+    return this.pendingCalls.enqueue(call)
       .then(() => {
+        console.log('CUSTOMER CALL_REQUESTED', call);
         customer.pendingCall = call;
       });
   }
@@ -44,8 +47,7 @@ class CustomersRoom {
 
   onCustomerDisconnected(customer) {
     const customerId = customer.id;
-    // const call = this.pendingCalls.removeByRequesterId(customerId);
-    console.log('CUSTOMER_DISCONNECTED', customerId, this.pendingCalls.size);
+    console.log('CUSTOMER_DISCONNECTED', customerId);
     return this.checkCustomerPendingCallAndMarkAsMissed(customer);
   }
 
@@ -74,4 +76,8 @@ class CustomersRoom {
   }
 }
 
-module.exports = CustomersRoom;
+const createCutomersRoom = (customersSocket, pendingCalls) => (
+  new CustomersRoom(customersSocket, pendingCalls)
+);
+
+exports.createCutomersRoom = createCutomersRoom;

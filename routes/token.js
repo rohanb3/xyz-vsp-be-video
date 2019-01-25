@@ -1,4 +1,4 @@
-const { getToken } = require('../lib/twilio');
+const { getToken } = require('../services/twilio');
 const randomname = require('../utils/randomname');
 
 module.exports = (request, response) => {

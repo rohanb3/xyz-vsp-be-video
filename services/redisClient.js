@@ -1,7 +1,6 @@
 const redis = require('redis');
 
-const REDIS_HOST = '127.0.0.1';
-const REDIS_PORT = 6379;
+const { REDIS_HOST, REDIS_PORT } = require('../constants/redis');
 
 const promiser = (resolve, reject) => (err, data) => (err ? reject(err) : resolve(data));
 
@@ -34,6 +33,14 @@ class RedisClient {
       key ? this.client.llen(key, promiser(resolve, reject)) : reject()
     ));
   }
+
+  getLatest(key) {
+    return new Promise((resolve, reject) => (
+      key ? this.client.lrange(key, -1, -1, promiser(resolve, reject)) : reject()
+    ));
+  }
 }
 
-module.exports = RedisClient;
+const createRedisClient = options => new RedisClient(options);
+
+exports.createRedisClient = createRedisClient;

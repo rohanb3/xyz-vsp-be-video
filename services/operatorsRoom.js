@@ -1,6 +1,7 @@
 /* eslint-disable no-use-before-define */
 
 const moment = require('moment');
+const socketIOAuth = require('socketio-auth');
 
 const {
   CONNECTION,
@@ -10,22 +11,25 @@ const {
   CALL_FINISHED,
   ROOM_CREATED,
   ACTIVE_OPERATORS,
-} = require('./constants');
-const { checkAndCreateRoom } = require('../twilio');
+  OPERATORS,
+} = require('../constants/socket');
+const { checkAndCreateRoom } = require('./twilio');
+const { authenticateOperator } = require('./socketAuth');
 
 class OperatorsRoom {
-  constructor(operatorsSocket, pendingCalls) {
-    this.pendingCalls = pendingCalls;
-    this.pendingCalls.subscribeToItemAdding(this.emitCallRequesting.bind(this));
-    this.pendingCalls.subscribeToItemTaking(this.updateEldestPendingCall.bind(this));
-    this.operators = operatorsSocket;
+  constructor(io, pendingCalls) {
+    this.operators = io.of(OPERATORS);
+    socketIOAuth(this.operators, { authenticate: authenticateOperator });
     this.operators.on(CONNECTION, this.onOperatorConnected.bind(this));
+    this.pendingCalls = pendingCalls;
+    this.pendingCalls.subscribeToItemEnqueueing(this.emitCallRequesting.bind(this));
+    this.pendingCalls.subscribeToItemDequeueing(this.updateEldestPendingCall.bind(this));
   }
 
   onOperatorConnected(operator) {
     operator.on(CALL_ACCEPTED, this.onOperatorAcceptCall.bind(this, operator));
     operator.on(CALL_FINISHED, this.onOperatorFinishedCall.bind(this, operator));
-    operator.on(DISCONNECT, this.onOperatorDisconnected.bind(this.operator));
+    operator.on(DISCONNECT, this.onOperatorDisconnected.bind(this, operator));
     this.addOperatorToActive(operator);
   }
 
@@ -35,7 +39,7 @@ class OperatorsRoom {
 
     this.removeOperatorFromActive(operator);
 
-    return this.pendingCalls.take()
+    return this.pendingCalls.dequeue()
       .then((rawCall) => {
         call = JSON.parse(rawCall);
 
@@ -58,10 +62,9 @@ class OperatorsRoom {
     this.onOperatorDisconnected(operator);
   }
 
-  onOperatorDisconnected() {
-    const operatorId = this.id;
-    // const call = pendingCalls.removeByAcceptorId(operatorId);
-    console.log('OPERATOR_DISCONNECTED', operatorId);
+  onOperatorDisconnected(operator) {
+    const operatorId = operator.id;
+    console.log('OPERATOR_DISCONNECTED', operatorId, this.pendingCallsQueue);
   }
 
   updateEldestPendingCall() {
@@ -86,4 +89,8 @@ class OperatorsRoom {
   }
 }
 
-module.exports = OperatorsRoom;
+const createOperatorsRoom = (operatorsSocket, pendingCalls) => (
+  new OperatorsRoom(operatorsSocket, pendingCalls)
+);
+
+exports.createOperatorsRoom = createOperatorsRoom;

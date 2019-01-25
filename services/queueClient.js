@@ -1,5 +1,5 @@
-const RedisClient = require('../lib/redis');
+const { createRedisClient } = require('./redisClient');
 
-const createClient = options => new RedisClient(options);
+const createClient = options => createRedisClient(options);
 
 exports.createClient = createClient;

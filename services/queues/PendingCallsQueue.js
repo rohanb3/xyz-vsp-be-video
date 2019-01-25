@@ -1,11 +1,11 @@
 const Queue = require('./Queue');
 
-const CALL_ACCEPTED = 'CALL_ACCEPTED';
+const ITEM_ACCEPTED = 'item.accepted';
 
 class PendingCallsQueue extends Queue {
   constructor(options) {
     super(options);
-    this.addEventsNames([CALL_ACCEPTED]);
+    this.addEvents([ITEM_ACCEPTED]);
   }
 
   acceptCall(call) {
@@ -14,15 +14,15 @@ class PendingCallsQueue extends Queue {
   }
 
   subscribeToCallAccepting(listener) {
-    return this.events.subscribe(CALL_ACCEPTED, listener);
+    return this.channel.subscribe(ITEM_ACCEPTED, listener);
   }
 
   unsubscribeFromCallAccepting(listener) {
-    return this.events.unsubscribe(CALL_ACCEPTED, listener);
+    return this.channel.unsubscribe(ITEM_ACCEPTED, listener);
   }
 
   emitCallAccepting(call) {
-    return this.events.emit(CALL_ACCEPTED, call);
+    return this.channel.publish(ITEM_ACCEPTED, call);
   }
 }
 

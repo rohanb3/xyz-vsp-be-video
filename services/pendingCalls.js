@@ -1,7 +1,5 @@
 const PendingCallsQueue = require('./queues/PendingCallsQueue');
 
-const createQueue = (name, client, serializer) => (
-  new PendingCallsQueue(name, client, serializer)
-);
+const createQueue = options => new PendingCallsQueue(options);
 
 exports.createQueue = createQueue;

@@ -4,11 +4,17 @@
   "description": "SimpleBE",
   "main": "index.js",
   "scripts": {
-    "start": "cp .env.template .env && npm run clean && npm run build && node index.js",
-    "start:dev": "cp .env.template .env && npm run clean && npm run build && nodemon index.js",
+    "start": "npm run copyEnv && npm run clean && npm run build && node index.js",
+    "start:dev": "npm run copyEnv && npm run clean && npm run build && nodemon index.js",
+    "pm2:start": "npm run copyEnv && npm run clean && npm run build && npx pm2 start process.yml",
+    "pm2:stop": "npx pm2 stop process.yml",
+    "pm2:delete": "npx pm2 delete process.yml",
+    "pm2:restart": "npx pm2 restart process.yml",
+    "pm2:list": "npx pm2 list process.yml",
     "build": "browserify public/customer.js > public/js/customer.js",
     "clean": "rimraf public/js/customer.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "copyEnv": "cp .env.template .env"
   },
   "author": "Ketler",
   "license": "ISC",
@@ -18,8 +24,11 @@
     "eslint-plugin-jsx-a11y": "^6.1.2",
     "express": "^4.16.4",
     "moment": "^2.22.2",
+    "pm2": "^3.2.9",
     "redis": "^2.8.0",
+    "save": "^2.3.3",
     "socket.io": "^2.1.1",
+    "socket.io-redis": "^5.2.0",
     "socketio-auth": "^0.1.1",
     "twilio": "^3.24.0",
     "twilio-video": "^2.0.0-beta3"

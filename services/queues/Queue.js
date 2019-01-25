@@ -1,18 +1,11 @@
-/* eslint-disable no-underscore-dangle */
-const Events = require('../Events');
-const { convertArrayOfStringsToPrefixedHash } = require('../../utils/array');
+const { convertToHashWithPrefixedValues } = require('../../utils/array');
 
-const ITEM_ADDED = 'item.added';
-const ITEM_TAKEN = 'item.taken';
+const ITEM_ENQUEUED = 'item.enqueued';
+const ITEM_DEQUEUED = 'item.dequeued';
 const ITEM_REMOVED = 'item.removed';
+const DEFAULT_EVENTS_NAMES = [ITEM_ENQUEUED, ITEM_DEQUEUED, ITEM_REMOVED];
 
-const DEFAULT_EVENTS_NAMES = [ITEM_ADDED, ITEM_TAKEN, ITEM_REMOVED];
-
-const generatePrefixedEventsNames = (
-  prefix => convertArrayOfStringsToPrefixedHash(prefix, DEFAULT_EVENTS_NAMES)
-);
-
-const checkConstructorParamsConsistency = ({ name, client, serializer }) => {
+const checkConstructorParamsConsistency = (name, client, serializer, channel) => {
   if (!name) {
     throw new Error({ message: 'Queue name is not specified!' });
   }
@@ -22,34 +15,46 @@ const checkConstructorParamsConsistency = ({ name, client, serializer }) => {
   if (!serializer) {
     throw new Error({ message: 'Queue serializer is not specified!' });
   }
+  if (!channel) {
+    throw new Error({ message: 'Queue channel is not specified!' });
+  }
 };
 
 class Queue {
-  constructor({ name, client, serializer }) {
-    checkConstructorParamsConsistency(name, client, serializer);
+  constructor({
+    name,
+    client,
+    serializer,
+    channel,
+  }) {
+    checkConstructorParamsConsistency(name, client, serializer, channel);
 
     this.name = name;
     this.client = client;
     this.serializer = serializer;
-    this.events = new Events();
-    this.eventsNames = generatePrefixedEventsNames(this.name);
+    this.channel = channel;
+    this.events = convertToHashWithPrefixedValues(DEFAULT_EVENTS_NAMES, this.name);
   }
 
   size() {
-    return this.client.take(this.name);
+    return this.client.size(this.name);
   }
 
-  add(item) {
+  peak() {
+    return this.client.getLatest(this.name);
+  }
+
+  enqueue(item) {
     const serializedItem = this._serialize(item);
     return this.client.add(this.name, serializedItem)
-      .then(() => this._emitItemAdding(item));
+      .then(() => this._publishItemEnqueueing(item));
   }
 
-  take() {
+  dequeue() {
     return this.client.take(this.name)
       .then((serializedItem) => {
         const deserializedItem = this._deserialize(serializedItem);
-        this._emitItemTaking(deserializedItem);
+        this._publishItemDequeueing(deserializedItem);
         return deserializedItem;
       });
   }
@@ -60,53 +65,53 @@ class Queue {
       .then((res) => {
         const isRemoved = Boolean(res);
         if (isRemoved) {
-          this._emitItemRemoving(item);
+          this._publishItemRemoving(item);
         }
         return isRemoved;
       });
   }
 
-  subscribeToItemAdding(listener) {
-    return this.events.subscribe(ITEM_ADDED, listener);
+  subscribeToItemEnqueueing(listener) {
+    return this.channel.subscribe(this.events[ITEM_ENQUEUED], listener);
   }
 
-  subscribeToItemTaking(listener) {
-    return this.events.subscribe(ITEM_TAKEN, listener);
+  subscribeToItemDequeueing(listener) {
+    return this.channel.subscribe(this.events[ITEM_DEQUEUED], listener);
   }
 
   subscribeToItemRemoving(listener) {
-    return this.events.subscribe(ITEM_REMOVED, listener);
+    return this.channel.subscribe(this.events[ITEM_REMOVED], listener);
   }
 
   unsubscribeFromItemAdding(listener) {
-    return this.events.unsubscribe(ITEM_ADDED, listener);
+    return this.channel.unsubscribe(this.events[ITEM_ENQUEUED], listener);
   }
 
   unsubscribeFromItemTaking(listener) {
-    return this.events.unsubscribe(ITEM_TAKEN, listener);
+    return this.channel.unsubscribe(this.events[ITEM_DEQUEUED], listener);
   }
 
   unsubscribeFromItemRemoving(listener) {
-    return this.events.unsubscribe(ITEM_REMOVED, listener);
+    return this.channel.unsubscribe(this.events[ITEM_REMOVED], listener);
   }
 
-  addEventsNames(names = []) {
-    const namesToAdd = convertArrayOfStringsToPrefixedHash(this.name, names);
-    this.eventsNames = Object.assign({}, this.eventsNames, namesToAdd);
+  addEvents(names = []) {
+    const namesToAdd = convertToHashWithPrefixedValues(names, this.name);
+    this.events = Object.assign({}, this.events, namesToAdd);
   }
 
   // private methods
 
-  _emitItemAdding(item) {
-    return this.events.emit(ITEM_ADDED, item);
+  _publishItemEnqueueing(item) {
+    return this.channel.publish(this.events[ITEM_ENQUEUED], item);
   }
 
-  _emitItemTaking(item) {
-    return this.events.emit(ITEM_TAKEN, item);
+  _publishItemDequeueing(item) {
+    return this.channel.publish(this.events[ITEM_DEQUEUED], item);
   }
 
-  _emitItemRemoving(item) {
-    return this.events.emit(ITEM_REMOVED, item);
+  _publishItemRemoving(item) {
+    return this.channel.publish(this.events[ITEM_REMOVED], item);
   }
 
   _serialize(value) {
