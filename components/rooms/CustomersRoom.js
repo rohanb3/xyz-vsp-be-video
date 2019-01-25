@@ -15,9 +15,10 @@ const { authenticateCustomer } = require('../../services/socketAuth');
 const logger = require('../../services/logger');
 
 class CustomersRoom {
-  constructor(io, pendingCalls) {
+  constructor(io, pendingCalls, callsDBClient) {
     this.customers = io.of(CUSTOMERS);
     socketIOAuth(this.customers, { authenticate: authenticateCustomer });
+    this.callsDBClient = callsDBClient;
     this.pendingCalls = pendingCalls;
     this.pendingCalls.subscribeToCallAccepting(this.onCallAccepted);
     this.customers.on(CONNECTION, this.onCustomerConnected.bind(this));

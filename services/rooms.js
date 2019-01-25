@@ -1,8 +1,8 @@
 const CustomersRoom = require('../components/rooms/CustomersRoom');
 const OperatorsRoom = require('../components/rooms/OperatorsRoom');
 
-const createCutomersRoom = (socket, pendingCalls) => new CustomersRoom(socket, pendingCalls);
-const createOperatorsRoom = (socket, pendingCalls) => new OperatorsRoom(socket, pendingCalls);
+const createCustomersRoom = (...args) => new CustomersRoom(...args);
+const createOperatorsRoom = (...args) => new OperatorsRoom(...args);
 
-exports.createCutomersRoom = createCutomersRoom;
+exports.createCustomersRoom = createCustomersRoom;
 exports.createOperatorsRoom = createOperatorsRoom;

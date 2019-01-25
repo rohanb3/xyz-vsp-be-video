@@ -18,10 +18,11 @@ const { authenticateOperator } = require('../../services/socketAuth');
 const logger = require('../../services/logger');
 
 class OperatorsRoom {
-  constructor(io, pendingCalls) {
+  constructor(io, pendingCalls, callsDBClient) {
     this.operators = io.of(OPERATORS);
     socketIOAuth(this.operators, { authenticate: authenticateOperator });
     this.operators.on(CONNECTION, this.onOperatorConnected.bind(this));
+    this.callsDBClient = callsDBClient;
     this.pendingCalls = pendingCalls;
     this.pendingCalls.subscribeToItemEnqueueing(this.emitCallRequesting.bind(this));
     this.pendingCalls.subscribeToItemDequeueing(this.updateEldestPendingCall.bind(this));
