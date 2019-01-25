@@ -1,6 +1,6 @@
 const redis = require('redis');
 
-const { REDIS_HOST, REDIS_PORT } = require('../constants/redis');
+const { REDIS_HOST, REDIS_PORT } = require('../../constants/redis');
 
 const promiser = (resolve, reject) => (err, data) => (err ? reject(err) : resolve(data));
 
@@ -41,6 +41,4 @@ class RedisClient {
   }
 }
 
-const createRedisClient = options => new RedisClient(options);
-
-exports.createRedisClient = createRedisClient;
+module.exports = RedisClient;

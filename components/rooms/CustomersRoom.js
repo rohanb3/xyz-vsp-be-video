@@ -10,8 +10,8 @@ const {
   CALL_ACCEPTED,
   CALL_FINISHED,
   CUSTOMERS,
-} = require('../constants/socket');
-const { authenticateCustomer } = require('./socketAuth');
+} = require('../../constants/socket');
+const { authenticateCustomer } = require('../../services/socketAuth');
 
 class CustomersRoom {
   constructor(io, pendingCalls) {
@@ -76,8 +76,4 @@ class CustomersRoom {
   }
 }
 
-const createCutomersRoom = (customersSocket, pendingCalls) => (
-  new CustomersRoom(customersSocket, pendingCalls)
-);
-
-exports.createCutomersRoom = createCutomersRoom;
+module.exports = CustomersRoom;

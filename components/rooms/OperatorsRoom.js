@@ -12,9 +12,9 @@ const {
   ROOM_CREATED,
   ACTIVE_OPERATORS,
   OPERATORS,
-} = require('../constants/socket');
-const { checkAndCreateRoom } = require('./twilio');
-const { authenticateOperator } = require('./socketAuth');
+} = require('../../constants/socket');
+const { checkAndCreateRoom } = require('../../services/twilio');
+const { authenticateOperator } = require('../../services/socketAuth');
 
 class OperatorsRoom {
   constructor(io, pendingCalls) {
@@ -89,8 +89,4 @@ class OperatorsRoom {
   }
 }
 
-const createOperatorsRoom = (operatorsSocket, pendingCalls) => (
-  new OperatorsRoom(operatorsSocket, pendingCalls)
-);
-
-exports.createOperatorsRoom = createOperatorsRoom;
+module.exports = OperatorsRoom;

@@ -1,6 +1,6 @@
 const redis = require('redis');
 
-const { REDIS_HOST, REDIS_PORT } = require('../constants/redis');
+const { REDIS_HOST, REDIS_PORT } = require('../../constants/redis');
 
 const MESSAGE = 'message';
 
@@ -67,6 +67,4 @@ class RedisChannel {
   }
 }
 
-const createRedisChannel = options => new RedisChannel(options);
-
-exports.createRedisChannel = createRedisChannel;
+module.exports = RedisChannel;

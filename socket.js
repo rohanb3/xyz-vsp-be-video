@@ -3,8 +3,7 @@
 const socketIO = require('socket.io');
 
 const { createAdapter } = require('./services/socketAdapter');
-const { createOperatorsRoom } = require('./services/operatorsRoom');
-const { createCutomersRoom } = require('./services/customersRoom');
+const { createOperatorsRoom, createCutomersRoom } = require('./services/rooms');
 const { createQueue } = require('./services/pendingCalls');
 const { createClient } = require('./services/queueClient');
 const { createChannel } = require('./services/queueChannel');
