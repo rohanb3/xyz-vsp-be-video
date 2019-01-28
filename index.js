@@ -12,7 +12,8 @@ const socket = require('./socket')(appMetadata);
 
 const server = http.Server(app);
 
-const port = Number(process.env.PORT || 3000) + parseInt(process.env.INSTANCE_ID, 10);
+// const port = Number(process.env.PORT || 3000) + parseInt(process.env.INSTANCE_ID, 10);
+const port = process.env.PORT || 3000;
 
 server.listen(port, () => {
   /* eslint-disable-next-line no-console */

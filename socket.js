@@ -6,7 +6,7 @@ const { createAdapter } = require('./services/socketAdapter');
 const { createOperatorsRoom, createCustomersRoom } = require('./services/rooms');
 
 const socket = ({ pendingCalls, callsDBClient }) => (server) => {
-  const io = socketIO(server);
+  const io = socketIO(server, { transports: ['websocket'] });
   const ioAdapter = createAdapter();
 
   io.adapter(ioAdapter);

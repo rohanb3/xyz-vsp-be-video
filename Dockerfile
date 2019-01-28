@@ -15,4 +15,4 @@ ENV MONGO_URI mongodb://8be6cefd-0ee0-4-231-b9ee:YLo7SWYwiDXb5RTeHJ8cI6UdEL9ZKa8
 
 EXPOSE 3000 3000
 
-CMD [ "pm2-runtime", "start", "process.yml" ]
+CMD [ "npm", "run", "start" ]

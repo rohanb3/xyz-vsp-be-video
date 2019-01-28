@@ -2,7 +2,9 @@
 
 const Video = require('twilio-video');
 
-const socket = io('/customers');
+const socket = io('/customers', {
+  transports: ['websocket'],
+});
 
 socket.on('connect', () => {
   socket.emit('authentication', { user: 123 });
