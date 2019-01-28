@@ -152,8 +152,9 @@ document.getElementById('button-preview').onclick = () => {
 };
 
 function leaveRoomIfJoined() {
-  socket.emit('finish call');
   if (activeRoom) {
+    socket.emit('call.finished', { roomId: activeRoom.name });
     activeRoom.disconnect();
+    activeRoom = null;
   }
 }

@@ -3,7 +3,7 @@ module.exports={
   "_args": [
     [
       "@twilio/sip.js@0.7.7",
-      "/Users/user/Documents/Ketler/xys-vsp-be-video"
+      "/home/user/www/xys-vsp-be-video"
     ]
   ],
   "_from": "@twilio/sip.js@0.7.7",
@@ -28,7 +28,7 @@ module.exports={
   ],
   "_resolved": "https://registry.npmjs.org/@twilio/sip.js/-/sip.js-0.7.7.tgz",
   "_spec": "0.7.7",
-  "_where": "/Users/user/Documents/Ketler/xys-vsp-be-video",
+  "_where": "/home/user/www/xys-vsp-be-video",
   "author": {
     "name": "OnSIP",
     "email": "developer@onsip.com",
@@ -14206,7 +14206,7 @@ module.exports={
   "_args": [
     [
       "@twilio/webrtc@3.1.0",
-      "/Users/user/Documents/Ketler/xys-vsp-be-video"
+      "/home/user/www/xys-vsp-be-video"
     ]
   ],
   "_from": "@twilio/webrtc@3.1.0",
@@ -14231,7 +14231,7 @@ module.exports={
   ],
   "_resolved": "https://registry.npmjs.org/@twilio/webrtc/-/webrtc-3.1.0.tgz",
   "_spec": "3.1.0",
-  "_where": "/Users/user/Documents/Ketler/xys-vsp-be-video",
+  "_where": "/home/user/www/xys-vsp-be-video",
   "author": {
     "name": "Manjesh Malavalli",
     "email": "mmalavalli@twilio.com"
@@ -35572,7 +35572,7 @@ module.exports={
   "_args": [
     [
       "twilio-video@2.0.0-beta3",
-      "/Users/user/Documents/Ketler/xys-vsp-be-video"
+      "/home/user/www/xys-vsp-be-video"
     ]
   ],
   "_from": "twilio-video@2.0.0-beta3",
@@ -35596,7 +35596,7 @@ module.exports={
   ],
   "_resolved": "https://registry.npmjs.org/twilio-video/-/twilio-video-2.0.0-beta3.tgz",
   "_spec": "2.0.0-beta3",
-  "_where": "/Users/user/Documents/Ketler/xys-vsp-be-video",
+  "_where": "/home/user/www/xys-vsp-be-video",
   "author": {
     "name": "Mark Andrus Roberts",
     "email": "mroberts@twilio.com"
@@ -36494,9 +36494,10 @@ document.getElementById('button-preview').onclick = () => {
 };
 
 function leaveRoomIfJoined() {
-  socket.emit('finish call');
   if (activeRoom) {
+    socket.emit('call.finished', { roomId: activeRoom.name });
     activeRoom.disconnect();
+    activeRoom = null;
   }
 }
 

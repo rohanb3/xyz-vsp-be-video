@@ -1,13 +1,14 @@
 const mongoose = require('mongoose');
 const beautifyUnique = require('mongoose-beautiful-unique-validation');
 
-const MONGO_URI = 'mongodb://8be6cefd-0ee0-4-231-b9ee:YLo7SWYwiDXb5RTeHJ8cI6UdEL9ZKa8r1SroQpTs1OiZSMsjWwA6LkZsVYkRNVLmslVLWDxsST7dqkK8QCfa0Q%3D%3D@8be6cefd-0ee0-4-231-b9ee.documents.azure.com:10255/?ssl=true';
+const { MONGO_URI } = process.env;
 
 mongoose.Promise = Promise;
 
 
 mongoose.plugin(beautifyUnique);
-mongoose.set('debug', true);
+mongoose.set('debug', process.env.NODE_ENV !== 'production');
+mongoose.set('useFindAndModify', false);
 
 mongoose.plugin((schema) => {
   if (!schema.options.toObject) {
@@ -20,12 +21,10 @@ mongoose.plugin((schema) => {
 });
 
 mongoose.connect(MONGO_URI, {
-  server: {
-    socketOptions: {
-      keepAlive: 1,
-    },
-    poolSize: 5,
-  },
+  keepAlive: 1,
+  poolSize: 5,
+  useNewUrlParser: true,
+  dbName: 'twilio',
 });
 
 module.exports = mongoose;

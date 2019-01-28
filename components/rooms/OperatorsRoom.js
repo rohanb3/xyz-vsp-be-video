@@ -25,7 +25,7 @@ class OperatorsRoom {
     this.callsDBClient = callsDBClient;
     this.pendingCalls = pendingCalls;
     this.pendingCalls.subscribeToItemEnqueueing(this.emitCallRequesting.bind(this));
-    this.pendingCalls.subscribeToItemDequeueing(this.updateEldestPendingCall.bind(this));
+    this.pendingCalls.subscribeToItemDequeueing(this.updateOldestPendingCall.bind(this));
   }
 
   onOperatorConnected(operator) {
@@ -37,31 +37,39 @@ class OperatorsRoom {
 
   onOperatorAcceptCall(operator) {
     const operatorId = operator.id;
-    let call = null;
+    const call = {};
+    const callUpdates = {
+      acceptedBy: operatorId,
+      acceptedAt: moment.utc().format(),
+    };
 
     this.removeOperatorFromActive(operator);
 
     return this.pendingCalls.dequeue()
-      .then((rawCall) => {
-        call = JSON.parse(rawCall);
+      .then((callFromQueue) => {
+        logger.debug('onOperatorAcceptCall', operatorId, callFromQueue);
+        Object.assign(call, callFromQueue);
 
-        logger.debug('onOperatorAcceptCall', operatorId, call);
-
-        call.acceptedBy = operatorId;
-        call.acceptedAt = moment.utc().format();
+        return checkAndCreateRoom(callFromQueue._id);
       })
-      .then(() => checkAndCreateRoom(operatorId))
-      .then(() => {
-        // logger.debug('room', room);
-        operator.emit(ROOM_CREATED, operatorId);
-        call.roomId = operatorId;
+      .then((room) => {
+        const roomId = room.uniqueName;
+        logger.debug('ROOM_CREATED', room);
+        operator.emit(ROOM_CREATED, roomId);
+        callUpdates.roomId = roomId;
+        Object.assign(call, callUpdates);
+
         return this.pendingCalls.acceptCall(call);
-      });
+      })
+      .then(() => this.callsDBClient.updateById(call._id, callUpdates));
   }
 
-  onOperatorFinishedCall(operator) {
-    this.addOperatorToActive(operator);
-    this.onOperatorDisconnected(operator);
+  onOperatorFinishedCall(operator, call) {
+    return this.markCallAsFinishedByOperator(operator, call)
+      .then(() => {
+        this.addOperatorToActive(operator);
+        this.onOperatorDisconnected(operator);
+      });
   }
 
   onOperatorDisconnected(operator) {
@@ -69,9 +77,13 @@ class OperatorsRoom {
     logger.debug('OPERATOR_DISCONNECTED', operatorId, this.pendingCallsQueue);
   }
 
-  updateEldestPendingCall() {
-    const call = this.pendingCalls.getCopyOfEldestCall();
-    this.emitCallRequesting(call);
+  updateOldestPendingCall() {
+    return this.pendingCalls.peak()
+      .then((call) => {
+        if (call) {
+          this.emitCallRequesting(call);
+        }
+      });
   }
 
   emitCallRequesting(call) {
@@ -88,6 +100,17 @@ class OperatorsRoom {
     const operatorId = operator.id;
     logger.debug('removeOperatorFromActive', operatorId);
     this.operators.connected[operatorId].leave(ACTIVE_OPERATORS);
+  }
+
+  markCallAsFinishedByOperator(operator, call) {
+    const operatorId = operator.id;
+    const { roomId } = call;
+    const updates = {
+      finishedBy: operatorId,
+      finishedAt: moment.utc().format(),
+    };
+    const query = { roomId };
+    return this.callsDBClient.updateByQuery(query, updates);
   }
 }
 

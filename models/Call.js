@@ -16,6 +16,7 @@ const call = new mongoose.Schema({
   duration: Number,
   finishedBy: String,
   finishedAt: String,
+  roomId: String,
 });
 
 module.exports = mongoose.model('Call', call);

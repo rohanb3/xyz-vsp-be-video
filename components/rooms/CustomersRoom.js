@@ -20,7 +20,7 @@ class CustomersRoom {
     socketIOAuth(this.customers, { authenticate: authenticateCustomer });
     this.callsDBClient = callsDBClient;
     this.pendingCalls = pendingCalls;
-    this.pendingCalls.subscribeToCallAccepting(this.onCallAccepted);
+    this.pendingCalls.subscribeToCallAccepting(this.onCallAccepted.bind(this));
     this.customers.on(CONNECTION, this.onCustomerConnected.bind(this));
   }
 
@@ -35,16 +35,23 @@ class CustomersRoom {
       requestedBy: customer.id,
       requestedAt: moment.utc().format(),
     };
-    return this.pendingCalls.enqueue(call)
+    return this.callsDBClient.create(call)
+      .then(({ _id }) => {
+        call._id = _id;
+        return this.pendingCalls.enqueue(call);
+      })
       .then(() => {
         logger.debug('CUSTOMER CALL_REQUESTED', call);
         customer.pendingCall = call;
       });
   }
 
-  onCustomerFinishedCall(customer) {
-    logger.debug('CUSTOMER_FINISHED_CALL', customer.id);
-    return this.onCustomerDisconnected(customer);
+  onCustomerFinishedCall(customer, call) {
+    return this.markCallAsFinishedByCustomer(customer, call)
+      .then(() => {
+        logger.debug('CUSTOMER_FINISHED_CALL', customer.id);
+        return this.onCustomerDisconnected(customer);
+      });
   }
 
   onCustomerDisconnected(customer) {
@@ -58,12 +65,19 @@ class CustomersRoom {
     if (pendingCall) {
       return this.pendingCalls.remove(pendingCall)
         .then((wasCallPending) => {
+          let missedCallPromise = Promise.resolve();
+
           if (wasCallPending) {
             logger.debug('Success. Call was removed from queue and can be marked as missed', pendingCall);
-            customer.pendingCall = null;
+            missedCallPromise = this.markCallAsMissed(pendingCall);
           } else {
             logger.debug('Fail. Call was not in pending', pendingCall);
           }
+
+          return missedCallPromise;
+        })
+        .finally(() => {
+          customer.pendingCall = null;
         });
     }
     return Promise.resolve();
@@ -74,7 +88,23 @@ class CustomersRoom {
     if (this.customers.connected[customerId] && this.customers.connected[customerId].pendingCall) {
       this.customers.connected[customerId].pendingCall = null;
     }
-    this.customers.to(customerId).emit(CALL_ACCEPTED, call);
+    this.customers.to(customerId).emit(CALL_ACCEPTED, call.roomId);
+  }
+
+  markCallAsFinishedByCustomer(customer, call) {
+    const customerId = customer.id;
+    const { roomId } = call;
+    const updates = {
+      finishedBy: customerId,
+      finishedAt: moment.utc().format(),
+    };
+    const query = { roomId };
+    return this.callsDBClient.updateByQuery(query, updates);
+  }
+
+  markCallAsMissed(call) {
+    const updates = { missedAt: moment.utc().format() };
+    return this.callsDBClient.updateById(call._id, updates);
   }
 }
 

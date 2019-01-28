@@ -3,12 +3,20 @@ class MongoClient {
     this.model = model;
   }
 
+  getById(id) {
+    return this.model.findById(id);
+  }
+
   create(entity) {
     return this.model.create(entity);
   }
 
-  update(id, updates = {}) {
-    return this.model.findByIdAndUpdate(id, { $set: updates });
+  updateById(id, updates = {}) {
+    return this.model.findOneAndUpdate({ _id: id }, { $set: updates });
+  }
+
+  updateByQuery(query, updates = {}) {
+    return this.model.findOneAndUpdate(query, { $set: updates });
   }
 }
 
