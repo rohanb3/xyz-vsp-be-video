@@ -1,0 +1,22 @@
+redis:
+  image: redis
+  container_name: cache
+  expose:
+    - 6379
+app:
+  build: ./
+  volumes:
+    - ./:/var/www/app
+  links:
+    - redis
+  ports:
+    - 3000:3000
+  # environment:
+  #   - NODE_ENV=development
+  #   - PORT=3000
+  #   - TWILIO_ACCOUNT_SID=AC277426ccc49cc8b42fb938a4c4ea09a3
+  #   - TWILIO_AUTH_TOKEN=41c2455b59bde804fdf330bf68449cbc
+  #   - TWILIO_API_KEY=SK7750f1bc5f5bb71fe65d8c7c6c21210c
+  #   - TWILIO_API_SECRET=tzuP8urt3dgZxg30LnOYdn9w9xmHciGB
+  #   - MONGO_URI=mongodb://8be6cefd-0ee0-4-231-b9ee:YLo7SWYwiDXb5RTeHJ8cI6UdEL9ZKa8r1SroQpTs1OiZSMsjWwA6LkZsVYkRNVLmslVLWDxsST7dqkK8QCfa0Q%3D%3D@8be6cefd-0ee0-4-231-b9ee.documents.azure.com:10255/?ssl=true
+  # command: ['pm2', 'start', 'process.yml']

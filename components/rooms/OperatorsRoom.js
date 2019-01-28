@@ -13,7 +13,7 @@ const {
   ACTIVE_OPERATORS,
   OPERATORS,
 } = require('../../constants/socket');
-const { checkAndCreateRoom } = require('../../services/twilio');
+const { ensureRoom } = require('../../services/twilio');
 const { authenticateOperator } = require('../../services/socketAuth');
 const logger = require('../../services/logger');
 
@@ -50,7 +50,7 @@ class OperatorsRoom {
         logger.debug('onOperatorAcceptCall', operatorId, callFromQueue);
         Object.assign(call, callFromQueue);
 
-        return checkAndCreateRoom(callFromQueue._id);
+        return ensureRoom(callFromQueue._id);
       })
       .then((room) => {
         const roomId = room.uniqueName;

@@ -38,8 +38,8 @@ function createRoom(identity) {
   });
 }
 
-function checkRoom(identity) {
-  logger.debug('checkRoom', identity);
+function getRoom(identity) {
+  logger.debug('getRoom', identity);
   // return new Promise((resolve) => {
   //   client.video.rooms.each({ uniqueName: identity }, resolve);
   // });
@@ -48,12 +48,12 @@ function checkRoom(identity) {
     .then((rooms = []) => rooms.find(r => r.uniqueName === identity));
 }
 
-function checkAndCreateRoom(identity) {
-  return checkRoom(identity)
+function ensureRoom(identity) {
+  return getRoom(identity)
     .then(room => room || createRoom(identity));
 }
 
 exports.getToken = getToken;
 exports.createRoom = createRoom;
-exports.checkRoom = checkRoom;
-exports.checkAndCreateRoom = checkAndCreateRoom;
+exports.getRoom = getRoom;
+exports.ensureRoom = ensureRoom;
