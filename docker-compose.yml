@@ -7,14 +7,13 @@ services:
     expose:
       - 6379
 
-  xyz-vsp-be-video:
-    container_name: xyz-vsb-be-video
+  server:
+    container_name: server
     build:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - '.:/var/www/app'
-      - '/var/www/app/node_modules'
+      - .:/usr/xyz-vsp-be-video
     ports:
       - '3000:3000'
     links:
