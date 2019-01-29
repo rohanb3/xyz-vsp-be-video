@@ -1,7 +1,7 @@
 FROM keymetrics/pm2:latest-alpine
 
 WORKDIR '/var/www/app'
-COPY ./ /var/www/app/
+COPY package.json /var/www/app/package.json
 RUN ls  /var/www/app/
 RUN npm install
 
