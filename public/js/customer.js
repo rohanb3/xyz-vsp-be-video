@@ -36350,8 +36350,9 @@ const socket = io('/customers', {
 
 socket.on('connect', () => {
   socket.emit('authentication', { user: 123 });
-  socket.on('authenticated', () => {
+  socket.on('authenticated', (token) => {
     console.log('authenticated');
+    onTokenReceived({ token });
   });
   socket.on('unauthorized', err => console.log(err));
 });
@@ -36391,8 +36392,6 @@ function detachParticipantTracks(participant) {
 }
 
 window.addEventListener('beforeunload', leaveRoomIfJoined);
-
-$.getJSON('/token', onTokenReceived);
 
 function onTokenReceived(data) {
   const { token } = data;

@@ -5,14 +5,14 @@ const socketIO = require('socket.io');
 const { createAdapter } = require('./services/socketAdapter');
 const { createOperatorsRoom, createCustomersRoom } = require('./services/rooms');
 
-const socket = ({ pendingCalls, callsDBClient }) => (server) => {
+const socket = (server) => {
   const io = socketIO(server, { transports: ['websocket'] });
   const ioAdapter = createAdapter();
 
   io.adapter(ioAdapter);
 
-  const operatorsRoom = createOperatorsRoom(io, pendingCalls, callsDBClient);
-  const customersRoom = createCustomersRoom(io, pendingCalls, callsDBClient);
+  const operatorsRoom = createOperatorsRoom(io);
+  const customersRoom = createCustomersRoom(io);
 
   return {
     operatorsRoom,

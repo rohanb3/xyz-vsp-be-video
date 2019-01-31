@@ -3,12 +3,8 @@ const http = require('http');
 
 dotenv.load();
 
-const { createAppMetadata } = require('./services/appMetadata');
-
-const appMetadata = createAppMetadata();
-
-const app = require('./app')(appMetadata);
-const socket = require('./socket')(appMetadata);
+const app = require('./app');
+const socket = require('./socket');
 
 const server = http.Server(app);
 

@@ -19,6 +19,7 @@
   "author": "Ketler",
   "license": "ISC",
   "dependencies": {
+    "connect-redis": "^3.4.0",
     "cors": "^2.8.5",
     "dotenv": "^6.1.0",
     "eslint-plugin-jsx-a11y": "^6.1.2",
