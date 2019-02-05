@@ -8,7 +8,6 @@ const {
   CALL_ACCEPTED,
   CALL_FINISHED,
   CUSTOMERS,
-  LOCK_DURATION,
 } = require('../../constants/socket');
 const {
   requestCall,
@@ -16,11 +15,8 @@ const {
   markCallAsMissed,
   subscribeToCallAccepting,
 } = require('../calls');
-const { checkAndLock } = require('../socketEventLocker');
 const { authenticateCustomer } = require('../socketAuth');
 const logger = require('../logger');
-
-const CUSTOMERS_CALL_ACCEPTED = `${CUSTOMERS}.${CALL_ACCEPTED}`;
 
 class CustomersRoom {
   constructor(io) {
@@ -60,25 +56,20 @@ class CustomersRoom {
     logger.debug('call.accepted.customer', call);
     const customerId = call.requestedBy;
 
-    if (this.customers.connected[customerId] && this.customers.connected[customerId].pendingCall) {
-      this.customers.connected[customerId].pendingCall = null;
-    }
-
-    return this.checkLockAndEmitCallAccepting(customerId, call.roomId);
+    this.checkCustomerAndEmitCallAccepting(customerId, call.roomId);
   }
 
-  checkLockAndEmitCallAccepting(customerId, callId) {
-    return checkAndLock(CUSTOMERS_CALL_ACCEPTED, callId, LOCK_DURATION)
-      .then((isFirst) => {
-        if (isFirst) {
-          this.emitCallAccepting(customerId, callId);
-        }
-      });
+  checkCustomerAndEmitCallAccepting(customerId, callId) {
+    const connectedCustomer = this.customers.connected[customerId];
+    if (connectedCustomer) {
+      logger.debug('customers.emit.accepted.call', callId);
+      connectedCustomer.pendingCall = null;
+      this.emitCallAccepting(customerId, callId);
+    }
   }
 
   emitCallAccepting(customerId, callId) {
-    logger.debug('customers.emit.accepted.call', callId);
-    this.customers.to(customerId).emit(CALL_ACCEPTED, callId);
+    this.customers.connected[customerId].emit(CALL_ACCEPTED, callId);
   }
 }
 

@@ -36349,7 +36349,7 @@ const socket = io('/customers', {
 });
 
 socket.on('connect', () => {
-  socket.emit('authentication', { user: 123 });
+  socket.emit('authentication', { userName: 'Joey' });
   socket.on('authenticated', (token) => {
     console.log('authenticated');
     onTokenReceived({ token });
@@ -36406,6 +36406,7 @@ function requestConnection(token) {
 }
 
 function connectToRoom(name, token) {
+  console.log(name, token);
   const connectOptions = {
     name,
   };

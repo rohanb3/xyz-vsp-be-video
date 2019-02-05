@@ -12,27 +12,23 @@ const {
   CALLS_INFO,
   ACTIVE_OPERATORS,
   OPERATORS,
-  LOCK_DURATION,
 } = require('../../constants/socket');
 const {
   acceptCall,
   finishCall,
   subscribeToCallRequesting,
-  subscribeToQueueSizeChanging,
+  subscribeToCallsLengthChanging,
 } = require('../calls');
-const { checkAndLock } = require('../socketEventLocker');
 const { authenticateOperator } = require('../socketAuth');
 const logger = require('../logger');
-
-const OPERATORS_CALL_REQUESTED = `${OPERATORS}.${CALL_REQUESTED}`;
 
 class OperatorsRoom {
   constructor(io) {
     this.operators = io.of(OPERATORS);
     this.operators.on(CONNECTION, this.onOperatorConnected.bind(this));
     socketIOAuth(this.operators, { authenticate: authenticateOperator });
-    subscribeToCallRequesting(this.checkLockAndEmitCallRequesting.bind(this));
-    subscribeToQueueSizeChanging(this.emitQueueInfo.bind(this));
+    subscribeToCallRequesting(this.emitCallRequesting.bind(this));
+    subscribeToCallsLengthChanging(this.emitQueueInfo.bind(this));
   }
 
   onOperatorConnected(operator) {
@@ -57,15 +53,6 @@ class OperatorsRoom {
   onOperatorDisconnected(operator) {
     const operatorId = operator.id;
     logger.debug('operator.disconnected', operatorId);
-  }
-
-  checkLockAndEmitCallRequesting(call) {
-    return checkAndLock(OPERATORS_CALL_REQUESTED, call, LOCK_DURATION)
-      .then((isFirst) => {
-        if (isFirst) {
-          this.emitCallRequesting(call);
-        }
-      });
   }
 
   emitCallRequesting(call) {
