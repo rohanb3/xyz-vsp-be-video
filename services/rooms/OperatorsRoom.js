@@ -28,7 +28,7 @@ class OperatorsRoom {
     this.operators.on(CONNECTION, this.onOperatorConnected.bind(this));
     socketIOAuth(this.operators, { authenticate: authenticateOperator });
     subscribeToCallRequesting(this.emitCallRequesting.bind(this));
-    subscribeToCallsLengthChanging(this.emitQueueInfo.bind(this));
+    subscribeToCallsLengthChanging(this.emitCallsInfo.bind(this));
   }
 
   onOperatorConnected(operator) {
@@ -60,7 +60,7 @@ class OperatorsRoom {
     this.operators.to(ACTIVE_OPERATORS).emit(CALL_REQUESTED, call);
   }
 
-  emitQueueInfo(info) {
+  emitCallsInfo(info) {
     logger.debug('queue.info.operators.room', info);
     return this.operators.emit(CALLS_INFO, info);
   }

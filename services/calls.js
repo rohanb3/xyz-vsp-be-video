@@ -1,6 +1,7 @@
 /* eslint-disable no-use-before-define */
 const moment = require('moment');
 const pendingCallsQueue = require('./pendingCallsQueue');
+const activeCalls = require('./activeCalls');
 const callsDBClient = require('./callsDBClient');
 const { ensureRoom } = require('./twilio');
 const logger = require('./logger');
@@ -40,34 +41,34 @@ function acceptCall(acceptedBy) {
       updates.roomId = roomId;
       Object.assign(call, updates);
 
-      return pendingCallsQueue.accept(call);
+      return activeCalls.add(call);
     })
     .then(() => callsDBClient.updateById(call._id, updates))
     .then(() => call);
 }
 
 function finishCall(callId, finishedBy) {
+  return pendingCallsQueue.isPending(callId)
+    .then(isPending => (
+      isPending ? markCallAsMissed(callId) : markCallAsFinished(callId, finishedBy)
+    ));
+}
+
+function markCallAsFinished(callId, finishedBy) {
   const updates = {
     finishedBy,
     finishedAt: moment.utc().format(),
   };
-  return callsDBClient.updateById(callId, updates);
+  return activeCalls.remove(callId)
+    .then(() => callsDBClient.updateById(callId, updates));
 }
 
-function markCallAsMissed(call) {
-  return pendingCallsQueue.extract(call)
-    .then((wasCallPending) => {
-      let missedCallPromise = Promise.resolve();
-
-      if (wasCallPending) {
-        logger.debug('call.missed.removed.from.queue', call);
-        const updates = { missedAt: moment.utc().format() };
-        missedCallPromise = callsDBClient.updateById(call._id, updates);
-      } else {
-        logger.debug('call.missed.was.not.in.queue', call);
-      }
-
-      return missedCallPromise;
+function markCallAsMissed(callId) {
+  return pendingCallsQueue.remove(callId)
+    .then(() => {
+      logger.debug('call.missed.removed.from.queue', callId);
+      const updates = { missedAt: moment.utc().format() };
+      return callsDBClient.updateById(callId, updates);
     });
 }
 
@@ -79,7 +80,7 @@ function getPendingCallsLength() {
   return pendingCallsQueue.size();
 }
 
-function getQueueInfo() {
+function getCallsInfo() {
   const promises = [getOldestCall(), getPendingCallsLength()];
   return Promise.all(promises)
     .then(([oldestCall, total]) => ({ oldestCall, total }));
@@ -90,7 +91,7 @@ function subscribeToCallRequesting(listener) {
 }
 
 function subscribeToCallAccepting(listener) {
-  return pendingCallsQueue.subscribeToCallAccepting(listener);
+  return activeCalls.subscribeToCallAdding(listener);
 }
 
 function subscribeToCallsLengthChanging(listener) {
@@ -102,7 +103,7 @@ function unsubscribeFromCallRequesting(listener) {
 }
 
 function unsubscribeFromCallAccepting(listener) {
-  return pendingCallsQueue.unsubscribeFromCallAccepting(listener);
+  return activeCalls.unsubscribeFromCallAdding(listener);
 }
 
 function unsubscribeFromCallsLengthChanging(listener) {
@@ -112,10 +113,9 @@ function unsubscribeFromCallsLengthChanging(listener) {
 exports.requestCall = requestCall;
 exports.acceptCall = acceptCall;
 exports.finishCall = finishCall;
-exports.markCallAsMissed = markCallAsMissed;
 exports.getOldestCall = getOldestCall;
 exports.getPendingCallsLength = getPendingCallsLength;
-exports.getQueueInfo = getQueueInfo;
+exports.getCallsInfo = getCallsInfo;
 
 exports.subscribeToCallRequesting = subscribeToCallRequesting;
 exports.subscribeToCallAccepting = subscribeToCallAccepting;

@@ -12,7 +12,6 @@ const {
 const {
   requestCall,
   finishCall,
-  markCallAsMissed,
   subscribeToCallAccepting,
 } = require('../calls');
 const { authenticateCustomer } = require('../socketAuth');
@@ -36,19 +35,17 @@ class CustomersRoom {
     return requestCall(customer.id)
       .then((call) => {
         logger.debug('call.requested.customer', call);
-        customer.pendingCall = call;
+        customer.pendingCallId = call._id;
       });
   }
 
   onCustomerFinishedCall(customer, call) {
-    return customer.pendingCall
-      ? markCallAsMissed(customer.pendingCall)
-      : finishCall(call.roomId, customer.id);
+    return finishCall(call.roomId, customer.id);
   }
 
   onCustomerDisconnected(customer) {
-    return customer.pendingCall
-      ? markCallAsMissed(customer.pendingCall)
+    return customer.pendingCallId
+      ? finishCall(customer.pendingCallId)
       : Promise.resolve();
   }
 
@@ -63,7 +60,7 @@ class CustomersRoom {
     const connectedCustomer = this.customers.connected[customerId];
     if (connectedCustomer) {
       logger.debug('customers.emit.accepted.call', callId);
-      connectedCustomer.pendingCall = null;
+      connectedCustomer.pendingCallId = null;
       this.emitCallAccepting(customerId, callId);
     }
   }

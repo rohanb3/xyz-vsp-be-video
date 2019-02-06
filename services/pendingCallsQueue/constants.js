@@ -1,18 +1,16 @@
-const QUEUE_NAME = 'calls.pending';
+const CALLS_PENDING = 'calls.pending';
 const CALL_ENQUEUED = 'call.enqueued';
 const CALL_DEQUEUED = 'call.dequeued';
-const CALL_EXTRACTED = 'call.extracted';
-const CALL_ACCEPTED = 'call.accepted';
+const CALL_REMOVED = 'call.removed';
 
 const QUEUE_SIZE_CHANGED = 'queue.size.changed';
 
 const MESSAGE = 'message';
 
-exports.QUEUE_NAME = QUEUE_NAME;
+exports.CALLS_PENDING = CALLS_PENDING;
 exports.CALL_ENQUEUED = CALL_ENQUEUED;
 exports.CALL_DEQUEUED = CALL_DEQUEUED;
-exports.CALL_EXTRACTED = CALL_EXTRACTED;
-exports.CALL_ACCEPTED = CALL_ACCEPTED;
+exports.CALL_REMOVED = CALL_REMOVED;
 
 exports.QUEUE_SIZE_CHANGED = QUEUE_SIZE_CHANGED;
 
