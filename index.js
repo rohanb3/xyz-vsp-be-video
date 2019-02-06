@@ -1,25 +1,19 @@
-require('dotenv').load();
+const dotenv = require('dotenv');
+const http = require('http');
 
-const path = require('path');
-const fs = require('fs');
-const app = require('express')();
-const http = require('http').Server(app);
+dotenv.load();
 
-const middlewares = fs.readdirSync(path.join(__dirname, 'middlewares'))
-  .sort();
-/* eslint-disable-next-line global-require, import/no-dynamic-require */
-middlewares.forEach(m => require(`./middlewares/${m}`).init(app));
+const app = require('./app');
+const socket = require('./socket');
 
-const socket = require('./lib/socket');
+const server = http.Server(app);
 
-const token = require('./routes/token');
-const roomLogs = require('./routes/roomLogs');
+// const port = Number(process.env.PORT || 3000) + parseInt(process.env.INSTANCE_ID, 10);
+const port = process.env.PORT || 3000;
 
-app.get('/token', token);
-app.get('room-logs', roomLogs);
-
-http.listen(process.env.PORT || 3000, () => {
-  console.log('App is running at port 3000');
+server.listen(port, () => {
+  /* eslint-disable-next-line no-console */
+  console.log(`App is running at port ${port}`);
 });
 
-socket(http);
+socket(server);

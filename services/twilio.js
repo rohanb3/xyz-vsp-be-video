@@ -1,5 +1,7 @@
 const twilio = require('twilio');
 
+const logger = require('./logger');
+
 const {
   TWILIO_ACCOUNT_SID,
   TWILIO_AUTH_TOKEN,
@@ -26,7 +28,7 @@ function getToken(identity) {
 }
 
 function createRoom(identity) {
-  console.log('createRoom', identity);
+  logger.debug('createRoom', identity);
   return client.video.rooms.create({
     recordParticipantsOnConnect: true,
     enableTurn: true,
@@ -36,22 +38,22 @@ function createRoom(identity) {
   });
 }
 
-function checkRoom(identity) {
-  console.log('checkRoom', identity);
+function getRoom(identity) {
+  logger.debug('getRoom', identity);
   // return new Promise((resolve) => {
   //   client.video.rooms.each({ uniqueName: identity }, resolve);
   // });
-  // return client.video.rooms(identity).fetch().then(console.log).catch(console.error);
+  // return client.video.rooms(identity).fetch().then(logger.debug).catch(console.error);
   return client.video.rooms.list()
     .then((rooms = []) => rooms.find(r => r.uniqueName === identity));
 }
 
-function checkAndCreateRoom(identity) {
-  return checkRoom(identity)
+function ensureRoom(identity) {
+  return getRoom(identity)
     .then(room => room || createRoom(identity));
 }
 
 exports.getToken = getToken;
 exports.createRoom = createRoom;
-exports.checkRoom = checkRoom;
-exports.checkAndCreateRoom = checkAndCreateRoom;
+exports.getRoom = getRoom;
+exports.ensureRoom = ensureRoom;

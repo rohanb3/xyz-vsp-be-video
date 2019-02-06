@@ -2,12 +2,15 @@
 
 const Video = require('twilio-video');
 
-const socket = io('/customers');
+const socket = io('/customers', {
+  transports: ['websocket'],
+});
 
 socket.on('connect', () => {
-  socket.emit('authentication', { user: 123 });
-  socket.on('authenticated', () => {
+  socket.emit('authentication', { userName: 'Joey' });
+  socket.on('authenticated', (token) => {
     console.log('authenticated');
+    onTokenReceived({ token });
   });
   socket.on('unauthorized', err => console.log(err));
 });
@@ -48,8 +51,6 @@ function detachParticipantTracks(participant) {
 
 window.addEventListener('beforeunload', leaveRoomIfJoined);
 
-$.getJSON('/token', onTokenReceived);
-
 function onTokenReceived(data) {
   const { token } = data;
 
@@ -58,11 +59,12 @@ function onTokenReceived(data) {
 }
 
 function requestConnection(token) {
-  socket.emit('request.call', { query: token });
+  socket.emit('call.requested', { query: token });
   socket.on('call.accepted', roomName => connectToRoom(roomName, token));
 }
 
 function connectToRoom(name, token) {
+  console.log(name, token);
   const connectOptions = {
     name,
   };
@@ -152,8 +154,9 @@ document.getElementById('button-preview').onclick = () => {
 };
 
 function leaveRoomIfJoined() {
-  socket.emit('finish call');
   if (activeRoom) {
+    socket.emit('call.finished', { roomId: activeRoom.name });
     activeRoom.disconnect();
+    activeRoom = null;
   }
 }
