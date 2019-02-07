@@ -7,8 +7,8 @@ const {
   CALLS_PENDING,
 } = require('./constants');
 const client = require('./client');
-const { createChannel } = require('../redisChannel');
-const { reduceToKey } = require('../redisUtils');
+const { createChannel } = require('@/services/redisChannel');
+const { reduceToKey } = require('@/services/redisUtils');
 
 const channelName = reduceToKey(CALLS_PENDING);
 const { subscribe, unsubscribe, publish } = createChannel(channelName);

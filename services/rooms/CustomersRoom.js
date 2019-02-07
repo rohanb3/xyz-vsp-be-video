@@ -8,14 +8,14 @@ const {
   CALL_ACCEPTED,
   CALL_FINISHED,
   CUSTOMERS,
-} = require('../../constants/socket');
+} = require('@/constants/socket');
 const {
   requestCall,
   finishCall,
   subscribeToCallAccepting,
-} = require('../calls');
-const { authenticateCustomer } = require('../socketAuth');
-const logger = require('../logger')(module);
+} = require('@/services/calls');
+const { authenticateCustomer } = require('@/services/socketAuth');
+const logger = require('@/services/logger')(module);
 
 class CustomersRoom {
   constructor(io) {

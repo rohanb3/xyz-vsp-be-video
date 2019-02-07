@@ -1,10 +1,10 @@
 /* eslint-disable no-use-before-define */
 const moment = require('moment');
-const pendingCallsQueue = require('./pendingCallsQueue');
-const activeCalls = require('./activeCalls');
-const callsDBClient = require('./callsDBClient');
-const { ensureRoom } = require('./twilio');
-const logger = require('./logger')(module);
+const pendingCallsQueue = require('@/services/pendingCallsQueue');
+const activeCalls = require('@/services/activeCalls');
+const callsDBClient = require('@/services/callsDBClient');
+const { ensureRoom } = require('@/services/twilio');
+const logger = require('@/services/logger')(module);
 
 function requestCall(requestedBy) {
   const call = {

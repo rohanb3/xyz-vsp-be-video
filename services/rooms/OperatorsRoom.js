@@ -12,15 +12,15 @@ const {
   CALLS_INFO,
   ACTIVE_OPERATORS,
   OPERATORS,
-} = require('../../constants/socket');
+} = require('@/constants/socket');
 const {
   acceptCall,
   finishCall,
   subscribeToCallRequesting,
   subscribeToCallsLengthChanging,
-} = require('../calls');
-const { authenticateOperator } = require('../socketAuth');
-const logger = require('../logger')(module);
+} = require('@/services/calls');
+const { authenticateOperator } = require('@/services/socketAuth');
+const logger = require('@/services/logger')(module);
 
 class OperatorsRoom {
   constructor(io) {

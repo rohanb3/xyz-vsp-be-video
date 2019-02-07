@@ -1,8 +1,8 @@
 /* eslint-disable no-use-before-define */
 const redis = require('redis');
 
-const { REDIS_HOST, REDIS_PORT } = require('../constants/redis');
-const { serialize, deserialize } = require('./serializer');
+const { REDIS_HOST, REDIS_PORT } = require('@/constants/redis');
+const { serialize, deserialize } = require('@/services/serializer');
 
 class RedisChannel {
   constructor(channelName) {

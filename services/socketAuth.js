@@ -1,4 +1,4 @@
-const { getToken } = require('./twilio');
+const { getToken } = require('@/services/twilio');
 
 function authenticateOperator(socket, data, callback) {
   const token = getToken(data.userName);

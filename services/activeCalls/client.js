@@ -1,8 +1,8 @@
 const redis = require('redis');
 
-const { REDIS_HOST, REDIS_PORT } = require('../../constants/redis');
+const { REDIS_HOST, REDIS_PORT } = require('@/constants/redis');
 const { CALLS_ACTIVE } = require('./constants');
-const { promiser, reduceToKey } = require('../redisUtils');
+const { promiser, reduceToKey } = require('@/services/redisUtils');
 
 const client = redis.createClient(REDIS_PORT, REDIS_HOST);
 

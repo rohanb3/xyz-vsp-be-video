@@ -1,4 +1,4 @@
-const call = require('../models/call');
+const call = require('@/models/call');
 
 const getById = id => call.findById(id);
 
