@@ -13,7 +13,7 @@ const convertToInnerKey = key => reduceToKey(nameOfSet, key);
 ** work with keys start
 */
 
-const checkExistence = key => new Promise((resolve, reject) => (
+const isExist = key => new Promise((resolve, reject) => (
   client.sismember(nameOfSet, key, promiser(resolve, reject))
 ))
   .then(Boolean);
@@ -46,9 +46,9 @@ const add = (key, value) => new Promise((resolve, reject) => {
 
 const get = key => new Promise((resolve, reject) => {
   const innerKey = convertToInnerKey(key);
-  return checkExistence(innerKey)
-    .then(isExist => (
-      isExist ? client.hgetall(innerKey, promiser(resolve, reject)) : resolve(null)
+  return isExist(innerKey)
+    .then(exists => (
+      exists ? client.hgetall(innerKey, promiser(resolve, reject)) : resolve(null)
     ));
 });
 
@@ -74,7 +74,7 @@ const remove = key => new Promise((resolve, reject) => {
 ** work with collection finish
 */
 
-exports.checkExistence = checkExistence;
+exports.isExist = isExist;
 exports.getSize = getSize;
 exports.add = add;
 exports.get = get;

@@ -41,7 +41,7 @@ const all = format((info) => {
 });
 
 const customFormat = printf(info => (
-  `${info.timestamp} [${info.label}] ${info.level}: ${info.message}`
+  `\n ${info.timestamp} [${info.label}] ${info.level}: ${info.message} \n`
 ));
 
 const getLogger = (module) => {

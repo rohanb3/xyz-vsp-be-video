@@ -5,37 +5,32 @@ const {
   CALL_ADDED,
   CALL_REMOVED,
 } = require('./constants');
-
-const client = require('./client');
-const { createChannel } = require('@/services/redisChannel');
+const heap = require('./connector');
+const { subscribe, unsubscribe, publish } = require('@/services/pubSubChannel');
 const { reduceToKey } = require('@/services/redisUtils');
 
-const channelName = reduceToKey(CALLS_ACTIVE);
-const { subscribe, unsubscribe, publish } = createChannel(channelName);
+const CALL_ADDED_EVENT = reduceToKey(CALLS_ACTIVE, CALL_ADDED);
+const CALL_REMOVED_EVENT = reduceToKey(CALLS_ACTIVE, CALL_REMOVED);
 
-const isActive = id => client.checkExistence(id);
-
-const size = () => client.getSize();
-
-const add = call => client.add(call._id, call)
+const add = call => heap.add(call._id, call)
   .then(() => publishCallAdding(call));
 
-const remove = id => client.remove(id)
+const remove = id => heap.remove(id)
   .then(publishCallRemoving);
 
-const publishCallAdding = call => publish(CALL_ADDED, call);
-const publishCallRemoving = call => publish(CALL_REMOVED, call);
+const publishCallAdding = call => publish(CALL_ADDED_EVENT, call);
+const publishCallRemoving = call => publish(CALL_REMOVED_EVENT, call);
 
-const subscribeToCallAdding = listener => subscribe(CALL_ADDED, listener);
-const subscribeToCallRemoving = listener => subscribe(CALL_REMOVED, listener);
+const subscribeToCallAdding = listener => subscribe(CALL_ADDED_EVENT, listener);
+const subscribeToCallRemoving = listener => subscribe(CALL_REMOVED_EVENT, listener);
 
-const unsubscribeFromCallAdding = listener => unsubscribe(CALL_ADDED, listener);
-const unsubscribeFromCallRemoving = listener => unsubscribe(CALL_REMOVED, listener);
+const unsubscribeFromCallAdding = listener => unsubscribe(CALL_ADDED_EVENT, listener);
+const unsubscribeFromCallRemoving = listener => unsubscribe(CALL_REMOVED_EVENT, listener);
 
-exports.isActive = isActive;
+exports.isExist = heap.isExist;
 exports.add = add;
 exports.remove = remove;
-exports.size = size;
+exports.getSize = heap.getSize;
 
 exports.subscribeToCallAdding = subscribeToCallAdding;
 exports.subscribeToCallRemoving = subscribeToCallRemoving;

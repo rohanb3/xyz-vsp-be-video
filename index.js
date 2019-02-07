@@ -6,6 +6,7 @@ dotenv.load();
 
 const app = require('./app');
 const socket = require('./socket');
+const logger = require('./services/logger')(module);
 
 const server = http.Server(app);
 
@@ -17,3 +18,7 @@ server.listen(port, () => {
 });
 
 socket(server);
+
+process.on('unhandledRejection', (error) => {
+  logger.error('unhandledRejection', error);
+});

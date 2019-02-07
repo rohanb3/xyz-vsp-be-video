@@ -5,6 +5,10 @@ const activeCallsHeap = require('@/services/activeCallsHeap');
 const callsDBClient = require('@/services/callsDBClient');
 const { ensureRoom } = require('@/services/twilio');
 const logger = require('@/services/logger')(module);
+const pubSubChannel = require('@/services/pubSubChannel');
+
+const CALL_REQUESTED = 'call.requested';
+const CALL_ACCEPTED = 'call.accepted';
 
 function requestCall(requestedBy) {
   const call = {
@@ -17,6 +21,7 @@ function requestCall(requestedBy) {
       call._id = _id;
       return pendingCallsQueue.enqueue(call);
     })
+    .then(() => pubSubChannel.publish(CALL_REQUESTED, call))
     .then(() => call);
 }
 
@@ -44,13 +49,14 @@ function acceptCall(acceptedBy) {
       return activeCallsHeap.add(call);
     })
     .then(() => callsDBClient.updateById(call._id, updates))
+    .then(() => pubSubChannel.publish(CALL_ACCEPTED, call))
     .then(() => call);
 }
 
 function finishCall(callId, finishedBy) {
-  return pendingCallsQueue.isPending(callId)
-    .then(isPending => (
-      isPending ? markCallAsMissed(callId) : markCallAsFinished(callId, finishedBy)
+  return pendingCallsQueue.isExist(callId)
+    .then(exists => (
+      exists ? markCallAsMissed(callId) : markCallAsFinished(callId, finishedBy)
     ));
 }
 
@@ -73,37 +79,15 @@ function markCallAsMissed(callId) {
 }
 
 function getOldestCall() {
-  return pendingCallsQueue.peak();
+  return pendingCallsQueue.getPeak();
 }
 
 function getPendingCallsLength() {
-  return pendingCallsQueue.size();
-}
-
-function getCallsInfo() {
-  const promises = [getOldestCall(), getPendingCallsLength()];
-  return Promise.all(promises)
-    .then(([oldestCall, total]) => ({ oldestCall, total }));
-}
-
-function subscribeToCallRequesting(listener) {
-  return pendingCallsQueue.subscribeToCallEnqueueing(listener);
-}
-
-function subscribeToCallAccepting(listener) {
-  return activeCallsHeap.subscribeToCallAdding(listener);
+  return pendingCallsQueue.getSize();
 }
 
 function subscribeToCallsLengthChanging(listener) {
   return pendingCallsQueue.subscribeToQueueSizeChanging(listener);
-}
-
-function unsubscribeFromCallRequesting(listener) {
-  return pendingCallsQueue.unsubscribeFromCallEnqueueing(listener);
-}
-
-function unsubscribeFromCallAccepting(listener) {
-  return activeCallsHeap.unsubscribeFromCallAdding(listener);
 }
 
 function unsubscribeFromCallsLengthChanging(listener) {
@@ -115,12 +99,11 @@ exports.acceptCall = acceptCall;
 exports.finishCall = finishCall;
 exports.getOldestCall = getOldestCall;
 exports.getPendingCallsLength = getPendingCallsLength;
-exports.getCallsInfo = getCallsInfo;
 
-exports.subscribeToCallRequesting = subscribeToCallRequesting;
-exports.subscribeToCallAccepting = subscribeToCallAccepting;
+exports.subscribeToCallRequesting = pubSubChannel.subscribe.bind(null, CALL_REQUESTED);
+exports.subscribeToCallAccepting = pubSubChannel.subscribe.bind(null, CALL_ACCEPTED);
 exports.subscribeToCallsLengthChanging = subscribeToCallsLengthChanging;
 
-exports.unsubscribeFromCallRequesting = unsubscribeFromCallRequesting;
-exports.unsubscribeFromCallAccepting = unsubscribeFromCallAccepting;
+exports.unsubscribeFromCallRequesting = pubSubChannel.unsubscribe.bind(null, CALL_REQUESTED);
+exports.unsubscribeFromCallAccepting = pubSubChannel.unsubscribe.bind(null, CALL_ACCEPTED);
 exports.unsubscribeFromCallsLengthChanging = unsubscribeFromCallsLengthChanging;
