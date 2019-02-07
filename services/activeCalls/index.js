@@ -8,8 +8,10 @@ const {
 
 const client = require('./client');
 const { createChannel } = require('../redisChannel');
+const { reduceToKey } = require('../redisUtils');
 
-const { subscribe, unsubscribe, publish } = createChannel(CALLS_ACTIVE);
+const channelName = reduceToKey(CALLS_ACTIVE);
+const { subscribe, unsubscribe, publish } = createChannel(channelName);
 
 const isActive = id => client.checkExistence(id);
 

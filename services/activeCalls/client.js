@@ -2,31 +2,32 @@ const redis = require('redis');
 
 const { REDIS_HOST, REDIS_PORT } = require('../../constants/redis');
 const { CALLS_ACTIVE } = require('./constants');
-const { promiser } = require('../redisUtils');
+const { promiser, reduceToKey } = require('../redisUtils');
 
 const client = redis.createClient(REDIS_PORT, REDIS_HOST);
 
-const convertToInnerKey = key => `${CALLS_ACTIVE}:${key}`;
+const nameOfSet = reduceToKey(CALLS_ACTIVE);
+const convertToInnerKey = key => reduceToKey(nameOfSet, key);
 
 /*
 ** work with keys start
 */
 
 const checkExistence = key => new Promise((resolve, reject) => (
-  client.sismember(CALLS_ACTIVE, key, promiser(resolve, reject))
+  client.sismember(nameOfSet, key, promiser(resolve, reject))
 ))
   .then(Boolean);
 
 const setKey = key => new Promise((resolve, reject) => (
-  client.sadd(CALLS_ACTIVE, key, promiser(resolve, reject))
+  client.sadd(nameOfSet, key, promiser(resolve, reject))
 ));
 
 const delKey = key => new Promise((resolve, reject) => (
-  client.srem(CALLS_ACTIVE, key, promiser(resolve, reject))
+  client.srem(nameOfSet, key, promiser(resolve, reject))
 ));
 
 const getSize = () => new Promise((resolve, reject) => (
-  client.scard(CALLS_ACTIVE, promiser(resolve, reject))
+  client.scard(nameOfSet, promiser(resolve, reject))
 ));
 
 /*

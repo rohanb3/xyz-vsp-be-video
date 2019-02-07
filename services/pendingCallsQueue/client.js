@@ -2,39 +2,40 @@ const redis = require('redis');
 
 const { REDIS_HOST, REDIS_PORT } = require('../../constants/redis');
 const { CALLS_PENDING } = require('./constants');
-const { promiser } = require('../redisUtils');
+const { promiser, reduceToKey } = require('../redisUtils');
 
 const client = redis.createClient(REDIS_PORT, REDIS_HOST);
 
-const convertToInnerKey = key => `${CALLS_PENDING}:${key}`;
+const nameOfList = reduceToKey(CALLS_PENDING);
+const convertToInnerKey = key => reduceToKey(nameOfList, key);
 
 /*
 ** work with keys start
 */
 
 const checkExistence = key => new Promise((resolve, reject) => (
-  client.lrange(CALLS_PENDING, 0, -1, promiser(resolve, reject))
+  client.lrange(nameOfList, 0, -1, promiser(resolve, reject))
 ))
   .then(items => !!items.find(item => item === key));
 
 const setKey = key => new Promise((resolve, reject) => (
-  client.lpush(CALLS_PENDING, key, promiser(resolve, reject))
+  client.lpush(nameOfList, key, promiser(resolve, reject))
 ));
 
 const takeOldestKey = () => new Promise((resolve, reject) => (
-  client.rpop(CALLS_PENDING, promiser(resolve, reject))
+  client.rpop(nameOfList, promiser(resolve, reject))
 ));
 
 const getOldestKey = () => new Promise((resolve, reject) => (
-  client.lrange(CALLS_PENDING, -1, -1, promiser(resolve, reject))
+  client.lrange(nameOfList, -1, -1, promiser(resolve, reject))
 ));
 
 const removeKey = key => new Promise((resolve, reject) => (
-  client.lrem(CALLS_PENDING, 1, key, promiser(resolve, reject))
+  client.lrem(nameOfList, 1, key, promiser(resolve, reject))
 ));
 
 const getSize = () => new Promise((resolve, reject) => (
-  client.llen(CALLS_PENDING, promiser(resolve, reject))
+  client.llen(nameOfList, promiser(resolve, reject))
 ));
 
 /*
