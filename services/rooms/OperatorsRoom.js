@@ -12,15 +12,15 @@ const {
   CALLS_INFO,
   ACTIVE_OPERATORS,
   OPERATORS,
-} = require('../../constants/socket');
+} = require('@/constants/socket');
 const {
   acceptCall,
   finishCall,
   subscribeToCallRequesting,
   subscribeToCallsLengthChanging,
-} = require('../calls');
-const { authenticateOperator } = require('../socketAuth');
-const logger = require('../logger');
+} = require('@/services/calls');
+const { authenticateOperator } = require('@/services/socketAuth');
+const logger = require('@/services/logger')(module);
 
 class OperatorsRoom {
   constructor(io) {
@@ -28,7 +28,7 @@ class OperatorsRoom {
     this.operators.on(CONNECTION, this.onOperatorConnected.bind(this));
     socketIOAuth(this.operators, { authenticate: authenticateOperator });
     subscribeToCallRequesting(this.emitCallRequesting.bind(this));
-    subscribeToCallsLengthChanging(this.emitQueueInfo.bind(this));
+    subscribeToCallsLengthChanging(this.emitCallsInfo.bind(this));
   }
 
   onOperatorConnected(operator) {
@@ -60,7 +60,7 @@ class OperatorsRoom {
     this.operators.to(ACTIVE_OPERATORS).emit(CALL_REQUESTED, call);
   }
 
-  emitQueueInfo(info) {
+  emitCallsInfo(info) {
     logger.debug('queue.info.operators.room', info);
     return this.operators.emit(CALLS_INFO, info);
   }

@@ -1,9 +1,14 @@
 /* eslint-disable no-use-before-define */
 const moment = require('moment');
-const pendingCallsQueue = require('./pendingCallsQueue');
-const callsDBClient = require('./callsDBClient');
-const { ensureRoom } = require('./twilio');
-const logger = require('./logger');
+const pendingCallsQueue = require('@/services/pendingCallsQueue');
+const activeCallsHeap = require('@/services/activeCallsHeap');
+const callsDBClient = require('@/services/callsDBClient');
+const { ensureRoom } = require('@/services/twilio');
+const logger = require('@/services/logger')(module);
+const pubSubChannel = require('@/services/pubSubChannel');
+
+const CALL_REQUESTED = 'call.requested';
+const CALL_ACCEPTED = 'call.accepted';
 
 function requestCall(requestedBy) {
   const call = {
@@ -16,6 +21,7 @@ function requestCall(requestedBy) {
       call._id = _id;
       return pendingCallsQueue.enqueue(call);
     })
+    .then(() => pubSubChannel.publish(CALL_REQUESTED, call))
     .then(() => call);
 }
 
@@ -40,69 +46,48 @@ function acceptCall(acceptedBy) {
       updates.roomId = roomId;
       Object.assign(call, updates);
 
-      return pendingCallsQueue.accept(call);
+      return activeCallsHeap.add(call);
     })
     .then(() => callsDBClient.updateById(call._id, updates))
+    .then(() => pubSubChannel.publish(CALL_ACCEPTED, call))
     .then(() => call);
 }
 
 function finishCall(callId, finishedBy) {
+  return pendingCallsQueue.isExist(callId)
+    .then(exists => (
+      exists ? markCallAsMissed(callId) : markCallAsFinished(callId, finishedBy)
+    ));
+}
+
+function markCallAsFinished(callId, finishedBy) {
   const updates = {
     finishedBy,
     finishedAt: moment.utc().format(),
   };
-  return callsDBClient.updateById(callId, updates);
+  return activeCallsHeap.remove(callId)
+    .then(() => callsDBClient.updateById(callId, updates));
 }
 
-function markCallAsMissed(call) {
-  return pendingCallsQueue.extract(call)
-    .then((wasCallPending) => {
-      let missedCallPromise = Promise.resolve();
-
-      if (wasCallPending) {
-        logger.debug('call.missed.removed.from.queue', call);
-        const updates = { missedAt: moment.utc().format() };
-        missedCallPromise = callsDBClient.updateById(call._id, updates);
-      } else {
-        logger.debug('call.missed.was.not.in.queue', call);
-      }
-
-      return missedCallPromise;
+function markCallAsMissed(callId) {
+  return pendingCallsQueue.remove(callId)
+    .then(() => {
+      logger.debug('call.missed.removed.from.queue', callId);
+      const updates = { missedAt: moment.utc().format() };
+      return callsDBClient.updateById(callId, updates);
     });
 }
 
 function getOldestCall() {
-  return pendingCallsQueue.peak();
+  return pendingCallsQueue.getPeak();
 }
 
 function getPendingCallsLength() {
-  return pendingCallsQueue.size();
-}
-
-function getQueueInfo() {
-  const promises = [getOldestCall(), getPendingCallsLength()];
-  return Promise.all(promises)
-    .then(([oldestCall, total]) => ({ oldestCall, total }));
-}
-
-function subscribeToCallRequesting(listener) {
-  return pendingCallsQueue.subscribeToCallEnqueueing(listener);
-}
-
-function subscribeToCallAccepting(listener) {
-  return pendingCallsQueue.subscribeToCallAccepting(listener);
+  return pendingCallsQueue.getSize();
 }
 
 function subscribeToCallsLengthChanging(listener) {
   return pendingCallsQueue.subscribeToQueueSizeChanging(listener);
-}
-
-function unsubscribeFromCallRequesting(listener) {
-  return pendingCallsQueue.unsubscribeFromCallEnqueueing(listener);
-}
-
-function unsubscribeFromCallAccepting(listener) {
-  return pendingCallsQueue.unsubscribeFromCallAccepting(listener);
 }
 
 function unsubscribeFromCallsLengthChanging(listener) {
@@ -112,15 +97,13 @@ function unsubscribeFromCallsLengthChanging(listener) {
 exports.requestCall = requestCall;
 exports.acceptCall = acceptCall;
 exports.finishCall = finishCall;
-exports.markCallAsMissed = markCallAsMissed;
 exports.getOldestCall = getOldestCall;
 exports.getPendingCallsLength = getPendingCallsLength;
-exports.getQueueInfo = getQueueInfo;
 
-exports.subscribeToCallRequesting = subscribeToCallRequesting;
-exports.subscribeToCallAccepting = subscribeToCallAccepting;
+exports.subscribeToCallRequesting = pubSubChannel.subscribe.bind(null, CALL_REQUESTED);
+exports.subscribeToCallAccepting = pubSubChannel.subscribe.bind(null, CALL_ACCEPTED);
 exports.subscribeToCallsLengthChanging = subscribeToCallsLengthChanging;
 
-exports.unsubscribeFromCallRequesting = unsubscribeFromCallRequesting;
-exports.unsubscribeFromCallAccepting = unsubscribeFromCallAccepting;
+exports.unsubscribeFromCallRequesting = pubSubChannel.unsubscribe.bind(null, CALL_REQUESTED);
+exports.unsubscribeFromCallAccepting = pubSubChannel.unsubscribe.bind(null, CALL_ACCEPTED);
 exports.unsubscribeFromCallsLengthChanging = unsubscribeFromCallsLengthChanging;

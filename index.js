@@ -1,3 +1,4 @@
+require('module-alias/register');
 const dotenv = require('dotenv');
 const http = require('http');
 
@@ -5,10 +6,10 @@ dotenv.load();
 
 const app = require('./app');
 const socket = require('./socket');
+const logger = require('./services/logger')(module);
 
 const server = http.Server(app);
 
-// const port = Number(process.env.PORT || 3000) + parseInt(process.env.INSTANCE_ID, 10);
 const port = process.env.PORT || 3000;
 
 server.listen(port, () => {
@@ -17,3 +18,7 @@ server.listen(port, () => {
 });
 
 socket(server);
+
+process.on('unhandledRejection', (error) => {
+  logger.error('unhandledRejection', error);
+});

@@ -1,85 +1,74 @@
 /* eslint-disable no-use-before-define */
 const {
+  CALLS_PENDING,
   CALL_ENQUEUED,
   CALL_DEQUEUED,
-  CALL_EXTRACTED,
-  CALL_ACCEPTED,
+  CALL_REMOVED,
   QUEUE_SIZE_CHANGED,
 } = require('./constants');
-const client = require('./client');
-const { subscribe, unsubscribe, publish } = require('./channel');
-const { serialize, deserialize } = require('../serializer');
+const queue = require('./connector');
+const { subscribe, unsubscribe, publish } = require('@/services/pubSubChannel');
+const { reduceToKey } = require('@/services/redisUtils');
 
-const size = () => client.getSize();
+const CALL_ENQUEUED_EVENT = reduceToKey(CALLS_PENDING, CALL_ENQUEUED);
+const CALL_DEQUEUED_EVENT = reduceToKey(CALLS_PENDING, CALL_DEQUEUED);
+const CALL_REMOVED_EVENT = reduceToKey(CALLS_PENDING, CALL_REMOVED);
+const QUEUE_SIZE_CHANGED_EVENT = reduceToKey(CALLS_PENDING, QUEUE_SIZE_CHANGED);
 
-const peak = () => client.getLatest();
-
-const enqueue = (call) => {
-  const serializedCall = serialize(call);
-  return client.add(serializedCall)
-    .then(() => {
-      publishCallEnqueueing(call);
-      publishQueueSizeChanging();
-    });
-};
-
-const dequeue = () => client.take()
-  .then((serializedCall) => {
-    const deserializedCall = deserialize(serializedCall);
-    publishCallDequeueing(deserializedCall);
+const enqueue = call => queue.enqueue(call._id.toString(), call)
+  .then(() => {
+    publishCallEnqueueing(call);
     publishQueueSizeChanging();
-    return deserializedCall;
   });
 
-const extract = (call) => {
-  const serializedCall = serialize(call);
-  return client.remove(serializedCall)
-    .then((res) => {
-      const isRemoved = Boolean(res);
-      if (isRemoved) {
-        publishCallRemoving(call);
-        publishQueueSizeChanging();
-      }
-      return isRemoved;
-    });
-};
+const dequeue = () => queue.dequeue()
+  .then((call) => {
+    publishCallDequeueing(call);
+    publishQueueSizeChanging();
+    return call;
+  });
 
-const accept = call => Promise.resolve().then(() => publishCallAccepting(call));
+const remove = callId => queue.remove(callId)
+  .then((removedCall) => {
+    const isRemoved = Boolean(removedCall);
+    if (isRemoved) {
+      publishCallRemoving(removedCall);
+      publishQueueSizeChanging();
+    }
+    return removedCall;
+  });
 
-const subscribeToCallEnqueueing = listener => subscribe(CALL_ENQUEUED, listener);
-const subscribeToCallDequeueing = listener => subscribe(CALL_DEQUEUED, listener);
-const subscribeToCallExtracting = listener => subscribe(CALL_EXTRACTED, listener);
-const subscribeToCallAccepting = listener => subscribe(CALL_ACCEPTED, listener);
-const subscribeToQueueSizeChanging = listener => subscribe(QUEUE_SIZE_CHANGED, listener);
+const subscribeToCallEnqueueing = listener => subscribe(CALL_ENQUEUED_EVENT, listener);
+const subscribeToCallDequeueing = listener => subscribe(CALL_DEQUEUED_EVENT, listener);
+const subscribeToCallRemoving = listener => subscribe(CALL_REMOVED_EVENT, listener);
+const subscribeToQueueSizeChanging = listener => subscribe(QUEUE_SIZE_CHANGED_EVENT, listener);
 
-const unsubscribeFromCallEnqueueing = listener => unsubscribe(CALL_ENQUEUED, listener);
-const unsubscribeFromCallDequeueing = listener => unsubscribe(CALL_DEQUEUED, listener);
-const unsubscribeFromCallExtracting = listener => unsubscribe(CALL_EXTRACTED, listener);
-const unsubscribeFromCallAccepting = listener => unsubscribe(CALL_ACCEPTED, listener);
-const unsubscribeFromQueueSizeChanging = listener => unsubscribe(QUEUE_SIZE_CHANGED, listener);
+const unsubscribeFromCallEnqueueing = listener => unsubscribe(CALL_ENQUEUED_EVENT, listener);
+const unsubscribeFromCallDequeueing = listener => unsubscribe(CALL_DEQUEUED_EVENT, listener);
+const unsubscribeFromCallRemoving = listener => unsubscribe(CALL_REMOVED_EVENT, listener);
+const unsubscribeFromQueueSizeChanging = listener => (
+  unsubscribe(QUEUE_SIZE_CHANGED_EVENT, listener)
+);
 
-const publishCallEnqueueing = call => publish(CALL_ENQUEUED, call);
-const publishCallDequeueing = call => publish(CALL_DEQUEUED, call);
-const publishCallRemoving = call => publish(CALL_EXTRACTED, call);
-const publishCallAccepting = call => publish(CALL_ACCEPTED, call);
-const publishQueueSizeChanging = () => Promise.all([peak(), size()])
-  .then(([oldestCall, total]) => publish(QUEUE_SIZE_CHANGED, { oldestCall, total }));
+const publishCallEnqueueing = call => publish(CALL_ENQUEUED_EVENT, call);
+const publishCallDequeueing = call => publish(CALL_DEQUEUED_EVENT, call);
+const publishCallRemoving = call => publish(CALL_REMOVED_EVENT, call);
+const publishQueueSizeChanging = () => Promise.all([queue.getPeak(), queue.getSize()])
+  .then(([oldestCall, total]) => publish(QUEUE_SIZE_CHANGED_EVENT, { oldestCall, total }));
 
-exports.size = size;
-exports.peak = peak;
+exports.isExist = queue.isExist;
+exports.getSize = queue.getSize;
+exports.getPeak = queue.getPeak;
 exports.enqueue = enqueue;
 exports.dequeue = dequeue;
-exports.extract = extract;
-exports.accept = accept;
+exports.remove = remove;
 
 exports.subscribeToCallEnqueueing = subscribeToCallEnqueueing;
 exports.subscribeToCallDequeueing = subscribeToCallDequeueing;
-exports.subscribeToCallExtracting = subscribeToCallExtracting;
-exports.subscribeToCallAccepting = subscribeToCallAccepting;
+exports.subscribeToCallRemoving = subscribeToCallRemoving;
 exports.subscribeToQueueSizeChanging = subscribeToQueueSizeChanging;
 
 exports.unsubscribeFromCallEnqueueing = unsubscribeFromCallEnqueueing;
 exports.unsubscribeFromCallDequeueing = unsubscribeFromCallDequeueing;
-exports.unsubscribeFromCallExtracting = unsubscribeFromCallExtracting;
-exports.unsubscribeFromCallAccepting = unsubscribeFromCallAccepting;
+exports.unsubscribeFromCallRemoving = unsubscribeFromCallRemoving;
 exports.unsubscribeFromQueueSizeChanging = unsubscribeFromQueueSizeChanging;

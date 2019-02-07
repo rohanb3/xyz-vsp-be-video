@@ -2,16 +2,23 @@
   parserOptions: {
     parser: 'babel-eslint'
   },
-  "extends": "airbnb-base",
-  "rules": {
+  extends: "airbnb-base",
+  rules: {
     // Additional, per-project rules...
-    "no-underscore-dangle": "off",
+    no-underscore-dangle: "off",
     "no-param-reassign": "off"
   },
-  "globals": {
-    "window": true,
-    "document": true,
-    "io": true,
-    "$": true
+  globals: {
+    window: true,
+    document: true,
+    io: true,
+    $: true
+  },
+  settings: {
+    import/resolver: {
+      alias: [
+        ["@", "."]
+      ]
+    }
   }
 }
