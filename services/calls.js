@@ -1,7 +1,7 @@
 /* eslint-disable no-use-before-define */
 const moment = require('moment');
 const pendingCallsQueue = require('@/services/pendingCallsQueue');
-const activeCalls = require('@/services/activeCalls');
+const activeCallsHeap = require('@/services/activeCallsHeap');
 const callsDBClient = require('@/services/callsDBClient');
 const { ensureRoom } = require('@/services/twilio');
 const logger = require('@/services/logger')(module);
@@ -41,7 +41,7 @@ function acceptCall(acceptedBy) {
       updates.roomId = roomId;
       Object.assign(call, updates);
 
-      return activeCalls.add(call);
+      return activeCallsHeap.add(call);
     })
     .then(() => callsDBClient.updateById(call._id, updates))
     .then(() => call);
@@ -59,7 +59,7 @@ function markCallAsFinished(callId, finishedBy) {
     finishedBy,
     finishedAt: moment.utc().format(),
   };
-  return activeCalls.remove(callId)
+  return activeCallsHeap.remove(callId)
     .then(() => callsDBClient.updateById(callId, updates));
 }
 
@@ -91,7 +91,7 @@ function subscribeToCallRequesting(listener) {
 }
 
 function subscribeToCallAccepting(listener) {
-  return activeCalls.subscribeToCallAdding(listener);
+  return activeCallsHeap.subscribeToCallAdding(listener);
 }
 
 function subscribeToCallsLengthChanging(listener) {
@@ -103,7 +103,7 @@ function unsubscribeFromCallRequesting(listener) {
 }
 
 function unsubscribeFromCallAccepting(listener) {
-  return activeCalls.unsubscribeFromCallAdding(listener);
+  return activeCallsHeap.unsubscribeFromCallAdding(listener);
 }
 
 function unsubscribeFromCallsLengthChanging(listener) {
