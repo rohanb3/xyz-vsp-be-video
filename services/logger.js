@@ -1,3 +1,3 @@
 const winston = require('../libs/winston');
 
-module.exports = winston;
+module.exports = module => winston(module);

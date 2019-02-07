@@ -8,6 +8,7 @@ const {
   printf,
   colorize,
   align,
+  label,
 } = format;
 
 const options = {
@@ -40,27 +41,35 @@ const all = format((info) => {
 });
 
 const customFormat = printf(info => (
-  `${info.timestamp} ${info.level}: ${info.message}`
+  `${info.timestamp} [${info.label}] ${info.level}: ${info.message}`
 ));
 
-const logger = createLogger({
-  transports: [
-    new transports.Console(options.console),
-  ],
-  format: combine(
-    all(),
-    timestamp(),
-    colorize(),
-    align(),
-    customFormat,
-  ),
-  exitOnError: false,
-});
+const getLogger = (module) => {
+  const path = module.filename.split('/').slice(-2).join('/');
 
-logger.stream = {
-  write(message) {
-    logger.info(message);
-  },
+  const logger = createLogger({
+    transports: [
+      new transports.Console(options.console),
+    ],
+    format: combine(
+      all(),
+      label({ label: path }),
+      colorize(),
+      timestamp(),
+      align(),
+      customFormat,
+    ),
+    level: process.env.NODE_ENV === 'production' ? 'error' : 'debug',
+    exitOnError: false,
+  });
+
+  logger.stream = {
+    write(message) {
+      logger.info(message);
+    },
+  };
+
+  return logger;
 };
 
-module.exports = logger;
+module.exports = getLogger;

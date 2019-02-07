@@ -4,7 +4,7 @@ const pendingCallsQueue = require('./pendingCallsQueue');
 const activeCalls = require('./activeCalls');
 const callsDBClient = require('./callsDBClient');
 const { ensureRoom } = require('./twilio');
-const logger = require('./logger');
+const logger = require('./logger')(module);
 
 function requestCall(requestedBy) {
   const call = {

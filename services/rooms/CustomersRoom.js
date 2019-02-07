@@ -15,7 +15,7 @@ const {
   subscribeToCallAccepting,
 } = require('../calls');
 const { authenticateCustomer } = require('../socketAuth');
-const logger = require('../logger');
+const logger = require('../logger')(module);
 
 class CustomersRoom {
   constructor(io) {

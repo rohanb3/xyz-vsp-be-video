@@ -20,7 +20,7 @@ const {
   subscribeToCallsLengthChanging,
 } = require('../calls');
 const { authenticateOperator } = require('../socketAuth');
-const logger = require('../logger');
+const logger = require('../logger')(module);
 
 class OperatorsRoom {
   constructor(io) {

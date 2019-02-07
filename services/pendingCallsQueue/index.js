@@ -8,7 +8,6 @@ const {
 } = require('./constants');
 const client = require('./client');
 const { createChannel } = require('../redisChannel');
-const { serialize, deserialize } = require('../serializer');
 
 const { subscribe, unsubscribe, publish } = createChannel(CALLS_PENDING);
 
@@ -18,35 +17,28 @@ const size = () => client.getSize();
 
 const peak = () => client.getOldest();
 
-const enqueue = (call) => {
-  const serializedCall = serialize(call);
-  return client.add(serializedCall)
-    .then(() => {
-      publishCallEnqueueing(call);
-      publishQueueSizeChanging();
-    });
-};
-
-const dequeue = () => client.take()
-  .then((serializedCall) => {
-    const deserializedCall = deserialize(serializedCall);
-    publishCallDequeueing(deserializedCall);
+const enqueue = call => client.add(call._id, call)
+  .then(() => {
+    publishCallEnqueueing(call);
     publishQueueSizeChanging();
-    return deserializedCall;
   });
 
-const remove = (call) => {
-  const serializedCall = serialize(call);
-  return client.remove(serializedCall)
-    .then((res) => {
-      const isRemoved = Boolean(res);
-      if (isRemoved) {
-        publishCallRemoving(call);
-        publishQueueSizeChanging();
-      }
-      return isRemoved;
-    });
-};
+const dequeue = () => client.take()
+  .then((call) => {
+    publishCallDequeueing(call);
+    publishQueueSizeChanging();
+    return call;
+  });
+
+const remove = callId => client.remove(callId)
+  .then((removedCall) => {
+    const isRemoved = Boolean(removedCall);
+    if (isRemoved) {
+      publishCallRemoving(removedCall);
+      publishQueueSizeChanging();
+    }
+    return removedCall;
+  });
 
 const subscribeToCallEnqueueing = listener => subscribe(CALL_ENQUEUED, listener);
 const subscribeToCallDequeueing = listener => subscribe(CALL_DEQUEUED, listener);

@@ -15,7 +15,7 @@ const isActive = id => client.checkExistence(id);
 
 const size = () => client.getSize();
 
-const add = (id, call) => client.add(id, call)
+const add = call => client.add(call._id, call)
   .then(() => publishCallAdding(call));
 
 const remove = id => client.remove(id)

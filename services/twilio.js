@@ -1,6 +1,6 @@
 const twilio = require('twilio');
 
-const logger = require('./logger');
+const logger = require('./logger')(module);
 
 const {
   TWILIO_ACCOUNT_SID,
