@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1549606555069" clover="3.2.0">
+  <project timestamp="1549606555069" name="All files">
+    <metrics statements="8" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0" elements="9" coveredelements="0" complexity="0" loc="8" ncloc="8" packages="1" files="1" classes="1"/>
+    <file name="app.js" path="/home/user/www/xys-vsp-be-video/src/app.js">
+      <metrics statements="8" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
+      <line num="1" count="0" type="stmt"/>
+      <line num="2" count="0" type="stmt"/>
+      <line num="3" count="0" type="stmt"/>
+      <line num="5" count="0" type="stmt"/>
+      <line num="8" count="0" type="stmt"/>
+      <line num="10" count="0" type="stmt"/>
+      <line num="12" count="0" type="stmt"/>
+      <line num="14" count="0" type="stmt"/>
+    </file>
+  </project>
+</coverage>

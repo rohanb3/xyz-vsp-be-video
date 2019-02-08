@@ -4,9 +4,9 @@ const http = require('http');
 
 dotenv.load();
 
-const app = require('./app');
-const socket = require('./socket');
-const logger = require('./services/logger')(module);
+const app = require('@/app');
+const socket = require('@/socket');
+const logger = require('@/services/logger')(module);
 
 const server = http.Server(app);
 

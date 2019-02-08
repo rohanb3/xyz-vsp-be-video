@@ -59,7 +59,7 @@ const getLogger = (module) => {
       align(),
       customFormat,
     ),
-    level: process.env.NODE_ENV === 'production' ? 'error' : 'debug',
+    level: process.env.NODE_ENV === 'development' ? 'debug' : 'error',
     exitOnError: false,
   });
 
