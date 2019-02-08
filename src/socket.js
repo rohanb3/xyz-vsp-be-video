@@ -2,8 +2,8 @@
 
 const socketIO = require('socket.io');
 
-const { createAdapter } = require('./services/socketAdapter');
-const { createOperatorsRoom, createCustomersRoom } = require('./services/rooms');
+const { createAdapter } = require('@/services/socketAdapter');
+const { createOperatorsRoom, createCustomersRoom } = require('@/services/rooms');
 
 const socket = (server) => {
   const io = socketIO(server, { transports: ['websocket'] });

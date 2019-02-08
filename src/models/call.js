@@ -1,4 +1,4 @@
-const mongoose = require('../libs/mongoose');
+const mongoose = require('@/libs/mongoose');
 
 const call = new mongoose.Schema({
   requestedBy: {

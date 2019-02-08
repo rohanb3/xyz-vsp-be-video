@@ -3,12 +3,10 @@ const moment = require('moment');
 const pendingCallsQueue = require('@/services/pendingCallsQueue');
 const activeCallsHeap = require('@/services/activeCallsHeap');
 const callsDBClient = require('@/services/callsDBClient');
-const { ensureRoom } = require('@/services/twilio');
+const twilio = require('@/services/twilio');
 const logger = require('@/services/logger')(module);
 const pubSubChannel = require('@/services/pubSubChannel');
-
-const CALL_REQUESTED = 'call.requested';
-const CALL_ACCEPTED = 'call.accepted';
+const { CALL_REQUESTED, CALL_ACCEPTED } = require('@/constants/app');
 
 function requestCall(requestedBy) {
   const call = {
@@ -16,10 +14,10 @@ function requestCall(requestedBy) {
     requestedAt: moment.utc().format(),
   };
 
-  return callsDBClient.create(call)
+  return callsDBClient.create({ ...call })
     .then(({ _id }) => {
       call._id = _id;
-      return pendingCallsQueue.enqueue(call);
+      return pendingCallsQueue.enqueue(_id, call);
     })
     .then(() => pubSubChannel.publish(CALL_REQUESTED, call))
     .then(() => call);
@@ -39,14 +37,14 @@ function acceptCall(acceptedBy) {
     .then((callFromQueue) => {
       Object.assign(call, callFromQueue);
 
-      return ensureRoom(callFromQueue._id);
+      return twilio.ensureRoom(callFromQueue._id);
     })
     .then((room) => {
       const roomId = room.uniqueName;
       updates.roomId = roomId;
       Object.assign(call, updates);
 
-      return activeCallsHeap.add(call);
+      return activeCallsHeap.add(call._id, call);
     })
     .then(() => callsDBClient.updateById(call._id, updates))
     .then(() => pubSubChannel.publish(CALL_ACCEPTED, call))
