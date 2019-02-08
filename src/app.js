@@ -8,7 +8,9 @@ const middlewares = fs.readdirSync(path.join(__dirname, 'middlewares'))
 middlewares.forEach(m => require(`@/middlewares/${m}`).init(app));
 
 const roomLogs = require('@/routes/roomLogs');
+const callFeedbackMobile = require('@/routes/callFeedbackMobile');
 
-app.get('room-logs', roomLogs);
+app.get('/room-logs', roomLogs);
+app.post('/call-feedback-mobile', callFeedbackMobile);
 
 module.exports = app;
