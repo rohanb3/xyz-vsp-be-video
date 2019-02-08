@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "npm run copyEnv && npm run clean-public && npm run build-public && nodemon index.js",
-    "build-public": "browserify public/customer.js > public/js/customer.js",
-    "clean-public": "rimraf public/js/customer.js",
+    "build-public": "browserify src/public/customer.js > src/public/js/customer.js",
+    "clean-public": "rimraf src/public/js/customer.js",
     "check": "npm run lint && npm run test:unit",
     "lint": "npx eslint src/**/*.js tests/**/*.js",
     "test:unit": "jest",
@@ -58,7 +58,7 @@
     "rimraf": "^2.6.2"
   },
   "_moduleAliases": {
-    "@": "."
+    "@": "./src"
   },
   "prettier": {
     "trailingComma": "es5",
