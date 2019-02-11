@@ -17,8 +17,11 @@ app.get('/room-logs', roomLogs);
 app.post('/call-feedback-customer', callFeedbackCustomer);
 app.post('/call-feedback-operator', callFeedbackOperator);
 
-function errorHandler(err, req, res) {
-  logger.error(err.stack);
+// this handler must have 4 args, because this is the way how express knows this is error handler
+// https://expressjs.com/ru/guide/error-handling.html
+/* eslint-disable-next-line no-unused-vars */
+function errorHandler(err, req, res, next) {
+  logger.error(err);
   res.status(500).send();
 }
 

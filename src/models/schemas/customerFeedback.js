@@ -19,13 +19,7 @@ module.exports = {
     min: 1,
     max: 5,
   },
-  waitingTime: {
-    type: Number,
-  },
-  startTime: {
-    type: String,
-  },
-  endTime: {
+  note: {
     type: String,
   },
 };

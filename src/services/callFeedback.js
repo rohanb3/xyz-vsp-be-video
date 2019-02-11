@@ -3,30 +3,26 @@
 const callsDBClient = require('@/services/callsDBClient');
 const {
   CALL_ID_MISSING,
-  FEEDBACK_MISSING,
   CUSTOMER_ID_MISSING,
   OPERATOR_ID_MISSING,
   EXPERIENCE_RATE_MISSING,
   QUALITY_MISSING,
 } = require('@/constants/feedbackErrors');
 
-function saveCustomerFeedback(callId, feedback) {
-  const consistencyErrors = checkCustomerFeedbackConsistency(callId, feedback);
-  if (consistencyErrors.length) {
-    return Promise.reject(consistencyErrors);
-  }
+function saveCustomerFeedback(callId, feedback = {}) {
   return callsDBClient.updateById(callId, { customerFeedback: feedback });
 }
 
-function saveOperatorFeedback(callId, feedback) {
-  const consistencyErrors = checkOperatorFeedbackConsistency(callId, feedback);
-  if (consistencyErrors.length) {
-    return Promise.reject(consistencyErrors);
-  }
+function saveOperatorFeedback(callId, feedback = {}) {
   return callsDBClient.updateById(callId, { operatorFeedback: feedback });
 }
 
-function checkCustomerFeedbackConsistency(callId, feedback) {
+function checkCallExistence(callId) {
+  return callsDBClient.getById(callId)
+    .then(Boolean);
+}
+
+function checkCustomerFeedbackConsistency(callId, feedback = {}) {
   const errors = checkBaseFeedbackConsistency(callId, feedback);
 
   if (!feedback.customerId) {
@@ -36,7 +32,7 @@ function checkCustomerFeedbackConsistency(callId, feedback) {
   return errors;
 }
 
-function checkOperatorFeedbackConsistency(callId, feedback) {
+function checkOperatorFeedbackConsistency(callId, feedback = {}) {
   const errors = checkBaseFeedbackConsistency(callId, feedback);
 
   if (!feedback.operatorId) {
@@ -46,16 +42,11 @@ function checkOperatorFeedbackConsistency(callId, feedback) {
   return errors;
 }
 
-function checkBaseFeedbackConsistency(callId, feedback) {
+function checkBaseFeedbackConsistency(callId, feedback = {}) {
   const errors = [];
 
   if (!callId) {
     errors.push(CALL_ID_MISSING);
-  }
-
-  if (!feedback) {
-    errors.push(FEEDBACK_MISSING);
-    return errors;
   }
 
   if (!feedback.experienceRate) {
@@ -69,5 +60,8 @@ function checkBaseFeedbackConsistency(callId, feedback) {
   return errors;
 }
 
+exports.checkCustomerFeedbackConsistency = checkCustomerFeedbackConsistency;
+exports.checkOperatorFeedbackConsistency = checkOperatorFeedbackConsistency;
+exports.checkCallExistence = checkCallExistence;
 exports.saveCustomerFeedback = saveCustomerFeedback;
 exports.saveOperatorFeedback = saveOperatorFeedback;

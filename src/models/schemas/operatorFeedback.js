@@ -1,12 +1,13 @@
-const mongoose = require('@/libs/mongoose');
-
-const customerFeedback = new mongoose.Schema({
+module.exports = {
   date: {
     required: true,
     type: String,
   },
-  customerId: {
-    required: String,
+  operatorId: {
+    required: true,
+    type: String,
+  },
+  callType: {
     type: String,
   },
   experienceRate: {
@@ -21,15 +22,7 @@ const customerFeedback = new mongoose.Schema({
     min: 1,
     max: 5,
   },
-  waitingTime: {
-    type: Number,
-  },
-  startTime: {
+  note: {
     type: String,
   },
-  endTime: {
-    type: String,
-  },
-});
-
-module.exports = customerFeedback;
+};

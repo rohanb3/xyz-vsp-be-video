@@ -1,4 +1,5 @@
 const customerFeedback = require('./customerFeedback');
+const operatorFeedback = require('./operatorFeedback');
 
 module.exports = {
   requestedBy: {
@@ -18,4 +19,5 @@ module.exports = {
   finishedAt: String,
   roomId: String,
   customerFeedback,
+  operatorFeedback,
 };

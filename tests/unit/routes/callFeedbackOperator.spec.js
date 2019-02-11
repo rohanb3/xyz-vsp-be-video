@@ -5,30 +5,30 @@ const request = require('supertest');
 const app = require('@/app');
 const callFeedback = require('@/services/callFeedback');
 
-describe('POST /call-feedback-customer: ', () => {
+describe('POST /call-feedback-operator: ', () => {
   it('should return 200 if feedback was saved', () => {
     const callId = 'call42';
     const feedback = {
-      customerId: 'customer42',
+      operatorId: 'operator42',
     };
 
-    callFeedback.checkCustomerFeedbackConsistency = jest.fn(() => []);
+    callFeedback.checkOperatorFeedbackConsistency = jest.fn(() => []);
     callFeedback.checkCallExistence = jest.fn(() => Promise.resolve(true));
-    callFeedback.saveCustomerFeedback = jest.fn(() => Promise.resolve());
+    callFeedback.saveOperatorFeedback = jest.fn(() => Promise.resolve());
 
     return request(app)
-      .post('/call-feedback-customer')
+      .post('/call-feedback-operator')
       .send({ callId, ...feedback })
       .expect(200)
       .then(() => {
-        expect(callFeedback.saveCustomerFeedback).toHaveBeenCalledWith(callId, feedback);
+        expect(callFeedback.saveOperatorFeedback).toHaveBeenCalledWith(callId, feedback);
       });
   });
 
   it('should return 400 and do not try to save if feedback is not consistent', () => {
     const callId = 'call42';
     const feedback = {
-      customerId: 'customer42',
+      operatorId: 'operator42',
     };
 
     const errors = [
@@ -36,17 +36,17 @@ describe('POST /call-feedback-customer: ', () => {
       'error2',
     ];
 
-    callFeedback.checkCustomerFeedbackConsistency = jest.fn(() => errors);
+    callFeedback.checkOperatorFeedbackConsistency = jest.fn(() => errors);
     callFeedback.checkCallExistence = jest.fn(() => Promise.resolve(true));
-    callFeedback.saveCustomerFeedback = jest.fn(() => Promise.resolve());
+    callFeedback.saveOperatorFeedback = jest.fn(() => Promise.resolve());
 
     return request(app)
-      .post('/call-feedback-customer')
+      .post('/call-feedback-operator')
       .send({ callId, ...feedback })
       .expect(400)
       .then((res) => {
         expect(res.body.errors).toEqual(errors);
-        expect(callFeedback.saveCustomerFeedback).not.toHaveBeenCalled();
+        expect(callFeedback.saveOperatorFeedback).not.toHaveBeenCalled();
         expect(callFeedback.checkCallExistence).not.toHaveBeenCalled();
       });
   });
@@ -54,41 +54,41 @@ describe('POST /call-feedback-customer: ', () => {
   it('should return 404 and do not try to save if no call exists', () => {
     const callId = 'call42';
     const feedback = {
-      customerId: 'customer42',
+      operatorId: 'operator42',
     };
 
-    callFeedback.checkCustomerFeedbackConsistency = jest.fn(() => []);
+    callFeedback.checkOperatorFeedbackConsistency = jest.fn(() => []);
     callFeedback.checkCallExistence = jest.fn(() => Promise.resolve(false));
-    callFeedback.saveCustomerFeedback = jest.fn(() => Promise.resolve());
+    callFeedback.saveOperatorFeedback = jest.fn(() => Promise.resolve());
 
     return request(app)
-      .post('/call-feedback-customer')
+      .post('/call-feedback-operator')
       .send({ callId, ...feedback })
       .expect(404)
       .then(() => {
         expect(callFeedback.checkCallExistence).toHaveBeenCalled();
-        expect(callFeedback.saveCustomerFeedback).not.toHaveBeenCalled();
+        expect(callFeedback.saveOperatorFeedback).not.toHaveBeenCalled();
       });
   });
 
   it('should return 500 if saving failed', () => {
     const callId = 'call42';
     const feedback = {
-      customerId: 'customer42',
+      operatorId: 'operator42',
     };
     const error = 'inner error';
 
-    callFeedback.checkCustomerFeedbackConsistency = jest.fn(() => []);
+    callFeedback.checkOperatorFeedbackConsistency = jest.fn(() => []);
     callFeedback.checkCallExistence = jest.fn(() => Promise.resolve(true));
-    callFeedback.saveCustomerFeedback = jest.fn(() => Promise.reject(error));
+    callFeedback.saveOperatorFeedback = jest.fn(() => Promise.reject(error));
 
     return request(app)
-      .post('/call-feedback-customer')
+      .post('/call-feedback-operator')
       .send({ callId, ...feedback })
       .expect(500)
       .then((res) => {
         expect(res.body.errors).toEqual([error]);
-        expect(callFeedback.saveCustomerFeedback).toHaveBeenCalledWith(callId, feedback);
+        expect(callFeedback.saveOperatorFeedback).toHaveBeenCalledWith(callId, feedback);
       });
   });
 });
