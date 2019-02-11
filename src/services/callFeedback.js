@@ -19,7 +19,8 @@ function saveOperatorFeedback(callId, feedback = {}) {
 
 function checkCallExistence(callId) {
   return callsDBClient.getById(callId)
-    .then(Boolean);
+    .then(Boolean)
+    .catch(() => false);
 }
 
 function checkCustomerFeedbackConsistency(callId, feedback = {}) {
