@@ -5,6 +5,7 @@ const {
   CALL_ID_MISSING,
   FEEDBACK_MISSING,
   CUSTOMER_ID_MISSING,
+  OPERATOR_ID_MISSING,
   EXPERIENCE_RATE_MISSING,
   QUALITY_MISSING,
 } = require('@/constants/feedbackErrors');
@@ -17,7 +18,35 @@ function saveCustomerFeedback(callId, feedback) {
   return callsDBClient.updateById(callId, { customerFeedback: feedback });
 }
 
+function saveOperatorFeedback(callId, feedback) {
+  const consistencyErrors = checkOperatorFeedbackConsistency(callId, feedback);
+  if (consistencyErrors.length) {
+    return Promise.reject(consistencyErrors);
+  }
+  return callsDBClient.updateById(callId, { operatorFeedback: feedback });
+}
+
 function checkCustomerFeedbackConsistency(callId, feedback) {
+  const errors = checkBaseFeedbackConsistency(callId, feedback);
+
+  if (!feedback.customerId) {
+    errors.push(CUSTOMER_ID_MISSING);
+  }
+
+  return errors;
+}
+
+function checkOperatorFeedbackConsistency(callId, feedback) {
+  const errors = checkBaseFeedbackConsistency(callId, feedback);
+
+  if (!feedback.operatorId) {
+    errors.push(OPERATOR_ID_MISSING);
+  }
+
+  return errors;
+}
+
+function checkBaseFeedbackConsistency(callId, feedback) {
   const errors = [];
 
   if (!callId) {
@@ -27,10 +56,6 @@ function checkCustomerFeedbackConsistency(callId, feedback) {
   if (!feedback) {
     errors.push(FEEDBACK_MISSING);
     return errors;
-  }
-
-  if (!feedback.customerId) {
-    errors.push(CUSTOMER_ID_MISSING);
   }
 
   if (!feedback.experienceRate) {
@@ -45,3 +70,4 @@ function checkCustomerFeedbackConsistency(callId, feedback) {
 }
 
 exports.saveCustomerFeedback = saveCustomerFeedback;
+exports.saveOperatorFeedback = saveOperatorFeedback;
