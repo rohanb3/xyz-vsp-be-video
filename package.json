@@ -7,9 +7,9 @@
     "start": "npm run copyEnv && npm run clean-public && npm run build-public && nodemon index.js",
     "build-public": "browserify src/public/customer.js > src/public/js/customer.js",
     "clean-public": "rimraf src/public/js/customer.js",
-    "check": "npm run lint && npm run test:unit",
+    "check": "npm run lint && npm run unit",
     "lint": "npx eslint src/**/*.js tests/**/*.js",
-    "test:unit": "jest",
+    "unit": "jest",
     "coverage": "jest --collectCoverageFrom=src/**/*.js --coverage",
     "copyEnv": "cp .env.template .env"
   },
@@ -55,6 +55,7 @@
     "eslint-plugin-react": "^7.11.1",
     "husky": "^1.3.1",
     "jest": "^24.1.0",
+    "redis-mock": "^0.43.0",
     "rimraf": "^2.6.2"
   },
   "_moduleAliases": {

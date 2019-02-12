@@ -3,12 +3,14 @@ jest.mock('@/services/activeCallsHeap');
 jest.mock('@/services/callsDBClient');
 jest.mock('@/services/twilio');
 jest.mock('@/services/pubSubChannel');
+jest.mock('@/services/callsIdsManager');
 
 const pendingCallsQueue = require('@/services/pendingCallsQueue');
 const activeCallsHeap = require('@/services/activeCallsHeap');
 const callsDBClient = require('@/services/callsDBClient');
 const twilio = require('@/services/twilio');
 const pubSubChannel = require('@/services/pubSubChannel');
+const callsIdsManager = require('@/services/callsIdsManager');
 const calls = require('@/services/calls');
 const { CALL_REQUESTED, CALL_ACCEPTED } = require('@/constants/app');
 
@@ -17,23 +19,21 @@ describe('calls: ', () => {
     it('should create call object, put it to DB and publish event', () => {
       const requestedBy = 'user42';
       const _id = 'call42';
-      const initialCall = {
+      const expectedCall = {
         requestedAt: expect.any(String),
         requestedBy,
-      };
-      const expectedCall = {
-        ...initialCall,
         _id,
       };
 
-      callsDBClient.create = jest.fn(call => Promise.resolve({ _id, ...call }));
+      callsIdsManager.generateId = jest.fn(() => _id);
+      callsDBClient.create = jest.fn(call => Promise.resolve(call));
       pendingCallsQueue.enqueue = jest.fn(() => Promise.resolve());
       pubSubChannel.publish = jest.fn();
 
       return calls.requestCall(requestedBy)
         .then((call) => {
           expect(call).toEqual(expectedCall);
-          expect(callsDBClient.create).toHaveBeenCalledWith(initialCall);
+          expect(callsDBClient.create).toHaveBeenCalledWith(expectedCall);
           expect(pendingCallsQueue.enqueue).toHaveBeenCalledWith(_id, expectedCall);
           expect(pubSubChannel.publish).toHaveBeenCalledWith(CALL_REQUESTED, expectedCall);
         });

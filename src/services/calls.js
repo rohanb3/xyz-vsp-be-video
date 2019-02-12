@@ -3,22 +3,22 @@ const moment = require('moment');
 const pendingCallsQueue = require('@/services/pendingCallsQueue');
 const activeCallsHeap = require('@/services/activeCallsHeap');
 const callsDBClient = require('@/services/callsDBClient');
+const callsIdsManager = require('@/services/callsIdsManager');
 const twilio = require('@/services/twilio');
 const logger = require('@/services/logger')(module);
 const pubSubChannel = require('@/services/pubSubChannel');
 const { CALL_REQUESTED, CALL_ACCEPTED } = require('@/constants/app');
 
 function requestCall(requestedBy) {
+  const _id = callsIdsManager.generateId();
   const call = {
     requestedBy,
     requestedAt: moment.utc().format(),
+    _id,
   };
 
   return callsDBClient.create({ ...call })
-    .then(({ _id }) => {
-      call._id = _id;
-      return pendingCallsQueue.enqueue(_id, call);
-    })
+    .then(() => pendingCallsQueue.enqueue(_id, call))
     .then(() => pubSubChannel.publish(CALL_REQUESTED, call))
     .then(() => call);
 }

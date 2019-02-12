@@ -1,6 +1,7 @@
 const mongoose = require('@/libs/mongoose');
 
 const call = new mongoose.Schema({
+  _id: mongoose.Types.ObjectId,
   requestedBy: {
     type: String,
     required: true,
@@ -17,6 +18,9 @@ const call = new mongoose.Schema({
   finishedBy: String,
   finishedAt: String,
   roomId: String,
+},
+{
+  _id: false,
 });
 
 module.exports = mongoose.model('Call', call);

@@ -10,4 +10,5 @@ module.exports = {
   testURL: 'http://localhost/',
   cache: false,
   restoreMocks: true,
+  testEnvironment: 'node',
 };

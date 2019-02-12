@@ -1,46 +1,29 @@
-const redis = require('redis');
-
-const { REDIS_HOST, REDIS_PORT } = require('@/constants/redis');
 const { CALLS_PENDING } = require('./constants');
-const { promiser, reduceToKey } = require('@/services/redisUtils');
-
-const client = redis.createClient(REDIS_PORT, REDIS_HOST);
-
-const nameOfList = reduceToKey(CALLS_PENDING);
-const convertToInnerKey = key => reduceToKey(nameOfList, key);
+const storage = require('@/services/callsStorage');
+const client = require('@/services/redisClient');
 
 /*
 ** work with keys start
 */
 
-const isExist = key => new Promise((resolve, reject) => (
-  client.lrange(nameOfList, 0, -1, promiser(resolve, reject))
-))
+const isExist = key => client
+  .lrange(CALLS_PENDING, 0, -1)
   .then(items => !!items.find(item => item === key));
 
-const setKey = key => new Promise((resolve, reject) => (
-  client.lpush(nameOfList, key, promiser(resolve, reject))
-));
+const setKey = key => client.lpush(CALLS_PENDING, key);
 
-const takeOldestKey = () => new Promise((resolve, reject) => (
-  client.rpop(nameOfList, promiser(resolve, reject))
-));
+const takeOldestKey = () => client.rpop(CALLS_PENDING);
 
-const getOldestKey = () => new Promise((resolve, reject) => (
-  client.lrange(nameOfList, -1, -1, promiser(resolve, reject))
-))
+const getOldestKey = () => client
+  .lrange(CALLS_PENDING, -1, -1)
   .then((item) => {
     const isArray = Array.isArray(item);
     return isArray ? item[0] : item;
   });
 
-const removeKey = key => new Promise((resolve, reject) => (
-  client.lrem(nameOfList, 1, key, promiser(resolve, reject))
-));
+const removeKey = key => client.lrem(CALLS_PENDING, 1, key);
 
-const getSize = () => new Promise((resolve, reject) => (
-  client.llen(nameOfList, promiser(resolve, reject))
-));
+const getSize = () => client.llen(CALLS_PENDING);
 
 /*
 ** work with keys finish
@@ -50,41 +33,17 @@ const getSize = () => new Promise((resolve, reject) => (
 ** work with collection start
 */
 
-const enqueue = (key, value) => new Promise((resolve, reject) => {
-  const innerKey = convertToInnerKey(key);
-  return setKey(innerKey)
-    .then(() => client.hmset(innerKey, value, promiser(resolve, reject)));
-});
+const enqueue = (key, value) => setKey(key)
+  .then(() => storage.set(key, value));
 
-const dequeue = () => new Promise((resolve, reject) => {
-  let oldestKey = null;
-  let result = null;
-  return takeOldestKey()
-    .then((key) => {
-      oldestKey = key;
-      return oldestKey ? client.hgetall(oldestKey, promiser(resolve, reject)) : null;
-    })
-    .then((item) => {
-      result = item;
-      return oldestKey ? client.del(oldestKey, promiser(resolve, reject)) : null;
-    })
-    .then(() => result);
-});
+const dequeue = () => takeOldestKey()
+  .then(key => (key ? storage.remove(key) : null));
 
-const remove = key => new Promise((resolve, reject) => {
-  const innerKey = convertToInnerKey(key);
-  let result = null;
-  return removeKey(innerKey)
-    .then(() => client.hgetall(innerKey, promiser(resolve, reject)))
-    .then((item) => {
-      result = item;
-      return client.del(innerKey, promiser(resolve, reject));
-    })
-    .then(() => result);
-});
+const remove = key => (key ? removeKey(key) : Promise.resolve(null))
+  .then(() => (key ? storage.remove(key) : null));
 
-const getPeak = () => new Promise((resolve, reject) => getOldestKey()
-  .then(oldestKey => (oldestKey ? client.hgetall(oldestKey, promiser(resolve, reject)) : null)));
+const getPeak = () => getOldestKey()
+  .then(oldestKey => (oldestKey ? storage.get(oldestKey) : null));
 
 /*
 ** work with collection finish
