@@ -1,20 +1,29 @@
 /* eslint-disable no-use-before-define */
 
 const callsDBClient = require('@/services/callsDBClient');
+const { MongoUpdateError } = require('@/services/errors');
 const {
   CALL_ID_MISSING,
-  CUSTOMER_ID_MISSING,
   OPERATOR_ID_MISSING,
+  CUSTOMER_ID_MISSING,
   EXPERIENCE_RATE_MISSING,
   QUALITY_MISSING,
 } = require('@/constants/feedbackErrors');
 
 function saveCustomerFeedback(callId, feedback = {}) {
-  return callsDBClient.updateById(callId, { customerFeedback: feedback });
+  return saveFeedback(callId, feedback, 'customerFeedback');
 }
 
 function saveOperatorFeedback(callId, feedback = {}) {
-  return callsDBClient.updateById(callId, { operatorFeedback: feedback });
+  return saveFeedback(callId, feedback, 'operatorFeedback');
+}
+
+function saveFeedback(callId, feedback, fieldName) {
+  return callsDBClient.updateById(callId, { [fieldName]: feedback })
+    .catch(({ errors }) => {
+      const messages = Object.values(errors).map(e => e.message);
+      return Promise.reject(new MongoUpdateError(messages));
+    });
 }
 
 function checkCallExistence(callId) {

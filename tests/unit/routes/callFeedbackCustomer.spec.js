@@ -4,6 +4,7 @@ jest.mock('@/services/callFeedback');
 const request = require('supertest');
 const app = require('@/app');
 const callFeedback = require('@/services/callFeedback');
+const { CallUpdateError } = require('@/services/errors');
 
 describe('POST /call-feedback-customer: ', () => {
   it('should return 200 if feedback was saved', () => {
@@ -31,12 +32,12 @@ describe('POST /call-feedback-customer: ', () => {
       customerId: 'customer42',
     };
 
-    const errors = [
+    const messages = [
       'error1',
       'error2',
     ];
 
-    callFeedback.checkCustomerFeedbackConsistency = jest.fn(() => errors);
+    callFeedback.checkCustomerFeedbackConsistency = jest.fn(() => messages);
     callFeedback.checkCallExistence = jest.fn(() => Promise.resolve(true));
     callFeedback.saveCustomerFeedback = jest.fn(() => Promise.resolve());
 
@@ -45,7 +46,7 @@ describe('POST /call-feedback-customer: ', () => {
       .send({ callId, ...feedback })
       .expect(400)
       .then((res) => {
-        expect(res.body.errors).toEqual(errors);
+        expect(res.body.messages).toEqual(messages);
         expect(callFeedback.saveCustomerFeedback).not.toHaveBeenCalled();
         expect(callFeedback.checkCallExistence).not.toHaveBeenCalled();
       });
@@ -71,12 +72,35 @@ describe('POST /call-feedback-customer: ', () => {
       });
   });
 
+  it('should return 400 if saving failed with CallUpdateError', () => {
+    const callId = 'call42';
+    const feedback = {
+      customerId: 'customer42',
+    };
+    const message = 'inner error';
+    const error = new CallUpdateError([message]);
+
+    callFeedback.checkCustomerFeedbackConsistency = jest.fn(() => []);
+    callFeedback.checkCallExistence = jest.fn(() => Promise.resolve(true));
+    callFeedback.saveCustomerFeedback = jest.fn(() => Promise.reject(error));
+
+    return request(app)
+      .post('/call-feedback-customer')
+      .send({ callId, ...feedback })
+      .expect(400)
+      .then((res) => {
+        expect(res.body.messages).toEqual([message]);
+        expect(callFeedback.saveCustomerFeedback).toHaveBeenCalledWith(callId, feedback);
+      });
+  });
+
   it('should return 500 if saving failed', () => {
     const callId = 'call42';
     const feedback = {
       customerId: 'customer42',
     };
-    const error = 'inner error';
+    const message = 'inner error';
+    const error = new Error(message);
 
     callFeedback.checkCustomerFeedbackConsistency = jest.fn(() => []);
     callFeedback.checkCallExistence = jest.fn(() => Promise.resolve(true));
@@ -87,7 +111,7 @@ describe('POST /call-feedback-customer: ', () => {
       .send({ callId, ...feedback })
       .expect(500)
       .then((res) => {
-        expect(res.body.errors).toEqual([error]);
+        expect(res.body.messages).toEqual([message]);
         expect(callFeedback.saveCustomerFeedback).toHaveBeenCalledWith(callId, feedback);
       });
   });

@@ -1,28 +1,13 @@
+const { OPERATOR_ID_MISSING } = require('@/constants/feedbackErrors');
+const feedback = require('./feedback');
+
 module.exports = {
-  date: {
-    required: true,
-    type: String,
-  },
+  ...feedback,
   operatorId: {
-    required: true,
+    required: OPERATOR_ID_MISSING,
     type: String,
   },
   callType: {
-    type: String,
-  },
-  experienceRate: {
-    required: true,
-    type: Number,
-    min: 1,
-    max: 5,
-  },
-  quality: {
-    required: true,
-    type: Number,
-    min: 1,
-    max: 5,
-  },
-  note: {
     type: String,
   },
 };

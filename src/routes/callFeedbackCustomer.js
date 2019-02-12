@@ -1,13 +1,15 @@
 const callFeedback = require('@/services/callFeedback');
 const logger = require('@/services/logger')(module);
+const { CallUpdateError } = require('@/services/errors');
 
 async function callFeedbackCustomer(req, res) {
   const { callId, ...feedback } = req.body;
+
   const consistencyErrors = callFeedback.checkCustomerFeedbackConsistency(callId, feedback);
 
   if (consistencyErrors.length) {
     logger.error('customer.feedback.inconsistent', consistencyErrors);
-    res.status(400).send({ errors: consistencyErrors });
+    res.status(400).send({ messages: consistencyErrors });
     return;
   }
 
@@ -24,8 +26,13 @@ async function callFeedbackCustomer(req, res) {
     logger.info('customer.feedback.saved', callId, feedback);
     res.send('success');
   } catch (error) {
-    logger.error('customer.feedback.not.saved', callId, feedback);
-    res.status(500).send({ errors: [error] });
+    if (error instanceof CallUpdateError) {
+      logger.error('customer.feedback.not.saved', callId, feedback, error.messages);
+      res.status(400).send({ messages: error.messages });
+    } else {
+      logger.error('customer.feedback.not.saved', callId, feedback, error.message);
+      res.status(500).send({ messages: [error.message] });
+    }
   }
 }
 

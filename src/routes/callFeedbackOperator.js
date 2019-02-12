@@ -1,5 +1,6 @@
 const callFeedback = require('@/services/callFeedback');
 const logger = require('@/services/logger')(module);
+const { CallUpdateError } = require('@/services/errors');
 
 async function callFeedbackOperator(req, res) {
   const { callId, ...feedback } = req.body;
@@ -7,7 +8,7 @@ async function callFeedbackOperator(req, res) {
 
   if (consistencyErrors.length) {
     logger.error('operator.feedback.inconsistent', consistencyErrors);
-    res.status(400).send({ errors: consistencyErrors });
+    res.status(400).send({ messages: consistencyErrors });
     return;
   }
 
@@ -24,8 +25,13 @@ async function callFeedbackOperator(req, res) {
     logger.info('operator.feedback.saved', callId, feedback);
     res.send('success');
   } catch (error) {
-    logger.error('operator.feedback.not.saved', callId, feedback);
-    res.status(500).send({ errors: [error] });
+    if (error instanceof CallUpdateError) {
+      logger.error('operator.feedback.not.saved', callId, feedback, error.messages);
+      res.status(400).send({ messages: error.messages });
+    } else {
+      logger.error('operator.feedback.not.saved', callId, feedback, error.message);
+      res.status(500).send({ messages: [error.message] });
+    }
   }
 }
 
