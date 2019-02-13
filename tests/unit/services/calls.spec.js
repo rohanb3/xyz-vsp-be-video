@@ -10,31 +10,32 @@ const activeCallsHeap = require('@/services/activeCallsHeap');
 const callsDBClient = require('@/services/callsDBClient');
 const twilio = require('@/services/twilio');
 const pubSubChannel = require('@/services/pubSubChannel');
-const callsIdsManager = require('@/services/callsIdsManager');
 const calls = require('@/services/calls');
-const { CALL_REQUESTED, CALL_ACCEPTED } = require('@/constants/app');
+const { CALL_REQUESTED, CALL_ACCEPTED } = require('@/constants/calls');
 
 describe('calls: ', () => {
   describe('requestCall(): ', () => {
     it('should create call object, put it to DB and publish event', () => {
       const requestedBy = 'user42';
-      const _id = 'call42';
-      const expectedCall = {
+      const id = 'call42';
+      const initialCall = {
         requestedAt: expect.any(String),
         requestedBy,
-        _id,
+      };
+      const expectedCall = {
+        ...initialCall,
+        id,
       };
 
-      callsIdsManager.generateId = jest.fn(() => _id);
-      callsDBClient.create = jest.fn(call => Promise.resolve(call));
+      callsDBClient.create = jest.fn(call => Promise.resolve({ ...call, id }));
       pendingCallsQueue.enqueue = jest.fn(() => Promise.resolve());
       pubSubChannel.publish = jest.fn();
 
       return calls.requestCall(requestedBy)
         .then((call) => {
           expect(call).toEqual(expectedCall);
-          expect(callsDBClient.create).toHaveBeenCalledWith(expectedCall);
-          expect(pendingCallsQueue.enqueue).toHaveBeenCalledWith(_id, expectedCall);
+          expect(callsDBClient.create).toHaveBeenCalledWith(initialCall);
+          expect(pendingCallsQueue.enqueue).toHaveBeenCalledWith(id, expectedCall);
           expect(pubSubChannel.publish).toHaveBeenCalledWith(CALL_REQUESTED, expectedCall);
         });
     });
@@ -43,27 +44,23 @@ describe('calls: ', () => {
   describe('acceptCall(): ', () => {
     it('should take call from queue, create room, update call and publish it', () => {
       const acceptedBy = 'user42';
-      const _id = 'call42';
+      const id = 'call42';
       const updates = {
         acceptedBy,
         acceptedAt: expect.any(String),
-        roomId: _id,
       };
       const callFromQueue = {
         requestedBy: 'user24',
         requestedAt: expect.any(String),
-        _id,
+        id,
       };
       const expectedCall = {
         ...callFromQueue,
         ...updates,
       };
-      const room = {
-        uniqueName: _id,
-      };
 
       pendingCallsQueue.dequeue = jest.fn(() => Promise.resolve(callFromQueue));
-      twilio.ensureRoom = jest.fn(() => Promise.resolve(room));
+      twilio.ensureRoom = jest.fn(() => Promise.resolve());
       activeCallsHeap.add = jest.fn();
       callsDBClient.updateById = jest.fn();
       pubSubChannel.publish = jest.fn();
@@ -72,9 +69,9 @@ describe('calls: ', () => {
         .then((call) => {
           expect(call).toEqual(expectedCall);
           expect(pendingCallsQueue.dequeue).toHaveBeenCalled();
-          expect(twilio.ensureRoom).toHaveBeenCalledWith(_id);
-          expect(activeCallsHeap.add).toHaveBeenCalledWith(_id, expectedCall);
-          expect(callsDBClient.updateById).toHaveBeenCalledWith(_id, updates);
+          expect(twilio.ensureRoom).toHaveBeenCalledWith(id);
+          expect(activeCallsHeap.add).toHaveBeenCalledWith(id, expectedCall);
+          expect(callsDBClient.updateById).toHaveBeenCalledWith(id, updates);
           expect(pubSubChannel.publish).toHaveBeenCalledWith(CALL_ACCEPTED, expectedCall);
         });
     });

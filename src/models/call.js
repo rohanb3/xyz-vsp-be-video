@@ -1,7 +1,6 @@
 const mongoose = require('@/libs/mongoose');
 
 const call = new mongoose.Schema({
-  _id: mongoose.Types.ObjectId,
   requestedBy: {
     type: String,
     required: true,
@@ -17,10 +16,12 @@ const call = new mongoose.Schema({
   duration: Number,
   finishedBy: String,
   finishedAt: String,
-  roomId: String,
-},
-{
-  _id: false,
 });
+
+function idGetter() {
+  return this._id.toString();
+}
+
+call.virtual('id').get(idGetter);
 
 module.exports = mongoose.model('Call', call);

@@ -3,10 +3,17 @@ jest.mock('@/services/redisClient');
 
 const storage = require('@/services/callsStorage');
 const client = require('@/services/redisClient');
-const connector = require('@/services/activeCallsHeap/connector');
-const { CALLS_ACTIVE } = require('@/services/activeCallsHeap/constants');
+const { createConnector } = require('@/services/heap/connector');
 
-describe('activeCallsHeap connector: ', () => {
+const HEAP_NAME = 'test.heap';
+
+let connector = null;
+
+describe('HeapConnector: ', () => {
+  beforeEach(() => {
+    connector = createConnector(HEAP_NAME);
+  });
+
   describe('isExist(): ', () => {
     it('should return true if key exists', () => {
       const id = '123';
@@ -16,7 +23,7 @@ describe('activeCallsHeap connector: ', () => {
         .then((res) => {
           expect(res).toBeTruthy();
           expect(client.sismember)
-            .toHaveBeenCalledWith(CALLS_ACTIVE, id);
+            .toHaveBeenCalledWith(HEAP_NAME, id);
         });
     });
 
@@ -28,7 +35,7 @@ describe('activeCallsHeap connector: ', () => {
         .then((res) => {
           expect(res).toBeFalsy();
           expect(client.sismember)
-            .toHaveBeenCalledWith(CALLS_ACTIVE, id);
+            .toHaveBeenCalledWith(HEAP_NAME, id);
         });
     });
   });
@@ -59,7 +66,7 @@ describe('activeCallsHeap connector: ', () => {
       return connector.add(id, call)
         .then(() => {
           expect(client.sadd)
-            .toHaveBeenCalledWith(CALLS_ACTIVE, id);
+            .toHaveBeenCalledWith(HEAP_NAME, id);
           expect(storage.set).toHaveBeenCalledWith(id, call);
         });
     });
@@ -106,7 +113,7 @@ describe('activeCallsHeap connector: ', () => {
       return connector.remove(id)
         .then(() => {
           expect(client.srem)
-            .toHaveBeenCalledWith(CALLS_ACTIVE, id);
+            .toHaveBeenCalledWith(HEAP_NAME, id);
           expect(storage.remove).toHaveBeenCalledWith(id);
         });
     });

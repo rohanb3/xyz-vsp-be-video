@@ -1,19 +1,30 @@
-/* eslint-disable no-param-reassign, class-methods-use-this */
+/* eslint-disable no-param-reassign, class-methods-use-this, no-use-before-define */
 const socketIOAuth = require('socketio-auth');
 
 const {
   CONNECTION,
   DISCONNECT,
+  CUSTOMERS,
+} = require('@/constants/rooms');
+
+const {
   CALL_REQUESTED,
   CALL_ACCEPTED,
   CALL_FINISHED,
-  CUSTOMERS,
-} = require('@/constants/socket');
+  CALLBACK_REQUESTED,
+  CALLBACK_ACCEPTED,
+  CALLBACK_DECLINED,
+} = require('@/constants/calls');
+
 const {
   requestCall,
   finishCall,
   subscribeToCallAccepting,
+  subscribeToCallbackRequesting,
+  acceptCallback,
+  declineCallback,
 } = require('@/services/calls');
+
 const { authenticateCustomer } = require('@/services/socketAuth');
 const logger = require('@/services/logger')(module);
 
@@ -23,6 +34,7 @@ class CustomersRoom {
     this.customers.on(CONNECTION, this.onCustomerConnected.bind(this));
     socketIOAuth(this.customers, { authenticate: authenticateCustomer });
     subscribeToCallAccepting(this.onCallAccepted.bind(this));
+    subscribeToCallbackRequesting(this.checkCustomerAndEmitCallbackRequesting.bind(this));
   }
 
   onCustomerConnected(customer) {
@@ -35,12 +47,12 @@ class CustomersRoom {
     return requestCall(customer.id)
       .then((call) => {
         logger.debug('call.requested.customer', call);
-        customer.pendingCallId = call._id;
+        customer.pendingCallId = call.id;
       });
   }
 
   onCustomerFinishedCall(customer, call) {
-    return finishCall(call.roomId, customer.id);
+    return finishCall(call.id, customer.id);
   }
 
   onCustomerDisconnected(customer) {
@@ -53,7 +65,7 @@ class CustomersRoom {
     logger.debug('call.accepted.customer', call);
     const customerId = call.requestedBy;
 
-    this.checkCustomerAndEmitCallAccepting(customerId, call.roomId);
+    this.checkCustomerAndEmitCallAccepting(customerId, call.id);
   }
 
   checkCustomerAndEmitCallAccepting(customerId, callId) {
@@ -65,8 +77,34 @@ class CustomersRoom {
     }
   }
 
+  checkCustomerAndEmitCallbackRequesting(callback) {
+    const { to: customerId, callId } = callback;
+    const connectedCustomer = this.customers.connected[customerId];
+    if (connectedCustomer) {
+      logger.debug('customers.emit.requested.callback', callId);
+      this.emitCallAccepting(customerId, callId);
+
+      const onCallbackAccepted = () => {
+        connectedCustomer.removeListener(CALLBACK_DECLINED, onCallbackDeclined);
+        acceptCallback(callback);
+      };
+
+      const onCallbackDeclined = () => {
+        connectedCustomer.removeListener(CALL_ACCEPTED, onCallbackAccepted);
+        declineCallback(callback);
+      };
+
+      connectedCustomer.once(CALLBACK_ACCEPTED, onCallbackAccepted);
+      connectedCustomer.once(CALLBACK_DECLINED, onCallbackDeclined);
+    }
+  }
+
   emitCallAccepting(customerId, callId) {
     this.customers.connected[customerId].emit(CALL_ACCEPTED, callId);
+  }
+
+  emitCallbackRequesting(customerId, callId) {
+    this.customers.connected[customerId].emit(CALLBACK_REQUESTED, callId);
   }
 }
 
