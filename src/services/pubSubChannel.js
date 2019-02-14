@@ -3,9 +3,8 @@ const redis = require('redis');
 
 const { REDIS_HOST, REDIS_PORT } = require('@/constants/redis');
 const { serialize, deserialize } = require('@/services/serializer');
-const { APP_NAME } = require('@/constants/app');
 
-const CHANNEL_NAME = `${APP_NAME}.pub-sub-channel`;
+const CHANNEL_NAME = 'pub-sub-channel';
 
 const pub = redis.createClient(REDIS_PORT, REDIS_HOST);
 const sub = redis.createClient(REDIS_PORT, REDIS_HOST);

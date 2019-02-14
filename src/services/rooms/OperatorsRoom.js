@@ -16,6 +16,7 @@ const {
   CALL_FINISHED,
   CALLBACK_REQUESTED,
   CALLBACK_ACCEPTED,
+  CALLBACK_DECLINED,
   CALLS_INFO,
 } = require('@/constants/calls');
 
@@ -25,6 +26,7 @@ const {
   finishCall,
   subscribeToCallRequesting,
   subscribeToCallbackAccepting,
+  subscribeToCallbackDeclining,
   subscribeToCallsLengthChanging,
 } = require('@/services/calls');
 
@@ -38,6 +40,7 @@ class OperatorsRoom {
     socketIOAuth(this.operators, { authenticate: authenticateOperator });
     subscribeToCallRequesting(this.emitCallRequesting.bind(this));
     subscribeToCallbackAccepting(this.checkCustomerAndEmitCallbackAccepting.bind(this));
+    subscribeToCallbackDeclining(this.checkCustomerAndEmitCallbackDeclining.bind(this));
     subscribeToCallsLengthChanging(this.emitCallsInfo.bind(this));
   }
 
@@ -52,8 +55,7 @@ class OperatorsRoom {
 
   onOperatorAcceptCall(operator) {
     logger.debug('operator.accepted.call', operator.id);
-    return acceptCall(operator.id)
-      .then(call => operator.emit(ROOM_CREATED, call.id));
+    return acceptCall(operator.id).then(call => operator.emit(ROOM_CREATED, call.id));
   }
 
   onOperatorRequestedCallback(operator, callId) {
@@ -61,10 +63,9 @@ class OperatorsRoom {
     if (!callId) {
       return Promise.resolve();
     }
-    return requestCallback(callId, operator.id)
-      .then((callback) => {
-        operator.pendingCallbackId = callback.id;
-      });
+    return requestCallback(callId, operator.id).then((callback) => {
+      operator.pendingCallbackId = callback.id;
+    });
   }
 
   onOperatorFinishedCall(operator, call) {
@@ -77,11 +78,19 @@ class OperatorsRoom {
     logger.debug('operator.disconnected', operatorId);
   }
 
-  checkCustomerAndEmitCallbackAccepting(callback) {
-    const { from: operatorId, callId } = callback;
-    const connectedOperator = this.operators.connected[operatorId];
+  checkCustomerAndEmitCallbackAccepting(call) {
+    const { acceptedBy, id } = call;
+    const connectedOperator = this.operators.connected[acceptedBy];
     if (connectedOperator) {
-      this.emitCallbackAccepting(operatorId, callId);
+      this.emitCallbackAccepting(acceptedBy, id);
+    }
+  }
+
+  checkCustomerAndEmitCallbackDeclining(call) {
+    const { acceptedBy, id } = call;
+    const connectedOperator = this.operators.connected[acceptedBy];
+    if (connectedOperator) {
+      this.emitCallbackDeclining(acceptedBy, id);
     }
   }
 
@@ -92,6 +101,10 @@ class OperatorsRoom {
 
   emitCallbackAccepting(operatorId, callId) {
     this.operators.connected[operatorId].emit(CALLBACK_ACCEPTED, callId);
+  }
+
+  emitCallbackDeclining(operatorId, callId) {
+    this.operators.connected[operatorId].emit(CALLBACK_DECLINED, callId);
   }
 
   emitCallsInfo(info) {

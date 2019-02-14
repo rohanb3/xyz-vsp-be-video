@@ -1,11 +1,7 @@
 /* eslint-disable no-param-reassign, class-methods-use-this, no-use-before-define */
 const socketIOAuth = require('socketio-auth');
 
-const {
-  CONNECTION,
-  DISCONNECT,
-  CUSTOMERS,
-} = require('@/constants/rooms');
+const { CONNECTION, DISCONNECT, CUSTOMERS } = require('@/constants/rooms');
 
 const {
   CALL_REQUESTED,
@@ -44,11 +40,10 @@ class CustomersRoom {
   }
 
   onCustomerRequestedCall(customer) {
-    return requestCall(customer.id)
-      .then((call) => {
-        logger.debug('call.requested.customer', call);
-        customer.pendingCallId = call.id;
-      });
+    return requestCall(customer.id).then((call) => {
+      logger.debug('call.requested.customer', call);
+      customer.pendingCallId = call.id;
+    });
   }
 
   onCustomerFinishedCall(customer, call) {
@@ -56,9 +51,7 @@ class CustomersRoom {
   }
 
   onCustomerDisconnected(customer) {
-    return customer.pendingCallId
-      ? finishCall(customer.pendingCallId)
-      : Promise.resolve();
+    return customer.pendingCallId ? finishCall(customer.pendingCallId) : Promise.resolve();
   }
 
   onCallAccepted(call) {
@@ -77,21 +70,21 @@ class CustomersRoom {
     }
   }
 
-  checkCustomerAndEmitCallbackRequesting(callback) {
-    const { to: customerId, callId } = callback;
-    const connectedCustomer = this.customers.connected[customerId];
+  checkCustomerAndEmitCallbackRequesting(call) {
+    const { requestedBy, id } = call;
+    const connectedCustomer = this.customers.connected[requestedBy];
     if (connectedCustomer) {
-      logger.debug('customers.emit.requested.callback', callId);
-      this.emitCallAccepting(customerId, callId);
+      logger.debug('customers.emit.requested.callback', id);
+      this.emitCallAccepting(requestedBy, id);
 
       const onCallbackAccepted = () => {
         connectedCustomer.removeListener(CALLBACK_DECLINED, onCallbackDeclined);
-        acceptCallback(callback);
+        acceptCallback(call);
       };
 
       const onCallbackDeclined = () => {
-        connectedCustomer.removeListener(CALL_ACCEPTED, onCallbackAccepted);
-        declineCallback(callback);
+        connectedCustomer.removeListener(CALLBACK_ACCEPTED, onCallbackAccepted);
+        declineCallback(call);
       };
 
       connectedCustomer.once(CALLBACK_ACCEPTED, onCallbackAccepted);

@@ -1,6 +1,6 @@
 const { statuses } = require('@/constants/calls');
 
-const getCallStatus = (call) => {
+const getCallStatus = (call = {}) => {
   let status = null;
 
   if (call.finishedAt && call.callbacks && call.callbacks.length) {
