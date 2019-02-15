@@ -5,6 +5,7 @@ exports.CALLBACK_ACCEPTED = 'callback.accepted';
 exports.CALLBACK_DECLINED = 'callback.declined';
 exports.CALLS_INFO = 'calls.info';
 
+exports.CALLS_PENDING = 'calls.pending';
 exports.CALLS_ACTIVE = 'calls.active';
 exports.CALLBACKS_PENDING = 'callbacks.pending';
 

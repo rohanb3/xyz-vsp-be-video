@@ -3,10 +3,11 @@ jest.mock('@/services/pubSubChannel');
 
 const pubSubChannel = require('@/services/pubSubChannel');
 const { createHeap } = require('@/services/heap');
+const constants = require('@/services/heap/constants');
 
 const HEAP_NAME = 'test.heap';
-const ITEM_ADDED = `${HEAP_NAME}:item.added`;
-const ITEM_REMOVED = `${HEAP_NAME}:item.removed`;
+const ITEM_ADDED = `${HEAP_NAME}:${constants.ITEM_ADDED}`;
+const ITEM_REMOVED = `${HEAP_NAME}:${constants.ITEM_REMOVED}`;
 
 let heap = null;
 

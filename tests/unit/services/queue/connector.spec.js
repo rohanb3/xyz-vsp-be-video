@@ -3,10 +3,17 @@ jest.mock('@/services/redisClient');
 
 const storage = require('@/services/callsStorage');
 const client = require('@/services/redisClient');
-const connector = require('@/services/pendingCallsQueue/connector');
-const { CALLS_PENDING } = require('@/services/pendingCallsQueue/constants');
+const { createConnector } = require('@/services/queue/connector');
 
-describe('pendingCallsQueue connector: ', () => {
+const QUEUE_NAME = 'queue.test';
+
+let connector = null;
+
+describe('queue connector: ', () => {
+  beforeEach(() => {
+    connector = createConnector(QUEUE_NAME);
+  });
+
   describe('isExist(): ', () => {
     let items = null;
 
@@ -20,7 +27,7 @@ describe('pendingCallsQueue connector: ', () => {
       return connector.isExist(id)
         .then((exist) => {
           expect(exist).toBeTruthy();
-          expect(client.lrange).toHaveBeenCalledWith(CALLS_PENDING, 0, -1);
+          expect(client.lrange).toHaveBeenCalledWith(QUEUE_NAME, 0, -1);
         });
     });
 
@@ -29,7 +36,7 @@ describe('pendingCallsQueue connector: ', () => {
       return connector.isExist(id)
         .then((exist) => {
           expect(exist).toBeFalsy();
-          expect(client.lrange).toHaveBeenCalledWith(CALLS_PENDING, 0, -1);
+          expect(client.lrange).toHaveBeenCalledWith(QUEUE_NAME, 0, -1);
         });
     });
   });
@@ -40,7 +47,7 @@ describe('pendingCallsQueue connector: ', () => {
       return connector.getSize()
         .then((size) => {
           expect(size).toBe(42);
-          expect(client.llen).toHaveBeenCalledWith(CALLS_PENDING);
+          expect(client.llen).toHaveBeenCalledWith(QUEUE_NAME);
         });
     });
   });
@@ -57,7 +64,7 @@ describe('pendingCallsQueue connector: ', () => {
 
       return connector.enqueue(id, call)
         .then(() => {
-          expect(client.lpush).toHaveBeenCalledWith(CALLS_PENDING, id);
+          expect(client.lpush).toHaveBeenCalledWith(QUEUE_NAME, id);
           expect(storage.set).toHaveBeenCalledWith(id, call);
         });
     });
@@ -70,7 +77,7 @@ describe('pendingCallsQueue connector: ', () => {
 
       return connector.dequeue()
         .then(() => {
-          expect(client.rpop).toHaveBeenCalledWith(CALLS_PENDING);
+          expect(client.rpop).toHaveBeenCalledWith(QUEUE_NAME);
           expect(storage.remove).not.toHaveBeenCalled();
         });
     });
@@ -87,7 +94,7 @@ describe('pendingCallsQueue connector: ', () => {
       return connector.dequeue()
         .then((call) => {
           expect(call).toEqual(storedCall);
-          expect(client.rpop).toHaveBeenCalledWith(CALLS_PENDING);
+          expect(client.rpop).toHaveBeenCalledWith(QUEUE_NAME);
           expect(storage.remove).toHaveBeenCalledWith(id);
         });
     });
@@ -118,7 +125,7 @@ describe('pendingCallsQueue connector: ', () => {
       return connector.remove(id)
         .then((call) => {
           expect(call).toEqual(storedCall);
-          expect(client.lrem).toHaveBeenCalledWith(CALLS_PENDING, 1, id);
+          expect(client.lrem).toHaveBeenCalledWith(QUEUE_NAME, 1, id);
           expect(storage.remove).toHaveBeenCalledWith(id);
         });
     });
@@ -132,7 +139,7 @@ describe('pendingCallsQueue connector: ', () => {
       return connector.getPeak()
         .then((peak) => {
           expect(peak).toBeNull();
-          expect(client.lrange).toHaveBeenCalledWith(CALLS_PENDING, -1, -1);
+          expect(client.lrange).toHaveBeenCalledWith(QUEUE_NAME, -1, -1);
           expect(storage.get).not.toHaveBeenCalled();
         });
     });
@@ -144,7 +151,7 @@ describe('pendingCallsQueue connector: ', () => {
       return connector.getPeak()
         .then((peak) => {
           expect(peak).toBeNull();
-          expect(client.lrange).toHaveBeenCalledWith(CALLS_PENDING, -1, -1);
+          expect(client.lrange).toHaveBeenCalledWith(QUEUE_NAME, -1, -1);
           expect(storage.get).not.toHaveBeenCalled();
         });
     });
@@ -160,7 +167,7 @@ describe('pendingCallsQueue connector: ', () => {
       return connector.getPeak()
         .then((peak) => {
           expect(peak).toEqual(storedCall);
-          expect(client.lrange).toHaveBeenCalledWith(CALLS_PENDING, -1, -1);
+          expect(client.lrange).toHaveBeenCalledWith(QUEUE_NAME, -1, -1);
           expect(storage.get).toHaveBeenCalledWith(id);
         });
     });
@@ -176,7 +183,7 @@ describe('pendingCallsQueue connector: ', () => {
       return connector.getPeak()
         .then((peak) => {
           expect(peak).toEqual(storedCall);
-          expect(client.lrange).toHaveBeenCalledWith(CALLS_PENDING, -1, -1);
+          expect(client.lrange).toHaveBeenCalledWith(QUEUE_NAME, -1, -1);
           expect(storage.get).toHaveBeenCalledWith(id);
         });
     });
