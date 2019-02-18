@@ -61,6 +61,7 @@ const getLogger = (module) => {
     ),
     level: process.env.NODE_ENV === 'development' ? 'debug' : 'error',
     exitOnError: false,
+    silent: process.env.NODE_ENV === 'test',
   });
 
   logger.stream = {

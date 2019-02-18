@@ -1,18 +1,19 @@
-const call = require('@/models/call');
+const Call = require('@/models/call');
 
-const getById = id => call.findById(id);
-
-const create = entity => call.create(entity);
-
-const updateById = (id, updates = {}) => (
-  call.findOneAndUpdate({ _id: id }, { $set: updates })
+const getById = id => Call.findById(id);
+const create = entity => Call.create(entity);
+const updateById = (id, updates = {}) => Call.findOneAndUpdate(
+  { _id: id },
+  { $set: updates },
+  { runValidators: true },
 );
 
-const updateByQuery = (query, updates = {}) => (
-  call.findOneAndUpdate(query, { $set: updates })
-);
+const validateSync = (data) => {
+  const call = new Call(data);
+  return call.validateSync();
+};
 
 exports.getById = getById;
 exports.create = create;
 exports.updateById = updateById;
-exports.updateByQuery = updateByQuery;
+exports.validateSync = validateSync;

@@ -9,6 +9,10 @@ const storeOptions = {
 };
 
 exports.init = (app) => {
+  if (process.env.NODE_ENV === 'test') {
+    return;
+  }
+
   const sess = {
     store: new RedisStore(storeOptions),
     secret: process.env.HTTP_SESSION_SECRET,
