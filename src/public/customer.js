@@ -155,7 +155,7 @@ document.getElementById('button-preview').onclick = () => {
 
 function leaveRoomIfJoined() {
   if (activeRoom) {
-    socket.emit('call.finished', { roomId: activeRoom.name });
+    socket.emit('call.finished', { id: activeRoom.name });
     activeRoom.disconnect();
     activeRoom = null;
   }
