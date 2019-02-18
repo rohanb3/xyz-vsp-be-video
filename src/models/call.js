@@ -1,22 +1,7 @@
 const mongoose = require('@/libs/mongoose');
+const callSchema = require('./schemas/call');
 
-const call = new mongoose.Schema({
-  requestedBy: {
-    type: String,
-    required: true,
-  },
-  requestedAt: {
-    type: String,
-    required: true,
-  },
-  waitingTime: String,
-  missedAt: String,
-  acceptedBy: String,
-  acceptedAt: String,
-  duration: Number,
-  finishedBy: String,
-  finishedAt: String,
-});
+const call = new mongoose.Schema(callSchema);
 
 function idGetter() {
   return this._id.toString();
