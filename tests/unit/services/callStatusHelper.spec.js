@@ -17,6 +17,15 @@ describe('callStatusHelper: ', () => {
       expect(callStatusHelper.getCallStatus(call)).toBe(statuses.CALL_ACTIVE);
     });
 
+    it('should return CALL_FINISHED if call has acceptedAt and no finishedAt', () => {
+      const call = {
+        requestedAt: 'some time',
+        acceptedAt: 'one more time',
+        finishedAt: 'other time',
+      };
+      expect(callStatusHelper.getCallStatus(call)).toBe(statuses.CALL_FINISHED);
+    });
+
     it('should return CALLBACK_PENDING if call finished but last callback is not accepted', () => {
       const call = {
         requestedAt: 'some time',

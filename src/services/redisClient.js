@@ -82,6 +82,10 @@ const del = (...args) => new Promise((resolve, reject) => (
   client.del(...args, promiser(resolve, reject))
 ));
 
+const exists = (...args) => new Promise((resolve, reject) => (
+  client.exists(...args, promiser(resolve, reject))
+));
+
 /*
 ** General finish
 */
@@ -101,3 +105,4 @@ exports.hgetall = hgetall;
 exports.hmset = hmset;
 
 exports.del = del;
+exports.exists = exists;

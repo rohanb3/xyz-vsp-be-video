@@ -103,18 +103,18 @@ describe('HeapConnector: ', () => {
     });
   });
 
-  describe('remove(): ', () => {
+  describe('take(): ', () => {
     it('should remove key and then remove value', () => {
       const id = 'call42';
 
       client.srem = jest.fn(() => Promise.resolve());
-      storage.remove = jest.fn(() => Promise.resolve());
+      storage.take = jest.fn(() => Promise.resolve());
 
-      return connector.remove(id)
+      return connector.take(id)
         .then(() => {
           expect(client.srem)
             .toHaveBeenCalledWith(HEAP_NAME, id);
-          expect(storage.remove).toHaveBeenCalledWith(id);
+          expect(storage.take).toHaveBeenCalledWith(id);
         });
     });
   });

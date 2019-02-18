@@ -14,6 +14,8 @@ const getCallStatus = (call = {}) => {
     status = statuses.CALL_ACTIVE;
   } else if (call.requestedAt && !call.acceptedAt) {
     status = statuses.CALL_PENDING;
+  } else if (call.requestedAt && call.acceptedAt && call.finishedAt) {
+    status = statuses.CALL_FINISHED;
   }
 
   return status;

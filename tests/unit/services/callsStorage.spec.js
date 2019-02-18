@@ -77,25 +77,33 @@ describe('callsStorage: ', () => {
     });
   });
 
-  describe('remove(): ', () => {
+  describe('take(): ', () => {
     it('should be resolved with null if no key specified', () => {
       const key = null;
-      return storage.remove(key)
+
+      client.hgetall = jest.fn(() => Promise.resolve());
+      client.del = jest.fn(() => Promise.resolve());
+
+      return storage.take(key)
         .then((res) => {
           expect(res).toEqual(null);
+          expect(client.hgetall).not.toHaveBeenCalled();
+          expect(client.del).not.toHaveBeenCalled();
         });
     });
 
-    it('should be resolved value if key exists', () => {
+    it('should be resolved with value if key exists', () => {
       const id = 'key42';
       const storedCall = { _id: '42' };
 
       client.hgetall = jest.fn(() => Promise.resolve(storedCall));
       client.del = jest.fn(() => Promise.resolve(null));
 
-      return storage.remove(id)
+      return storage.take(id)
         .then((res) => {
           expect(res).toEqual(storedCall);
+          expect(client.hgetall).toHaveBeenCalledWith(id);
+          expect(client.del).toHaveBeenCalledWith(id);
         });
     });
 
@@ -105,9 +113,11 @@ describe('callsStorage: ', () => {
       client.hgetall = jest.fn(() => Promise.reject(error));
       client.del = jest.fn(() => Promise.resolve(null));
 
-      return storage.remove('123')
+      return storage.take('123')
         .catch((res) => {
           expect(res).toEqual(error);
+          expect(client.hgetall).toHaveBeenCalled();
+          expect(client.del).not.toHaveBeenCalled();
         });
     });
 
@@ -115,11 +125,13 @@ describe('callsStorage: ', () => {
       const error = 'some error';
 
       client.hgetall = jest.fn(() => Promise.resolve(null));
-      client.del = jest.fn(() => Promise.resolve(null));
+      client.del = jest.fn(() => Promise.reject(error));
 
-      return storage.remove('123')
+      return storage.take('123')
         .catch((res) => {
           expect(res).toEqual(error);
+          expect(client.hgetall).toHaveBeenCalled();
+          expect(client.del).toHaveBeenCalled();
         });
     });
   });

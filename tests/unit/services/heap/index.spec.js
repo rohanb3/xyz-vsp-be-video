@@ -7,7 +7,7 @@ const constants = require('@/services/heap/constants');
 
 const HEAP_NAME = 'test.heap';
 const ITEM_ADDED = `${HEAP_NAME}:${constants.ITEM_ADDED}`;
-const ITEM_REMOVED = `${HEAP_NAME}:${constants.ITEM_REMOVED}`;
+const ITEM_TAKEN = `${HEAP_NAME}:${constants.ITEM_TAKEN}`;
 
 let heap = null;
 
@@ -17,7 +17,7 @@ describe('Heap: ', () => {
   });
 
   describe('add(): ', () => {
-    it('should add to heap and publish call adding', () => {
+    it('should add to heap and publish item adding', () => {
       const id = 'call42';
       const call = {
         _id: id,
@@ -38,8 +38,8 @@ describe('Heap: ', () => {
     });
   });
 
-  describe('remove(): ', () => {
-    it('should remove from heap and publish call removing', () => {
+  describe('take(): ', () => {
+    it('should remove from heap and publish item taking', () => {
       const id = 'call42';
       const call = {
         _id: id,
@@ -49,13 +49,13 @@ describe('Heap: ', () => {
         acceptedAt: '2019-02-08T10:39:00Z',
       };
 
-      heap.connector.remove = jest.fn(() => Promise.resolve(call));
+      heap.connector.take = jest.fn(() => Promise.resolve(call));
       pubSubChannel.publish = jest.fn();
 
-      return heap.remove(id)
+      return heap.take(id)
         .then(() => {
-          expect(heap.connector.remove).toHaveBeenCalledWith(id);
-          expect(pubSubChannel.publish).toHaveBeenCalledWith(ITEM_REMOVED, call);
+          expect(heap.connector.take).toHaveBeenCalledWith(id);
+          expect(pubSubChannel.publish).toHaveBeenCalledWith(ITEM_TAKEN, call);
         });
     });
   });
@@ -72,15 +72,15 @@ describe('Heap: ', () => {
     });
   });
 
-  describe('subscribeToItemRemoving(): ', () => {
+  describe('subscribeToItemTaking(): ', () => {
     it('should subscribe to channel event', () => {
       const listener = () => {};
 
       pubSubChannel.subscribe = jest.fn();
 
-      heap.subscribeToItemRemoving(listener);
+      heap.subscribeToItemTaking(listener);
 
-      expect(pubSubChannel.subscribe).toHaveBeenCalledWith(ITEM_REMOVED, listener);
+      expect(pubSubChannel.subscribe).toHaveBeenCalledWith(ITEM_TAKEN, listener);
     });
   });
 
@@ -96,15 +96,15 @@ describe('Heap: ', () => {
     });
   });
 
-  describe('unsubscribeFromItemRemoving(): ', () => {
+  describe('unsubscribeFromItemTaking(): ', () => {
     it('should unsubscribe from channel event', () => {
       const listener = () => {};
 
       pubSubChannel.unsubscribe = jest.fn();
 
-      heap.unsubscribeFromItemRemoving(listener);
+      heap.unsubscribeFromItemTaking(listener);
 
-      expect(pubSubChannel.unsubscribe).toHaveBeenCalledWith(ITEM_REMOVED, listener);
+      expect(pubSubChannel.unsubscribe).toHaveBeenCalledWith(ITEM_TAKEN, listener);
     });
   });
 });

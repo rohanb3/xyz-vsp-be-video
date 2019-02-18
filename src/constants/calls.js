@@ -12,6 +12,7 @@ exports.CALLBACKS_PENDING = 'callbacks.pending';
 exports.statuses = {
   CALL_PENDING: 'call.pending',
   CALL_ACTIVE: 'call.active',
+  CALL_FINISHED: 'call.finished',
   CALLBACK_PENDING: 'callback.pnding',
   CALLBACK_ACTIVE: 'callback.active',
 };

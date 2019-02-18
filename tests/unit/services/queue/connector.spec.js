@@ -73,12 +73,12 @@ describe('queue connector: ', () => {
   describe('dequeue(): ', () => {
     it('should return null and do not take call from storage if no ids in queue', () => {
       client.rpop = jest.fn(() => Promise.resolve(null));
-      storage.remove = jest.fn(() => Promise.resolve());
+      storage.take = jest.fn(() => Promise.resolve());
 
       return connector.dequeue()
         .then(() => {
           expect(client.rpop).toHaveBeenCalledWith(QUEUE_NAME);
-          expect(storage.remove).not.toHaveBeenCalled();
+          expect(storage.take).not.toHaveBeenCalled();
         });
     });
 
@@ -89,13 +89,13 @@ describe('queue connector: ', () => {
       };
 
       client.rpop = jest.fn(() => Promise.resolve(id));
-      storage.remove = jest.fn(() => Promise.resolve(storedCall));
+      storage.take = jest.fn(() => Promise.resolve(storedCall));
 
       return connector.dequeue()
         .then((call) => {
           expect(call).toEqual(storedCall);
           expect(client.rpop).toHaveBeenCalledWith(QUEUE_NAME);
-          expect(storage.remove).toHaveBeenCalledWith(id);
+          expect(storage.take).toHaveBeenCalledWith(id);
         });
     });
   });
@@ -103,13 +103,13 @@ describe('queue connector: ', () => {
   describe('remove(): ', () => {
     it('should not remove id or call if no id specified', () => {
       client.lrem = jest.fn(() => Promise.resolve());
-      storage.remove = jest.fn(() => Promise.resolve());
+      storage.take = jest.fn(() => Promise.resolve());
 
       return connector.remove()
         .then((call) => {
           expect(call).toBeNull();
           expect(client.lrem).not.toHaveBeenCalled();
-          expect(storage.remove).not.toHaveBeenCalled();
+          expect(storage.take).not.toHaveBeenCalled();
         });
     });
 
@@ -120,13 +120,13 @@ describe('queue connector: ', () => {
       };
 
       client.lrem = jest.fn(() => Promise.resolve(id));
-      storage.remove = jest.fn(() => Promise.resolve(storedCall));
+      storage.take = jest.fn(() => Promise.resolve(storedCall));
 
       return connector.remove(id)
         .then((call) => {
           expect(call).toEqual(storedCall);
           expect(client.lrem).toHaveBeenCalledWith(QUEUE_NAME, 1, id);
-          expect(storage.remove).toHaveBeenCalledWith(id);
+          expect(storage.take).toHaveBeenCalledWith(id);
         });
     });
   });

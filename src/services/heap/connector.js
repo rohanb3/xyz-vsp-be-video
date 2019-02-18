@@ -1,9 +1,8 @@
 const storage = require('@/services/callsStorage');
 const client = require('@/services/redisClient');
 
-const setKey = heapName => key => client.sadd(heapName, key);
-
-const delKey = heapName => key => client.srem(heapName, key);
+const setKey = (heapName, key) => client.sadd(heapName, key);
+const delKey = (heapName, key) => client.srem(heapName, key);
 
 class HeapConnector {
   constructor(heapName) {
@@ -11,7 +10,7 @@ class HeapConnector {
   }
 
   add(key, value) {
-    return setKey(this.heapName)(key)
+    return setKey(this.heapName, key)
       .then(() => storage.set(key, value));
   }
 
@@ -20,9 +19,9 @@ class HeapConnector {
       .then(exists => (exists ? storage.get(key) : null));
   }
 
-  remove(key) {
-    return delKey(this.heapName)(key)
-      .then(() => storage.remove(key));
+  take(key) {
+    return delKey(this.heapName, key)
+      .then(() => storage.take(key));
   }
 
   isExist(key) {

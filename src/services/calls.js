@@ -83,7 +83,7 @@ function requestCallback(callId) {
 function acceptCallBack(callId) {
   const call = {};
   return pendingCallbacksHeap
-    .remove(callId)
+    .take(callId)
     .then((callFromHeap) => {
       const callbacks = [...callFromHeap.callbacks];
       callbacks[callbacks.length - 1].acceptedAt = moment.utc().format();
@@ -99,7 +99,7 @@ function acceptCallBack(callId) {
 function declineCallback(callId) {
   const call = {};
   return pendingCallbacksHeap
-    .remove(callId)
+    .take(callId)
     .then((callFromHeap) => {
       const callbacks = [...callFromHeap.callbacks];
       callbacks[callbacks.length - 1].declinedAt = moment.utc().format();
@@ -150,11 +150,11 @@ function getPendingCallsLength() {
 }
 
 function subscribeToCallsLengthChanging(listener) {
-  return pendingCallsQueue.subscribeToQueueSizeChanging(listener);
+  return pendingCallsQueue.subscribeToQueueChanging(listener);
 }
 
 function unsubscribeFromCallsLengthChanging(listener) {
-  return pendingCallsQueue.unsubscribeFromQueueSizeChanging(listener);
+  return pendingCallsQueue.unsubscribeFromQueueChanging(listener);
 }
 
 exports.requestCall = requestCall;

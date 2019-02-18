@@ -157,14 +157,14 @@ describe('calls: ', () => {
 
       twilio.ensureRoom = jest.fn(() => Promise.resolve());
       callsDBClient.updateById = jest.fn(() => Promise.resolve(call));
-      pendingCallbacksHeap.remove = jest.fn(() => Promise.resolve(call));
+      pendingCallbacksHeap.take = jest.fn(() => Promise.resolve(call));
       activeCallsHeap.add = jest.fn(() => Promise.resolve(expectedCall));
       pubSubChannel.publish = jest.fn();
 
       return calls.acceptCallBack(callId).then((result) => {
         expect(result).toEqual(expectedCall);
         expect(twilio.ensureRoom).toHaveBeenCalledWith(callId);
-        expect(pendingCallbacksHeap.remove).toHaveBeenCalledWith(callId);
+        expect(pendingCallbacksHeap.take).toHaveBeenCalledWith(callId);
         expect(activeCallsHeap.add).toHaveBeenCalledWith(callId, expectedCall);
         expect(pubSubChannel.publish).toHaveBeenCalledWith(CALLBACK_ACCEPTED, expectedCall);
         expect(callsDBClient.updateById).toHaveBeenCalledWith(callId, {
@@ -203,12 +203,12 @@ describe('calls: ', () => {
       };
 
       callsDBClient.updateById = jest.fn(() => Promise.resolve(call));
-      pendingCallbacksHeap.remove = jest.fn(() => Promise.resolve(call));
+      pendingCallbacksHeap.take = jest.fn(() => Promise.resolve(call));
       pubSubChannel.publish = jest.fn();
 
       return calls.declineCallback(callId).then((result) => {
         expect(result).toEqual(expectedCall);
-        expect(pendingCallbacksHeap.remove).toHaveBeenCalledWith(callId);
+        expect(pendingCallbacksHeap.take).toHaveBeenCalledWith(callId);
         expect(pubSubChannel.publish).toHaveBeenCalledWith(CALLBACK_DECLINED, expectedCall);
         expect(callsDBClient.updateById).toHaveBeenCalledWith(callId, {
           callbacks: expectedCallbacks,
@@ -333,22 +333,22 @@ describe('calls: ', () => {
   describe('subscribeToCallsLengthChanging(): ', () => {
     it('should subscribe to queue event', () => {
       const listener = () => {};
-      pendingCallsQueue.subscribeToQueueSizeChanging = jest.fn();
+      pendingCallsQueue.subscribeToQueueChanging = jest.fn();
 
       calls.subscribeToCallsLengthChanging(listener);
 
-      expect(pendingCallsQueue.subscribeToQueueSizeChanging).toHaveBeenCalledWith(listener);
+      expect(pendingCallsQueue.subscribeToQueueChanging).toHaveBeenCalledWith(listener);
     });
   });
 
   describe('unsubscribeFromCallsLengthChanging(): ', () => {
     it('should unsubscribe from queue event', () => {
       const listener = () => {};
-      pendingCallsQueue.unsubscribeFromQueueSizeChanging = jest.fn();
+      pendingCallsQueue.unsubscribeFromQueueChanging = jest.fn();
 
       calls.unsubscribeFromCallsLengthChanging(listener);
 
-      expect(pendingCallsQueue.unsubscribeFromQueueSizeChanging).toHaveBeenCalledWith(listener);
+      expect(pendingCallsQueue.unsubscribeFromQueueChanging).toHaveBeenCalledWith(listener);
     });
   });
 });

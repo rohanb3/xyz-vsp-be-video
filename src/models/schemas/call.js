@@ -1,5 +1,6 @@
 const customerFeedback = require('./customerFeedback');
 const operatorFeedback = require('./operatorFeedback');
+const callback = require('./callback');
 
 module.exports = {
   requestedBy: {
@@ -20,4 +21,5 @@ module.exports = {
   roomId: String,
   customerFeedback,
   operatorFeedback,
+  callbacks: [callback],
 };

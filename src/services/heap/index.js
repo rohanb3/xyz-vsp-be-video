@@ -2,7 +2,7 @@
 
 const {
   ITEM_ADDED,
-  ITEM_REMOVED,
+  ITEM_TAKEN,
 } = require('./constants');
 const { createConnector } = require('./connector');
 const pubSub = require('@/services/pubSubChannel');
@@ -14,7 +14,7 @@ class Heap {
     this.connector = createConnector(name);
     this.events = {
       ITEM_ADDED: reduceToKey(name, ITEM_ADDED),
-      ITEM_REMOVED: reduceToKey(name, ITEM_REMOVED),
+      ITEM_TAKEN: reduceToKey(name, ITEM_TAKEN),
     };
   }
 
@@ -23,9 +23,9 @@ class Heap {
       .then(() => pubSub.publish(this.events.ITEM_ADDED, item));
   }
 
-  remove(id) {
-    return this.connector.remove(id)
-      .then(item => pubSub.publish(this.events.ITEM_REMOVED, item));
+  take(id) {
+    return this.connector.take(id)
+      .then(item => pubSub.publish(this.events.ITEM_TAKEN, item));
   }
 
   isExist(id) {
@@ -40,16 +40,16 @@ class Heap {
     return pubSub.subscribe(this.events.ITEM_ADDED, listener);
   }
 
-  subscribeToItemRemoving(listener) {
-    return pubSub.subscribe(this.events.ITEM_REMOVED, listener);
+  subscribeToItemTaking(listener) {
+    return pubSub.subscribe(this.events.ITEM_TAKEN, listener);
   }
 
   unsubscribeFromItemAdding(listener) {
     return pubSub.unsubscribe(this.events.ITEM_ADDED, listener);
   }
 
-  unsubscribeFromItemRemoving(listener) {
-    return pubSub.unsubscribe(this.events.ITEM_REMOVED, listener);
+  unsubscribeFromItemTaking(listener) {
+    return pubSub.unsubscribe(this.events.ITEM_TAKEN, listener);
   }
 }
 

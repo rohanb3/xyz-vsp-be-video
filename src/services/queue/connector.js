@@ -19,12 +19,12 @@ class QueueConnector {
   }
 
   dequeue() {
-    return takeOldestKey(this.queueName).then(key => (key ? storage.remove(key) : null));
+    return takeOldestKey(this.queueName).then(key => (key ? storage.take(key) : null));
   }
 
   remove(key) {
     return key
-      ? removeKey(this.queueName, key).then(() => storage.remove(key))
+      ? removeKey(this.queueName, key).then(() => storage.take(key))
       : Promise.resolve(null);
   }
 
