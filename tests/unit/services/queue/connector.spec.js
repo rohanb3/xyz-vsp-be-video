@@ -1,9 +1,10 @@
-jest.mock('@/services/callsStorage');
+jest.mock('@/services/storage');
 jest.mock('@/services/redisClient');
 
-const storage = require('@/services/callsStorage');
+const storage = require('@/services/storage');
 const client = require('@/services/redisClient');
 const { createConnector } = require('@/services/queue/connector');
+const errors = require('@/services/queue/errors');
 
 const QUEUE_NAME = 'queue.test';
 
@@ -18,12 +19,12 @@ describe('queue connector: ', () => {
     let items = null;
 
     beforeEach(() => {
-      items = ['call77', 'call42'];
+      items = ['item77', 'item42'];
       client.lrange = jest.fn(() => Promise.resolve(items));
     });
 
     it('should return true if key exists', () => {
-      const id = 'call42';
+      const id = 'item42';
       return connector.isExist(id)
         .then((exist) => {
           expect(exist).toBeTruthy();
@@ -32,7 +33,7 @@ describe('queue connector: ', () => {
     });
 
     it('should return false if no key exists', () => {
-      const id = 'call12';
+      const id = 'item12';
       return connector.isExist(id)
         .then((exist) => {
           expect(exist).toBeFalsy();
@@ -53,47 +54,161 @@ describe('queue connector: ', () => {
   });
 
   describe('enqueue(): ', () => {
-    it('should set id to queue and add call to storage', () => {
-      const id = ' call42';
-      const call = {
-        _id: 'call42',
+    it('should resolve with false if no id specified', () => {
+      client.lpush = jest.fn(() => Promise.resolve());
+      client.lrem = jest.fn(() => Promise.resolve());
+      storage.set = jest.fn(() => Promise.resolve());
+      connector.isExist = jest.fn(() => Promise.resolve(false));
+
+      return connector.enqueue()
+        .then((res) => {
+          expect(res).toBeFalsy();
+          expect(client.lpush).not.toHaveBeenCalled();
+          expect(client.lrem).not.toHaveBeenCalled();
+          expect(storage.set).not.toHaveBeenCalled();
+          expect(connector.isExist).not.toHaveBeenCalled();
+        });
+    });
+
+    it('should set id to queue and add item to storage', () => {
+      const id = ' item42';
+      const item = {
+        _id: 'item42',
       };
 
       client.lpush = jest.fn(() => Promise.resolve());
+      client.lrem = jest.fn(() => Promise.resolve());
       storage.set = jest.fn(() => Promise.resolve());
+      connector.isExist = jest.fn(() => Promise.resolve(false));
 
-      return connector.enqueue(id, call)
+      return connector.enqueue(id, item)
         .then(() => {
           expect(client.lpush).toHaveBeenCalledWith(QUEUE_NAME, id);
-          expect(storage.set).toHaveBeenCalledWith(id, call);
+          expect(client.lrem).not.toHaveBeenCalled();
+          expect(storage.set).toHaveBeenCalledWith(id, item);
+        });
+    });
+
+    it('should reject if key already exists', () => {
+      const id = 'item42';
+      const item = {
+        _id: 'item42',
+      };
+
+      client.lpush = jest.fn(() => Promise.resolve());
+      client.lrem = jest.fn(() => Promise.resolve());
+      storage.set = jest.fn(() => Promise.resolve());
+      connector.isExist = jest.fn(() => Promise.resolve(true));
+
+      return connector.enqueue(id, item)
+        .catch((err) => {
+          expect(err).toBeInstanceOf(errors.OverrideItemError);
+          expect(client.lpush).not.toHaveBeenCalled();
+          expect(client.lrem).not.toHaveBeenCalled();
+          expect(storage.set).not.toHaveBeenCalled();
+        });
+    });
+
+    it('should reject and cleanup if key exists in storage', () => {
+      const id = 'item42';
+      const item = {
+        _id: 'item42',
+      };
+      const error = new storage.errors.OverrideItemError(id);
+
+      client.lpush = jest.fn(() => Promise.resolve());
+      client.lrem = jest.fn(() => Promise.resolve());
+      storage.set = jest.fn(() => Promise.reject(error));
+      connector.isExist = jest.fn(() => Promise.resolve(false));
+
+      return connector.enqueue(id, item)
+        .catch((err) => {
+          expect(err).toBeInstanceOf(errors.OverrideItemError);
+          expect(client.lpush).toHaveBeenCalledWith(QUEUE_NAME, id);
+          expect(storage.set).toHaveBeenCalledWith(id, item);
+          expect(client.lrem).toHaveBeenCalledWith(QUEUE_NAME, 1, id);
+        });
+    });
+
+    it('should reject and cleanup if save to storage failed', () => {
+      const id = 'item42';
+      const item = {
+        _id: 'item42',
+      };
+      const error = 'some error';
+
+      client.lpush = jest.fn(() => Promise.resolve());
+      client.lrem = jest.fn(() => Promise.resolve());
+      storage.set = jest.fn(() => Promise.reject(error));
+      connector.isExist = jest.fn(() => Promise.resolve(false));
+
+      return connector.enqueue(id, item)
+        .catch((err) => {
+          expect(err).toBe(error);
+          expect(err).not.toBeInstanceOf(errors.OverrideItemError);
+          expect(client.lpush).toHaveBeenCalledWith(QUEUE_NAME, id);
+          expect(storage.set).toHaveBeenCalledWith(id, item);
+          expect(client.lrem).toHaveBeenCalledWith(QUEUE_NAME, 1, id);
         });
     });
   });
 
   describe('dequeue(): ', () => {
-    it('should return null and do not take call from storage if no ids in queue', () => {
-      client.rpop = jest.fn(() => Promise.resolve(null));
-      storage.take = jest.fn(() => Promise.resolve());
-
-      return connector.dequeue()
-        .then(() => {
-          expect(client.rpop).toHaveBeenCalledWith(QUEUE_NAME);
-          expect(storage.take).not.toHaveBeenCalled();
-        });
-    });
-
-    it('should remove id from queue and take call from storage', () => {
-      const id = ' call42';
+    it('should remove id from queue and take item from storage', () => {
+      const id = ' item42';
       const storedCall = {
-        _id: 'call42',
+        _id: 'item42',
       };
 
       client.rpop = jest.fn(() => Promise.resolve(id));
       storage.take = jest.fn(() => Promise.resolve(storedCall));
 
       return connector.dequeue()
-        .then((call) => {
-          expect(call).toEqual(storedCall);
+        .then((item) => {
+          expect(item).toEqual(storedCall);
+          expect(client.rpop).toHaveBeenCalledWith(QUEUE_NAME);
+          expect(storage.take).toHaveBeenCalledWith(id);
+        });
+    });
+
+    it('should reject if no key in storage', () => {
+      const id = ' item42';
+      const error = new storage.errors.NotFoundItemError(id);
+
+      client.rpop = jest.fn(() => Promise.resolve(id));
+      storage.take = jest.fn(() => Promise.reject(error));
+
+      return connector.dequeue()
+        .catch((err) => {
+          expect(err).toBeInstanceOf(errors.NotFoundItemError);
+          expect(client.rpop).toHaveBeenCalledWith(QUEUE_NAME);
+          expect(storage.take).toHaveBeenCalledWith(id);
+        });
+    });
+
+    it('should reject if queue is empty', () => {
+      client.rpop = jest.fn(() => Promise.resolve(null));
+      storage.take = jest.fn(() => Promise.resolve());
+
+      return connector.dequeue()
+        .catch((err) => {
+          expect(err).toBeInstanceOf(errors.EmptyQueueError);
+          expect(client.rpop).toHaveBeenCalledWith(QUEUE_NAME);
+          expect(storage.take).not.toHaveBeenCalled();
+        });
+    });
+
+    it('should reject if no taking from storage failed', () => {
+      const id = ' item42';
+      const error = 'some error';
+
+      client.rpop = jest.fn(() => Promise.resolve(id));
+      storage.take = jest.fn(() => Promise.reject(error));
+
+      return connector.dequeue()
+        .catch((err) => {
+          expect(err).toBe(error);
+          expect(err).not.toBeInstanceOf(errors.NotFoundItemError);
           expect(client.rpop).toHaveBeenCalledWith(QUEUE_NAME);
           expect(storage.take).toHaveBeenCalledWith(id);
         });
@@ -101,32 +216,79 @@ describe('queue connector: ', () => {
   });
 
   describe('remove(): ', () => {
-    it('should not remove id or call if no id specified', () => {
+    it('should resolve with false if no id specified', () => {
       client.lrem = jest.fn(() => Promise.resolve());
       storage.take = jest.fn(() => Promise.resolve());
+      connector.isExist = jest.fn(() => Promise.resolve(false));
 
       return connector.remove()
-        .then((call) => {
-          expect(call).toBeNull();
+        .then((res) => {
+          expect(res).toBeFalsy();
+          expect(client.lrem).not.toHaveBeenCalled();
+          expect(storage.take).not.toHaveBeenCalled();
+          expect(connector.isExist).not.toHaveBeenCalled();
+        });
+    });
+
+    it('should remove id from queue and take item from storage', () => {
+      const id = ' item42';
+
+      client.lrem = jest.fn(() => Promise.resolve());
+      storage.take = jest.fn(() => Promise.resolve());
+      connector.isExist = jest.fn(() => Promise.resolve(true));
+
+      return connector.remove(id)
+        .then(() => {
+          expect(client.lrem).toHaveBeenCalledWith(QUEUE_NAME, 1, id);
+          expect(storage.take).toHaveBeenCalledWith(id);
+        });
+    });
+
+    it('should reject if no key exists', () => {
+      const id = 'item42';
+
+      client.lrem = jest.fn(() => Promise.resolve());
+      storage.take = jest.fn(() => Promise.resolve());
+      connector.isExist = jest.fn(() => Promise.resolve(false));
+
+      return connector.remove(id)
+        .catch((err) => {
+          expect(err).toBeInstanceOf(errors.NotFoundItemError);
           expect(client.lrem).not.toHaveBeenCalled();
           expect(storage.take).not.toHaveBeenCalled();
         });
     });
 
-    it('should remove id from queue and take call from storage', () => {
-      const id = ' call42';
-      const storedCall = {
-        _id: 'call42',
-      };
+    it('should reject if no key exists in storage', () => {
+      const id = 'item42';
+      const error = new storage.errors.NotFoundItemError(id);
 
-      client.lrem = jest.fn(() => Promise.resolve(id));
-      storage.take = jest.fn(() => Promise.resolve(storedCall));
+      client.lrem = jest.fn(() => Promise.resolve());
+      storage.take = jest.fn(() => Promise.reject(error));
+      connector.isExist = jest.fn(() => Promise.resolve(true));
 
       return connector.remove(id)
-        .then((call) => {
-          expect(call).toEqual(storedCall);
-          expect(client.lrem).toHaveBeenCalledWith(QUEUE_NAME, 1, id);
+        .catch((err) => {
+          expect(err).toBeInstanceOf(errors.NotFoundItemError);
           expect(storage.take).toHaveBeenCalledWith(id);
+          expect(client.lrem).toHaveBeenCalledWith(QUEUE_NAME, 1, id);
+        });
+    });
+
+    it('should reject if taking from storage failed', () => {
+      const id = 'item42';
+      const error = 'some error';
+
+      client.lrem = jest.fn(() => Promise.resolve());
+      storage.take = jest.fn(() => Promise.reject(error));
+      connector.isExist = jest.fn(() => Promise.resolve(true));
+
+      return connector.remove(id)
+        .catch((err) => {
+          expect(err).toBe(error);
+          expect(err).not.toBeInstanceOf(errors.OverrideItemError);
+          expect(storage.take).toHaveBeenCalledWith(id);
+          expect(client.lrem).toHaveBeenCalledWith(QUEUE_NAME, 1, id);
         });
     });
   });
@@ -156,10 +318,10 @@ describe('queue connector: ', () => {
         });
     });
 
-    it('should return call if id is in queue (single elem array)', () => {
-      const id = ' call42';
+    it('should return item if id is in queue (single elem array)', () => {
+      const id = ' item42';
       const storedCall = {
-        _id: 'call42',
+        _id: 'item42',
       };
       client.lrange = jest.fn(() => Promise.resolve([id]));
       storage.get = jest.fn(() => Promise.resolve(storedCall));
@@ -172,10 +334,10 @@ describe('queue connector: ', () => {
         });
     });
 
-    it('should return call if id is in queue (single elem)', () => {
-      const id = ' call42';
+    it('should return item if id is in queue (single elem)', () => {
+      const id = ' item42';
       const storedCall = {
-        _id: 'call42',
+        _id: 'item42',
       };
       client.lrange = jest.fn(() => Promise.resolve(id));
       storage.get = jest.fn(() => Promise.resolve(storedCall));

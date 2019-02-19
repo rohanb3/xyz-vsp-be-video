@@ -1,5 +1,5 @@
-const callFeedback = require('@/services/callFeedback');
-const { CallUpdateError } = require('@/services/errors');
+const callFeedback = require('@/services/calls/feedback');
+const { CallUpdateError } = require('@/services/calls/errors');
 const { CALL_ID_MISSING, FEEDBACK_MISSING } = require('@/constants/feedbackErrors');
 const logger = require('@/services/logger')(module);
 

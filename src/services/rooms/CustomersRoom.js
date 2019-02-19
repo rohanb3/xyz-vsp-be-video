@@ -40,14 +40,21 @@ class CustomersRoom {
   }
 
   onCustomerRequestedCall(customer) {
-    return requestCall(customer.id).then((call) => {
-      logger.debug('call.requested.customer', call);
-      customer.pendingCallId = call.id;
-    });
+    return requestCall(customer.id)
+      .then((call) => {
+        logger.debug('call.requested.customer', call);
+        customer.pendingCallId = call.id;
+      })
+      .catch((err) => {
+        logger.error('call.request.failed.customer', err);
+      });
   }
 
   onCustomerFinishedCall(customer, call) {
-    return finishCall(call.id, customer.id);
+    return finishCall(call.id, customer.id)
+      .catch((err) => {
+        logger.error('call.finish.failed.customer', err);
+      });
   }
 
   onCustomerDisconnected(customer) {
@@ -79,12 +86,18 @@ class CustomersRoom {
 
       const onCallbackAccepted = () => {
         connectedCustomer.removeListener(CALLBACK_DECLINED, onCallbackDeclined);
-        acceptCallback(call);
+        acceptCallback(call)
+          .catch((err) => {
+            logger.error('call.accept.failed.customer', err);
+          });
       };
 
       const onCallbackDeclined = () => {
         connectedCustomer.removeListener(CALLBACK_ACCEPTED, onCallbackAccepted);
-        declineCallback(call);
+        declineCallback(call)
+          .catch((err) => {
+            logger.error('call.decline.failed.customer', err);
+          });
       };
 
       connectedCustomer.once(CALLBACK_ACCEPTED, onCallbackAccepted);

@@ -1,14 +1,14 @@
 /* eslint-disable no-use-before-define */
 const moment = require('moment');
-const pendingCallsQueue = require('@/services/pendingCallsQueue');
-const activeCallsHeap = require('@/services/activeCallsHeap');
-const pendingCallbacksHeap = require('@/services/pendingCallbacksHeap');
-const callsDBClient = require('@/services/callsDBClient');
+const { pendingCallsQueue } = require('@/services/calls/pendingCallsQueue');
+const { activeCallsHeap } = require('@/services/calls/activeCallsHeap');
+const { pendingCallbacksHeap } = require('@/services/calls/pendingCallbacksHeap');
+const callsDBClient = require('@/services/calls/DBClient');
 const twilio = require('@/services/twilio');
 const pubSubChannel = require('@/services/pubSubChannel');
-const callsStorage = require('@/services/callsStorage');
-const callStatusHelper = require('@/services/callStatusHelper');
-const callFinisher = require('@/services/callFinisher');
+const storage = require('@/services/storage');
+const callStatusHelper = require('@/services/calls/statusHelper');
+const callFinisher = require('@/services/calls/finisher');
 const {
   CALL_REQUESTED,
   CALL_ACCEPTED,
@@ -17,6 +17,7 @@ const {
   CALLBACK_DECLINED,
   statuses,
 } = require('@/constants/calls');
+const callsErrorHandler = require('@/services/calls/errorHandler');
 
 function requestCall(requestedBy) {
   const call = {
@@ -31,7 +32,8 @@ function requestCall(requestedBy) {
       return pendingCallsQueue.enqueue(id, call);
     })
     .then(() => pubSubChannel.publish(CALL_REQUESTED, call))
-    .then(() => call);
+    .then(() => call)
+    .catch(err => callsErrorHandler.onRequestCallFailed(err, call.id));
 }
 
 function takeCall() {
@@ -55,7 +57,8 @@ function acceptCall(acceptedBy) {
     .then(() => activeCallsHeap.add(call.id, call))
     .then(() => callsDBClient.updateById(call.id, updates))
     .then(() => pubSubChannel.publish(CALL_ACCEPTED, call))
-    .then(() => call);
+    .then(() => call)
+    .catch(err => callsErrorHandler.onAcceptCallFailed(err, call.id));
 }
 
 function requestCallback(callId) {
@@ -77,7 +80,8 @@ function requestCallback(callId) {
       pubSubChannel.publish(CALLBACK_REQUESTED, call);
       return callsDBClient.updateById(callId, { callbacks: call.callbacks });
     })
-    .then(() => call);
+    .then(() => call)
+    .catch(err => callsErrorHandler.onRequestCallbackFailed(err, call.id));
 }
 
 function acceptCallBack(callId) {
@@ -93,7 +97,8 @@ function acceptCallBack(callId) {
     .then(() => twilio.ensureRoom(callId))
     .then(() => pubSubChannel.publish(CALLBACK_ACCEPTED, call))
     .then(() => callsDBClient.updateById(callId, { callbacks: call.callbacks }))
-    .then(() => call);
+    .then(() => call)
+    .catch(err => callsErrorHandler.onAcceptCallbackFailed(err, callId));
 }
 
 function declineCallback(callId) {
@@ -107,38 +112,37 @@ function declineCallback(callId) {
     })
     .then(() => pubSubChannel.publish(CALLBACK_DECLINED, call))
     .then(() => callsDBClient.updateById(callId, { callbacks: call.callbacks }))
-    .then(() => call);
+    .then(() => call)
+    .catch(err => callsErrorHandler.onDeclineCallbackFailed(err, callId));
 }
 
 function finishCall(callId, finishedBy) {
-  return callsStorage.get(callId).then((call) => {
-    if (!call) {
-      return Promise.resolve();
-    }
+  return storage.get(callId)
+    .then((call) => {
+      let finishingPromise = null;
+      const callStatus = callStatusHelper.getCallStatus(call);
 
-    let finishingPromise = null;
-    const callStatus = callStatusHelper.getCallStatus(call);
+      switch (callStatus) {
+        case statuses.CALL_PENDING:
+          finishingPromise = callFinisher.markCallAsMissed(callId);
+          break;
+        case statuses.CALL_ACTIVE:
+          finishingPromise = callFinisher.markCallAsFinished(callId, finishedBy);
+          break;
+        case statuses.CALLBACK_PENDING:
+          finishingPromise = callFinisher.markLastCallbackAsMissed(callId);
+          break;
+        case statuses.CALLBACK_ACTIVE:
+          finishingPromise = callFinisher.markLastCallbackAsFinished(callId, finishedBy);
+          break;
+        default:
+          finishingPromise = Promise.resolve();
+          break;
+      }
 
-    switch (callStatus) {
-      case statuses.CALL_PENDING:
-        finishingPromise = callFinisher.markCallAsMissed(callId);
-        break;
-      case statuses.CALL_ACTIVE:
-        finishingPromise = callFinisher.markCallAsFinished(callId, finishedBy);
-        break;
-      case statuses.CALLBACK_PENDING:
-        finishingPromise = callFinisher.markLastCallbackAsMissed(callId);
-        break;
-      case statuses.CALLBACK_ACTIVE:
-        finishingPromise = callFinisher.markLastCallbackAsFinished(callId, finishedBy);
-        break;
-      default:
-        finishingPromise = Promise.resolve();
-        break;
-    }
-
-    return finishingPromise;
-  });
+      return finishingPromise;
+    })
+    .catch(err => callsErrorHandler.onFinishCallFailed(err, callId));
 }
 
 function getOldestCall() {

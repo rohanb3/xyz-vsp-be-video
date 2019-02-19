@@ -1,9 +1,10 @@
-jest.mock('@/services/callsStorage');
+jest.mock('@/services/storage');
 jest.mock('@/services/redisClient');
 
-const storage = require('@/services/callsStorage');
+const storage = require('@/services/storage');
 const client = require('@/services/redisClient');
 const { createConnector } = require('@/services/heap/connector');
+const errors = require('@/services/heap/errors');
 
 const HEAP_NAME = 'test.heap';
 
@@ -62,12 +63,74 @@ describe('HeapConnector: ', () => {
 
       client.sadd = jest.fn(() => Promise.resolve());
       storage.set = jest.fn(() => Promise.resolve());
+      connector.isExist = jest.fn(() => Promise.resolve(false));
 
       return connector.add(id, call)
         .then(() => {
           expect(client.sadd)
             .toHaveBeenCalledWith(HEAP_NAME, id);
           expect(storage.set).toHaveBeenCalledWith(id, call);
+        });
+    });
+
+    it('should reject if key already exists', () => {
+      const id = 'call42';
+      const call = {
+        _id: 'call42',
+      };
+
+      client.sadd = jest.fn(() => Promise.resolve());
+      storage.set = jest.fn(() => Promise.resolve());
+      connector.isExist = jest.fn(() => Promise.resolve(true));
+
+      return connector.add(id, call)
+        .catch((err) => {
+          expect(err).toBeInstanceOf(errors.OverrideItemError);
+          expect(client.sadd).not.toHaveBeenCalled();
+          expect(storage.set).not.toHaveBeenCalled();
+        });
+    });
+
+    it('should reject and cleanup if key exists in storage', () => {
+      const id = 'call42';
+      const call = {
+        _id: 'call42',
+      };
+      const error = new storage.errors.OverrideItemError(id);
+
+      client.sadd = jest.fn(() => Promise.resolve());
+      client.srem = jest.fn(() => Promise.resolve());
+      storage.set = jest.fn(() => Promise.reject(error));
+      connector.isExist = jest.fn(() => Promise.resolve(false));
+
+      return connector.add(id, call)
+        .catch((err) => {
+          expect(err).toBeInstanceOf(errors.OverrideItemError);
+          expect(client.sadd).toHaveBeenCalledWith(HEAP_NAME, id);
+          expect(storage.set).toHaveBeenCalledWith(id, call);
+          expect(client.srem).toHaveBeenCalledWith(HEAP_NAME, id);
+        });
+    });
+
+    it('should reject and cleanup if save to storage failed', () => {
+      const id = 'call42';
+      const call = {
+        _id: 'call42',
+      };
+      const error = 'some error';
+
+      client.sadd = jest.fn(() => Promise.resolve());
+      client.srem = jest.fn(() => Promise.resolve());
+      storage.set = jest.fn(() => Promise.reject(error));
+      connector.isExist = jest.fn(() => Promise.resolve(false));
+
+      return connector.add(id, call)
+        .catch((err) => {
+          expect(err).toBe(error);
+          expect(err).not.toBeInstanceOf(errors.OverrideItemError);
+          expect(client.sadd).toHaveBeenCalledWith(HEAP_NAME, id);
+          expect(storage.set).toHaveBeenCalledWith(id, call);
+          expect(client.srem).toHaveBeenCalledWith(HEAP_NAME, id);
         });
     });
   });
@@ -114,6 +177,53 @@ describe('HeapConnector: ', () => {
         .then(() => {
           expect(client.srem)
             .toHaveBeenCalledWith(HEAP_NAME, id);
+          expect(storage.take).toHaveBeenCalledWith(id);
+        });
+    });
+
+    it('should reject if no key exists', () => {
+      const id = 'call42';
+
+      client.srem = jest.fn(() => Promise.resolve());
+      storage.take = jest.fn(() => Promise.resolve());
+      connector.isExist = jest.fn(() => Promise.resolve(false));
+
+      return connector.take(id)
+        .catch((err) => {
+          expect(err).toBeInstanceOf(errors.NotFoundItemError);
+          expect(client.srem).not.toHaveBeenCalled();
+          expect(storage.take).not.toHaveBeenCalled();
+        });
+    });
+
+    it('should reject if no key exists in storage', () => {
+      const id = 'call42';
+      const error = new storage.errors.NotFoundItemError(id);
+
+      client.srem = jest.fn(() => Promise.resolve());
+      storage.take = jest.fn(() => Promise.reject(error));
+      connector.isExist = jest.fn(() => Promise.resolve(true));
+
+      return connector.take(id)
+        .catch((err) => {
+          expect(err).toBeInstanceOf(errors.NotFoundItemError);
+          expect(client.srem).toHaveBeenCalledWith(HEAP_NAME, id);
+          expect(storage.take).toHaveBeenCalledWith(id);
+        });
+    });
+
+    it('should reject if taking from storage failed', () => {
+      const id = 'call42';
+      const error = 'some error';
+
+      client.srem = jest.fn(() => Promise.resolve());
+      storage.take = jest.fn(() => Promise.reject(error));
+      connector.isExist = jest.fn(() => Promise.resolve(true));
+
+      return connector.take(id)
+        .catch((err) => {
+          expect(err).not.toBeInstanceOf(errors.NotFoundItemError);
+          expect(client.srem).toHaveBeenCalledWith(HEAP_NAME, id);
           expect(storage.take).toHaveBeenCalledWith(id);
         });
     });

@@ -1,10 +1,10 @@
 /* eslint-disable jest/no-test-prefixes, jest/no-disabled-tests */
-jest.mock('@/services/callFeedback');
+jest.mock('@/services/calls/feedback');
 
 const request = require('supertest');
 const app = require('@/app');
-const callFeedback = require('@/services/callFeedback');
-const { CallUpdateError } = require('@/services/errors');
+const callFeedback = require('@/services/calls/feedback');
+const { CallUpdateError } = require('@/services/calls/errors');
 
 const { OPERATOR_FEEDBACK } = callFeedback.feedbackTypes;
 
