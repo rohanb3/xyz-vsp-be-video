@@ -5,6 +5,7 @@ const {
   ITEM_TAKEN,
 } = require('./constants');
 const { createConnector } = require('./connector');
+const errors = require('./errors');
 const pubSub = require('@/services/pubSubChannel');
 const { reduceToKey } = require('@/services/redisUtils');
 
@@ -16,6 +17,10 @@ class Heap {
       ITEM_ADDED: reduceToKey(name, ITEM_ADDED),
       ITEM_TAKEN: reduceToKey(name, ITEM_TAKEN),
     };
+  }
+
+  static get errors() {
+    return errors;
   }
 
   add(id, item) {
@@ -54,3 +59,4 @@ class Heap {
 }
 
 exports.createHeap = name => new Heap(name);
+exports.getErrors = () => ({ ...Heap.errors });

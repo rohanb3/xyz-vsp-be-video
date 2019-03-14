@@ -5,6 +5,7 @@ const {
   QUEUE_CHANGED,
 } = require('./constants');
 const { createConnector } = require('./connector');
+const errors = require('./errors');
 const pubSub = require('@/services/pubSubChannel');
 const { reduceToKey } = require('@/services/redisUtils');
 
@@ -18,6 +19,10 @@ class Queue {
       ITEM_REMOVED: reduceToKey(name, ITEM_REMOVED),
       QUEUE_CHANGED: reduceToKey(name, QUEUE_CHANGED),
     };
+  }
+
+  static get errors() {
+    return errors;
   }
 
   enqueue(id, item) {
@@ -109,3 +114,4 @@ class Queue {
 }
 
 exports.createQueue = name => new Queue(name);
+exports.getErrors = () => ({ ...Queue.errors });

@@ -1,8 +1,8 @@
 jest.mock('@/models/call');
 
-const callsDBClient = require('@/services/callsDBClient');
-const callFeedback = require('@/services/callFeedback');
-const { CallUpdateError } = require('@/services/errors');
+const callsDBClient = require('@/services/calls/DBClient');
+const callFeedback = require('@/services/calls/feedback');
+const { CallUpdateError } = require('@/services/calls/errors');
 const {
   CALL_ID_MISSING,
   CALL_NOT_EXIST,

@@ -1,4 +1,4 @@
-const callStatusHelper = require('@/services/callStatusHelper');
+const callStatusHelper = require('@/services/calls/statusHelper');
 const { statuses } = require('@/constants/calls');
 
 describe('callStatusHelper: ', () => {

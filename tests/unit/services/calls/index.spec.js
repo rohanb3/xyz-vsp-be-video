@@ -1,19 +1,19 @@
-jest.mock('@/services/pendingCallsQueue');
-jest.mock('@/services/activeCallsHeap');
-jest.mock('@/services/callsDBClient');
+jest.mock('@/services/calls/pendingCallsQueue');
+jest.mock('@/services/calls/activeCallsHeap');
+jest.mock('@/services/calls/DBClient');
 jest.mock('@/services/twilio');
 jest.mock('@/services/pubSubChannel');
 
-const pendingCallsQueue = require('@/services/pendingCallsQueue');
-const activeCallsHeap = require('@/services/activeCallsHeap');
-const pendingCallbacksHeap = require('@/services/pendingCallbacksHeap');
-const callsDBClient = require('@/services/callsDBClient');
-const callsStorage = require('@/services/callsStorage');
+const { pendingCallsQueue } = require('@/services/calls/pendingCallsQueue');
+const { activeCallsHeap } = require('@/services/calls/activeCallsHeap');
+const { pendingCallbacksHeap } = require('@/services/calls/pendingCallbacksHeap');
+const callsDBClient = require('@/services/calls/DBClient');
+const storage = require('@/services/storage');
 const twilio = require('@/services/twilio');
 const pubSubChannel = require('@/services/pubSubChannel');
 const calls = require('@/services/calls');
-const callStatusHelper = require('@/services/callStatusHelper');
-const callFinisher = require('@/services/callFinisher');
+const callStatusHelper = require('@/services/calls/statusHelper');
+const callFinisher = require('@/services/calls/finisher');
 const {
   CALL_REQUESTED,
   CALL_ACCEPTED,
@@ -226,26 +226,12 @@ describe('calls: ', () => {
       callFinisher.markLastCallbackAsFinished = jest.fn(() => Promise.resolve());
     });
 
-    it('should do nothing if no call in storage', () => {
-      callsStorage.get = jest.fn(() => Promise.resolve(null));
-      callStatusHelper.getCallStatus = jest.fn(() => null);
-
-      return calls.finishCall(callId).then(() => {
-        expect(callsStorage.get).toHaveBeenCalledWith(callId);
-        expect(callStatusHelper.getCallStatus).not.toHaveBeenCalled();
-        expect(callFinisher.markCallAsMissed).not.toHaveBeenCalled();
-        expect(callFinisher.markCallAsFinished).not.toHaveBeenCalled();
-        expect(callFinisher.markLastCallbackAsMissed).not.toHaveBeenCalled();
-        expect(callFinisher.markLastCallbackAsFinished).not.toHaveBeenCalled();
-      });
-    });
-
     it('should mark call as missed if call is pending', () => {
       const call = {
         id: 'call42',
       };
 
-      callsStorage.get = jest.fn(() => Promise.resolve(call));
+      storage.get = jest.fn(() => Promise.resolve(call));
       callStatusHelper.getCallStatus = jest.fn(() => statuses.CALL_PENDING);
 
       return calls.finishCall(callId).then(() => {
@@ -262,7 +248,7 @@ describe('calls: ', () => {
       };
       const finishedBy = 'customer42';
 
-      callsStorage.get = jest.fn(() => Promise.resolve(call));
+      storage.get = jest.fn(() => Promise.resolve(call));
       callStatusHelper.getCallStatus = jest.fn(() => statuses.CALL_ACTIVE);
 
       return calls.finishCall(callId, finishedBy).then(() => {
@@ -278,7 +264,7 @@ describe('calls: ', () => {
         id: 'call42',
       };
 
-      callsStorage.get = jest.fn(() => Promise.resolve(call));
+      storage.get = jest.fn(() => Promise.resolve(call));
       callStatusHelper.getCallStatus = jest.fn(() => statuses.CALLBACK_PENDING);
 
       return calls.finishCall(callId).then(() => {
@@ -295,7 +281,7 @@ describe('calls: ', () => {
       };
       const finishedBy = 'customer42';
 
-      callsStorage.get = jest.fn(() => Promise.resolve(call));
+      storage.get = jest.fn(() => Promise.resolve(call));
       callStatusHelper.getCallStatus = jest.fn(() => statuses.CALLBACK_ACTIVE);
 
       return calls.finishCall(callId, finishedBy).then(() => {

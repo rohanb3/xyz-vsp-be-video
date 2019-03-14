@@ -1,13 +1,13 @@
-jest.mock('@/services/pendingCallsQueue');
-jest.mock('@/services/activeCallsHeap');
-jest.mock('@/services/pendingCallbacksHeap');
-jest.mock('@/services/callsDBClient');
+jest.mock('@/services/calls/pendingCallsQueue');
+jest.mock('@/services/calls/activeCallsHeap');
+jest.mock('@/services/calls/pendingCallbacksHeap');
+jest.mock('@/services/calls/DBClient');
 
-const pendingCallsQueue = require('@/services/pendingCallsQueue');
-const activeCallsHeap = require('@/services/activeCallsHeap');
-const pendingCallbacksHeap = require('@/services/pendingCallbacksHeap');
-const callsDBClient = require('@/services/callsDBClient');
-const callFinisher = require('@/services/callFinisher');
+const { pendingCallsQueue } = require('@/services/calls/pendingCallsQueue');
+const { activeCallsHeap } = require('@/services/calls/activeCallsHeap');
+const { pendingCallbacksHeap } = require('@/services/calls/pendingCallbacksHeap');
+const callsDBClient = require('@/services/calls/DBClient');
+const callFinisher = require('@/services/calls/finisher');
 
 describe('callFinisher: ', () => {
   describe('markCallAsMissed(): ', () => {

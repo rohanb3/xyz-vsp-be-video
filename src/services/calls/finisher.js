@@ -1,8 +1,8 @@
 const moment = require('moment');
-const pendingCallsQueue = require('@/services/pendingCallsQueue');
-const activeCallsHeap = require('@/services/activeCallsHeap');
-const pendingCallbacksHeap = require('@/services/pendingCallbacksHeap');
-const callsDBClient = require('@/services/callsDBClient');
+const { pendingCallsQueue } = require('@/services/calls/pendingCallsQueue');
+const { activeCallsHeap } = require('@/services/calls/activeCallsHeap');
+const { pendingCallbacksHeap } = require('@/services/calls/pendingCallbacksHeap');
+const callsDBClient = require('@/services/calls/DBClient');
 const logger = require('@/services/logger')(module);
 
 function markCallAsMissed(callId) {

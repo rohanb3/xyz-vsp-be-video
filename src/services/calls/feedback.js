@@ -1,7 +1,7 @@
 /* eslint-disable no-use-before-define */
 
-const callsDBClient = require('@/services/callsDBClient');
-const { CallUpdateError } = require('@/services/errors');
+const callsDBClient = require('@/services/calls/DBClient');
+const { CallUpdateError } = require('@/services/calls/errors');
 const {
   CALL_NOT_EXIST,
   OPERATOR_ID_MISSING,

@@ -55,7 +55,11 @@ class OperatorsRoom {
 
   onOperatorAcceptCall(operator) {
     logger.debug('operator.accepted.call', operator.id);
-    return acceptCall(operator.id).then(call => operator.emit(ROOM_CREATED, call.id));
+    return acceptCall(operator.id)
+      .then(call => operator.emit(ROOM_CREATED, call.id))
+      .catch((err) => {
+        logger.error('call.accept.failed.operator', err);
+      });
   }
 
   onOperatorRequestedCallback(operator, callId) {
@@ -63,14 +67,21 @@ class OperatorsRoom {
     if (!callId) {
       return Promise.resolve();
     }
-    return requestCallback(callId, operator.id).then((callback) => {
-      operator.pendingCallbackId = callback.id;
-    });
+    return requestCallback(callId, operator.id)
+      .then((callback) => {
+        operator.pendingCallbackId = callback.id;
+      })
+      .catch((err) => {
+        logger.error('callback.request.failed.operator', err);
+      });
   }
 
   onOperatorFinishedCall(operator, call) {
     logger.debug('operator.finished.call');
-    return finishCall(call.id, operator.id);
+    return finishCall(call.id, operator.id)
+      .catch((err) => {
+        logger.error('call.finish.failed.operator', err);
+      });
   }
 
   onOperatorDisconnected(operator) {

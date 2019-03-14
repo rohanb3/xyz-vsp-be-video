@@ -1,13 +1,14 @@
 jest.mock('@/services/redisClient');
 
-const storage = require('@/services/callsStorage');
+const storage = require('@/services/storage');
 const client = require('@/services/redisClient');
 
-describe('callsStorage: ', () => {
+describe('storage: ', () => {
   describe('get(): ', () => {
-    it('should return null if no value stored under the key', () => {
+    it('should return null if no key specified', () => {
       const id = null;
       client.hgetall = jest.fn(() => Promise.resolve(null));
+      client.exists = jest.fn(() => Promise.resolve(true));
 
       return storage.get(id)
         .then((res) => {
@@ -20,6 +21,7 @@ describe('callsStorage: ', () => {
       const id = 'key42';
       const storedCall = { _id: '42' };
       client.hgetall = jest.fn(() => Promise.resolve(storedCall));
+      client.exists = jest.fn(() => Promise.resolve(true));
 
       return storage.get(id)
         .then((res) => {
@@ -28,10 +30,22 @@ describe('callsStorage: ', () => {
         });
     });
 
+    it('should reject if no value exists', () => {
+      const id = 'key42';
+      client.hgetall = jest.fn(() => Promise.resolve());
+      client.exists = jest.fn(() => Promise.resolve(false));
+
+      return storage.get(id)
+        .catch((err) => {
+          expect(err).toBeInstanceOf(storage.errors.NotFoundItemError);
+        });
+    });
+
     it('should reject if operation failed', () => {
       const id = 'key42';
       const error = 'some error';
       client.hgetall = jest.fn(() => Promise.reject(error));
+      client.exists = jest.fn(() => Promise.resolve(true));
 
       return storage.get(id)
         .catch((err) => {
@@ -56,6 +70,7 @@ describe('callsStorage: ', () => {
       const id = 'key42';
       const call = { _id: '42' };
       client.hmset = jest.fn(() => Promise.resolve(call));
+      client.exists = jest.fn(() => Promise.resolve(false));
 
       return storage.set(id, call)
         .then((res) => {
@@ -64,10 +79,23 @@ describe('callsStorage: ', () => {
         });
     });
 
+    it('should reject if key already exists', () => {
+      const id = 'key42';
+      const call = { _id: '42' };
+      client.exists = jest.fn(() => Promise.resolve(true));
+      client.hmset = jest.fn(() => Promise.reolve());
+
+      return storage.set(id, call)
+        .catch((err) => {
+          expect(err).toBeInstanceOf(storage.errors.OverrideItemError);
+        });
+    });
+
     it('should reject if operation failed', () => {
       const id = 'key42';
       const call = { _id: '42' };
       const error = 'some error';
+      client.exists = jest.fn(() => Promise.resolve(false));
       client.hmset = jest.fn(() => Promise.reject(error));
 
       return storage.set(id, call)
@@ -98,6 +126,7 @@ describe('callsStorage: ', () => {
 
       client.hgetall = jest.fn(() => Promise.resolve(storedCall));
       client.del = jest.fn(() => Promise.resolve(null));
+      client.exists = jest.fn(() => Promise.resolve(true));
 
       return storage.take(id)
         .then((res) => {
@@ -107,10 +136,27 @@ describe('callsStorage: ', () => {
         });
     });
 
+    it('should be rejected with error if key not exists', () => {
+      const id = 'key42';
+      const storedCall = { _id: '42' };
+
+      client.hgetall = jest.fn(() => Promise.resolve(storedCall));
+      client.del = jest.fn(() => Promise.resolve(null));
+      client.exists = jest.fn(() => Promise.resolve(false));
+
+      return storage.take(id)
+        .catch((err) => {
+          expect(err).toBeInstanceOf(storage.errors.NotFoundItemError);
+          expect(client.hgetall).not.toHaveBeenCalled();
+          expect(client.del).not.toHaveBeenCalled();
+        });
+    });
+
     it('should be rejected if error is thrown in hgetall', () => {
       const error = 'some error';
 
       client.hgetall = jest.fn(() => Promise.reject(error));
+      client.exists = jest.fn(() => Promise.resolve(true));
       client.del = jest.fn(() => Promise.resolve(null));
 
       return storage.take('123')
@@ -125,6 +171,7 @@ describe('callsStorage: ', () => {
       const error = 'some error';
 
       client.hgetall = jest.fn(() => Promise.resolve(null));
+      client.exists = jest.fn(() => Promise.resolve(true));
       client.del = jest.fn(() => Promise.reject(error));
 
       return storage.take('123')
@@ -132,6 +179,46 @@ describe('callsStorage: ', () => {
           expect(res).toEqual(error);
           expect(client.hgetall).toHaveBeenCalled();
           expect(client.del).toHaveBeenCalled();
+        });
+    });
+  });
+
+  describe('remove(): ', () => {
+    it('should resolve with false if no key specified', () => {
+      client.exists = jest.fn(() => Promise.resolve(true));
+      client.del = jest.fn(() => Promise.resolve(null));
+
+      return storage.remove()
+        .then((res) => {
+          expect(res).toBeFalsy();
+          expect(client.del).not.toHaveBeenCalled();
+        });
+    });
+
+    it('should reject with error if no item exists', () => {
+      const id = 'item42';
+
+      client.exists = jest.fn(() => Promise.resolve(false));
+      client.del = jest.fn(() => Promise.resolve(null));
+
+      return storage.remove(id)
+        .catch((err) => {
+          expect(err).toBeInstanceOf(storage.errors.NotFoundItemError);
+          expect(client.del).not.toHaveBeenCalled();
+        });
+    });
+
+    it('should reject with error if item deletion failed', () => {
+      const id = 'item42';
+      const error = 'some error';
+
+      client.exists = jest.fn(() => Promise.resolve(true));
+      client.del = jest.fn(() => Promise.reject(error));
+
+      return storage.remove(id)
+        .catch((err) => {
+          expect(err).toBe(error);
+          expect(client.del).toHaveBeenCalledWith(id);
         });
     });
   });
