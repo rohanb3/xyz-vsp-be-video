@@ -3,12 +3,9 @@ const redis = require('redis');
 const { REDIS_HOST, REDIS_PORT, REDIS_PASSWORD } = require('@/constants/redis');
 const { promiser } = require('@/services/redisUtils');
 
-const client = redis.createClient(REDIS_PORT, REDIS_HOST);
-if (REDIS_PASSWORD) {
-  client.auth(REDIS_PASSWORD, (err) => {
-    console.log('REDIS FAILED', err);
-  });
-}
+const client = redis.createClient(REDIS_PORT, REDIS_HOST, {
+  password: REDIS_PASSWORD,
+});
 
 /*
  ** Unordered sets start

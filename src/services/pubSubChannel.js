@@ -6,16 +6,12 @@ const { serialize, deserialize } = require('@/services/serializer');
 
 const CHANNEL_NAME = 'pub-sub-channel';
 
-const pub = redis.createClient(REDIS_PORT, REDIS_HOST);
-const sub = redis.createClient(REDIS_PORT, REDIS_HOST);
-if (REDIS_PASSWORD) {
-  pub.auth(REDIS_PASSWORD, (err) => {
-    console.log('REDIS FAILED', err);
-  });
-  sub.auth(REDIS_PASSWORD, (err) => {
-    console.log('REDIS FAILED', err);
-  });
-}
+const pub = redis.createClient(REDIS_PORT, REDIS_HOST, {
+  password: REDIS_PASSWORD,
+});
+const sub = redis.createClient(REDIS_PORT, REDIS_HOST, {
+  password: REDIS_PASSWORD,
+});
 
 const eventsListeners = {};
 

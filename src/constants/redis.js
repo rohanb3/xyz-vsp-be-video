@@ -1,5 +1,12 @@
 const { REDIS_HOST = '127.0.0.1', REDIS_PORT = 6379, REDIS_PASSWORD } = process.env;
 
+const REDIS_URL = REDIS_PASSWORD
+  ? `redis://:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}`
+  : `redis://${REDIS_HOST}:${REDIS_PORT}`;
+
+console.log(REDIS_URL);
+
 exports.REDIS_HOST = REDIS_HOST;
 exports.REDIS_PORT = REDIS_PORT;
 exports.REDIS_PASSWORD = REDIS_PASSWORD;
+exports.REDIS_URL = REDIS_URL;
