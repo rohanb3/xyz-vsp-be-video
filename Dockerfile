@@ -1,7 +1,7 @@
 FROM keymetrics/pm2:latest-alpine
 
-RUN mkdir -p /xyz-vsp-be-video
-WORKDIR /xyz-vsp-be-video
+RUN mkdir -p /app
+WORKDIR /app
 
 COPY . .
 RUN npm install
