@@ -1,17 +1,13 @@
 /* eslint-disable no-use-before-define */
 const redis = require('redis');
 
-const { REDIS_HOST, REDIS_PORT, REDIS_PASSWORD } = require('@/constants/redis');
+const { REDIS_HOST, REDIS_PORT, REDIS_OPTIONS } = require('@/constants/redis');
 const { serialize, deserialize } = require('@/services/serializer');
 
 const CHANNEL_NAME = 'pub-sub-channel';
 
-const pub = redis.createClient(REDIS_PORT, REDIS_HOST, {
-  password: REDIS_PASSWORD,
-});
-const sub = redis.createClient(REDIS_PORT, REDIS_HOST, {
-  password: REDIS_PASSWORD,
-});
+const pub = redis.createClient(REDIS_PORT, REDIS_HOST, REDIS_OPTIONS);
+const sub = redis.createClient(REDIS_PORT, REDIS_HOST, REDIS_OPTIONS);
 
 const eventsListeners = {};
 

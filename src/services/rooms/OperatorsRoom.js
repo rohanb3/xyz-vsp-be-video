@@ -78,10 +78,9 @@ class OperatorsRoom {
 
   onOperatorFinishedCall(operator, call) {
     logger.debug('operator.finished.call');
-    return finishCall(call.id, operator.id)
-      .catch((err) => {
-        logger.error('call.finish.failed.operator', err);
-      });
+    return finishCall(call.id, operator.id).catch((err) => {
+      logger.error('call.finish.failed.operator', err);
+    });
   }
 
   onOperatorDisconnected(operator) {

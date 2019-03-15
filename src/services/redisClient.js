@@ -1,12 +1,9 @@
 const redis = require('redis');
 
-const { REDIS_HOST, REDIS_PORT, REDIS_PASSWORD } = require('@/constants/redis');
+const { REDIS_HOST, REDIS_PORT, REDIS_OPTIONS } = require('@/constants/redis');
 const { promiser } = require('@/services/redisUtils');
 
-const client = redis.createClient(REDIS_PORT, REDIS_HOST, {
-  password: REDIS_PASSWORD,
-});
-
+const client = redis.createClient(REDIS_PORT, REDIS_HOST, REDIS_OPTIONS);
 /*
  ** Unordered sets start
  */
