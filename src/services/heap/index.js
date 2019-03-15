@@ -1,9 +1,6 @@
 /* eslint-disable no-use-before-define */
 
-const {
-  ITEM_ADDED,
-  ITEM_TAKEN,
-} = require('./constants');
+const { ITEM_ADDED, ITEM_TAKEN } = require('./constants');
 const { createConnector } = require('./connector');
 const errors = require('./errors');
 const pubSub = require('@/services/pubSubChannel');
@@ -24,13 +21,15 @@ class Heap {
   }
 
   add(id, item) {
-    return this.connector.add(id, item)
-      .then(() => pubSub.publish(this.events.ITEM_ADDED, item));
+    return this.connector.add(id, item).then(() => pubSub.publish(this.events.ITEM_ADDED, item));
   }
 
   take(id) {
-    return this.connector.take(id)
-      .then(item => pubSub.publish(this.events.ITEM_TAKEN, item));
+    return this.connector.take(id).then(item => pubSub.publish(this.events.ITEM_TAKEN, item));
+  }
+
+  remove(id) {
+    return this.take(id);
   }
 
   isExist(id) {

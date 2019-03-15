@@ -26,7 +26,8 @@ function validateAndSaveFeedback(callId, feedback, feedbackType) {
   }
 
   const updates = { [feedbackType]: feedback };
-  return callsDBClient.getById(callId)
+  return callsDBClient
+    .getById(callId)
     .then((call) => {
       if (!call) {
         return Promise.reject(new CallUpdateError([CALL_NOT_EXIST]));
@@ -52,6 +53,10 @@ function checkCustomerFeedbackConsistency(feedback = {}) {
     errors.push(CUSTOMER_ID_MISSING);
   }
 
+  if (!feedback.experienceRate) {
+    errors.push(EXPERIENCE_RATE_MISSING);
+  }
+
   return errors;
 }
 
@@ -67,10 +72,6 @@ function checkOperatorFeedbackConsistency(feedback = {}) {
 
 function checkBaseFeedbackConsistency(feedback = {}) {
   const errors = [];
-
-  if (!feedback.experienceRate) {
-    errors.push(EXPERIENCE_RATE_MISSING);
-  }
 
   if (!feedback.quality) {
     errors.push(QUALITY_MISSING);

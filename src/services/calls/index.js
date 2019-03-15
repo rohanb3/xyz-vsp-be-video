@@ -117,10 +117,13 @@ function declineCallback(callId) {
 }
 
 function finishCall(callId, finishedBy) {
-  return storage.get(callId)
+  return storage
+    .get(callId)
     .then((call) => {
+      console.log('call', call);
       let finishingPromise = null;
       const callStatus = callStatusHelper.getCallStatus(call);
+      console.log('call status', callStatus);
 
       switch (callStatus) {
         case statuses.CALL_PENDING:

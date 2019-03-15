@@ -51,10 +51,9 @@ class CustomersRoom {
   }
 
   onCustomerFinishedCall(customer, call) {
-    return finishCall(call.id, customer.id)
-      .catch((err) => {
-        logger.error('call.finish.failed.customer', err);
-      });
+    return finishCall(call.id, customer.id).catch((err) => {
+      logger.error('call.finish.failed.customer', err);
+    });
   }
 
   onCustomerDisconnected(customer) {
@@ -82,22 +81,20 @@ class CustomersRoom {
     const connectedCustomer = this.customers.connected[requestedBy];
     if (connectedCustomer) {
       logger.debug('customers.emit.requested.callback', id);
-      this.emitCallAccepting(requestedBy, id);
+      this.emitCallbackRequesting(requestedBy, id);
 
       const onCallbackAccepted = () => {
         connectedCustomer.removeListener(CALLBACK_DECLINED, onCallbackDeclined);
-        acceptCallback(call)
-          .catch((err) => {
-            logger.error('call.accept.failed.customer', err);
-          });
+        acceptCallback(call).catch((err) => {
+          logger.error('call.accept.failed.customer', err);
+        });
       };
 
       const onCallbackDeclined = () => {
         connectedCustomer.removeListener(CALLBACK_ACCEPTED, onCallbackAccepted);
-        declineCallback(call)
-          .catch((err) => {
-            logger.error('call.decline.failed.customer', err);
-          });
+        declineCallback(call).catch((err) => {
+          logger.error('call.decline.failed.customer', err);
+        });
       };
 
       connectedCustomer.once(CALLBACK_ACCEPTED, onCallbackAccepted);

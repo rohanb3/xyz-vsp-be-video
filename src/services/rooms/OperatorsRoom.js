@@ -17,7 +17,7 @@ const {
   CALLBACK_REQUESTED,
   CALLBACK_ACCEPTED,
   CALLBACK_DECLINED,
-  CALLS_INFO,
+  CALLS_CHANGED,
 } = require('@/constants/calls');
 
 const {
@@ -56,7 +56,7 @@ class OperatorsRoom {
   onOperatorAcceptCall(operator) {
     logger.debug('operator.accepted.call', operator.id);
     return acceptCall(operator.id)
-      .then(call => operator.emit(ROOM_CREATED, call.id))
+      .then(({ id, requestedAt }) => operator.emit(ROOM_CREATED, { id, requestedAt }))
       .catch((err) => {
         logger.error('call.accept.failed.operator', err);
       });
@@ -78,10 +78,9 @@ class OperatorsRoom {
 
   onOperatorFinishedCall(operator, call) {
     logger.debug('operator.finished.call');
-    return finishCall(call.id, operator.id)
-      .catch((err) => {
-        logger.error('call.finish.failed.operator', err);
-      });
+    return finishCall(call.id, operator.id).catch((err) => {
+      logger.error('call.finish.failed.operator', err);
+    });
   }
 
   onOperatorDisconnected(operator) {
@@ -120,7 +119,7 @@ class OperatorsRoom {
 
   emitCallsInfo(info) {
     logger.debug('queue.info.operators.room', info);
-    return this.operators.emit(CALLS_INFO, info);
+    return this.operators.emit(CALLS_CHANGED, info);
   }
 
   addOperatorToActive(operator) {
