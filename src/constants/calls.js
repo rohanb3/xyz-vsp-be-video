@@ -1,3 +1,4 @@
+exports.CALL_REQUESTED = 'call.requested';
 exports.CALL_ACCEPTED = 'call.accepted';
 exports.CALL_FINISHED = 'call.finished';
 exports.CALLBACK_REQUESTED = 'callback.requested';

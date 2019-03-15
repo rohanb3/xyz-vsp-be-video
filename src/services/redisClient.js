@@ -1,94 +1,72 @@
 const redis = require('redis');
 
-const { REDIS_HOST, REDIS_PORT } = require('@/constants/redis');
+const { REDIS_HOST, REDIS_PORT, REDIS_PASSWORD } = require('@/constants/redis');
 const { promiser } = require('@/services/redisUtils');
 
 const client = redis.createClient(REDIS_PORT, REDIS_HOST);
+if (REDIS_PASSWORD) {
+  client.auth(REDIS_PASSWORD, (err) => {
+    console.log('REDIS FAILED', err);
+  });
+}
 
 /*
-** Unordered sets start
-*/
+ ** Unordered sets start
+ */
 
-const sismember = (...args) => new Promise((resolve, reject) => (
-  client.sismember(...args, promiser(resolve, reject))
-));
+const sismember = (...args) => new Promise((resolve, reject) => client.sismember(...args, promiser(resolve, reject)));
 
-const sadd = (...args) => new Promise((resolve, reject) => (
-  client.sadd(...args, promiser(resolve, reject))
-));
+const sadd = (...args) => new Promise((resolve, reject) => client.sadd(...args, promiser(resolve, reject)));
 
-const srem = (...args) => new Promise((resolve, reject) => (
-  client.srem(...args, promiser(resolve, reject))
-));
+const srem = (...args) => new Promise((resolve, reject) => client.srem(...args, promiser(resolve, reject)));
 
-const scard = (...args) => new Promise((resolve, reject) => (
-  client.scard(...args, promiser(resolve, reject))
-));
+const scard = (...args) => new Promise((resolve, reject) => client.scard(...args, promiser(resolve, reject)));
 
 /*
-** Unordered sets finish
-*/
+ ** Unordered sets finish
+ */
 
 /*
-** Lists start
-*/
+ ** Lists start
+ */
 
-const lrange = (...args) => new Promise((resolve, reject) => (
-  client.lrange(...args, promiser(resolve, reject))
-));
+const lrange = (...args) => new Promise((resolve, reject) => client.lrange(...args, promiser(resolve, reject)));
 
-const lpush = (...args) => new Promise((resolve, reject) => (
-  client.lpush(...args, promiser(resolve, reject))
-));
+const lpush = (...args) => new Promise((resolve, reject) => client.lpush(...args, promiser(resolve, reject)));
 
-const rpop = (...args) => new Promise((resolve, reject) => (
-  client.rpop(...args, promiser(resolve, reject))
-));
+const rpop = (...args) => new Promise((resolve, reject) => client.rpop(...args, promiser(resolve, reject)));
 
-const lrem = (...args) => new Promise((resolve, reject) => (
-  client.lrem(...args, promiser(resolve, reject))
-));
+const lrem = (...args) => new Promise((resolve, reject) => client.lrem(...args, promiser(resolve, reject)));
 
-const llen = (...args) => new Promise((resolve, reject) => (
-  client.llen(...args, promiser(resolve, reject))
-));
+const llen = (...args) => new Promise((resolve, reject) => client.llen(...args, promiser(resolve, reject)));
 
 /*
-** Lists finish
-*/
+ ** Lists finish
+ */
 
 /*
-** Hashes start
-*/
+ ** Hashes start
+ */
 
-const hgetall = (...args) => new Promise((resolve, reject) => (
-  client.hgetall(...args, promiser(resolve, reject))
-));
+const hgetall = (...args) => new Promise((resolve, reject) => client.hgetall(...args, promiser(resolve, reject)));
 
-const hmset = (...args) => new Promise((resolve, reject) => (
-  client.hmset(...args, promiser(resolve, reject))
-));
-
+const hmset = (...args) => new Promise((resolve, reject) => client.hmset(...args, promiser(resolve, reject)));
 
 /*
-** Hashes finish
-*/
+ ** Hashes finish
+ */
 
 /*
-** General start
-*/
+ ** General start
+ */
 
-const del = (...args) => new Promise((resolve, reject) => (
-  client.del(...args, promiser(resolve, reject))
-));
+const del = (...args) => new Promise((resolve, reject) => client.del(...args, promiser(resolve, reject)));
 
-const exists = (...args) => new Promise((resolve, reject) => (
-  client.exists(...args, promiser(resolve, reject))
-));
+const exists = (...args) => new Promise((resolve, reject) => client.exists(...args, promiser(resolve, reject)));
 
 /*
-** General finish
-*/
+ ** General finish
+ */
 
 exports.sismember = sismember;
 exports.sadd = sadd;
