@@ -1,8 +1,14 @@
 require('module-alias/register');
 const dotenv = require('dotenv');
 const http = require('http');
+const path = require('path');
 
-dotenv.load();
+const dotEnvConfigPath = process.env.NODE_ENV === 'development'
+  ? path.resolve(process.cwd(), '.env.development')
+  : path.resolve(process.cwd(), '.env.production');
+
+dotenv.config({ path: dotEnvConfigPath });
+
 
 const app = require('@/app');
 const socket = require('@/socket');
