@@ -1,13 +1,12 @@
 const redis = require('redis');
 
-const { REDIS_HOST, REDIS_PORT } = require('@/constants/redis');
+const { REDIS_HOST, REDIS_PORT, REDIS_OPTIONS } = require('@/constants/redis');
 const { promiser } = require('@/services/redisUtils');
 
-const client = redis.createClient(REDIS_PORT, REDIS_HOST);
-
+const client = redis.createClient(REDIS_PORT, REDIS_HOST, REDIS_OPTIONS);
 /*
-** Unordered sets start
-*/
+ ** Unordered sets start
+ */
 
 const sismember = (...args) => new Promise((resolve, reject) => (
   client.sismember(...args, promiser(resolve, reject))
@@ -26,12 +25,12 @@ const scard = (...args) => new Promise((resolve, reject) => (
 ));
 
 /*
-** Unordered sets finish
-*/
+ ** Unordered sets finish
+ */
 
 /*
-** Lists start
-*/
+ ** Lists start
+ */
 
 const lrange = (...args) => new Promise((resolve, reject) => (
   client.lrange(...args, promiser(resolve, reject))
@@ -54,12 +53,12 @@ const llen = (...args) => new Promise((resolve, reject) => (
 ));
 
 /*
-** Lists finish
-*/
+ ** Lists finish
+ */
 
 /*
-** Hashes start
-*/
+ ** Hashes start
+ */
 
 const hgetall = (...args) => new Promise((resolve, reject) => (
   client.hgetall(...args, promiser(resolve, reject))
@@ -69,14 +68,13 @@ const hmset = (...args) => new Promise((resolve, reject) => (
   client.hmset(...args, promiser(resolve, reject))
 ));
 
+/*
+ ** Hashes finish
+ */
 
 /*
-** Hashes finish
-*/
-
-/*
-** General start
-*/
+ ** General start
+ */
 
 const get = (...args) => new Promise((resolve, reject) => (
   client.get(...args, promiser(resolve, reject))
@@ -95,8 +93,8 @@ const exists = (...args) => new Promise((resolve, reject) => (
 ));
 
 /*
-** General finish
-*/
+ ** General finish
+ */
 
 exports.sismember = sismember;
 exports.sadd = sadd;
