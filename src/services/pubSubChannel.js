@@ -9,8 +9,6 @@ const CHANNEL_NAME = 'pub-sub-channel';
 const pub = redis.createClient(REDIS_PORT, REDIS_HOST, REDIS_OPTIONS);
 const sub = redis.createClient(REDIS_PORT, REDIS_HOST, REDIS_OPTIONS);
 
-pub.on('error', err => console.error('pub: ', err));
-sub.on('error', err => console.error('sub: ', err));
 const eventsListeners = {};
 
 sub.on('message', handleMessage);

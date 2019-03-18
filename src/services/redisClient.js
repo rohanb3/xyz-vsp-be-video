@@ -4,7 +4,6 @@ const { REDIS_HOST, REDIS_PORT, REDIS_OPTIONS } = require('@/constants/redis');
 const { promiser } = require('@/services/redisUtils');
 
 const client = redis.createClient(REDIS_PORT, REDIS_HOST, REDIS_OPTIONS);
-client.on('error', err => console.error('subClient: ', err));
 /*
  ** Unordered sets start
  */
