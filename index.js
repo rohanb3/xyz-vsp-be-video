@@ -22,3 +22,8 @@ socket(server);
 process.on('unhandledRejection', (error) => {
   logger.error('unhandledRejection', error);
 });
+
+process.on('uncaughtException', (error) => {
+  logger.error('uncaughtException', error);
+  process.exit();
+});
