@@ -21,11 +21,17 @@ class Heap {
   }
 
   add(id, item) {
-    return this.connector.add(id, item).then(() => pubSub.publish(this.events.ITEM_ADDED, item));
+    return this.connector.add(id, item).then(() => {
+      pubSub.publish(this.events.ITEM_ADDED, item);
+      return item;
+    });
   }
 
   take(id) {
-    return this.connector.take(id).then(item => pubSub.publish(this.events.ITEM_TAKEN, item));
+    return this.connector.take(id).then((item) => {
+      pubSub.publish(this.events.ITEM_TAKEN, item);
+      return item;
+    });
   }
 
   remove(id) {

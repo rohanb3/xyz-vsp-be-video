@@ -6,6 +6,8 @@ const socket = io('/customers', {
   transports: ['websocket'],
 });
 
+let globalToken = null;
+
 socket.on('connect', () => {
   socket.emit('authentication', { userName: 'Joey' });
   socket.on('authenticated', (token) => {
@@ -53,14 +55,40 @@ window.addEventListener('beforeunload', leaveRoomIfJoined);
 
 function onTokenReceived(data) {
   const { token } = data;
+  globalToken = token;
 
   document.getElementById('button-join').onclick = () => requestConnection(token);
   document.getElementById('button-leave').onclick = leaveRoomIfJoined;
+
+  socket.on('callback.requested', onCallbackRequested);
 }
 
 function requestConnection(token) {
   socket.emit('call.requested', { query: token });
-  socket.on('call.accepted', roomName => connectToRoom(roomName, token));
+  socket.once('call.accepted', roomName => connectToRoom(roomName, token));
+}
+
+function onCallbackRequested() {
+  document.getElementById('incoming-callback-controls').style.display = 'flex';
+  setTimeout(() => {
+    document.getElementById('accept-button').onclick = acceptCallback;
+    document.getElementById('decline-button').onclick = declineCallback;
+  });
+}
+
+function acceptCallback() {
+  hideIncoming();
+  socket.emit('callback.accepted');
+  socket.once('room.created', (id) => connectToRoom(id, globalToken));
+}
+
+function declineCallback() {
+  hideIncoming();
+  socket.emit('callback.declined');
+}
+
+function hideIncoming() {
+  document.getElementById('incoming-callback-controls').style.display = 'none';
 }
 
 function connectToRoom(name, token) {
@@ -116,8 +144,9 @@ function roomJoined(room) {
   });
 
   room.on('participantDisconnected', (participant) => {
+    console.log('participant', new Date());
     detachParticipantTracks(participant);
-    leaveRoomIfJoined();
+    leaveRoomIfJoined(false);
   });
 
   room.on('disconnected', () => {
@@ -153,9 +182,11 @@ document.getElementById('button-preview').onclick = () => {
   );
 };
 
-function leaveRoomIfJoined() {
+function leaveRoomIfJoined(notifyBE = true) {
   if (activeRoom) {
-    socket.emit('call.finished', { id: activeRoom.name });
+    if (notifyBE) {
+      socket.emit('call.finished', { id: activeRoom.name });
+    }
     activeRoom.disconnect();
     activeRoom = null;
   }

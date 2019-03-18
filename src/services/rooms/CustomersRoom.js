@@ -1,7 +1,12 @@
 /* eslint-disable no-param-reassign, class-methods-use-this, no-use-before-define */
 const socketIOAuth = require('socketio-auth');
 
-const { CONNECTION, DISCONNECT, CUSTOMERS } = require('@/constants/rooms');
+const {
+  CONNECTION,
+  DISCONNECT,
+  CUSTOMERS,
+  ROOM_CREATED,
+} = require('@/constants/rooms');
 
 const {
   CALL_REQUESTED,
@@ -85,14 +90,16 @@ class CustomersRoom {
 
       const onCallbackAccepted = () => {
         connectedCustomer.removeListener(CALLBACK_DECLINED, onCallbackDeclined);
-        acceptCallback(call).catch((err) => {
-          logger.error('call.accept.failed.customer', err);
-        });
+        acceptCallback(id)
+          .then(() => connectedCustomer.emit(ROOM_CREATED, id))
+          .catch((err) => {
+            logger.error('call.accept.failed.customer', err);
+          });
       };
 
       const onCallbackDeclined = () => {
         connectedCustomer.removeListener(CALLBACK_ACCEPTED, onCallbackAccepted);
-        declineCallback(call).catch((err) => {
+        declineCallback(id).catch((err) => {
           logger.error('call.decline.failed.customer', err);
         });
       };

@@ -92,7 +92,7 @@ class OperatorsRoom {
     const { acceptedBy, id } = call;
     const connectedOperator = this.operators.connected[acceptedBy];
     if (connectedOperator) {
-      this.emitCallbackAccepting(acceptedBy, id);
+      this.emitCallbackAccepting(acceptedBy, { id });
     }
   }
 
@@ -100,7 +100,7 @@ class OperatorsRoom {
     const { acceptedBy, id } = call;
     const connectedOperator = this.operators.connected[acceptedBy];
     if (connectedOperator) {
-      this.emitCallbackDeclining(acceptedBy, id);
+      this.emitCallbackDeclining(acceptedBy, { id });
     }
   }
 

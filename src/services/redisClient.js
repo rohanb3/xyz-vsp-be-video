@@ -78,6 +78,14 @@ const hmset = (...args) => new Promise((resolve, reject) => (
 ** General start
 */
 
+const get = (...args) => new Promise((resolve, reject) => (
+  client.get(...args, promiser(resolve, reject))
+));
+
+const set = (...args) => new Promise((resolve, reject) => (
+  client.set(...args, promiser(resolve, reject))
+));
+
 const del = (...args) => new Promise((resolve, reject) => (
   client.del(...args, promiser(resolve, reject))
 ));
@@ -104,5 +112,7 @@ exports.llen = llen;
 exports.hgetall = hgetall;
 exports.hmset = hmset;
 
+exports.get = get;
+exports.set = set;
 exports.del = del;
 exports.exists = exists;

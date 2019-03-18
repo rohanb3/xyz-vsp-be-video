@@ -143,3 +143,22 @@ body {
   background-color: transparent;
   color: white;
 }
+
+#incoming-callback-controls {
+  position: absolute;
+  width: 200px;
+  height: 100px;
+  background-color: white;
+  display: none;
+  flex-flow: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.accept-button {
+  background-color: green;
+}
+
+.decline-button {
+  background-color: red;
+}
