@@ -4,8 +4,7 @@ const app = require('express')();
 
 const logger = require('@/services/logger')(module);
 
-const middlewares = fs.readdirSync(path.join(__dirname, 'middlewares'))
-  .sort();
+const middlewares = fs.readdirSync(path.join(__dirname, 'middlewares')).sort();
 /* eslint-disable-next-line global-require, import/no-dynamic-require */
 middlewares.forEach(m => require(`@/middlewares/${m}`).init(app));
 

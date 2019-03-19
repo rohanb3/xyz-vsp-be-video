@@ -1,4 +1,5 @@
 const client = require('@/services/redisClient');
+const { serialize, deserialize } = require('@/services/serializer');
 const errors = require('./errors');
 
 function isExist(key) {
@@ -11,9 +12,10 @@ function get(key) {
   }
   return isExist(key)
     .then(exist => (exist
-      ? client.hgetall(key)
+      ? client.get(key)
       : Promise.reject(new errors.NotFoundItemError(key))
-    ));
+    ))
+    .then(deserialize);
 }
 
 function set(key, value) {
@@ -23,7 +25,9 @@ function set(key, value) {
 
   return isExist(key)
     .then(exist => (
-      exist ? Promise.reject(new errors.OverrideItemError(key)) : client.hmset(key, value)
+      exist
+        ? Promise.reject(new errors.OverrideItemError(key))
+        : client.set(key, serialize(value))
     ));
 }
 

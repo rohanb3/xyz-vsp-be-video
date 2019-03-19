@@ -127,7 +127,7 @@ describe('calls: ', () => {
     });
   });
 
-  describe('acceptCallBack(): ', () => {
+  describe('acceptCallback(): ', () => {
     it('should mark as active, ensure room, publish to channel and update in DB', () => {
       const callback1 = {
         requestedAt: 'some time',
@@ -161,7 +161,7 @@ describe('calls: ', () => {
       activeCallsHeap.add = jest.fn(() => Promise.resolve(expectedCall));
       pubSubChannel.publish = jest.fn();
 
-      return calls.acceptCallBack(callId).then((result) => {
+      return calls.acceptCallback(callId).then((result) => {
         expect(result).toEqual(expectedCall);
         expect(twilio.ensureRoom).toHaveBeenCalledWith(callId);
         expect(pendingCallbacksHeap.take).toHaveBeenCalledWith(callId);

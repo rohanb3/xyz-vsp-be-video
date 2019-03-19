@@ -1,4 +1,5 @@
 jest.mock('@/services/redisClient');
+jest.mock('@/services/serializer');
 
 const storage = require('@/services/storage');
 const client = require('@/services/redisClient');
@@ -7,32 +8,32 @@ describe('storage: ', () => {
   describe('get(): ', () => {
     it('should return null if no key specified', () => {
       const id = null;
-      client.hgetall = jest.fn(() => Promise.resolve(null));
+      client.get = jest.fn(() => Promise.resolve(null));
       client.exists = jest.fn(() => Promise.resolve(true));
 
       return storage.get(id)
         .then((res) => {
           expect(res).toEqual(null);
-          expect(client.hgetall).not.toHaveBeenCalled();
+          expect(client.get).not.toHaveBeenCalled();
         });
     });
 
     it('should return value if it is stored under the key', () => {
       const id = 'key42';
       const storedCall = { _id: '42' };
-      client.hgetall = jest.fn(() => Promise.resolve(storedCall));
+      client.get = jest.fn(() => Promise.resolve(storedCall));
       client.exists = jest.fn(() => Promise.resolve(true));
 
       return storage.get(id)
         .then((res) => {
           expect(res).toEqual(storedCall);
-          expect(client.hgetall).toHaveBeenCalledWith(id);
+          expect(client.get).toHaveBeenCalledWith(id);
         });
     });
 
     it('should reject if no value exists', () => {
       const id = 'key42';
-      client.hgetall = jest.fn(() => Promise.resolve());
+      client.get = jest.fn(() => Promise.resolve());
       client.exists = jest.fn(() => Promise.resolve(false));
 
       return storage.get(id)
@@ -44,7 +45,7 @@ describe('storage: ', () => {
     it('should reject if operation failed', () => {
       const id = 'key42';
       const error = 'some error';
-      client.hgetall = jest.fn(() => Promise.reject(error));
+      client.get = jest.fn(() => Promise.reject(error));
       client.exists = jest.fn(() => Promise.resolve(true));
 
       return storage.get(id)
@@ -57,25 +58,25 @@ describe('storage: ', () => {
   describe('set(): ', () => {
     it('should return null if no key specified', () => {
       const id = null;
-      client.hmset = jest.fn(() => Promise.resolve({}));
+      client.set = jest.fn(() => Promise.resolve({}));
 
       return storage.set(id)
         .then((res) => {
           expect(res).toEqual(null);
-          expect(client.hmset).not.toHaveBeenCalled();
+          expect(client.set).not.toHaveBeenCalled();
         });
     });
 
     it('should return value if value was stored', () => {
       const id = 'key42';
       const call = { _id: '42' };
-      client.hmset = jest.fn(() => Promise.resolve(call));
+      client.set = jest.fn(() => Promise.resolve(call));
       client.exists = jest.fn(() => Promise.resolve(false));
 
       return storage.set(id, call)
         .then((res) => {
           expect(res).toEqual(call);
-          expect(client.hmset).toHaveBeenCalledWith(id, call);
+          expect(client.set).toHaveBeenCalledWith(id, call);
         });
     });
 
@@ -83,7 +84,7 @@ describe('storage: ', () => {
       const id = 'key42';
       const call = { _id: '42' };
       client.exists = jest.fn(() => Promise.resolve(true));
-      client.hmset = jest.fn(() => Promise.reolve());
+      client.set = jest.fn(() => Promise.reolve());
 
       return storage.set(id, call)
         .catch((err) => {
@@ -96,7 +97,7 @@ describe('storage: ', () => {
       const call = { _id: '42' };
       const error = 'some error';
       client.exists = jest.fn(() => Promise.resolve(false));
-      client.hmset = jest.fn(() => Promise.reject(error));
+      client.set = jest.fn(() => Promise.reject(error));
 
       return storage.set(id, call)
         .catch((err) => {
@@ -109,13 +110,13 @@ describe('storage: ', () => {
     it('should be resolved with null if no key specified', () => {
       const key = null;
 
-      client.hgetall = jest.fn(() => Promise.resolve());
+      client.get = jest.fn(() => Promise.resolve());
       client.del = jest.fn(() => Promise.resolve());
 
       return storage.take(key)
         .then((res) => {
           expect(res).toEqual(null);
-          expect(client.hgetall).not.toHaveBeenCalled();
+          expect(client.get).not.toHaveBeenCalled();
           expect(client.del).not.toHaveBeenCalled();
         });
     });
@@ -124,14 +125,14 @@ describe('storage: ', () => {
       const id = 'key42';
       const storedCall = { _id: '42' };
 
-      client.hgetall = jest.fn(() => Promise.resolve(storedCall));
+      client.get = jest.fn(() => Promise.resolve(storedCall));
       client.del = jest.fn(() => Promise.resolve(null));
       client.exists = jest.fn(() => Promise.resolve(true));
 
       return storage.take(id)
         .then((res) => {
           expect(res).toEqual(storedCall);
-          expect(client.hgetall).toHaveBeenCalledWith(id);
+          expect(client.get).toHaveBeenCalledWith(id);
           expect(client.del).toHaveBeenCalledWith(id);
         });
     });
@@ -140,29 +141,29 @@ describe('storage: ', () => {
       const id = 'key42';
       const storedCall = { _id: '42' };
 
-      client.hgetall = jest.fn(() => Promise.resolve(storedCall));
+      client.get = jest.fn(() => Promise.resolve(storedCall));
       client.del = jest.fn(() => Promise.resolve(null));
       client.exists = jest.fn(() => Promise.resolve(false));
 
       return storage.take(id)
         .catch((err) => {
           expect(err).toBeInstanceOf(storage.errors.NotFoundItemError);
-          expect(client.hgetall).not.toHaveBeenCalled();
+          expect(client.get).not.toHaveBeenCalled();
           expect(client.del).not.toHaveBeenCalled();
         });
     });
 
-    it('should be rejected if error is thrown in hgetall', () => {
+    it('should be rejected if error is thrown in get', () => {
       const error = 'some error';
 
-      client.hgetall = jest.fn(() => Promise.reject(error));
+      client.get = jest.fn(() => Promise.reject(error));
       client.exists = jest.fn(() => Promise.resolve(true));
       client.del = jest.fn(() => Promise.resolve(null));
 
       return storage.take('123')
         .catch((res) => {
           expect(res).toEqual(error);
-          expect(client.hgetall).toHaveBeenCalled();
+          expect(client.get).toHaveBeenCalled();
           expect(client.del).not.toHaveBeenCalled();
         });
     });
@@ -170,14 +171,14 @@ describe('storage: ', () => {
     it('should be rejected if error is thrown in del', () => {
       const error = 'some error';
 
-      client.hgetall = jest.fn(() => Promise.resolve(null));
+      client.get = jest.fn(() => Promise.resolve(null));
       client.exists = jest.fn(() => Promise.resolve(true));
       client.del = jest.fn(() => Promise.reject(error));
 
       return storage.take('123')
         .catch((res) => {
           expect(res).toEqual(error);
-          expect(client.hgetall).toHaveBeenCalled();
+          expect(client.get).toHaveBeenCalled();
           expect(client.del).toHaveBeenCalled();
         });
     });

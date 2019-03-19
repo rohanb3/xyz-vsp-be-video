@@ -18,6 +18,7 @@ function markCallAsFinished(callId, finishedBy) {
     finishedBy,
     finishedAt: moment.utc().format(),
   };
+  console.log('markCallAsFinished', callId, finishedBy);
   return activeCallsHeap.remove(callId).then(() => callsDBClient.updateById(callId, updates));
 }
 
