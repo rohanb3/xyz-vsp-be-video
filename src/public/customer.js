@@ -2,7 +2,11 @@
 
 const Video = require('twilio-video');
 
-const socket = io('/customers', {
+// const socket = io('/customers', {
+//   transports: ['websocket'],
+// });
+const socket = io('wss://dev-demo.xyzies.ardas.biz/customers', {
+  path: '/api/video/socket.io',
   transports: ['websocket'],
 });
 

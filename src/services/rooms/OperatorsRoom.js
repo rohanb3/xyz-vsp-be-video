@@ -77,10 +77,12 @@ class OperatorsRoom {
   }
 
   onOperatorFinishedCall(operator, call) {
-    logger.debug('operator.finished.call');
-    return finishCall(call.id, operator.id).catch((err) => {
-      logger.error('call.finish.failed.operator', err);
-    });
+    logger.debug('operator.finished.call', call && call.id, operator && operator.id);
+    return call && operator
+      ? finishCall(call.id, operator.id).catch((err) => {
+        logger.error('call.finish.failed.operator', err);
+      })
+      : Promise.resolve();
   }
 
   onOperatorDisconnected(operator) {

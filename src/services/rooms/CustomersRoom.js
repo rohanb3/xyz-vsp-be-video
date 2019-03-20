@@ -2,10 +2,7 @@
 const socketIOAuth = require('socketio-auth');
 
 const {
-  CONNECTION,
-  DISCONNECT,
-  CUSTOMERS,
-  ROOM_CREATED,
+  CONNECTION, DISCONNECT, CUSTOMERS, ROOM_CREATED,
 } = require('@/constants/rooms');
 
 const {
@@ -56,12 +53,16 @@ class CustomersRoom {
   }
 
   onCustomerFinishedCall(customer, call) {
-    return finishCall(call.id, customer.id).catch((err) => {
-      logger.error('call.finish.failed.customer', err);
-    });
+    logger.debug('customer.finished.call', call && call.id, customer && customer.id);
+    return call && customer
+      ? finishCall(call.id, customer.id).catch((err) => {
+        logger.error('call.finish.failed.customer', err);
+      })
+      : Promise.resolve();
   }
 
   onCustomerDisconnected(customer) {
+    logger.debug('customer disconneted', customer.id, customer.pendingCallId);
     return customer.pendingCallId ? finishCall(customer.pendingCallId) : Promise.resolve();
   }
 
