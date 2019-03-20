@@ -1,6 +1,6 @@
 apps:
-  - script   : index.js
-    instances: 4
+  - script: index.js
+    instances: 1
     instance_var: INSTANCE_ID
     exec_mode: cluster
     name: vsp-be-video
