@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: dev-video-api
-        image: xyzies.azurecr.io/vsp-be-video-dev:$VERSION
+        image: xyzies.azurecr.io/vsp-be-video-dev:0.0.0.0
         resources:
           requests:
             cpu: 500m
