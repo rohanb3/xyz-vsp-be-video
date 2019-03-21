@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const app = require('express')();
+const swaggerUi = require('swagger-ui-express');
 
 const logger = require('@/services/logger')(module);
 
@@ -11,10 +12,12 @@ middlewares.forEach(m => require(`@/middlewares/${m}`).init(app));
 const roomLogs = require('@/routes/roomLogs');
 const callFeedbackCustomer = require('@/routes/callFeedbackCustomer');
 const callFeedbackOperator = require('@/routes/callFeedbackOperator');
+const swaggerDocument = require('@/swagger');
 
 app.get('/room-logs', roomLogs);
 app.post('/call-feedback-customer', callFeedbackCustomer);
 app.post('/call-feedback-operator', callFeedbackOperator);
+app.use('/swagger', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // this handler must have 4 args, because this is the way how express knows this is error handler
 // https://expressjs.com/ru/guide/error-handling.html
