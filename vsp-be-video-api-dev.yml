@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dev-vide-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dev-video-api
+  template:
+    metadata:
+      labels:
+        app: dev-video-api
+    spec:
+      containers:
+      - name: dev-video-api
+        image: xyzies.azurecr.io/vsp-be-video-dev:$VERSION
+        resources:
+          requests:
+            cpu: 500m
+            memory: 512Mi
+          limits:
+            cpu: 1000m
+            memory: 1024Mi
+        ports:
+        - containerPort: 3000
+          name: dotnet-app
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dev-video-api
+spec:
+  ports:
+  - protocol: "TCP"
+    port: 3000
+    targetPort: 3000
+  selector:
+    app: dev-video-api
+  clusterIP: 172.18.3.30
