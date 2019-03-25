@@ -5,7 +5,7 @@
     "version": "v1"
   },
   "paths": {
-    "/call-feedback-customer": {
+    "/api/video/call-feedback-customer": {
       "post": {
         "operationId": "callFeedbackCustomer",
         "summary": "Posts customer feedback after call",
@@ -77,7 +77,7 @@
         }
       }
     },
-    "/call-feedback-operator": {
+    "/api/video/call-feedback-operator": {
       "post": {
         "operationId": "callFeedbackOperator",
         "summary": "Posts operator feedback after call",

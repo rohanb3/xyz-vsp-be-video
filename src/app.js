@@ -1,7 +1,6 @@
 const path = require('path');
 const fs = require('fs');
 const app = require('express')();
-const swaggerUi = require('swagger-ui-express');
 
 const logger = require('@/services/logger')(module);
 
@@ -9,15 +8,11 @@ const middlewares = fs.readdirSync(path.join(__dirname, 'middlewares')).sort();
 /* eslint-disable-next-line global-require, import/no-dynamic-require */
 middlewares.forEach(m => require(`@/middlewares/${m}`).init(app));
 
+const apiRouter = require('./apiRouter');
 const roomLogs = require('@/routes/roomLogs');
-const callFeedbackCustomer = require('@/routes/callFeedbackCustomer');
-const callFeedbackOperator = require('@/routes/callFeedbackOperator');
-const swaggerDocument = require('@/swagger/v1');
 
+app.use('/api/video', apiRouter);
 app.get('/room-logs', roomLogs);
-app.post('/api/video/call-feedback-customer', callFeedbackCustomer);
-app.post('/api/video/call-feedback-operator', callFeedbackOperator);
-app.use('/api/video/swagger', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // this handler must have 4 args, because this is the way how express knows this is error handler
 // https://expressjs.com/ru/guide/error-handling.html
