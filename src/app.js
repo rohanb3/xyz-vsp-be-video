@@ -12,7 +12,7 @@ middlewares.forEach(m => require(`@/middlewares/${m}`).init(app));
 const roomLogs = require('@/routes/roomLogs');
 const callFeedbackCustomer = require('@/routes/callFeedbackCustomer');
 const callFeedbackOperator = require('@/routes/callFeedbackOperator');
-const swaggerDocument = require('@/swagger');
+const swaggerDocument = require('@/swagger/v1');
 
 app.get('/room-logs', roomLogs);
 app.post('/call-feedback-customer', callFeedbackCustomer);
