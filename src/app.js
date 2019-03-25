@@ -9,10 +9,8 @@ const middlewares = fs.readdirSync(path.join(__dirname, 'middlewares')).sort();
 middlewares.forEach(m => require(`@/middlewares/${m}`).init(app));
 
 const apiRouter = require('./apiRouter');
-const roomLogs = require('@/routes/roomLogs');
 
-app.use('/api/video', apiRouter);
-app.get('/room-logs', roomLogs);
+app.use('/', apiRouter);
 
 // this handler must have 4 args, because this is the way how express knows this is error handler
 // https://expressjs.com/ru/guide/error-handling.html
