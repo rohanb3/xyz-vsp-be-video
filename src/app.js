@@ -10,7 +10,7 @@ middlewares.forEach(m => require(`@/middlewares/${m}`).init(app));
 
 const apiRouter = require('./apiRouter');
 
-app.use('/', apiRouter);
+app.use('/api/video', apiRouter);
 
 // this handler must have 4 args, because this is the way how express knows this is error handler
 // https://expressjs.com/ru/guide/error-handling.html
