@@ -17,11 +17,11 @@ spec:
         image: xyzies.azurecr.io/vsp-be-video-dev:0.0.0.0
         resources:
           requests:
-            cpu: 500m
-            memory: 512Mi
-          limits:
-            cpu: 1000m
+            cpu: 250m
             memory: 1024Mi
+          limits:
+            cpu: 500m
+            memory: 2048Mi
         ports:
         - containerPort: 3000
           name: dotnet-app
