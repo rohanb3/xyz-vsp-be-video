@@ -1,11 +1,13 @@
 const session = require('express-session');
+const redis = require('redis');
 const RedisStore = require('connect-redis')(session);
 
-const { REDIS_HOST, REDIS_PORT } = require('../constants/redis');
+const { REDIS_HOST, REDIS_PORT, REDIS_OPTIONS } = require('../constants/redis');
+
+const client = redis.createClient(REDIS_PORT, REDIS_HOST, REDIS_OPTIONS);
 
 const storeOptions = {
-  host: REDIS_HOST,
-  port: REDIS_PORT,
+  client,
 };
 
 exports.init = (app) => {
