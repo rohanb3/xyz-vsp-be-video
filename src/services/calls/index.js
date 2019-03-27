@@ -122,6 +122,8 @@ function finishCall(callId, finishedBy) {
       let finishingPromise = null;
       const callStatus = callStatusHelper.getCallStatus(call);
 
+      console.log('callStatus', callStatus);
+
       switch (callStatus) {
         case statuses.CALL_PENDING:
           finishingPromise = callFinisher.markCallAsMissed(callId);
@@ -153,6 +155,10 @@ function getPendingCallsLength() {
   return pendingCallsQueue.getSize();
 }
 
+function getCallsInfo() {
+  return pendingCallsQueue.getQueueInfo();
+}
+
 function subscribeToCallsLengthChanging(listener) {
   return pendingCallsQueue.subscribeToQueueChanging(listener);
 }
@@ -169,6 +175,7 @@ exports.acceptCallback = acceptCallback;
 exports.declineCallback = declineCallback;
 exports.getOldestCall = getOldestCall;
 exports.getPendingCallsLength = getPendingCallsLength;
+exports.getCallsInfo = getCallsInfo;
 
 exports.subscribeToCallRequesting = pubSubChannel.subscribe.bind(null, CALL_REQUESTED);
 exports.subscribeToCallAccepting = pubSubChannel.subscribe.bind(null, CALL_ACCEPTED);

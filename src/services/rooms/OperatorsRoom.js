@@ -11,7 +11,6 @@ const {
 } = require('@/constants/rooms');
 
 const {
-  CALL_REQUESTED,
   CALL_ACCEPTED,
   CALL_FINISHED,
   CALLBACK_REQUESTED,
@@ -20,14 +19,16 @@ const {
   CALLS_CHANGED,
 } = require('@/constants/calls');
 
+const { STATUS_CHANGED_ONLINE, STATUS_CHANGED_OFFLINE } = require('@/constants/operatorStatuses');
+
 const {
   acceptCall,
   requestCallback,
   finishCall,
-  subscribeToCallRequesting,
   subscribeToCallbackAccepting,
   subscribeToCallbackDeclining,
   subscribeToCallsLengthChanging,
+  getCallsInfo,
 } = require('@/services/calls');
 
 const { authenticateOperator } = require('@/services/socketAuth');
@@ -37,57 +38,63 @@ class OperatorsRoom {
   constructor(io) {
     this.operators = io.of(OPERATORS);
     this.operators.on(CONNECTION, this.onOperatorConnected.bind(this));
-    socketIOAuth(this.operators, { authenticate: authenticateOperator });
-    subscribeToCallRequesting(this.emitCallRequesting.bind(this));
+    socketIOAuth(this.operators, {
+      authenticate: authenticateOperator,
+      postAuthenticate: this.onOperatorAuthenticated.bind(this),
+    });
     subscribeToCallbackAccepting(this.checkCustomerAndEmitCallbackAccepting.bind(this));
     subscribeToCallbackDeclining(this.checkCustomerAndEmitCallbackDeclining.bind(this));
     subscribeToCallsLengthChanging(this.emitCallsInfo.bind(this));
   }
 
   onOperatorConnected(operator) {
-    logger.debug('operator.connected', operator.id);
     operator.on(CALL_ACCEPTED, this.onOperatorAcceptCall.bind(this, operator));
     operator.on(CALLBACK_REQUESTED, this.onOperatorRequestedCallback.bind(this, operator));
     operator.on(CALL_FINISHED, this.onOperatorFinishedCall.bind(this, operator));
     operator.on(DISCONNECT, this.onOperatorDisconnected.bind(this, operator));
+    operator.on(STATUS_CHANGED_ONLINE, this.addOperatorToActive.bind(this, operator));
+    operator.on(STATUS_CHANGED_OFFLINE, this.removeOperatorFromActive.bind(this, operator));
+  }
+
+  onOperatorAuthenticated(operator) {
+    logger.debug('Operator authenticated', operator.id);
     this.addOperatorToActive(operator);
   }
 
   onOperatorAcceptCall(operator) {
-    logger.debug('operator.accepted.call', operator.id);
+    logger.debug('Customer call: attempt to accept by operator', operator.id);
     return acceptCall(operator.id)
       .then(({ id, requestedAt }) => operator.emit(ROOM_CREATED, { id, requestedAt }))
-      .catch((err) => {
-        logger.error('call.accept.failed.operator', err);
-      });
+      .then(() => logger.debug('Customer call: accepted by operator', operator.id))
+      .catch(err => logger.error('Customer call: accepting failed', operator.id, err));
   }
 
   onOperatorRequestedCallback(operator, callId) {
-    logger.debug('operator.requested.callback', operator.id, callId);
+    logger.debug('Operator callback: attempt to request', operator.id, callId);
     if (!callId) {
+      logger.error('Operator callback requested: no callId', operator.id);
       return Promise.resolve();
     }
     return requestCallback(callId, operator.id)
       .then((callback) => {
         operator.pendingCallbackId = callback.id;
       })
-      .catch((err) => {
-        logger.error('callback.request.failed.operator', err);
-      });
+      .then(() => logger.debug('Operator callback: requested', operator.id))
+      .catch(err => logger.error('Operator callback: requesting failed', err));
   }
 
   onOperatorFinishedCall(operator, call) {
-    logger.debug('operator.finished.call', call && call.id, operator && operator.id);
+    logger.debug('Call: attempt to finish by operator', call && call.id, operator && operator.id);
     return call && operator
-      ? finishCall(call.id, operator.id).catch((err) => {
-        logger.error('call.finish.failed.operator', err);
-      })
+      ? finishCall(call.id, operator.id)
+        .then(() => logger.debug('Call: finished by operator', call.id, operator.id))
+        .catch(err => logger.error('Call: finishing by customer failed', err))
       : Promise.resolve();
   }
 
   onOperatorDisconnected(operator) {
     const operatorId = operator.id;
-    logger.debug('operator.disconnected', operatorId);
+    logger.debug('Operator disconnected:', operatorId);
   }
 
   checkCustomerAndEmitCallbackAccepting(call) {
@@ -106,11 +113,6 @@ class OperatorsRoom {
     }
   }
 
-  emitCallRequesting(call) {
-    logger.debug('call.requested.operators.room', call);
-    this.operators.to(ACTIVE_OPERATORS).emit(CALL_REQUESTED, call);
-  }
-
   emitCallbackAccepting(operatorId, callId) {
     this.operators.connected[operatorId].emit(CALLBACK_ACCEPTED, callId);
   }
@@ -120,20 +122,32 @@ class OperatorsRoom {
   }
 
   emitCallsInfo(info) {
-    logger.debug('queue.info.operators.room', info);
-    return this.operators.emit(CALLS_CHANGED, info);
+    logger.debug('Calls info: emitting to active operators', info);
+    return this.operators.to(ACTIVE_OPERATORS).emit(CALLS_CHANGED, info);
   }
 
   addOperatorToActive(operator) {
     const operatorId = operator.id;
-    logger.debug('addOperatorToActive', operatorId);
-    this.operators.connected[operatorId].join(ACTIVE_OPERATORS);
+    const connectedOperator = this.operators.connected[operatorId];
+    if (connectedOperator) {
+      logger.debug('Operator: added to active', operatorId);
+      connectedOperator.join(ACTIVE_OPERATORS);
+      getCallsInfo()
+        .then((info) => {
+          connectedOperator.emit(CALLS_CHANGED, info);
+          logger.debug('Operator: emitted calls info', operatorId);
+        })
+        .catch(err => logger.error('Calls info: emitting to active operator failed', err));
+    }
   }
 
   removeOperatorFromActive(operator) {
     const operatorId = operator.id;
-    logger.debug('removeOperatorFromActive', operatorId);
-    this.operators.connected[operatorId].leave(ACTIVE_OPERATORS);
+    const connectedOperator = this.operators.connected[operatorId];
+    if (connectedOperator) {
+      logger.debug('Operator: removed from active', operatorId);
+      connectedOperator.leave(ACTIVE_OPERATORS);
+    }
   }
 }
 
