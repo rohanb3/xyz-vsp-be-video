@@ -1,4 +1,6 @@
 exports.CALL_REQUESTED = 'call.requested';
+exports.CALL_ENQUEUED = 'call.enqueued';
+exports.CALL_NOT_ENQUEUED = 'call.not.enqueued';
 exports.CALL_ACCEPTED = 'call.accepted';
 exports.CALL_FINISHED = 'call.finished';
 exports.CALLBACK_REQUESTED = 'callback.requested';

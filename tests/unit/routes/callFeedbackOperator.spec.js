@@ -8,7 +8,7 @@ const { CallUpdateError } = require('@/services/calls/errors');
 
 const { OPERATOR_FEEDBACK } = callFeedback.feedbackTypes;
 
-describe('POST /call-feedback-operator: ', () => {
+describe('POST /api/video/call-feedback-operator: ', () => {
   it('should return 200 if feedback was saved', () => {
     const callId = 'call42';
     const feedback = {
@@ -18,12 +18,15 @@ describe('POST /call-feedback-operator: ', () => {
     callFeedback.validateAndSaveFeedback = jest.fn(() => Promise.resolve());
 
     return request(app)
-      .post('/call-feedback-operator')
+      .post('/api/video/call-feedback-operator')
       .send({ callId, ...feedback })
       .expect(200)
       .then(() => {
-        expect(callFeedback.validateAndSaveFeedback)
-          .toHaveBeenCalledWith(callId, feedback, OPERATOR_FEEDBACK);
+        expect(callFeedback.validateAndSaveFeedback).toHaveBeenCalledWith(
+          callId,
+          feedback,
+          OPERATOR_FEEDBACK,
+        );
       });
   });
 
@@ -33,23 +36,23 @@ describe('POST /call-feedback-operator: ', () => {
       operatorId: 'operator42',
     };
 
-    const messages = [
-      'error1',
-      'error2',
-    ];
+    const messages = ['error1', 'error2'];
 
     const error = new CallUpdateError(messages);
 
     callFeedback.validateAndSaveFeedback = jest.fn(() => Promise.reject(error));
 
     return request(app)
-      .post('/call-feedback-operator')
+      .post('/api/video/call-feedback-operator')
       .send({ callId, ...feedback })
       .expect(400)
       .then((res) => {
         expect(res.body.messages).toEqual(messages);
-        expect(callFeedback.validateAndSaveFeedback)
-          .toHaveBeenCalledWith(callId, feedback, OPERATOR_FEEDBACK);
+        expect(callFeedback.validateAndSaveFeedback).toHaveBeenCalledWith(
+          callId,
+          feedback,
+          OPERATOR_FEEDBACK,
+        );
       });
   });
 
@@ -66,13 +69,16 @@ describe('POST /call-feedback-operator: ', () => {
     callFeedback.validateAndSaveFeedback = jest.fn(() => Promise.reject(error));
 
     return request(app)
-      .post('/call-feedback-operator')
+      .post('/api/video/call-feedback-operator')
       .send({ callId, ...feedback })
       .expect(500)
       .then((res) => {
         expect(res.body.messages).toEqual([message]);
-        expect(callFeedback.validateAndSaveFeedback)
-          .toHaveBeenCalledWith(callId, feedback, OPERATOR_FEEDBACK);
+        expect(callFeedback.validateAndSaveFeedback).toHaveBeenCalledWith(
+          callId,
+          feedback,
+          OPERATOR_FEEDBACK,
+        );
       });
   });
 });

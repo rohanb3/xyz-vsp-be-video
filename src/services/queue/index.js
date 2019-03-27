@@ -1,8 +1,5 @@
 const {
-  ITEM_ENQUEUED,
-  ITEM_DEQUEUED,
-  ITEM_REMOVED,
-  QUEUE_CHANGED,
+  ITEM_ENQUEUED, ITEM_DEQUEUED, ITEM_REMOVED, QUEUE_CHANGED,
 } = require('./constants');
 const { createConnector } = require('./connector');
 const errors = require('./errors');
@@ -62,6 +59,10 @@ class Queue {
     return this.connector.getSize();
   }
 
+  getQueueInfo() {
+    return Promise.all([this.getPeak(), this.getSize()]).then(([peak, size]) => ({ peak, size }));
+  }
+
   subscribeToItemEnqueueing(listener) {
     return pubSub.subscribe(this.events.ITEM_ENQUEUED, listener);
   }
@@ -107,9 +108,7 @@ class Queue {
   }
 
   publishQueueChanging() {
-    return Promise.all([this.getPeak(), this.getSize()]).then(([peak, size]) => (
-      pubSub.publish(this.events.QUEUE_CHANGED, { peak, size })
-    ));
+    return this.getQueueInfo().then(info => pubSub.publish(this.events.QUEUE_CHANGED, info));
   }
 }
 

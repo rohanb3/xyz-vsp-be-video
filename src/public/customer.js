@@ -2,13 +2,20 @@
 
 const Video = require('twilio-video');
 
-// const socket = io('/customers', {
-//   transports: ['websocket'],
-// });
-const socket = io('wss://dev-demo.xyzies.ardas.biz/customers', {
+const isLocal = prompt('Is local?');
+
+let socketUrl = 'wss://dev-demo.xyzies.ardas.biz/customers';
+let socketOptions = {
   path: '/api/video/socket.io',
   transports: ['websocket'],
-});
+};
+
+if (typeof isLocal === 'string') {
+  socketUrl = '/customers';
+  socketOptions = { transports: ['websocket'] };
+}
+
+const socket = io(socketUrl, socketOptions);
 
 let globalToken = null;
 
