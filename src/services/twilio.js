@@ -7,7 +7,7 @@ const {
   TWILIO_AUTH_TOKEN,
   TWILIO_API_KEY,
   TWILIO_API_SECRET,
-} = process.env;
+} = require('@/constants/twilio');
 
 const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
 const { AccessToken } = twilio.jwt;
@@ -15,11 +15,7 @@ const { VideoGrant } = AccessToken;
 
 function getToken(identity) {
   const grant = new VideoGrant();
-  const token = new AccessToken(
-    TWILIO_ACCOUNT_SID,
-    TWILIO_API_KEY,
-    TWILIO_API_SECRET,
-  );
+  const token = new AccessToken(TWILIO_ACCOUNT_SID, TWILIO_API_KEY, TWILIO_API_SECRET);
 
   token.identity = identity;
   token.addGrant(grant);
@@ -44,13 +40,11 @@ function getRoom(identity) {
   //   client.video.rooms.each({ uniqueName: identity }, resolve);
   // });
   // return client.video.rooms(identity).fetch().then(logger.debug).catch(console.error);
-  return client.video.rooms.list()
-    .then((rooms = []) => rooms.find(r => r.uniqueName === identity));
+  return client.video.rooms.list().then((rooms = []) => rooms.find(r => r.uniqueName === identity));
 }
 
 function ensureRoom(identity) {
-  return getRoom(identity)
-    .then(room => room || createRoom(identity));
+  return getRoom(identity).then(room => room || createRoom(identity));
 }
 
 exports.getToken = getToken;

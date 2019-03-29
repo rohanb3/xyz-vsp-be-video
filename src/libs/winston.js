@@ -1,14 +1,22 @@
 /* eslint-disable no-param-reassign */
-const { createLogger, format, transports } = require('winston');
+const winston = require('winston');
 const { SPLAT } = require('triple-beam');
+const common = require('winston/lib/winston/common');
+require('winston-logstash');
+const config = require('config');
+const { clone, log } = require('./utils/logstashCompat');
+
+winston.clone = clone;
+common.log = log;
+
+const { createLogger, format, transports } = winston;
+const consoleEnbled = config.get('console.enabled');
+const {
+  enabled: logstashEnabled, port, host, node_name: nodeName,
+} = config.get('logstash');
 
 const {
-  combine,
-  timestamp,
-  printf,
-  colorize,
-  align,
-  label,
+  combine, timestamp, printf, colorize, align, label,
 } = format;
 
 const options = {
@@ -17,8 +25,17 @@ const options = {
     handleExceptions: true,
     json: false,
     colorize: true,
+    silent: !consoleEnbled,
   },
 };
+
+if (logstashEnabled) {
+  options.logstash = {
+    port,
+    host,
+    node_name: nodeName,
+  };
+}
 
 const isObject = (value) => {
   const type = typeof value;
@@ -40,28 +57,27 @@ const all = format((info) => {
   return info;
 });
 
-const customFormat = printf(info => (
-  `\n ${info.timestamp} [${info.label}] ${info.level}: ${info.message} \n`
-));
+const customFormat = printf(
+  info => `\n ${info.timestamp} [${info.label}] ${info.level}: ${info.message} \n`,
+);
+
+const loggerTransports = [new transports.Console(options.console)];
+
+if (logstashEnabled) {
+  loggerTransports.push(new transports.Logstash(options.logstash));
+}
 
 const getLogger = (module) => {
-  const path = module.filename.split('/').slice(-2).join('/');
+  const path = module.filename
+    .split('/')
+    .slice(-2)
+    .join('/');
 
   const logger = createLogger({
-    transports: [
-      new transports.Console(options.console),
-    ],
-    format: combine(
-      all(),
-      label({ label: path }),
-      colorize(),
-      timestamp(),
-      align(),
-      customFormat,
-    ),
-    level: process.env.NODE_ENV === 'development' ? 'debug' : 'error',
+    transports: loggerTransports,
+    format: combine(all(), label({ label: path }), colorize(), timestamp(), align(), customFormat),
+    level: 'debug',
     exitOnError: false,
-    silent: process.env.NODE_ENV === 'test',
   });
 
   logger.stream = {

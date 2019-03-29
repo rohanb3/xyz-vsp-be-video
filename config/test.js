@@ -1,0 +1,8 @@
+module.exports = {
+  console: {
+    enabled: false,
+  },
+  session: {
+    enabled: false,
+  },
+};

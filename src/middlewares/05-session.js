@@ -1,6 +1,9 @@
 const session = require('express-session');
 const redis = require('redis');
 const RedisStore = require('connect-redis')(session);
+const config = require('config');
+
+const { enabled, secret, setProxy } = config.get('session');
 
 const { REDIS_HOST, REDIS_PORT, REDIS_OPTIONS } = require('../constants/redis');
 
@@ -11,19 +14,19 @@ const storeOptions = {
 };
 
 exports.init = (app) => {
-  if (process.env.NODE_ENV === 'test') {
+  if (!enabled) {
     return;
   }
 
   const sess = {
     store: new RedisStore(storeOptions),
-    secret: process.env.HTTP_SESSION_SECRET,
+    secret,
     resave: false,
     saveUninitialized: true,
     cookie: {},
   };
 
-  if (process.env.NODE_ENV === 'production') {
+  if (setProxy) {
     app.set('trust proxy', 1);
     sess.cookie.secure = true;
   }
