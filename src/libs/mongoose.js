@@ -1,13 +1,13 @@
 const mongoose = require('mongoose');
 const beautifyUnique = require('mongoose-beautiful-unique-validation');
+const config = require('config');
 
-// const { MONGO_URI } = process.env;
-const MONGO_URI = 'mongodb://customer:secret123@ds111765.mlab.com:11765/calls';
+const { connectionString, dbName, debug } = config.get('mongoose');
 
 mongoose.Promise = Promise;
 
 mongoose.plugin(beautifyUnique);
-mongoose.set('debug', process.env.NODE_ENV !== 'production');
+mongoose.set('debug', debug);
 mongoose.set('useFindAndModify', false);
 
 mongoose.plugin((schema) => {
@@ -24,12 +24,12 @@ mongoose.plugin((schema) => {
 });
 
 mongoose.connect(
-  MONGO_URI,
+  connectionString,
   {
     keepAlive: 1,
     poolSize: 5,
     useNewUrlParser: true,
-    dbName: 'calls',
+    dbName,
   },
 );
 

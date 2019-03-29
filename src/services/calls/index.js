@@ -122,8 +122,6 @@ function finishCall(callId, finishedBy) {
       let finishingPromise = null;
       const callStatus = callStatusHelper.getCallStatus(call);
 
-      console.log('callStatus', callStatus);
-
       switch (callStatus) {
         case statuses.CALL_PENDING:
           finishingPromise = callFinisher.markCallAsMissed(callId);
