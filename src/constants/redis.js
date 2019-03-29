@@ -13,8 +13,6 @@ const options = authRequired
   }
   : {};
 
-console.log(host, port, authRequired, password);
-
 exports.REDIS_HOST = host;
 exports.REDIS_PORT = port;
 exports.REDIS_PASSWORD = password;
