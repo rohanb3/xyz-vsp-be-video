@@ -12,7 +12,12 @@ common.log = log;
 const { createLogger, format, transports } = winston;
 const consoleEnbled = config.get('console.enabled');
 const {
-  enabled: logstashEnabled, port, host, node_name: nodeName,
+  enabled: logstashEnabled,
+  port,
+  host,
+  node_name: nodeName,
+  connectionRetries,
+  connectionRetriesTimeout,
 } = config.get('logstash');
 
 const {
@@ -34,6 +39,8 @@ if (logstashEnabled) {
     port,
     host,
     node_name: nodeName,
+    max_connect_retries: connectionRetries,
+    timeout_connect_retries: connectionRetriesTimeout * 1000,
   };
 }
 
