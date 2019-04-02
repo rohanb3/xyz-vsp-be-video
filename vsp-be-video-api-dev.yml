@@ -19,10 +19,10 @@ spec:
         image: xyzies.azurecr.io/vsp-be-video-dev:0.0.0.0
         resources:
           requests:
-            cpu: 250m
+            cpu: 200m
             memory: 1024Mi
           limits:
-            cpu: 500m
+            cpu: 400m
             memory: 2048Mi
         ports:
         - containerPort: 3000
