@@ -12,6 +12,8 @@ spec:
       labels:
         app: dev-video-api
     spec:
+      nodeSelector:
+        env: applications
       containers:
       - name: dev-video-api
         image: xyzies.azurecr.io/vsp-be-video-dev:0.0.0.0
