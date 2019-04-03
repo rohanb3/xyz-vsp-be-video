@@ -2,8 +2,10 @@ const redis = require('redis');
 
 const { REDIS_HOST, REDIS_PORT, REDIS_OPTIONS } = require('@/constants/redis');
 const { promiser } = require('@/services/redisUtils');
+const logger = require('@/services/logger')(module);
 
 const client = redis.createClient(REDIS_PORT, REDIS_HOST, REDIS_OPTIONS);
+client.on('error', err => logger.error(err));
 /*
  ** Unordered sets start
  */

@@ -30,6 +30,8 @@ mongoose.connect(
     poolSize: 5,
     useNewUrlParser: true,
     dbName,
+    reconnectTries: Number.MAX_VALUE,
+    reconnectInterval: 500,
   },
 );
 

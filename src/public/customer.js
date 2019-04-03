@@ -20,7 +20,7 @@ const socket = io(socketUrl, socketOptions);
 let globalToken = null;
 
 socket.on('connect', () => {
-  socket.emit('authentication', { userName: 'Joey' });
+  socket.emit('authentication', { identity: 'Joey' });
   socket.on('authenticated', (token) => {
     console.log('authenticated');
     onTokenReceived({ token });
@@ -76,7 +76,7 @@ function onTokenReceived(data) {
 
 function requestConnection(token) {
   socket.emit('call.requested', { query: token });
-  socket.once('call.accepted', roomName => connectToRoom(roomName, token));
+  socket.once('call.accepted', ({ roomId, operatorId }) => connectToRoom(roomId, token));
 }
 
 function onCallbackRequested() {
@@ -90,7 +90,7 @@ function onCallbackRequested() {
 function acceptCallback() {
   hideIncoming();
   socket.emit('callback.accepted');
-  socket.once('room.created', (id) => connectToRoom(id, globalToken));
+  socket.once('room.created', roomId => connectToRoom(roomId, globalToken));
 }
 
 function declineCallback() {

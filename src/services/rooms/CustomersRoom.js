@@ -32,6 +32,7 @@ class CustomersRoom {
   constructor(io) {
     this.customers = io.of(CUSTOMERS);
     this.customers.on(CONNECTION, this.onCustomerConnected.bind(this));
+    this.idsMap = new Map();
     socketIOAuth(this.customers, {
       authenticate: authenticateCustomer,
       postAuthenticate: this.onCustomerAuthenticated.bind(this),
@@ -48,10 +49,11 @@ class CustomersRoom {
 
   onCustomerAuthenticated(customer) {
     logger.debug('Customer authenticated', customer.id);
+    this.mapSocketIdentityToId(customer);
   }
 
   onCustomerRequestedCall(customer) {
-    return requestCall(customer.id)
+    return requestCall(customer.identity)
       .then((call) => {
         logger.debug('Customer call: added to pending', call);
         customer.pendingCallId = call.id;
@@ -64,41 +66,44 @@ class CustomersRoom {
   }
 
   onCustomerFinishedCall(customer, call) {
-    logger.debug('Call: attempt to finish', call && call.id, customer && customer.id);
-    return call && customer
-      ? finishCall(call.id, customer.id)
+    logger.debug('Call: attempt to finish', call && call.id, customer.identity);
+    return call && call.id
+      ? finishCall(call.id, customer.identity)
         .then(() => logger.debug('Call: finished by customer', call.id))
         .catch(err => logger.error('Call: finishing by customer failed', err))
       : Promise.resolve();
   }
 
   onCustomerDisconnected(customer) {
-    logger.debug('Customer disconneted', customer.id, customer.pendingCallId);
+    logger.debug('Customer disconneted', customer.identity, customer.pendingCallId);
+    this.checkAndUnmapSocketIdentityFromId(customer);
     return customer.pendingCallId ? finishCall(customer.pendingCallId) : Promise.resolve();
   }
 
   onCallAccepted(call) {
-    logger.debug('Customer call: accepted', call);
-    const customerId = call.requestedBy;
+    const { id, requestedBy, acceptedBy } = call;
+    const socketId = this.getSocketIdByIdentity(requestedBy);
+    logger.debug('Customer call: accepted', id, requestedBy, acceptedBy);
 
-    this.checkCustomerAndEmitCallAccepting(customerId, call.id);
+    this.checkCustomerAndEmitCallAccepting(socketId, id, acceptedBy);
   }
 
-  checkCustomerAndEmitCallAccepting(customerId, callId) {
-    const connectedCustomer = this.customers.connected[customerId];
+  checkCustomerAndEmitCallAccepting(socketId, callId, operatorId) {
+    const connectedCustomer = this.customers.connected[socketId];
     if (connectedCustomer) {
-      logger.debug('Customer call: acception emitted to customer', callId, customerId);
+      logger.debug('Customer call: acception emitted to customer', callId, socketId);
       connectedCustomer.pendingCallId = null;
-      this.emitCallAccepting(customerId, callId);
+      this.emitCallAccepting(socketId, { roomId: callId, operatorId });
     }
   }
 
   checkCustomerAndEmitCallbackRequesting(call) {
-    const { requestedBy, id } = call;
-    const connectedCustomer = this.customers.connected[requestedBy];
+    const { requestedBy, id, acceptedBy } = call;
+    const socketId = this.getSocketIdByIdentity(requestedBy);
+    const connectedCustomer = this.customers.connected[socketId];
     if (connectedCustomer) {
       logger.debug('Operator callback: emitting to customer', id);
-      this.emitCallbackRequesting(requestedBy, id);
+      this.emitCallbackRequesting(socketId, { roomId: id, operatorId: acceptedBy });
 
       const onCallbackAccepted = () => {
         connectedCustomer.removeListener(CALLBACK_DECLINED, onCallbackDeclined);
@@ -122,12 +127,26 @@ class CustomersRoom {
     }
   }
 
-  emitCallAccepting(customerId, callId) {
-    this.customers.connected[customerId].emit(CALL_ACCEPTED, callId);
+  emitCallAccepting(customerId, callData) {
+    this.customers.connected[customerId].emit(CALL_ACCEPTED, callData);
   }
 
-  emitCallbackRequesting(customerId, callId) {
-    this.customers.connected[customerId].emit(CALLBACK_REQUESTED, callId);
+  emitCallbackRequesting(customerId, callData) {
+    this.customers.connected[customerId].emit(CALLBACK_REQUESTED, callData);
+  }
+
+  mapSocketIdentityToId(socket) {
+    this.idsMap.set(socket.identity, socket.id);
+  }
+
+  checkAndUnmapSocketIdentityFromId(socket) {
+    if (socket.identity) {
+      this.idsMap.delete(socket.identity);
+    }
+  }
+
+  getSocketIdByIdentity(identity) {
+    return this.idsMap.get(identity);
   }
 }
 

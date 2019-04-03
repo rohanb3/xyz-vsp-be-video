@@ -5,9 +5,11 @@ const config = require('config');
 
 const { enabled, secret, setProxy } = config.get('session');
 
+const logger = require('@/services/logger')(module);
 const { REDIS_HOST, REDIS_PORT, REDIS_OPTIONS } = require('../constants/redis');
 
 const client = redis.createClient(REDIS_PORT, REDIS_HOST, REDIS_OPTIONS);
+client.on('error', err => logger.error(err));
 
 const storeOptions = {
   client,
