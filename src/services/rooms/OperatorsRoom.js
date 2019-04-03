@@ -38,6 +38,7 @@ class OperatorsRoom {
   constructor(io) {
     this.operators = io.of(OPERATORS);
     this.operators.on(CONNECTION, this.onOperatorConnected.bind(this));
+    this.idsMap = new Map();
     socketIOAuth(this.operators, {
       authenticate: authenticateOperator,
       postAuthenticate: this.onOperatorAuthenticated.bind(this),
@@ -57,25 +58,26 @@ class OperatorsRoom {
   }
 
   onOperatorAuthenticated(operator) {
-    logger.debug('Operator authenticated', operator.id);
+    logger.debug('Operator authenticated', operator.id, operator.identity);
+    this.mapSocketIdentityToId(operator);
     this.addOperatorToActive(operator);
   }
 
   onOperatorAcceptCall(operator) {
-    logger.debug('Customer call: attempt to accept by operator', operator.id);
-    return acceptCall(operator.id)
+    logger.debug('Customer call: attempt to accept by operator', operator.identity);
+    return acceptCall(operator.identity)
       .then(({ id, requestedAt }) => operator.emit(ROOM_CREATED, { id, requestedAt }))
-      .then(() => logger.debug('Customer call: accepted by operator', operator.id))
-      .catch(err => logger.error('Customer call: accepting failed', operator.id, err));
+      .then(() => logger.debug('Customer call: accepted by operator', operator.identity))
+      .catch(err => logger.error('Customer call: accepting failed', operator.identity, err));
   }
 
   onOperatorRequestedCallback(operator, callId) {
-    logger.debug('Operator callback: attempt to request', operator.id, callId);
+    logger.debug('Operator callback: attempt to request', operator.identity, callId);
     if (!callId) {
-      logger.error('Operator callback requested: no callId', operator.id);
+      logger.error('Operator callback requested: no callId', operator.identity);
       return Promise.resolve();
     }
-    return requestCallback(callId, operator.id)
+    return requestCallback(callId, operator.identity)
       .then((callback) => {
         operator.pendingCallbackId = callback.id;
       })
@@ -84,32 +86,34 @@ class OperatorsRoom {
   }
 
   onOperatorFinishedCall(operator, call) {
-    logger.debug('Call: attempt to finish by operator', call && call.id, operator && operator.id);
-    return call && operator
-      ? finishCall(call.id, operator.id)
-        .then(() => logger.debug('Call: finished by operator', call.id, operator.id))
+    logger.debug('Call: attempt to finish by operator', call && call.id, operator.identity);
+    return call && call.id
+      ? finishCall(call.id, operator.identity)
+        .then(() => logger.debug('Call: finished by operator', call.id, operator.identity))
         .catch(err => logger.error('Call: finishing by customer failed', err))
       : Promise.resolve();
   }
 
   onOperatorDisconnected(operator) {
-    const operatorId = operator.id;
-    logger.debug('Operator disconnected:', operatorId);
+    this.checkAndUnmapSocketIdentityFromId(operator);
+    logger.debug('Operator disconnected:', operator.identity);
   }
 
   checkCustomerAndEmitCallbackAccepting(call) {
     const { acceptedBy, id } = call;
-    const connectedOperator = this.operators.connected[acceptedBy];
+    const socketId = this.getSocketIdByIdentity(acceptedBy);
+    const connectedOperator = this.operators.connected[socketId];
     if (connectedOperator) {
-      this.emitCallbackAccepting(acceptedBy, { id });
+      this.emitCallbackAccepting(socketId, { id });
     }
   }
 
   checkCustomerAndEmitCallbackDeclining(call) {
     const { acceptedBy, id } = call;
-    const connectedOperator = this.operators.connected[acceptedBy];
+    const socketId = this.getSocketIdByIdentity(acceptedBy);
+    const connectedOperator = this.operators.connected[socketId];
     if (connectedOperator) {
-      this.emitCallbackDeclining(acceptedBy, { id });
+      this.emitCallbackDeclining(socketId, { id });
     }
   }
 
@@ -148,6 +152,20 @@ class OperatorsRoom {
       logger.debug('Operator: removed from active', operatorId);
       connectedOperator.leave(ACTIVE_OPERATORS);
     }
+  }
+
+  mapSocketIdentityToId(socket) {
+    this.idsMap.set(socket.identity, socket.id);
+  }
+
+  checkAndUnmapSocketIdentityFromId(socket) {
+    if (socket.identity) {
+      this.idsMap.delete(socket.identity);
+    }
+  }
+
+  getSocketIdByIdentity(identity) {
+    return this.idsMap.get(identity);
   }
 }
 
