@@ -17,6 +17,8 @@ const {
   CALLBACK_ACCEPTED,
   CALLBACK_DECLINED,
   CALLS_CHANGED,
+  CALLS_EMPTY,
+  CALL_ACCEPTING_FAILED,
 } = require('@/constants/calls');
 
 const { STATUS_CHANGED_ONLINE, STATUS_CHANGED_OFFLINE } = require('@/constants/operatorStatuses');
@@ -30,6 +32,10 @@ const {
   subscribeToCallsLengthChanging,
   getCallsInfo,
 } = require('@/services/calls');
+
+const { CallsPendingEmptyError } = require('@/services/calls/errors');
+
+const { getToken } = require('@/services/twilio');
 
 const { authenticateOperator } = require('@/services/socketAuth');
 const logger = require('@/services/logger')(module);
@@ -66,9 +72,20 @@ class OperatorsRoom {
   onOperatorAcceptCall(operator) {
     logger.debug('Customer call: attempt to accept by operator', operator.identity);
     return acceptCall(operator.identity)
-      .then(({ id, requestedAt }) => operator.emit(ROOM_CREATED, { id, requestedAt }))
+      .then(({ id, requestedAt }) => {
+        const token = getToken(operator.identity, id);
+        operator.emit(ROOM_CREATED, { id, requestedAt, token });
+      })
       .then(() => logger.debug('Customer call: accepted by operator', operator.identity))
-      .catch(err => logger.error('Customer call: accepting failed', operator.identity, err));
+      .catch((err) => {
+        if (err instanceof CallsPendingEmptyError) {
+          logger.error('Customer call: accepting failed - queue empty', operator.identity, err);
+          operator.emit(CALLS_EMPTY);
+        } else {
+          logger.error('Customer call: accepting failed', operator.identity, err);
+          operator.emit(CALL_ACCEPTING_FAILED);
+        }
+      });
   }
 
   onOperatorRequestedCallback(operator, callId) {

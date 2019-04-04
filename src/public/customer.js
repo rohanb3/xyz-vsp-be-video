@@ -74,9 +74,9 @@ function onTokenReceived(data) {
   socket.on('callback.requested', onCallbackRequested);
 }
 
-function requestConnection(token) {
-  socket.emit('call.requested', { query: token });
-  socket.once('call.accepted', ({ roomId, operatorId }) => connectToRoom(roomId, token));
+function requestConnection() {
+  socket.emit('call.requested');
+  socket.once('call.accepted', ({ roomId, operatorId, token }) => connectToRoom(roomId, token));
 }
 
 function onCallbackRequested() {

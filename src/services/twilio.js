@@ -9,18 +9,29 @@ const {
   TWILIO_API_SECRET,
 } = require('@/constants/twilio');
 
+const TOKEN_TIME_LIFE = 24 * 60 * 60;
+
 const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
 const { AccessToken } = twilio.jwt;
 const { VideoGrant } = AccessToken;
 
-function getToken(identity) {
-  const grant = new VideoGrant();
-  const token = new AccessToken(TWILIO_ACCOUNT_SID, TWILIO_API_KEY, TWILIO_API_SECRET);
+function getToken(identity, roomName = '') {
+  const videoGrantOptions = roomName ? { room: roomName } : {};
+  const tokenOptions = {
+    ttl: TOKEN_TIME_LIFE,
+    identity,
+  };
+  const grant = new VideoGrant(videoGrantOptions);
+  const token = new AccessToken(
+    TWILIO_ACCOUNT_SID,
+    TWILIO_API_KEY,
+    TWILIO_API_SECRET,
+    tokenOptions,
+  );
 
-  token.identity = identity;
   token.addGrant(grant);
 
-  return token;
+  return token.toJwt();
 }
 
 function createRoom(identity) {

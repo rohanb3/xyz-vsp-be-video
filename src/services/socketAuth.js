@@ -7,7 +7,7 @@ function authenticateOperator(socket, data, callback) {
   }
   const token = getToken(identity);
   socket.identity = identity;
-  return callback(null, token.toJwt());
+  return callback(null, token);
 }
 
 function authenticateCustomer(socket, data, callback) {
@@ -17,7 +17,7 @@ function authenticateCustomer(socket, data, callback) {
   }
   const token = getToken(identity);
   socket.identity = identity;
-  return callback(null, token.toJwt());
+  return callback(null, token);
 }
 
 exports.authenticateOperator = authenticateOperator;
