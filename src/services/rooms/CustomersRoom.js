@@ -25,6 +25,8 @@ const {
   declineCallback,
 } = require('@/services/calls');
 
+const { getToken } = require('@/services/twilio');
+
 const { authenticateCustomer } = require('@/services/socketAuth');
 const logger = require('@/services/logger')(module);
 
@@ -93,7 +95,8 @@ class CustomersRoom {
     if (connectedCustomer) {
       logger.debug('Customer call: acception emitted to customer', callId, socketId);
       connectedCustomer.pendingCallId = null;
-      this.emitCallAccepting(socketId, { roomId: callId, operatorId });
+      const token = getToken(connectedCustomer.identity, callId);
+      this.emitCallAccepting(socketId, { roomId: callId, operatorId, token });
     }
   }
 
