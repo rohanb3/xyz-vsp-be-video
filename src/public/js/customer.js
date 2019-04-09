@@ -36344,12 +36344,25 @@ function hasOwnProperty(obj, prop) {
 
 const Video = require('twilio-video');
 
-const socket = io('/customers', {
+const isLocal = prompt('Is local?');
+
+let socketUrl = 'wss://dev-demo.xyzies.ardas.biz/customers';
+let socketOptions = {
+  path: '/api/video/socket.io',
   transports: ['websocket'],
-});
+};
+
+if (typeof isLocal === 'string') {
+  socketUrl = '/customers';
+  socketOptions = { transports: ['websocket'] };
+}
+
+const socket = io(socketUrl, socketOptions);
+
+let globalToken = null;
 
 socket.on('connect', () => {
-  socket.emit('authentication', { userName: 'Joey' });
+  socket.emit('authentication', { identity: 'Joey' });
   socket.on('authenticated', (token) => {
     console.log('authenticated');
     onTokenReceived({ token });
@@ -36395,14 +36408,40 @@ window.addEventListener('beforeunload', leaveRoomIfJoined);
 
 function onTokenReceived(data) {
   const { token } = data;
+  globalToken = token;
 
   document.getElementById('button-join').onclick = () => requestConnection(token);
   document.getElementById('button-leave').onclick = leaveRoomIfJoined;
+
+  socket.on('callback.requested', onCallbackRequested);
 }
 
-function requestConnection(token) {
-  socket.emit('call.requested', { query: token });
-  socket.on('call.accepted', roomName => connectToRoom(roomName, token));
+function requestConnection() {
+  socket.emit('call.requested');
+  socket.once('call.accepted', ({ roomId, operatorId, token }) => connectToRoom(roomId, token));
+}
+
+function onCallbackRequested() {
+  document.getElementById('incoming-callback-controls').style.display = 'flex';
+  setTimeout(() => {
+    document.getElementById('accept-button').onclick = acceptCallback;
+    document.getElementById('decline-button').onclick = declineCallback;
+  });
+}
+
+function acceptCallback() {
+  hideIncoming();
+  socket.emit('callback.accepted');
+  socket.once('room.created', roomId => connectToRoom(roomId, globalToken));
+}
+
+function declineCallback() {
+  hideIncoming();
+  socket.emit('callback.declined');
+}
+
+function hideIncoming() {
+  document.getElementById('incoming-callback-controls').style.display = 'none';
 }
 
 function connectToRoom(name, token) {
@@ -36458,8 +36497,9 @@ function roomJoined(room) {
   });
 
   room.on('participantDisconnected', (participant) => {
+    console.log('participant', new Date());
     detachParticipantTracks(participant);
-    leaveRoomIfJoined();
+    leaveRoomIfJoined(false);
   });
 
   room.on('disconnected', () => {
@@ -36495,9 +36535,11 @@ document.getElementById('button-preview').onclick = () => {
   );
 };
 
-function leaveRoomIfJoined() {
+function leaveRoomIfJoined(notifyBE = true) {
   if (activeRoom) {
-    socket.emit('call.finished', { id: activeRoom.name });
+    if (notifyBE) {
+      socket.emit('call.finished', { id: activeRoom.name });
+    }
     activeRoom.disconnect();
     activeRoom = null;
   }

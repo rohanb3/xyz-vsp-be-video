@@ -51,7 +51,6 @@ function acceptCall(acceptedBy) {
   return takeCall()
     .then((callFromQueue) => {
       Object.assign(call, callFromQueue);
-
       return twilio.ensureRoom(callFromQueue.id);
     })
     .then(() => activeCallsHeap.add(call.id, call))
@@ -72,7 +71,7 @@ function requestCallback(callId) {
 
       const callbacks = callFromDB.callbacks ? [...callFromDB.callbacks, callback] : [callback];
 
-      Object.assign(call, callFromDB, { callbacks });
+      Object.assign(call, callFromDB, { id: callId, callbacks });
 
       return pendingCallbacksHeap.add(callId, call);
     })
@@ -84,7 +83,7 @@ function requestCallback(callId) {
     .catch(err => callsErrorHandler.onRequestCallbackFailed(err, call.id));
 }
 
-function acceptCallBack(callId) {
+function acceptCallback(callId) {
   const call = {};
   return pendingCallbacksHeap
     .take(callId)
@@ -117,7 +116,8 @@ function declineCallback(callId) {
 }
 
 function finishCall(callId, finishedBy) {
-  return storage.get(callId)
+  return storage
+    .get(callId)
     .then((call) => {
       let finishingPromise = null;
       const callStatus = callStatusHelper.getCallStatus(call);
@@ -153,6 +153,10 @@ function getPendingCallsLength() {
   return pendingCallsQueue.getSize();
 }
 
+function getCallsInfo() {
+  return pendingCallsQueue.getQueueInfo();
+}
+
 function subscribeToCallsLengthChanging(listener) {
   return pendingCallsQueue.subscribeToQueueChanging(listener);
 }
@@ -165,10 +169,11 @@ exports.requestCall = requestCall;
 exports.acceptCall = acceptCall;
 exports.finishCall = finishCall;
 exports.requestCallback = requestCallback;
-exports.acceptCallBack = acceptCallBack;
+exports.acceptCallback = acceptCallback;
 exports.declineCallback = declineCallback;
 exports.getOldestCall = getOldestCall;
 exports.getPendingCallsLength = getPendingCallsLength;
+exports.getCallsInfo = getCallsInfo;
 
 exports.subscribeToCallRequesting = pubSubChannel.subscribe.bind(null, CALL_REQUESTED);
 exports.subscribeToCallAccepting = pubSubChannel.subscribe.bind(null, CALL_ACCEPTED);

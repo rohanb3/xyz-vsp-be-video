@@ -1,6 +1,6 @@
 const Call = require('@/models/call');
 
-const getById = id => Call.findById(id);
+const getById = id => Call.findById(id).then(doc => doc.toObject());
 const create = entity => Call.create(entity);
 const updateById = (id, updates = {}) => Call.findOneAndUpdate(
   { _id: id },

@@ -1,0 +1,181 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "VSP calls API overview",
+    "version": "v1"
+  },
+  "paths": {
+    "/api/video/call-feedback-customer": {
+      "post": {
+        "operationId": "callFeedbackCustomer",
+        "summary": "Posts customer feedback after call",
+        "produces": ["application/json"],
+        "tags": ["Feedback"],
+        "parameters": [
+          {
+            "name": "callId",
+            "in": "body",
+            "description": "Call id",
+            "required": true,
+            "type": "string",
+            "example": "123hfddnfgf344sksf34"
+          },
+          {
+            "name": "customerId",
+            "in": "body",
+            "description": "Customer id",
+            "required": true,
+            "type": "string",
+            "example": "456hfddnfgf344sksf34"
+          },
+          {
+            "name": "experienceRate",
+            "in": "body",
+            "description": "Experience after speaking with operator (1 <= value <= 5)",
+            "required": true,
+            "type": "int",
+            "format": "int32",
+            "example": 4,
+            "minimum": 1,
+            "maximum": 5
+          },
+          {
+            "name": "quality",
+            "in": "body",
+            "description": "Video and audio quality (1 <= value <= 5)",
+            "required": true,
+            "type": "int",
+            "format": "int32",
+            "example": 3,
+            "minimum": 1,
+            "maximum": 5
+          },
+          {
+            "name": "note",
+            "in": "body",
+            "description": "Additional message",
+            "type": "string",
+            "example": "some notes"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success"
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/definitions/BadFeedbackError"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/BadFeedbackError"
+            }
+          }
+        }
+      }
+    },
+    "/api/video/call-feedback-operator": {
+      "post": {
+        "operationId": "callFeedbackOperator",
+        "summary": "Posts operator feedback after call",
+        "produces": ["application/json"],
+        "tags": ["Feedback"],
+        "parameters": [
+          {
+            "name": "callId",
+            "in": "body",
+            "description": "Call id",
+            "required": true,
+            "type": "string",
+            "example": "123hfddnfgf344sksf34"
+          },
+          {
+            "name": "operatorId",
+            "in": "body",
+            "description": "Operator id",
+            "required": true,
+            "type": "string",
+            "example": "456hfddnfgf344sksf34"
+          },
+          {
+            "name": "quality",
+            "in": "body",
+            "description": "Video and audio quality (1 <= value <= 5)",
+            "required": true,
+            "type": "int",
+            "format": "int32",
+            "example": 3,
+            "minimum": 1,
+            "maximum": 5
+          },
+          {
+            "name": "note",
+            "in": "body",
+            "description": "Additional message",
+            "type": "string",
+            "example": "some notes"
+          },
+          {
+            "name": "callType",
+            "in": "body",
+            "description": "Type of the call",
+            "type": "string",
+            "example": "Info"
+          },
+          {
+            "name": "disposition",
+            "in": "body",
+            "description": "Disposition",
+            "type": "string",
+            "example": "Some disposition"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success"
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/definitions/BadFeedbackError"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/BadFeedbackError"
+            }
+          }
+        }
+      }
+    }
+  },
+  "consumes": ["application/json"],
+  "tags": [
+    {
+      "name": "Feedback",
+      "description": "Feedbacks after call"
+    }
+  ],
+  "definitions": {
+    "BadFeedbackError": {
+      "type": "object",
+      "required": ["messages"],
+      "properties": {
+        "messages": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string"
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

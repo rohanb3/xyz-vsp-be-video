@@ -1,4 +1,19 @@
-const { REDIS_HOST = '127.0.0.1', REDIS_PORT = 6379 } = process.env;
+const config = require('config');
 
-exports.REDIS_HOST = REDIS_HOST;
-exports.REDIS_PORT = REDIS_PORT;
+const {
+  port, host, authRequired, password,
+} = config.get('redis');
+
+const options = authRequired
+  ? {
+    auth_pass: password,
+    tls: {
+      serverName: host,
+    },
+  }
+  : {};
+
+exports.REDIS_HOST = host;
+exports.REDIS_PORT = port;
+exports.REDIS_PASSWORD = password;
+exports.REDIS_OPTIONS = options;

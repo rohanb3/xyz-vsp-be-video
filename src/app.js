@@ -4,18 +4,13 @@ const app = require('express')();
 
 const logger = require('@/services/logger')(module);
 
-const middlewares = fs.readdirSync(path.join(__dirname, 'middlewares'))
-  .sort();
+const middlewares = fs.readdirSync(path.join(__dirname, 'middlewares')).sort();
 /* eslint-disable-next-line global-require, import/no-dynamic-require */
 middlewares.forEach(m => require(`@/middlewares/${m}`).init(app));
 
-const roomLogs = require('@/routes/roomLogs');
-const callFeedbackCustomer = require('@/routes/callFeedbackCustomer');
-const callFeedbackOperator = require('@/routes/callFeedbackOperator');
+const apiRouter = require('./apiRouter');
 
-app.get('/room-logs', roomLogs);
-app.post('/call-feedback-customer', callFeedbackCustomer);
-app.post('/call-feedback-operator', callFeedbackOperator);
+app.use('/api/video', apiRouter);
 
 // this handler must have 4 args, because this is the way how express knows this is error handler
 // https://expressjs.com/ru/guide/error-handling.html

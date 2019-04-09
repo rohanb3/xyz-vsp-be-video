@@ -1,10 +1,14 @@
 /* eslint-disable no-param-reassign, class-methods-use-this, no-use-before-define */
 const socketIOAuth = require('socketio-auth');
 
-const { CONNECTION, DISCONNECT, CUSTOMERS } = require('@/constants/rooms');
+const {
+  CONNECTION, DISCONNECT, CUSTOMERS, ROOM_CREATED,
+} = require('@/constants/rooms');
 
 const {
   CALL_REQUESTED,
+  CALL_ENQUEUED,
+  CALL_NOT_ENQUEUED,
   CALL_ACCEPTED,
   CALL_FINISHED,
   CALLBACK_REQUESTED,
@@ -21,6 +25,8 @@ const {
   declineCallback,
 } = require('@/services/calls');
 
+const { getToken } = require('@/services/twilio');
+
 const { authenticateCustomer } = require('@/services/socketAuth');
 const logger = require('@/services/logger')(module);
 
@@ -28,7 +34,11 @@ class CustomersRoom {
   constructor(io) {
     this.customers = io.of(CUSTOMERS);
     this.customers.on(CONNECTION, this.onCustomerConnected.bind(this));
-    socketIOAuth(this.customers, { authenticate: authenticateCustomer });
+    this.idsMap = new Map();
+    socketIOAuth(this.customers, {
+      authenticate: authenticateCustomer,
+      postAuthenticate: this.onCustomerAuthenticated.bind(this),
+    });
     subscribeToCallAccepting(this.onCallAccepted.bind(this));
     subscribeToCallbackRequesting(this.checkCustomerAndEmitCallbackRequesting.bind(this));
   }
@@ -39,65 +49,80 @@ class CustomersRoom {
     customer.on(DISCONNECT, this.onCustomerDisconnected.bind(this, customer));
   }
 
+  onCustomerAuthenticated(customer) {
+    logger.debug('Customer authenticated', customer.id);
+    this.mapSocketIdentityToId(customer);
+  }
+
   onCustomerRequestedCall(customer) {
-    return requestCall(customer.id)
+    return requestCall(customer.identity)
       .then((call) => {
-        logger.debug('call.requested.customer', call);
+        logger.debug('Customer call: added to pending', call);
         customer.pendingCallId = call.id;
+        customer.emit(CALL_ENQUEUED, call.id);
       })
       .catch((err) => {
-        logger.error('call.request.failed.customer', err);
+        logger.error('Customer call: adding to pending failed ', err);
+        customer.emit(CALL_NOT_ENQUEUED);
       });
   }
 
   onCustomerFinishedCall(customer, call) {
-    return finishCall(call.id, customer.id)
-      .catch((err) => {
-        logger.error('call.finish.failed.customer', err);
-      });
+    logger.debug('Call: attempt to finish', call && call.id, customer.identity);
+    return call && call.id
+      ? finishCall(call.id, customer.identity)
+        .then(() => logger.debug('Call: finished by customer', call.id))
+        .catch(err => logger.error('Call: finishing by customer failed', err))
+      : Promise.resolve();
   }
 
   onCustomerDisconnected(customer) {
+    logger.debug('Customer disconneted', customer.identity, customer.pendingCallId);
+    this.checkAndUnmapSocketIdentityFromId(customer);
     return customer.pendingCallId ? finishCall(customer.pendingCallId) : Promise.resolve();
   }
 
   onCallAccepted(call) {
-    logger.debug('call.accepted.customer', call);
-    const customerId = call.requestedBy;
+    const { id, requestedBy, acceptedBy } = call;
+    const socketId = this.getSocketIdByIdentity(requestedBy);
+    logger.debug('Customer call: accepted', id, requestedBy, acceptedBy);
 
-    this.checkCustomerAndEmitCallAccepting(customerId, call.id);
+    this.checkCustomerAndEmitCallAccepting(socketId, id, acceptedBy);
   }
 
-  checkCustomerAndEmitCallAccepting(customerId, callId) {
-    const connectedCustomer = this.customers.connected[customerId];
+  checkCustomerAndEmitCallAccepting(socketId, callId, operatorId) {
+    const connectedCustomer = this.customers.connected[socketId];
     if (connectedCustomer) {
-      logger.debug('customers.emit.accepted.call', callId);
+      logger.debug('Customer call: acception emitted to customer', callId, socketId);
       connectedCustomer.pendingCallId = null;
-      this.emitCallAccepting(customerId, callId);
+      const token = getToken(connectedCustomer.identity, callId);
+      this.emitCallAccepting(socketId, { roomId: callId, operatorId, token });
     }
   }
 
   checkCustomerAndEmitCallbackRequesting(call) {
-    const { requestedBy, id } = call;
-    const connectedCustomer = this.customers.connected[requestedBy];
+    const { requestedBy, id, acceptedBy } = call;
+    const socketId = this.getSocketIdByIdentity(requestedBy);
+    const connectedCustomer = this.customers.connected[socketId];
     if (connectedCustomer) {
-      logger.debug('customers.emit.requested.callback', id);
-      this.emitCallAccepting(requestedBy, id);
+      logger.debug('Operator callback: emitting to customer', id);
+      this.emitCallbackRequesting(socketId, { roomId: id, operatorId: acceptedBy });
 
       const onCallbackAccepted = () => {
         connectedCustomer.removeListener(CALLBACK_DECLINED, onCallbackDeclined);
-        acceptCallback(call)
+        acceptCallback(id)
+          .then(() => connectedCustomer.emit(ROOM_CREATED, id))
+          .then(() => logger.debug('Operator callback: accepted and emitted to customer'))
           .catch((err) => {
-            logger.error('call.accept.failed.customer', err);
+            logger.error('Operator callback: failed accepting or emitting to customer', err);
           });
       };
 
       const onCallbackDeclined = () => {
         connectedCustomer.removeListener(CALLBACK_ACCEPTED, onCallbackAccepted);
-        declineCallback(call)
-          .catch((err) => {
-            logger.error('call.decline.failed.customer', err);
-          });
+        declineCallback(id).catch((err) => {
+          logger.error('Operator callback: declining failed', err);
+        });
       };
 
       connectedCustomer.once(CALLBACK_ACCEPTED, onCallbackAccepted);
@@ -105,12 +130,26 @@ class CustomersRoom {
     }
   }
 
-  emitCallAccepting(customerId, callId) {
-    this.customers.connected[customerId].emit(CALL_ACCEPTED, callId);
+  emitCallAccepting(customerId, callData) {
+    this.customers.connected[customerId].emit(CALL_ACCEPTED, callData);
   }
 
-  emitCallbackRequesting(customerId, callId) {
-    this.customers.connected[customerId].emit(CALLBACK_REQUESTED, callId);
+  emitCallbackRequesting(customerId, callData) {
+    this.customers.connected[customerId].emit(CALLBACK_REQUESTED, callData);
+  }
+
+  mapSocketIdentityToId(socket) {
+    this.idsMap.set(socket.identity, socket.id);
+  }
+
+  checkAndUnmapSocketIdentityFromId(socket) {
+    if (socket.identity) {
+      this.idsMap.delete(socket.identity);
+    }
+  }
+
+  getSocketIdByIdentity(identity) {
+    return this.idsMap.get(identity);
   }
 }
 
