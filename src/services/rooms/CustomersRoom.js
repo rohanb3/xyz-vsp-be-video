@@ -35,6 +35,8 @@ class CustomersRoom {
     this.customers = io.of(CUSTOMERS);
     this.customers.on(CONNECTION, this.onCustomerConnected.bind(this));
     this.idsMap = new Map();
+    this.callIdsToSocketIdsMap = new Map();
+
     socketIOAuth(this.customers, {
       authenticate: authenticateCustomer,
       postAuthenticate: this.onCustomerAuthenticated.bind(this),
@@ -50,7 +52,7 @@ class CustomersRoom {
   }
 
   onCustomerAuthenticated(customer) {
-    logger.debug('Customer authenticated', customer.id);
+    logger.debug('Customer authenticated', customer.id, customer.identity);
     this.mapSocketIdentityToId(customer);
   }
 
@@ -60,6 +62,10 @@ class CustomersRoom {
         logger.debug('Customer call: added to pending', call);
         customer.pendingCallId = call.id;
         customer.emit(CALL_ENQUEUED, call.id);
+        this.callIdsToSocketIdsMap.set(call.id, customer.id);
+        setTimeout(() => {
+          this.callIdsToSocketIdsMap.delete(call.id, customer.id);
+        }, 5 * 60 * 1000);
       })
       .catch((err) => {
         logger.error('Customer call: adding to pending failed ', err);
@@ -84,7 +90,8 @@ class CustomersRoom {
 
   onCallAccepted(call) {
     const { id, requestedBy, acceptedBy } = call;
-    const socketId = this.getSocketIdByIdentity(requestedBy);
+    // const socketId = this.getSocketIdByIdentity(requestedBy);
+    const socketId = this.callIdsToSocketIdsMap.get(id);
     logger.debug('Customer call: accepted', id, requestedBy, acceptedBy);
 
     this.checkCustomerAndEmitCallAccepting(socketId, id, acceptedBy);
@@ -102,7 +109,8 @@ class CustomersRoom {
 
   checkCustomerAndEmitCallbackRequesting(call) {
     const { requestedBy, id, acceptedBy } = call;
-    const socketId = this.getSocketIdByIdentity(requestedBy);
+    // const socketId = this.getSocketIdByIdentity(requestedBy);
+    const socketId = this.callIdsToSocketIdsMap.get(id);
     const connectedCustomer = this.customers.connected[socketId];
     if (connectedCustomer) {
       logger.debug('Operator callback: emitting to customer', id);
