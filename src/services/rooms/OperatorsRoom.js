@@ -38,13 +38,13 @@ const { CallsPendingEmptyError } = require('@/services/calls/errors');
 const { getToken } = require('@/services/twilio');
 
 const { authenticateOperator } = require('@/services/socketAuth');
+const { connectionsHeap } = require('@/services/connectionsHeap');
 const logger = require('@/services/logger')(module);
 
 class OperatorsRoom {
   constructor(io) {
     this.operators = io.of(OPERATORS);
     this.operators.on(CONNECTION, this.onOperatorConnected.bind(this));
-    this.idsMap = new Map();
     socketIOAuth(this.operators, {
       authenticate: authenticateOperator,
       postAuthenticate: this.onOperatorAuthenticated.bind(this),
@@ -172,17 +172,17 @@ class OperatorsRoom {
   }
 
   mapSocketIdentityToId(socket) {
-    this.idsMap.set(socket.identity, socket.id);
+    connectionsHeap.add(socket.identity, socket.id);
   }
 
   checkAndUnmapSocketIdentityFromId(socket) {
     if (socket.identity) {
-      this.idsMap.delete(socket.identity);
+      connectionsHeap.remove(socket.identity);
     }
   }
 
   getSocketIdByIdentity(identity) {
-    return this.idsMap.get(identity);
+    return connectionsHeap.get(identity);
   }
 }
 
