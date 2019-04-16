@@ -52,7 +52,7 @@ class CustomersRoom {
 
   onCustomerAuthenticated(customer) {
     logger.debug('Customer authenticated', customer.id, customer.identity, customer.deviceId);
-    this.mapSocketIdentityToId(customer);
+    this.mapDeviceIdToSocketId(customer);
   }
 
   onCustomerRequestedCall(customer) {
@@ -79,13 +79,15 @@ class CustomersRoom {
 
   onCustomerDisconnected(customer) {
     logger.debug('Customer disconneted', customer.identity, customer.pendingCallId);
-    this.checkAndUnmapSocketIdentityFromId(customer);
+    this.checkAndUnmapDeviceIdFromSocketId(customer);
     return customer.pendingCallId ? finishCall(customer.pendingCallId) : Promise.resolve();
   }
 
   onCallAccepted(call) {
-    const { id, requestedBy, acceptedBy } = call;
-    return this.getSocketIdByIdentity(requestedBy).then((socketId) => {
+    const {
+      id, requestedBy, acceptedBy, deviceId,
+    } = call;
+    return this.getSocketIdByDeviceId(deviceId).then((socketId) => {
       logger.debug('Customer call: accepted', id, requestedBy, acceptedBy);
       this.checkCustomerAndEmitCallAccepting(socketId, id, acceptedBy);
     });
@@ -102,8 +104,8 @@ class CustomersRoom {
   }
 
   checkCustomerAndEmitCallbackRequesting(call) {
-    const { requestedBy, id, acceptedBy } = call;
-    return this.getSocketIdByIdentity(requestedBy).then((socketId) => {
+    const { deviceId, id, acceptedBy } = call;
+    return this.getSocketIdByDeviceId(deviceId).then((socketId) => {
       const connectedCustomer = this.customers.connected[socketId];
       if (connectedCustomer) {
         logger.debug('Operator callback: emitting to customer', id);
@@ -140,15 +142,15 @@ class CustomersRoom {
     this.customers.connected[customerId].emit(CALLBACK_REQUESTED, callData);
   }
 
-  mapSocketIdentityToId(socket) {
-    return connectionsHeap.add(socket.identity, socket.id);
+  mapDeviceIdToSocketId(socket) {
+    return connectionsHeap.add(socket.deviceId, socket.id);
   }
 
-  checkAndUnmapSocketIdentityFromId(socket) {
-    return socket.identity ? connectionsHeap.remove(socket.identity) : Promise.resolve();
+  checkAndUnmapDeviceIdFromSocketId(socket) {
+    return socket.identity ? connectionsHeap.remove(socket.deviceId) : Promise.resolve();
   }
 
-  getSocketIdByIdentity(identity) {
+  getSocketIdByDeviceId(identity) {
     return connectionsHeap.get(identity);
   }
 }
