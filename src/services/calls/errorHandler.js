@@ -70,12 +70,10 @@ function onDeclineCallbackFailed(err, callId) {
 function onFinishCallFailed(err, callId) {
   let error = err;
 
-  const notFoundFlag = (
-    err instanceof storageErrors.NotFoundItemError
+  const notFoundFlag = err instanceof storageErrors.NotFoundItemError
     || err instanceof pendingCallsErrors.NotFoundItemError
     || err instanceof activeCallsErrors.NotFoundItemError
-    || err instanceof pendingCallbacksErrors.NotFoundItemError
-  );
+    || err instanceof pendingCallbacksErrors.NotFoundItemError;
 
   if (notFoundFlag) {
     error = new CallNotFoundError(callId);

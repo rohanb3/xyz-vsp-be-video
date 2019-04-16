@@ -3,6 +3,8 @@
 const Video = require('twilio-video');
 
 const isLocal = prompt('Is local?');
+const deviceId = prompt('Tell me device id') || 'localTablet';
+const identity = prompt('Tell me your identity') || 'Joey';
 
 let socketUrl = 'wss://dev-demo.xyzies.ardas.biz/customers';
 let socketOptions = {
@@ -20,7 +22,7 @@ const socket = io(socketUrl, socketOptions);
 let globalToken = null;
 
 socket.on('connect', () => {
-  socket.emit('authentication', { identity: 'Joey' });
+  socket.emit('authentication', { identity, deviceId, });
   socket.on('authenticated', (token) => {
     console.log('authenticated');
     onTokenReceived({ token });

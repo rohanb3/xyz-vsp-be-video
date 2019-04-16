@@ -9,6 +9,8 @@ exports.CALLBACK_DECLINED = 'callback.declined';
 exports.CALLS_CHANGED = 'calls.changed';
 exports.CALLS_EMPTY = 'calls.empty';
 exports.CALL_ACCEPTING_FAILED = 'call.accepting.failed';
+exports.CALLBACK_REQUESTING_FAILED = 'callback.requesting.failed';
+exports.PEER_OFFLINE = 'peer.offline';
 
 exports.CALLS_PENDING = 'calls.pending';
 exports.CALLS_ACTIVE = 'calls.active';

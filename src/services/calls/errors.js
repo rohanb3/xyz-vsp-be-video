@@ -7,7 +7,7 @@ class CallUpdateError extends Error {
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, this.constructor);
     } else {
-      this.stack = (new Error('Update failed')).stack;
+      this.stack = new Error('Update failed').stack;
     }
   }
 }
@@ -21,7 +21,7 @@ class CallNotFoundError extends Error {
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, this.constructor);
     } else {
-      this.stack = (new Error(message)).stack;
+      this.stack = new Error(message).stack;
     }
   }
 }
@@ -35,7 +35,7 @@ class CallOverrideError extends Error {
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, this.constructor);
     } else {
-      this.stack = (new Error(message)).stack;
+      this.stack = new Error(message).stack;
     }
   }
 }
@@ -49,7 +49,21 @@ class CallsPendingEmptyError extends Error {
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, this.constructor);
     } else {
-      this.stack = (new Error(message)).stack;
+      this.stack = new Error(message).stack;
+    }
+  }
+}
+
+class PeerOfflineError extends Error {
+  constructor() {
+    const message = 'Peer offline';
+    super(message);
+    this.name = 'PeerOfflineError';
+
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, this.constructor);
+    } else {
+      this.stack = new Error(message).stack;
     }
   }
 }
@@ -58,3 +72,4 @@ exports.CallUpdateError = CallUpdateError;
 exports.CallNotFoundError = CallNotFoundError;
 exports.CallOverrideError = CallOverrideError;
 exports.CallsPendingEmptyError = CallsPendingEmptyError;
+exports.PeerOfflineError = PeerOfflineError;

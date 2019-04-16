@@ -20,12 +20,13 @@ function authenticateOperator(socket, data, callback) {
 }
 
 function authenticateCustomer(socket, data, callback) {
-  const { identity } = data;
+  const { identity, deviceId } = data;
   if (!identity) {
     return callback(new Error(NO_IDENTITY));
   }
   const token = getToken(identity);
   socket.identity = identity;
+  socket.deviceId = deviceId;
   return callback(null, token);
 }
 

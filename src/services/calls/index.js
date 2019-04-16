@@ -9,6 +9,8 @@ const pubSubChannel = require('@/services/pubSubChannel');
 const storage = require('@/services/storage');
 const callStatusHelper = require('@/services/calls/statusHelper');
 const callFinisher = require('@/services/calls/finisher');
+const { PeerOfflineError } = require('@/services/calls/errors');
+const { connectionsHeap } = require('@/services/connectionsHeap');
 const {
   CALL_REQUESTED,
   CALL_ACCEPTED,
@@ -19,10 +21,11 @@ const {
 } = require('@/constants/calls');
 const callsErrorHandler = require('@/services/calls/errorHandler');
 
-function requestCall(requestedBy) {
+function requestCall(requestedBy, deviceId) {
   const call = {
     requestedBy,
     requestedAt: moment.utc().format(),
+    deviceId,
   };
 
   return callsDBClient
@@ -64,6 +67,7 @@ function requestCallback(callId) {
   const call = {};
   return callsDBClient
     .getById(callId)
+    .then(callFromDB => checkPeerConnection(callFromDB, call))
     .then((callFromDB) => {
       const callback = {
         requestedAt: moment.utc().format(),
@@ -163,6 +167,16 @@ function subscribeToCallsLengthChanging(listener) {
 
 function unsubscribeFromCallsLengthChanging(listener) {
   return pendingCallsQueue.unsubscribeFromQueueChanging(listener);
+}
+
+function checkPeerConnection(callFromDB, call) {
+  return connectionsHeap.isExist(callFromDB.deviceId).then((isExist) => {
+    if (isExist) {
+      return callFromDB;
+    }
+    Object.assign(call, callFromDB);
+    throw new PeerOfflineError(call.deviceId);
+  });
 }
 
 exports.requestCall = requestCall;

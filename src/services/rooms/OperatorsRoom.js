@@ -19,13 +19,15 @@ const {
   CALLS_CHANGED,
   CALLS_EMPTY,
   CALL_ACCEPTING_FAILED,
+  CALLBACK_REQUESTING_FAILED,
+  PEER_OFFLINE,
 } = require('@/constants/calls');
 
 const { STATUS_CHANGED_ONLINE, STATUS_CHANGED_OFFLINE } = require('@/constants/operatorStatuses');
 
 const calls = require('@/services/calls');
 
-const { CallsPendingEmptyError } = require('@/services/calls/errors');
+const { CallsPendingEmptyError, PeerOfflineError } = require('@/services/calls/errors');
 
 const twilio = require('@/services/twilio');
 
@@ -35,25 +37,24 @@ const logger = require('@/services/logger')(module);
 
 class OperatorsRoom {
   constructor(io) {
-    this._bindMethods();
     this.operators = io.of(OPERATORS);
-    this.operators.on(CONNECTION, this.onOperatorConnected);
+    this.operators.on(CONNECTION, this.onOperatorConnected.bind(this));
     socketIOAuth(this.operators, {
       authenticate: authenticateOperator,
-      postAuthenticate: this.onOperatorAuthenticated,
+      postAuthenticate: this.onOperatorAuthenticated.bind(this),
     });
-    calls.subscribeToCallbackAccepting(this.checkOperatorAndEmitCallbackAccepting);
-    calls.subscribeToCallbackDeclining(this.checkOperatorAndEmitCallbackDeclining);
-    calls.subscribeToCallsLengthChanging(this.emitCallsInfo);
+    calls.subscribeToCallbackAccepting(this.checkOperatorAndEmitCallbackAccepting.bind(this));
+    calls.subscribeToCallbackDeclining(this.checkOperatorAndEmitCallbackDeclining.bind(this));
+    calls.subscribeToCallsLengthChanging(this.emitCallsInfo.bind(this));
   }
 
   onOperatorConnected(operator) {
-    operator.on(CALL_ACCEPTED, this.onOperatorAcceptCall);
-    operator.on(CALLBACK_REQUESTED, this.onOperatorRequestedCallback);
-    operator.on(CALL_FINISHED, this.onOperatorFinishedCall);
-    operator.on(DISCONNECT, this.onOperatorDisconnected);
-    operator.on(STATUS_CHANGED_ONLINE, this.addOperatorToActive);
-    operator.on(STATUS_CHANGED_OFFLINE, this.removeOperatorFromActive);
+    operator.on(CALL_ACCEPTED, this.onOperatorAcceptCall.bind(this, operator));
+    operator.on(CALLBACK_REQUESTED, this.onOperatorRequestedCallback.bind(this, operator));
+    operator.on(CALL_FINISHED, this.onOperatorFinishedCall.bind(this, operator));
+    operator.on(DISCONNECT, this.onOperatorDisconnected.bind(this, operator));
+    operator.on(STATUS_CHANGED_ONLINE, this.addOperatorToActive.bind(this, operator));
+    operator.on(STATUS_CHANGED_OFFLINE, this.removeOperatorFromActive.bind(this, operator));
   }
 
   onOperatorAuthenticated(operator) {
@@ -63,7 +64,7 @@ class OperatorsRoom {
   }
 
   onOperatorAcceptCall(operator) {
-    logger.debug('Customer call: attempt to accept by operator', operator.identity);
+    logger.debug('Customer call: attempt to accept by operator', operator && operator.identity);
     return calls
       .acceptCall(operator.identity)
       .then(({ id, requestedAt }) => {
@@ -94,7 +95,15 @@ class OperatorsRoom {
         operator.pendingCallbackId = callback.id;
       })
       .then(() => logger.debug('Operator callback: requested', operator.id))
-      .catch(err => logger.error('Operator callback: requesting failed', err));
+      .catch((err) => {
+        if (err instanceof PeerOfflineError) {
+          logger.error('Operator callback: requesting failed - peer offline', err);
+          operator.emit(PEER_OFFLINE);
+        } else {
+          logger.error('Operator callback: requesting failed because peer offline', err);
+          operator.emit(CALLBACK_REQUESTING_FAILED);
+        }
+      });
   }
 
   onOperatorFinishedCall(operator, call) {
@@ -114,20 +123,22 @@ class OperatorsRoom {
 
   checkOperatorAndEmitCallbackAccepting(call) {
     const { acceptedBy, id } = call;
-    const socketId = this.getSocketIdByIdentity(acceptedBy);
-    const connectedOperator = this.operators.connected[socketId];
-    if (connectedOperator) {
-      this.emitCallbackAccepting(connectedOperator, id);
-    }
+    return this.getSocketIdByIdentity(acceptedBy).then((socketId) => {
+      const connectedOperator = this.operators.connected[socketId];
+      if (connectedOperator) {
+        this.emitCallbackAccepting(connectedOperator, id);
+      }
+    });
   }
 
   checkOperatorAndEmitCallbackDeclining(call) {
     const { acceptedBy, id } = call;
-    const socketId = this.getSocketIdByIdentity(acceptedBy);
-    const connectedOperator = this.operators.connected[socketId];
-    if (connectedOperator) {
-      this.emitCallbackDeclining(connectedOperator, id);
-    }
+    return this.getSocketIdByIdentity(acceptedBy).then((socketId) => {
+      const connectedOperator = this.operators.connected[socketId];
+      if (connectedOperator) {
+        this.emitCallbackDeclining(connectedOperator, id);
+      }
+    });
   }
 
   emitCallbackAccepting(operator, callId) {
@@ -179,24 +190,6 @@ class OperatorsRoom {
 
   getSocketIdByIdentity(identity) {
     return connectionsHeap.get(identity);
-  }
-
-  _bindMethods() {
-    this.onOperatorConnected = this.onOperatorConnected.bind(this);
-    this.onOperatorAuthenticated = this.onOperatorAuthenticated.bind(this);
-    this.checkOperatorAndEmitCallbackAccepting = this.checkOperatorAndEmitCallbackAccepting.bind(
-      this,
-    );
-    this.checkOperatorAndEmitCallbackDeclining = this.checkOperatorAndEmitCallbackDeclining.bind(
-      this,
-    );
-    this.emitCallsInfo = this.emitCallsInfo.bind(this);
-    this.onOperatorAcceptCall = this.onOperatorAcceptCall.bind(this);
-    this.onOperatorRequestedCallback = this.onOperatorRequestedCallback.bind(this);
-    this.onOperatorFinishedCall = this.onOperatorFinishedCall.bind(this);
-    this.onOperatorDisconnected = this.onOperatorDisconnected.bind(this);
-    this.addOperatorToActive = this.addOperatorToActive.bind(this);
-    this.removeOperatorFromActive = this.removeOperatorFromActive.bind(this);
   }
 }
 

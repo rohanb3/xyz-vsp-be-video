@@ -75,68 +75,74 @@ describe('OperatorsRoom: ', () => {
     });
 
     it('should add listener to namespace connection event', () => {
-      expect(mockedNamespace.on).toHaveBeenCalledWith(
-        CONNECTION,
-        operatorsRoom.onOperatorConnected,
-      );
+      expect(mockedNamespace.on).toHaveBeenCalledWith(CONNECTION, expect.any(Function));
     });
 
     it('should subscribe to callback accepting', () => {
-      expect(calls.subscribeToCallbackAccepting).toHaveBeenCalledWith(
-        operatorsRoom.checkOperatorAndEmitCallbackAccepting,
-      );
+      expect(calls.subscribeToCallbackAccepting).toHaveBeenCalledWith(expect.any(Function));
     });
 
     it('should subscribe to callback declining', () => {
-      expect(calls.subscribeToCallbackDeclining).toHaveBeenCalledWith(
-        operatorsRoom.checkOperatorAndEmitCallbackDeclining,
-      );
+      expect(calls.subscribeToCallbackDeclining).toHaveBeenCalledWith(expect.any(Function));
     });
 
     it('should subscribe to pending calls length changing', () => {
-      expect(calls.subscribeToCallsLengthChanging).toHaveBeenCalledWith(
-        operatorsRoom.emitCallsInfo,
-      );
+      expect(calls.subscribeToCallsLengthChanging).toHaveBeenCalledWith(expect.any(Function));
     });
   });
 
   describe('onOperatorConnected(): ', () => {
     it('should subscribe to call accepting', () => {
+      jest.spyOn(operatorsRoom.onOperatorAcceptCall, 'bind');
       operatorsRoom.onOperatorConnected(operator);
-      expect(operator.on).toHaveBeenCalledWith(CALL_ACCEPTED, operatorsRoom.onOperatorAcceptCall);
+      expect(operator.on).toHaveBeenCalledWith(CALL_ACCEPTED, expect.any(Function));
+      expect(operatorsRoom.onOperatorAcceptCall.bind).toHaveBeenCalledWith(operatorsRoom, operator);
     });
 
     it('should subscribe to callback requesting', () => {
+      jest.spyOn(operatorsRoom.onOperatorRequestedCallback, 'bind');
       operatorsRoom.onOperatorConnected(operator);
-      expect(operator.on).toHaveBeenCalledWith(
-        CALLBACK_REQUESTED,
-        operatorsRoom.onOperatorRequestedCallback,
+      expect(operator.on).toHaveBeenCalledWith(CALLBACK_REQUESTED, expect.any(Function));
+      expect(operatorsRoom.onOperatorRequestedCallback.bind).toHaveBeenCalledWith(
+        operatorsRoom,
+        operator,
       );
     });
 
     it('should subscribe to call finishig', () => {
+      jest.spyOn(operatorsRoom.onOperatorFinishedCall, 'bind');
       operatorsRoom.onOperatorConnected(operator);
-      expect(operator.on).toHaveBeenCalledWith(CALL_FINISHED, operatorsRoom.onOperatorFinishedCall);
-    });
-
-    it('should subscribe to disconnection', () => {
-      operatorsRoom.onOperatorConnected(operator);
-      expect(operator.on).toHaveBeenCalledWith(DISCONNECT, operatorsRoom.onOperatorDisconnected);
-    });
-
-    it('should subscribe to status changing to online', () => {
-      operatorsRoom.onOperatorConnected(operator);
-      expect(operator.on).toHaveBeenCalledWith(
-        STATUS_CHANGED_ONLINE,
-        operatorsRoom.addOperatorToActive,
+      expect(operator.on).toHaveBeenCalledWith(CALL_FINISHED, expect.any(Function));
+      expect(operatorsRoom.onOperatorFinishedCall.bind).toHaveBeenCalledWith(
+        operatorsRoom,
+        operator,
       );
     });
 
-    it('should subscribe to status changing to offline', () => {
+    it('should subscribe to disconnection', () => {
+      jest.spyOn(operatorsRoom.onOperatorDisconnected, 'bind');
       operatorsRoom.onOperatorConnected(operator);
-      expect(operator.on).toHaveBeenCalledWith(
-        STATUS_CHANGED_OFFLINE,
-        operatorsRoom.removeOperatorFromActive,
+      expect(operator.on).toHaveBeenCalledWith(DISCONNECT, expect.any(Function));
+      expect(operatorsRoom.onOperatorDisconnected.bind).toHaveBeenCalledWith(
+        operatorsRoom,
+        operator,
+      );
+    });
+
+    it('should subscribe to status changing to online', () => {
+      jest.spyOn(operatorsRoom.addOperatorToActive, 'bind');
+      operatorsRoom.onOperatorConnected(operator);
+      expect(operator.on).toHaveBeenCalledWith(STATUS_CHANGED_ONLINE, expect.any(Function));
+      expect(operatorsRoom.addOperatorToActive.bind).toHaveBeenCalledWith(operatorsRoom, operator);
+    });
+
+    it('should subscribe to status changing to offline', () => {
+      jest.spyOn(operatorsRoom.removeOperatorFromActive, 'bind');
+      operatorsRoom.onOperatorConnected(operator);
+      expect(operator.on).toHaveBeenCalledWith(STATUS_CHANGED_OFFLINE, expect.any(Function));
+      expect(operatorsRoom.removeOperatorFromActive.bind).toHaveBeenCalledWith(
+        operatorsRoom,
+        operator,
       );
     });
   });
@@ -250,7 +256,7 @@ describe('OperatorsRoom: ', () => {
 
   describe('checkOperatorAndEmitCallbackAccepting(): ', () => {
     beforeEach(() => {
-      operatorsRoom.getSocketIdByIdentity = jest.fn(() => socketId);
+      operatorsRoom.getSocketIdByIdentity = jest.fn(() => Promise.resolve(socketId));
       operatorsRoom.emitCallbackAccepting = jest.fn();
     });
 
@@ -266,10 +272,10 @@ describe('OperatorsRoom: ', () => {
         },
       };
 
-      operatorsRoom.checkOperatorAndEmitCallbackAccepting(call);
-
-      expect(operatorsRoom.getSocketIdByIdentity).toHaveBeenCalledWith(operatorIdentity);
-      expect(operatorsRoom.emitCallbackAccepting).toHaveBeenCalledWith(operator, callId);
+      return operatorsRoom.checkOperatorAndEmitCallbackAccepting(call).then(() => {
+        expect(operatorsRoom.getSocketIdByIdentity).toHaveBeenCalledWith(operatorIdentity);
+        expect(operatorsRoom.emitCallbackAccepting).toHaveBeenCalledWith(operator, callId);
+      });
     });
 
     it('should not emit callback accepting if no operator connected to room', () => {
@@ -282,16 +288,16 @@ describe('OperatorsRoom: ', () => {
         connected: {},
       };
 
-      operatorsRoom.checkOperatorAndEmitCallbackAccepting(call);
-
-      expect(operatorsRoom.getSocketIdByIdentity).toHaveBeenCalledWith(operatorIdentity);
-      expect(operatorsRoom.emitCallbackAccepting).not.toHaveBeenCalled();
+      return operatorsRoom.checkOperatorAndEmitCallbackAccepting(call).then(() => {
+        expect(operatorsRoom.getSocketIdByIdentity).toHaveBeenCalledWith(operatorIdentity);
+        expect(operatorsRoom.emitCallbackAccepting).not.toHaveBeenCalled();
+      });
     });
   });
 
   describe('checkOperatorAndEmitCallbackDeclining(): ', () => {
     beforeEach(() => {
-      operatorsRoom.getSocketIdByIdentity = jest.fn(() => socketId);
+      operatorsRoom.getSocketIdByIdentity = jest.fn(() => Promise.resolve(socketId));
       operatorsRoom.emitCallbackDeclining = jest.fn();
     });
 
@@ -307,10 +313,10 @@ describe('OperatorsRoom: ', () => {
         },
       };
 
-      operatorsRoom.checkOperatorAndEmitCallbackDeclining(call);
-
-      expect(operatorsRoom.getSocketIdByIdentity).toHaveBeenCalledWith(operatorIdentity);
-      expect(operatorsRoom.emitCallbackDeclining).toHaveBeenCalledWith(operator, callId);
+      return operatorsRoom.checkOperatorAndEmitCallbackDeclining(call).then(() => {
+        expect(operatorsRoom.getSocketIdByIdentity).toHaveBeenCalledWith(operatorIdentity);
+        expect(operatorsRoom.emitCallbackDeclining).toHaveBeenCalledWith(operator, callId);
+      });
     });
 
     it('should not emit callback accepting if no operator connected to room', () => {
@@ -323,10 +329,10 @@ describe('OperatorsRoom: ', () => {
         connected: {},
       };
 
-      operatorsRoom.checkOperatorAndEmitCallbackDeclining(call);
-
-      expect(operatorsRoom.getSocketIdByIdentity).toHaveBeenCalledWith(operatorIdentity);
-      expect(operatorsRoom.emitCallbackDeclining).not.toHaveBeenCalled();
+      return operatorsRoom.checkOperatorAndEmitCallbackDeclining(call).then(() => {
+        expect(operatorsRoom.getSocketIdByIdentity).toHaveBeenCalledWith(operatorIdentity);
+        expect(operatorsRoom.emitCallbackDeclining).not.toHaveBeenCalled();
+      });
     });
   });
 
