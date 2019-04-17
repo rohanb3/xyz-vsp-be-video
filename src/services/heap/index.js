@@ -50,6 +50,10 @@ class Heap {
     return this.connector.getSize();
   }
 
+  destroy() {
+    return this.connector.destroy();
+  }
+
   subscribeToItemAdding(listener) {
     return pubSub.subscribe(this.events.ITEM_ADDED, listener);
   }

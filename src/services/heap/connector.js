@@ -46,6 +46,17 @@ class HeapConnector {
   getSize() {
     return client.scard(this.heapName);
   }
+
+  destroy() {
+    let keysToRemove = [];
+    return client
+      .smembers(this.heapName)
+      .then((keys = []) => {
+        keysToRemove = keys;
+        return client.del(this.heapName);
+      })
+      .then(() => (keysToRemove.length ? client.del(...keysToRemove) : Promise.resolve()));
+  }
 }
 
 exports.createConnector = heapName => new HeapConnector(heapName);

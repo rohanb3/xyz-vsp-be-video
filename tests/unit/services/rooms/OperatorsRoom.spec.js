@@ -305,6 +305,12 @@ describe('OperatorsRoom: ', () => {
       const call = {
         acceptedBy: operatorIdentity,
         id: callId,
+        reason: 'test',
+      };
+
+      const expectedDataToEmit = {
+        id: callId,
+        reason: 'test',
       };
 
       operatorsRoom.operators = {
@@ -315,7 +321,10 @@ describe('OperatorsRoom: ', () => {
 
       return operatorsRoom.checkOperatorAndEmitCallbackDeclining(call).then(() => {
         expect(operatorsRoom.getSocketIdByIdentity).toHaveBeenCalledWith(operatorIdentity);
-        expect(operatorsRoom.emitCallbackDeclining).toHaveBeenCalledWith(operator, callId);
+        expect(operatorsRoom.emitCallbackDeclining).toHaveBeenCalledWith(
+          operator,
+          expectedDataToEmit,
+        );
       });
     });
 

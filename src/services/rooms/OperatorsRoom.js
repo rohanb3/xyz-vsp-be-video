@@ -98,9 +98,12 @@ class OperatorsRoom {
       .catch((err) => {
         if (err instanceof PeerOfflineError) {
           logger.error('Operator callback: requesting failed - peer offline', err);
-          operator.emit(PEER_OFFLINE);
+          const data = {
+            reason: PEER_OFFLINE,
+          };
+          this.emitCallbackDeclining(operator, data);
         } else {
-          logger.error('Operator callback: requesting failed because peer offline', err);
+          logger.error('Operator callback: requesting failed', err);
           operator.emit(CALLBACK_REQUESTING_FAILED);
         }
       });
@@ -112,7 +115,7 @@ class OperatorsRoom {
       ? calls
         .finishCall(call.id, operator.identity)
         .then(() => logger.debug('Call: finished by operator', call.id, operator.identity))
-        .catch(err => logger.error('Call: finishing by customer failed', err))
+        .catch(err => logger.error('Call: finishing by operator failed', err))
       : Promise.resolve();
   }
 
@@ -132,11 +135,11 @@ class OperatorsRoom {
   }
 
   checkOperatorAndEmitCallbackDeclining(call) {
-    const { acceptedBy, id } = call;
+    const { acceptedBy, id, reason } = call;
     return this.getSocketIdByIdentity(acceptedBy).then((socketId) => {
       const connectedOperator = this.operators.connected[socketId];
       if (connectedOperator) {
-        this.emitCallbackDeclining(connectedOperator, id);
+        this.emitCallbackDeclining(connectedOperator, { id, reason });
       }
     });
   }
@@ -145,8 +148,8 @@ class OperatorsRoom {
     operator.emit(CALLBACK_ACCEPTED, callId);
   }
 
-  emitCallbackDeclining(operator, callId) {
-    operator.emit(CALLBACK_DECLINED, callId);
+  emitCallbackDeclining(operator, data) {
+    operator.emit(CALLBACK_DECLINED, data);
   }
 
   emitCallsInfo(info) {

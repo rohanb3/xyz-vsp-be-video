@@ -104,7 +104,7 @@ function acceptCallback(callId) {
     .catch(err => callsErrorHandler.onAcceptCallbackFailed(err, callId));
 }
 
-function declineCallback(callId) {
+function declineCallback(callId, reason = '') {
   const call = {};
   return pendingCallbacksHeap
     .take(callId)
@@ -113,7 +113,7 @@ function declineCallback(callId) {
       callbacks[callbacks.length - 1].declinedAt = moment.utc().format();
       Object.assign(call, callFromHeap, { callbacks });
     })
-    .then(() => pubSubChannel.publish(CALLBACK_DECLINED, call))
+    .then(() => pubSubChannel.publish(CALLBACK_DECLINED, { ...call, reason }))
     .then(() => callsDBClient.updateById(callId, { callbacks: call.callbacks }))
     .then(() => call)
     .catch(err => callsErrorHandler.onDeclineCallbackFailed(err, callId));

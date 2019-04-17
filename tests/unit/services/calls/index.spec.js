@@ -213,6 +213,7 @@ describe('calls: ', () => {
       const callback2 = {
         requestedAt: 'some time',
       };
+      const reason = 'test';
       const callbacks = [{ ...callback1 }, { ...callback2 }];
       const expectedCallbacks = [
         { ...callback1 },
@@ -235,10 +236,13 @@ describe('calls: ', () => {
       pendingCallbacksHeap.take = jest.fn(() => Promise.resolve(call));
       pubSubChannel.publish = jest.fn();
 
-      return calls.declineCallback(callId).then((result) => {
+      return calls.declineCallback(callId, reason).then((result) => {
         expect(result).toEqual(expectedCall);
         expect(pendingCallbacksHeap.take).toHaveBeenCalledWith(callId);
-        expect(pubSubChannel.publish).toHaveBeenCalledWith(CALLBACK_DECLINED, expectedCall);
+        expect(pubSubChannel.publish).toHaveBeenCalledWith(CALLBACK_DECLINED, {
+          ...expectedCall,
+          reason,
+        });
         expect(callsDBClient.updateById).toHaveBeenCalledWith(callId, {
           callbacks: expectedCallbacks,
         });

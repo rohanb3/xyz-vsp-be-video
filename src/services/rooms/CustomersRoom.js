@@ -14,7 +14,10 @@ const {
   CALLBACK_REQUESTED,
   CALLBACK_ACCEPTED,
   CALLBACK_DECLINED,
+  PEER_BUSY,
 } = require('@/constants/calls');
+
+const BUSY = 'busy';
 
 const {
   requestCall,
@@ -121,9 +124,10 @@ class CustomersRoom {
             });
         };
 
-        const onCallbackDeclined = () => {
+        const onCallbackDeclined = (data = {}) => {
+          const reason = data.message === BUSY ? PEER_BUSY : '';
           connectedCustomer.removeListener(CALLBACK_ACCEPTED, onCallbackAccepted);
-          declineCallback(id).catch((err) => {
+          declineCallback(id, reason).catch((err) => {
             logger.error('Operator callback: declining failed', err);
           });
         };
