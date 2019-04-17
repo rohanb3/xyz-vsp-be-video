@@ -8,12 +8,15 @@ const { pendingCallsQueue } = require('@/services/calls/pendingCallsQueue');
 const { activeCallsHeap } = require('@/services/calls/activeCallsHeap');
 const { pendingCallbacksHeap } = require('@/services/calls/pendingCallbacksHeap');
 const callsDBClient = require('@/services/calls/DBClient');
+const { connectionsHeap } = require('@/services/connectionsHeap');
 const storage = require('@/services/storage');
 const twilio = require('@/services/twilio');
 const pubSubChannel = require('@/services/pubSubChannel');
 const calls = require('@/services/calls');
 const callStatusHelper = require('@/services/calls/statusHelper');
 const callFinisher = require('@/services/calls/finisher');
+const callsErrorHandler = require('@/services/calls/errorHandler');
+const { PeerOfflineError } = require('@/services/calls/errors');
 const {
   CALL_REQUESTED,
   CALL_ACCEPTED,
@@ -113,6 +116,7 @@ describe('calls: ', () => {
       callsDBClient.getById = jest.fn(() => Promise.resolve(call));
       callsDBClient.updateById = jest.fn(() => Promise.resolve(call));
       pendingCallbacksHeap.add = jest.fn(() => Promise.resolve(call));
+      connectionsHeap.isExist = jest.fn(() => Promise.resolve(true));
       pubSubChannel.publish = jest.fn();
 
       return calls.requestCallback(callId).then((result) => {
@@ -123,6 +127,31 @@ describe('calls: ', () => {
         expect(callsDBClient.updateById).toHaveBeenCalledWith(callId, {
           callbacks: expectedCallbacks,
         });
+      });
+    });
+
+    it('should if peer is offline', () => {
+      const callId = 'call42';
+      const call = {
+        id: 'call42',
+      };
+
+      callsDBClient.getById = jest.fn(() => Promise.resolve(call));
+      callsDBClient.updateById = jest.fn(() => Promise.resolve(call));
+      pendingCallbacksHeap.add = jest.fn(() => Promise.resolve(call));
+      connectionsHeap.isExist = jest.fn(() => Promise.resolve(false));
+      callsErrorHandler.onRequestCallbackFailed = jest.fn(() => Promise.resolve());
+      pubSubChannel.publish = jest.fn();
+
+      return calls.requestCallback(callId).then(() => {
+        expect(callsErrorHandler.onRequestCallbackFailed).toHaveBeenCalledWith(
+          expect.any(PeerOfflineError),
+          callId,
+        );
+        expect(callsDBClient.getById).toHaveBeenCalledWith(callId);
+        expect(pendingCallbacksHeap.add).not.toHaveBeenCalled();
+        expect(pubSubChannel.publish).not.toHaveBeenCalled();
+        expect(callsDBClient.updateById).not.toHaveBeenCalled();
       });
     });
   });
@@ -184,6 +213,7 @@ describe('calls: ', () => {
       const callback2 = {
         requestedAt: 'some time',
       };
+      const reason = 'test';
       const callbacks = [{ ...callback1 }, { ...callback2 }];
       const expectedCallbacks = [
         { ...callback1 },
@@ -206,10 +236,13 @@ describe('calls: ', () => {
       pendingCallbacksHeap.take = jest.fn(() => Promise.resolve(call));
       pubSubChannel.publish = jest.fn();
 
-      return calls.declineCallback(callId).then((result) => {
+      return calls.declineCallback(callId, reason).then((result) => {
         expect(result).toEqual(expectedCall);
         expect(pendingCallbacksHeap.take).toHaveBeenCalledWith(callId);
-        expect(pubSubChannel.publish).toHaveBeenCalledWith(CALLBACK_DECLINED, expectedCall);
+        expect(pubSubChannel.publish).toHaveBeenCalledWith(CALLBACK_DECLINED, {
+          ...expectedCall,
+          reason,
+        });
         expect(callsDBClient.updateById).toHaveBeenCalledWith(callId, {
           callbacks: expectedCallbacks,
         });

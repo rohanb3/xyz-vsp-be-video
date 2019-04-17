@@ -20,6 +20,10 @@ class Heap {
     return errors;
   }
 
+  get(id) {
+    return id ? this.connector.get(id) : Promise.resolve(null);
+  }
+
   add(id, item) {
     return this.connector.add(id, item).then(() => {
       pubSub.publish(this.events.ITEM_ADDED, item);
@@ -44,6 +48,10 @@ class Heap {
 
   getSize() {
     return this.connector.getSize();
+  }
+
+  destroy() {
+    return this.connector.destroy();
   }
 
   subscribeToItemAdding(listener) {

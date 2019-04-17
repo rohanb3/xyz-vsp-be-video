@@ -1,4 +1,5 @@
-exports.getToken = () => 'token';
-exports.createRoom = () => Promise.resolve({});
-exports.getRoom = () => Promise.resolve({});
-exports.ensureRoom = () => Promise.resolve({});
+module.exports = () => {};
+module.exports.getToken = () => 'token';
+module.exports.createRoom = () => Promise.resolve({});
+module.exports.getRoom = () => Promise.resolve({});
+module.exports.ensureRoom = () => Promise.resolve({});

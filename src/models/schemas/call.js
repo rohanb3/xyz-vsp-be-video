@@ -11,6 +11,10 @@ module.exports = {
     type: String,
     required: true,
   },
+  deviceId: {
+    type: String,
+    required: true,
+  },
   waitingTime: String,
   missedAt: String,
   acceptedBy: String,
