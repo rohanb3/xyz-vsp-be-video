@@ -6,7 +6,7 @@ const isLocal = prompt('Is local?');
 const deviceId = prompt('Tell me device id') || 'localTablet';
 const identity = prompt('Tell me your identity') || 'Joey';
 
-let socketUrl = 'wss://dev-demo.xyzies.ardas.biz/customers';
+let socketUrl = 'wss://vsp.xyzies.ardas.biz/customers';
 let socketOptions = {
   path: '/api/video/socket.io',
   transports: ['websocket'],
