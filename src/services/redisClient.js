@@ -14,6 +14,10 @@ const sismember = (...args) => new Promise((resolve, reject) => (
   client.sismember(...args, promiser(resolve, reject))
 ));
 
+const smembers = (...args) => new Promise((resolve, reject) => (
+  client.smembers(...args, promiser(resolve, reject))
+));
+
 const sadd = (...args) => new Promise((resolve, reject) => (
   client.sadd(...args, promiser(resolve, reject))
 ));
@@ -99,6 +103,7 @@ const exists = (...args) => new Promise((resolve, reject) => (
  */
 
 exports.sismember = sismember;
+exports.smembers = smembers;
 exports.sadd = sadd;
 exports.srem = srem;
 exports.scard = scard;

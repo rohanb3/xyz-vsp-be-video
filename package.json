@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "npm run copyEnv && npm run clean-public && npm run build-public && node index.js",
-    "start:dev": "npm run clean-public && npm run build-public && cross-env NODE_ENV=development nodemon index.js",
+    "start:dev": "npm run clean-public && npm run build-public && nodemon index.js",
     "build-public": "browserify src/public/customer.js > src/public/js/customer.js",
     "clean-public": "rimraf src/public/js/customer.js",
     "check": "npm run lint && npm run unit",

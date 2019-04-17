@@ -1,17 +1,12 @@
 require('module-alias/register');
 const dotenv = require('dotenv');
 const http = require('http');
-const path = require('path');
 
-const dotEnvConfigPath = process.env.NODE_ENV === 'development'
-  ? path.resolve(process.cwd(), '.env.development')
-  : path.resolve(process.cwd(), '.env.production');
-
-dotenv.config({ path: dotEnvConfigPath });
-
+dotenv.config();
 
 const app = require('@/app');
 const socket = require('@/socket');
+const { shutDown } = require('@/services/serverShutDown');
 const logger = require('@/services/logger')(module);
 
 const server = http.Server(app);
@@ -25,6 +20,18 @@ server.listen(port, () => {
 
 socket(server);
 
+let connections = [];
+
+server.on('connection', (connection) => {
+  connections.push(connection);
+  connection.on('close', () => {
+    connections = connections.filter(curr => curr !== connection);
+  });
+});
+
 process.on('unhandledRejection', (error) => {
   logger.error('unhandledRejection', error);
 });
+
+process.on('SIGINT', () => shutDown(server, connections));
+process.on('SIGTERM', () => shutDown(server, connections));

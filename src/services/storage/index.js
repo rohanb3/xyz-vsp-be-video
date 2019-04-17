@@ -2,6 +2,8 @@ const client = require('@/services/redisClient');
 const { serialize, deserialize } = require('@/services/serializer');
 const errors = require('./errors');
 
+const rejectWithNotFound = key => Promise.reject(new errors.NotFoundItemError(key));
+
 function isExist(key) {
   return key ? client.exists(key) : Promise.resolve(false);
 }
@@ -11,24 +13,12 @@ function get(key) {
     return Promise.resolve(null);
   }
   return isExist(key)
-    .then(exist => (exist
-      ? client.get(key)
-      : Promise.reject(new errors.NotFoundItemError(key))
-    ))
+    .then(exist => (exist ? client.get(key) : rejectWithNotFound(key)))
     .then(deserialize);
 }
 
 function set(key, value) {
-  if (!key) {
-    return Promise.resolve(null);
-  }
-
-  return isExist(key)
-    .then(exist => (
-      exist
-        ? Promise.reject(new errors.OverrideItemError(key))
-        : client.set(key, serialize(value))
-    ));
+  return key ? client.set(key, serialize(value)) : Promise.resolve(null);
 }
 
 function remove(key) {
@@ -36,10 +26,7 @@ function remove(key) {
     return Promise.resolve(false);
   }
 
-  return isExist(key)
-    .then(exist => (
-      exist ? client.del(key) : Promise.reject(new errors.NotFoundItemError(key))
-    ));
+  return isExist(key).then(exist => (exist ? client.del(key) : rejectWithNotFound(key)));
 }
 
 function take(key) {
@@ -50,9 +37,7 @@ function take(key) {
   let result = null;
 
   return isExist(key)
-    .then(exist => (
-      exist ? get(key) : Promise.reject(new errors.NotFoundItemError(key))
-    ))
+    .then(exist => (exist ? get(key) : rejectWithNotFound(key)))
     .then((value) => {
       result = value;
       return remove(key);

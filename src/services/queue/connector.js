@@ -10,6 +10,10 @@ const getOldestKey = queueName => client.lrange(queueName, -1, -1).then((item) =
   return isArray ? item[0] : item;
 });
 
+const rejectWithNotFound = key => Promise.reject(new errors.NotFoundItemError(key));
+const rejectWithOverride = key => Promise.reject(new errors.OverrideItemError(key));
+const rejectWithEmptyQueue = () => Promise.reject(new errors.EmptyQueueError());
+
 class QueueConnector {
   constructor(queueName) {
     this.queueName = queueName;
@@ -20,20 +24,10 @@ class QueueConnector {
       return Promise.resolve(false);
     }
     return this.isExist(key)
-      .then(exist => (exist
-        ? Promise.reject(new errors.OverrideItemError(key))
-        : setKey(this.queueName, key)
-      ))
-      .then(() => (
-        storage.set(key, value)
-          .catch((err) => {
-            const error = err instanceof storage.errors.OverrideItemError
-              ? new errors.OverrideItemError(key)
-              : err;
-            return removeKey(this.queueName, key)
-              .then(() => Promise.reject(error));
-          })
-      ));
+      .then(exist => (exist ? rejectWithOverride(key) : setKey(this.queueName, key)))
+      .then(() => storage
+        .set(key, value)
+        .catch(err => removeKey(this.queueName, key).then(() => Promise.reject(err))));
   }
 
   dequeue() {
@@ -41,7 +35,7 @@ class QueueConnector {
     return takeOldestKey(this.queueName)
       .then((key) => {
         if (!key) {
-          return Promise.reject(new errors.EmptyQueueError());
+          return rejectWithEmptyQueue();
         }
         oldestKey = key;
         return storage.take(key);
@@ -59,19 +53,13 @@ class QueueConnector {
       return Promise.resolve(null);
     }
     return this.isExist(key)
-      .then(exist => (exist
-        ? removeKey(this.queueName, key)
-        : Promise.reject(new errors.NotFoundItemError(key))
-      ))
-      .then(() => (
-        storage.take(key)
-          .catch((err) => {
-            const error = err instanceof storage.errors.NotFoundItemError
-              ? new errors.NotFoundItemError(key)
-              : err;
-            return Promise.reject(error);
-          })
-      ));
+      .then(exist => (exist ? removeKey(this.queueName, key) : rejectWithNotFound(key)))
+      .then(() => storage.take(key).catch((err) => {
+        const error = err instanceof storage.errors.NotFoundItemError
+          ? new errors.NotFoundItemError(key)
+          : err;
+        return Promise.reject(error);
+      }));
   }
 
   getPeak() {
