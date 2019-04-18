@@ -4,3 +4,4 @@ apps:
     instance_var: INSTANCE_ID
     exec_mode: cluster
     name: vsp-be-video
+    kill_timeout: 5000
