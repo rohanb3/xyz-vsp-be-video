@@ -9,11 +9,12 @@ const pubSubChannel = require('@/services/pubSubChannel');
 const storage = require('@/services/storage');
 const callStatusHelper = require('@/services/calls/statusHelper');
 const callFinisher = require('@/services/calls/finisher');
-const { PeerOfflineError } = require('@/services/calls/errors');
+const { CallNotFoundError, PeerOfflineError } = require('@/services/calls/errors');
 const { connectionsHeap } = require('@/services/connectionsHeap');
 const {
   CALL_REQUESTED,
   CALL_ACCEPTED,
+  CALL_FINISHED,
   CALLBACK_REQUESTED,
   CALLBACK_ACCEPTED,
   CALLBACK_DECLINED,
@@ -54,10 +55,13 @@ function acceptCall(acceptedBy) {
   return takeCall()
     .then((callFromQueue) => {
       Object.assign(call, callFromQueue);
-      return twilio.ensureRoom(callFromQueue.id);
+      return activeCallsHeap.add(call.id, call);
     })
-    .then(() => activeCallsHeap.add(call.id, call))
+    .then(() => checkIsCallStillActive(call.id))
+    .then(() => twilio.ensureRoom(call.id))
+    .then(() => checkIsCallStillActive(call.id))
     .then(() => callsDBClient.updateById(call.id, updates))
+    .then(() => checkIsCallStillActive(call.id))
     .then(() => pubSubChannel.publish(CALL_ACCEPTED, call))
     .then(() => call)
     .catch(err => callsErrorHandler.onAcceptCallFailed(err, call.id));
@@ -146,6 +150,10 @@ function finishCall(callId, finishedBy) {
 
       return finishingPromise;
     })
+    .then((call) => {
+      pubSubChannel.publish(CALL_FINISHED, call);
+      return call;
+    })
     .catch(err => callsErrorHandler.onFinishCallFailed(err, callId));
 }
 
@@ -179,6 +187,12 @@ function checkPeerConnection(callFromDB, call) {
   });
 }
 
+function checkIsCallStillActive(callId) {
+  return activeCallsHeap
+    .isExist(callId)
+    .then(isExist => (isExist ? Promise.resolve() : Promise.reject(new CallNotFoundError(callId))));
+}
+
 exports.requestCall = requestCall;
 exports.acceptCall = acceptCall;
 exports.finishCall = finishCall;
@@ -191,6 +205,7 @@ exports.getCallsInfo = getCallsInfo;
 
 exports.subscribeToCallRequesting = pubSubChannel.subscribe.bind(null, CALL_REQUESTED);
 exports.subscribeToCallAccepting = pubSubChannel.subscribe.bind(null, CALL_ACCEPTED);
+exports.subscribeToCallFinishing = pubSubChannel.subscribe.bind(null, CALL_FINISHED);
 exports.subscribeToCallbackRequesting = pubSubChannel.subscribe.bind(null, CALLBACK_REQUESTED);
 exports.subscribeToCallbackAccepting = pubSubChannel.subscribe.bind(null, CALLBACK_ACCEPTED);
 exports.subscribeToCallbackDeclining = pubSubChannel.subscribe.bind(null, CALLBACK_DECLINED);
@@ -198,6 +213,7 @@ exports.subscribeToCallsLengthChanging = subscribeToCallsLengthChanging;
 
 exports.unsubscribeFromCallRequesting = pubSubChannel.unsubscribe.bind(null, CALL_REQUESTED);
 exports.unsubscribeFromCallAccepting = pubSubChannel.unsubscribe.bind(null, CALL_ACCEPTED);
+exports.unsubscribeFromCallFinishing = pubSubChannel.unsubscribe.bind(null, CALL_FINISHED);
 exports.unsubscribeFromCallbackRequesting = pubSubChannel.unsubscribe.bind(
   null,
   CALLBACK_REQUESTED,

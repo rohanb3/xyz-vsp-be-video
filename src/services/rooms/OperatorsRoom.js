@@ -17,22 +17,17 @@ const {
   CALLBACK_ACCEPTED,
   CALLBACK_DECLINED,
   CALLS_CHANGED,
-  CALLS_EMPTY,
   CALL_ACCEPTING_FAILED,
   CALLBACK_REQUESTING_FAILED,
-  PEER_OFFLINE,
 } = require('@/constants/calls');
 
 const { STATUS_CHANGED_ONLINE, STATUS_CHANGED_OFFLINE } = require('@/constants/operatorStatuses');
 
 const calls = require('@/services/calls');
-
-const { CallsPendingEmptyError, PeerOfflineError } = require('@/services/calls/errors');
-
 const twilio = require('@/services/twilio');
-
 const { authenticateOperator } = require('@/services/socketAuth');
 const { connectionsHeap } = require('@/services/connectionsHeap');
+const { getOperatorCallFailReason } = require('./utils');
 const logger = require('@/services/logger')(module);
 
 class OperatorsRoom {
@@ -72,15 +67,16 @@ class OperatorsRoom {
         operator.emit(ROOM_CREATED, { id, requestedAt, token });
       })
       .then(() => logger.debug('Customer call: accepted by operator', operator.identity))
-      .catch((err) => {
-        if (err instanceof CallsPendingEmptyError) {
-          logger.error('Customer call: accepting failed - queue empty', operator.identity, err);
-          operator.emit(CALLS_EMPTY);
-        } else {
-          logger.error('Customer call: accepting failed', operator.identity, err);
-          operator.emit(CALL_ACCEPTING_FAILED);
-        }
-      });
+      .catch(err => this.onCallAcceptingFailed(err, operator));
+  }
+
+  onCallAcceptingFailed(err, operator) {
+    const data = {
+      reason: getOperatorCallFailReason(err),
+    };
+
+    logger.error('Customer call: accepting failed', operator.identity, err, data);
+    operator.emit(CALL_ACCEPTING_FAILED, data);
   }
 
   onOperatorRequestedCallback(operator, callId) {
@@ -96,10 +92,11 @@ class OperatorsRoom {
       })
       .then(() => logger.debug('Operator callback: requested', operator.id))
       .catch((err) => {
-        if (err instanceof PeerOfflineError) {
-          logger.error('Operator callback: requesting failed - peer offline', err);
+        const reason = getOperatorCallFailReason(err);
+        if (reason) {
+          logger.error('Operator callback: requesting failed: ', reason, err);
           const data = {
-            reason: PEER_OFFLINE,
+            reason,
           };
           this.emitCallbackDeclining(operator, data);
         } else {
