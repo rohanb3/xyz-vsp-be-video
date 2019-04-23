@@ -16,7 +16,7 @@ const calls = require('@/services/calls');
 const callStatusHelper = require('@/services/calls/statusHelper');
 const callFinisher = require('@/services/calls/finisher');
 const callsErrorHandler = require('@/services/calls/errorHandler');
-const { PeerOfflineError } = require('@/services/calls/errors');
+const { PeerOfflineError, CallNotFoundError } = require('@/services/calls/errors');
 const {
   CALL_REQUESTED,
   CALL_ACCEPTED,
@@ -54,6 +54,13 @@ describe('calls: ', () => {
   });
 
   describe('acceptCall(): ', () => {
+    beforeEach(() => {
+      callsDBClient.updateById = jest.fn();
+      pubSubChannel.publish = jest.fn();
+      twilio.ensureRoom = jest.fn(() => Promise.resolve());
+      activeCallsHeap.add = jest.fn();
+    });
+
     it('should take call from queue, create room, update call and publish it', () => {
       const acceptedBy = 'user42';
       const id = 'call42';
@@ -72,10 +79,7 @@ describe('calls: ', () => {
       };
 
       pendingCallsQueue.dequeue = jest.fn(() => Promise.resolve(callFromQueue));
-      twilio.ensureRoom = jest.fn(() => Promise.resolve());
-      activeCallsHeap.add = jest.fn();
-      callsDBClient.updateById = jest.fn();
-      pubSubChannel.publish = jest.fn();
+      activeCallsHeap.isExist = jest.fn(() => Promise.resolve(true));
 
       return calls.acceptCall(acceptedBy).then((call) => {
         expect(call).toEqual(expectedCall);
@@ -84,6 +88,115 @@ describe('calls: ', () => {
         expect(activeCallsHeap.add).toHaveBeenCalledWith(id, expectedCall);
         expect(callsDBClient.updateById).toHaveBeenCalledWith(id, updates);
         expect(pubSubChannel.publish).toHaveBeenCalledWith(CALL_ACCEPTED, expectedCall);
+      });
+    });
+
+    it('should fail before ensureRoom if call became not active', () => {
+      const acceptedBy = 'user42';
+      const id = 'call42';
+      const updates = {
+        acceptedBy,
+        acceptedAt: expect.any(String),
+      };
+      const callFromQueue = {
+        requestedBy: 'user24',
+        requestedAt: expect.any(String),
+        id,
+      };
+      const expectedCall = {
+        ...callFromQueue,
+        ...updates,
+      };
+
+      pendingCallsQueue.dequeue = jest.fn(() => Promise.resolve(callFromQueue));
+      callsErrorHandler.onAcceptCallFailed = jest.fn(() => Promise.resolve());
+      activeCallsHeap.isExist = jest.fn().mockReturnValueOnce(Promise.resolve(false));
+
+      return calls.acceptCall(acceptedBy).then(() => {
+        expect(callsErrorHandler.onAcceptCallFailed).toHaveBeenCalledWith(
+          expect.any(CallNotFoundError),
+          id,
+        );
+        expect(pendingCallsQueue.dequeue).toHaveBeenCalled();
+        expect(activeCallsHeap.add).toHaveBeenCalledWith(id, expectedCall);
+        expect(twilio.ensureRoom).not.toHaveBeenCalled();
+        expect(callsDBClient.updateById).not.toHaveBeenCalled();
+        expect(pubSubChannel.publish).not.toHaveBeenCalled();
+      });
+    });
+
+    it('should fail before updating call in DB if call became not active', () => {
+      const acceptedBy = 'user42';
+      const id = 'call42';
+      const updates = {
+        acceptedBy,
+        acceptedAt: expect.any(String),
+      };
+      const callFromQueue = {
+        requestedBy: 'user24',
+        requestedAt: expect.any(String),
+        id,
+      };
+      const expectedCall = {
+        ...callFromQueue,
+        ...updates,
+      };
+
+      pendingCallsQueue.dequeue = jest.fn(() => Promise.resolve(callFromQueue));
+      callsErrorHandler.onAcceptCallFailed = jest.fn(() => Promise.resolve());
+      activeCallsHeap.isExist = jest
+        .fn()
+        .mockReturnValueOnce(Promise.resolve(true))
+        .mockReturnValueOnce(Promise.resolve(false));
+
+      return calls.acceptCall(acceptedBy).then(() => {
+        expect(callsErrorHandler.onAcceptCallFailed).toHaveBeenCalledWith(
+          expect.any(CallNotFoundError),
+          id,
+        );
+        expect(pendingCallsQueue.dequeue).toHaveBeenCalled();
+        expect(activeCallsHeap.add).toHaveBeenCalledWith(id, expectedCall);
+        expect(twilio.ensureRoom).toHaveBeenCalledWith(id);
+        expect(callsDBClient.updateById).not.toHaveBeenCalled();
+        expect(pubSubChannel.publish).not.toHaveBeenCalled();
+      });
+    });
+
+    it('should fail before publishing call accepting if call became not active', () => {
+      const acceptedBy = 'user42';
+      const id = 'call42';
+      const updates = {
+        acceptedBy,
+        acceptedAt: expect.any(String),
+      };
+      const callFromQueue = {
+        requestedBy: 'user24',
+        requestedAt: expect.any(String),
+        id,
+      };
+      const expectedCall = {
+        ...callFromQueue,
+        ...updates,
+      };
+
+      pendingCallsQueue.dequeue = jest.fn(() => Promise.resolve(callFromQueue));
+      callsErrorHandler.onAcceptCallFailed = jest.fn(() => Promise.resolve());
+      activeCallsHeap.isExist = jest
+        .fn()
+        .mockReturnValueOnce(Promise.resolve(true))
+        .mockReturnValueOnce(Promise.resolve(true))
+        .mockReturnValueOnce(Promise.resolve(false));
+
+      return calls.acceptCall(acceptedBy).then(() => {
+        expect(callsErrorHandler.onAcceptCallFailed).toHaveBeenCalledWith(
+          expect.any(CallNotFoundError),
+          id,
+        );
+        expect(pendingCallsQueue.dequeue).toHaveBeenCalled();
+        expect(activeCallsHeap.add).toHaveBeenCalledWith(id, expectedCall);
+        expect(twilio.ensureRoom).toHaveBeenCalledWith(id);
+        expect(callsDBClient.updateById).toHaveBeenCalledWith(id, updates);
+        expect(pubSubChannel.publish).not.toHaveBeenCalled();
       });
     });
   });
