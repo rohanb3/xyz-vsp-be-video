@@ -12,10 +12,10 @@ function shutDown(server, connections) {
 
     setTimeout(() => {
       connections.forEach(curr => curr.end());
-    }, 5000);
+    }, 2000);
     setTimeout(() => {
       connections.forEach(curr => curr.destroy());
-    }, 10000);
+    }, 3000);
 
     connectionsHeap
       .destroy()

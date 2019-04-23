@@ -31,10 +31,11 @@ const {
   CALLS_CHANGED,
   CALLS_EMPTY,
   CALL_ACCEPTING_FAILED,
+  CALL_FINISHED_BY_CUSTOMER,
 } = require('@/constants/calls');
 
 const { STATUS_CHANGED_ONLINE, STATUS_CHANGED_OFFLINE } = require('@/constants/operatorStatuses');
-const { CallsPendingEmptyError } = require('@/services/calls/errors');
+const { CallsPendingEmptyError, CallNotFoundError } = require('@/services/calls/errors');
 
 let operatorsRoom = null;
 let operator = null;
@@ -189,6 +190,9 @@ describe('OperatorsRoom: ', () => {
     it('should emit correct error if calls were empty', () => {
       const token = '777';
       const error = new CallsPendingEmptyError();
+      const expectedDataToEmit = {
+        reason: CALLS_EMPTY,
+      };
 
       twilio.getToken = jest.fn(() => token);
       calls.acceptCall = jest.fn(() => Promise.reject(error));
@@ -197,13 +201,34 @@ describe('OperatorsRoom: ', () => {
         expect(calls.acceptCall).toHaveBeenCalledWith(operatorIdentity);
         expect(twilio.getToken).not.toHaveBeenCalled();
         expect(operator.emit).not.toHaveBeenCalledWith(ROOM_CREATED, expect.any(Object));
-        expect(operator.emit).toHaveBeenCalledWith(CALLS_EMPTY);
+        expect(operator.emit).toHaveBeenCalledWith(CALL_ACCEPTING_FAILED, expectedDataToEmit);
+      });
+    });
+
+    it('should emit correct error if calls was finished', () => {
+      const token = '777';
+      const error = new CallNotFoundError();
+      const expectedDataToEmit = {
+        reason: CALL_FINISHED_BY_CUSTOMER,
+      };
+
+      twilio.getToken = jest.fn(() => token);
+      calls.acceptCall = jest.fn(() => Promise.reject(error));
+
+      return operatorsRoom.onOperatorAcceptCall(operator).then(() => {
+        expect(calls.acceptCall).toHaveBeenCalledWith(operatorIdentity);
+        expect(twilio.getToken).not.toHaveBeenCalled();
+        expect(operator.emit).not.toHaveBeenCalledWith(ROOM_CREATED, expect.any(Object));
+        expect(operator.emit).toHaveBeenCalledWith(CALL_ACCEPTING_FAILED, expectedDataToEmit);
       });
     });
 
     it('should emit correct error if other error happened', () => {
       const token = '777';
       const error = new Error();
+      const expectedDataToEmit = {
+        reason: null,
+      };
 
       twilio.getToken = jest.fn(() => token);
       calls.acceptCall = jest.fn(() => Promise.reject(error));
@@ -212,7 +237,7 @@ describe('OperatorsRoom: ', () => {
         expect(calls.acceptCall).toHaveBeenCalledWith(operatorIdentity);
         expect(twilio.getToken).not.toHaveBeenCalled();
         expect(operator.emit).not.toHaveBeenCalledWith(ROOM_CREATED, expect.any(Object));
-        expect(operator.emit).toHaveBeenCalledWith(CALL_ACCEPTING_FAILED);
+        expect(operator.emit).toHaveBeenCalledWith(CALL_ACCEPTING_FAILED, expectedDataToEmit);
       });
     });
   });
