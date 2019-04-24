@@ -9,7 +9,7 @@
     "build-public": "browserify src/public/customer.js > src/public/js/customer.js",
     "clean-public": "rimraf src/public/js/customer.js",
     "check": "npm run lint && npm run unit",
-    "lint": "npx eslint src/**/*.js tests/**/*.js",
+    "lint": "npx eslint --fix src/**/*.js tests/**/*.js",
     "unit": "jest",
     "coverage": "jest --collectCoverageFrom=src/**/*.js --coverage",
     "copyEnv": "cp .env.template .env"

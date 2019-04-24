@@ -36362,6 +36362,7 @@ if (typeof isLocal === 'string') {
 const socket = io(socketUrl, socketOptions);
 
 let globalToken = null;
+let roomId = null;
 
 socket.on('connect', () => {
   socket.emit('authentication', { identity, deviceId, });
@@ -36420,6 +36421,11 @@ function onTokenReceived(data) {
 
 function requestConnection() {
   socket.emit('call.requested');
+  socket.once('call.enqueued', (callId) => {
+    roomId = callId;
+    document.getElementById('button-join').style.display = 'none';
+    document.getElementById('button-leave').style.display = 'inline';
+  });
   socket.once('call.accepted', ({ roomId, operatorId, token }) => connectToRoom(roomId, token));
 }
 
@@ -36469,9 +36475,6 @@ function roomJoined(room) {
   activeRoom = room;
 
   socket.on('operator.disconnected', leaveRoomIfJoined);
-
-  document.getElementById('button-join').style.display = 'none';
-  document.getElementById('button-leave').style.display = 'inline';
 
   const previewContainer = document.getElementById('local-media');
   if (!previewContainer.querySelector('video')) {
@@ -36544,6 +36547,10 @@ function leaveRoomIfJoined(notifyBE = true) {
     }
     activeRoom.disconnect();
     activeRoom = null;
+  } else {
+    socket.emit('call.finished', { id: roomId });
+    document.getElementById('button-join').style.display = 'inline';
+    document.getElementById('button-leave').style.display = 'none';
   }
 }
 
