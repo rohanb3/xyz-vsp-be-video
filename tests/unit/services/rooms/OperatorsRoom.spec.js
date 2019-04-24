@@ -3,6 +3,7 @@ jest.mock('@/services/calls', () => ({
   subscribeToCallbackAccepting: jest.fn(() => {}),
   subscribeToCallbackDeclining: jest.fn(() => {}),
   subscribeToCallsLengthChanging: jest.fn(() => {}),
+  subscribeToCallFinishing: jest.fn(() => {}),
   getCallsInfo: jest.fn(() => Promise.resolve({})),
   finishCall: jest.fn(() => Promise.resolve()),
   requestCallback: jest.fn(() => Promise.resolve()),
@@ -77,6 +78,10 @@ describe('OperatorsRoom: ', () => {
 
     it('should add listener to namespace connection event', () => {
       expect(mockedNamespace.on).toHaveBeenCalledWith(CONNECTION, expect.any(Function));
+    });
+
+    it('should subscribe to call finishing', () => {
+      expect(calls.subscribeToCallFinishing).toHaveBeenCalledWith(expect.any(Function));
     });
 
     it('should subscribe to callback accepting', () => {
