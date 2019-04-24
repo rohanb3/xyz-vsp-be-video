@@ -38,6 +38,7 @@ class OperatorsRoom {
       authenticate: authenticateOperator,
       postAuthenticate: this.onOperatorAuthenticated.bind(this),
     });
+    calls.subscribeToCallFinishing(this.onCallFinished.bind(this));
     calls.subscribeToCallbackAccepting(this.checkOperatorAndEmitCallbackAccepting.bind(this));
     calls.subscribeToCallbackDeclining(this.checkOperatorAndEmitCallbackDeclining.bind(this));
     calls.subscribeToCallsLengthChanging(this.emitCallsInfo.bind(this));
@@ -77,6 +78,13 @@ class OperatorsRoom {
 
     logger.error('Customer call: accepting failed', operator.identity, err, data);
     operator.emit(CALL_ACCEPTING_FAILED, data);
+  }
+
+  onCallFinished(call) {
+    const callFinishedNotByByOperator = call.finishedBy !== call.acceptedBy;
+    if (callFinishedNotByByOperator) {
+      this.checkOperatorAndEmitCallFinishing(call);
+    }
   }
 
   onOperatorRequestedCallback(operator, callId) {
@@ -141,12 +149,27 @@ class OperatorsRoom {
     });
   }
 
+  checkOperatorAndEmitCallFinishing(call) {
+    const { acceptedBy, id } = call;
+    return this.getSocketIdByIdentity(acceptedBy).then((socketId) => {
+      const connectedOperator = this.operators.connected[socketId];
+      if (connectedOperator) {
+        logger.debug('Call finished: emitting to operator', id, acceptedBy);
+        this.emitCallFinishing(connectedOperator, { id });
+      }
+    });
+  }
+
   emitCallbackAccepting(operator, callId) {
     operator.emit(CALLBACK_ACCEPTED, callId);
   }
 
   emitCallbackDeclining(operator, data) {
     operator.emit(CALLBACK_DECLINED, data);
+  }
+
+  emitCallFinishing(operator, data) {
+    operator.emit(CALL_FINISHED, data);
   }
 
   emitCallsInfo(info) {
