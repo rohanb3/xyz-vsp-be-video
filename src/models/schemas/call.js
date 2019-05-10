@@ -15,6 +15,10 @@ module.exports = {
     type: String,
     required: true,
   },
+  salesRepId: {
+    type: String,
+    required: true,
+  },
   waitingTime: String,
   missedAt: String,
   acceptedBy: String,

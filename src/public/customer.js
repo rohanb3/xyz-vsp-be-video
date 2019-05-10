@@ -3,6 +3,7 @@
 const Video = require('twilio-video');
 
 const isLocal = prompt('Is local?');
+const isProd = prompt('Is production?');
 const deviceId = prompt('Tell me device id') || 'localTablet';
 const identity = prompt('Tell me your identity') || 'Joey';
 
@@ -15,6 +16,10 @@ let socketOptions = {
 if (typeof isLocal === 'string') {
   socketUrl = '/customers';
   socketOptions = { transports: ['websocket'] };
+}
+
+if (typeof isProd === 'string') {
+  socketUrl = 'wss://portal.xyzvsp.com/customers';
 }
 
 const socket = io(socketUrl, socketOptions);
@@ -78,7 +83,8 @@ function onTokenReceived(data) {
 }
 
 function requestConnection() {
-  socket.emit('call.requested');
+  const salesRepId = '0343694f-9005-4bc9-bd37-2746264ab82d';
+  socket.emit('call.requested', { salesRepId });
   socket.once('call.enqueued', (callId) => {
     roomId = callId;
     document.getElementById('button-join').style.display = 'none';

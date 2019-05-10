@@ -58,8 +58,9 @@ class CustomersRoom {
     this.mapDeviceIdToSocketId(customer);
   }
 
-  onCustomerRequestedCall(customer) {
-    return requestCall(customer.identity, customer.deviceId)
+  onCustomerRequestedCall(customer, data) {
+    const { salesRepId } = data;
+    return requestCall(customer.identity, customer.deviceId, salesRepId)
       .then((call) => {
         logger.debug('Customer call: added to pending', call);
         customer.pendingCallId = call.id;

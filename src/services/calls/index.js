@@ -22,11 +22,12 @@ const {
 } = require('@/constants/calls');
 const callsErrorHandler = require('@/services/calls/errorHandler');
 
-function requestCall(requestedBy, deviceId) {
+function requestCall(requestedBy, deviceId, salesRepId) {
   const call = {
     requestedBy,
     requestedAt: moment.utc().format(),
     deviceId,
+    salesRepId,
   };
 
   return callsDBClient
@@ -63,7 +64,7 @@ function acceptCall(acceptedBy) {
     .then(() => callsDBClient.updateById(call.id, updates))
     .then(() => checkIsCallStillActive(call.id))
     .then(() => pubSubChannel.publish(CALL_ACCEPTED, call))
-    .then(() => call)
+    .then(() => addActiveCallIdToConnections(call))
     .catch(err => callsErrorHandler.onAcceptCallFailed(err, call.id));
 }
 
@@ -104,7 +105,7 @@ function acceptCallback(callId) {
     .then(() => twilio.ensureRoom(callId))
     .then(() => pubSubChannel.publish(CALLBACK_ACCEPTED, call))
     .then(() => callsDBClient.updateById(callId, { callbacks: call.callbacks }))
-    .then(() => call)
+    .then(() => addActiveCallIdToConnections(call))
     .catch(err => callsErrorHandler.onAcceptCallbackFailed(err, callId));
 }
 
@@ -154,6 +155,7 @@ function finishCall(callId, finishedBy) {
       pubSubChannel.publish(CALL_FINISHED, call);
       return call;
     })
+    .then(removeActiveCallIdFromConnections)
     .catch(err => callsErrorHandler.onFinishCallFailed(err, callId));
 }
 
@@ -191,6 +193,16 @@ function checkIsCallStillActive(callId) {
   return activeCallsHeap
     .isExist(callId)
     .then(isExist => (isExist ? Promise.resolve() : Promise.reject(new CallNotFoundError(callId))));
+}
+
+function addActiveCallIdToConnections(call) {
+  const { id, acceptedBy } = call;
+  return connectionsHeap.update(acceptedBy, { activeCallId: id }).then(() => call);
+}
+
+function removeActiveCallIdFromConnections(call) {
+  const { acceptedBy } = call;
+  return connectionsHeap.update(acceptedBy, { activeCallId: null }).then(() => call);
 }
 
 exports.requestCall = requestCall;

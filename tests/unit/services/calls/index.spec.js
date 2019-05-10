@@ -64,12 +64,13 @@ describe('calls: ', () => {
     it('should take call from queue, create room, update call and publish it', () => {
       const acceptedBy = 'user42';
       const id = 'call42';
+      const requestedBy = 'user42';
       const updates = {
         acceptedBy,
         acceptedAt: expect.any(String),
       };
       const callFromQueue = {
-        requestedBy: 'user24',
+        requestedBy,
         requestedAt: expect.any(String),
         id,
       };
@@ -80,6 +81,7 @@ describe('calls: ', () => {
 
       pendingCallsQueue.dequeue = jest.fn(() => Promise.resolve(callFromQueue));
       activeCallsHeap.isExist = jest.fn(() => Promise.resolve(true));
+      connectionsHeap.update = jest.fn(() => Promise.resolve());
 
       return calls.acceptCall(acceptedBy).then((call) => {
         expect(call).toEqual(expectedCall);
@@ -199,6 +201,27 @@ describe('calls: ', () => {
         expect(pubSubChannel.publish).not.toHaveBeenCalled();
       });
     });
+
+    it('should add call id to connections', () => {
+      const acceptedBy = 'user42';
+      const id = 'call42';
+      const requestedBy = 'user42';
+      const callFromQueue = {
+        requestedBy,
+        requestedAt: expect.any(String),
+        id,
+      };
+
+      pendingCallsQueue.dequeue = jest.fn(() => Promise.resolve(callFromQueue));
+      activeCallsHeap.isExist = jest.fn(() => Promise.resolve(true));
+      connectionsHeap.update = jest.fn(() => Promise.resolve());
+
+      return calls.acceptCall(acceptedBy).then(() => {
+        expect(connectionsHeap.update).toHaveBeenCalledWith(acceptedBy, {
+          activeCallId: id,
+        });
+      });
+    });
   });
 
   describe('requestCallback(): ', () => {
@@ -314,6 +337,52 @@ describe('calls: ', () => {
         });
       });
     });
+
+    it('should add call id to connections', () => {
+      const acceptedBy = 'user42';
+      const id = 'call42';
+      const requestedBy = 'user42';
+      const callback1 = {
+        requestedAt: 'some time',
+        acceptedAt: 'other time',
+        finishedAt: 'one more time',
+      };
+      const callback2 = {
+        requestedAt: 'some time',
+      };
+      const callbacks = [{ ...callback1 }, { ...callback2 }];
+      const expectedCallbacks = [
+        { ...callback1 },
+        {
+          ...callback2,
+          acceptedAt: expect.any(String),
+        },
+      ];
+      const callId = 'call42';
+      const call = {
+        id,
+        requestedBy,
+        acceptedBy,
+        callbacks,
+      };
+      const expectedCall = {
+        id: 'call42',
+        callbacks: expectedCallbacks,
+      };
+
+      twilio.ensureRoom = jest.fn(() => Promise.resolve());
+      callsDBClient.updateById = jest.fn(() => Promise.resolve(call));
+      pendingCallbacksHeap.take = jest.fn(() => Promise.resolve(call));
+      activeCallsHeap.add = jest.fn(() => Promise.resolve(expectedCall));
+      pubSubChannel.publish = jest.fn();
+      connectionsHeap.update = jest.fn(() => Promise.resolve());
+
+      return calls.acceptCallback(callId).then(() => {
+        expect(connectionsHeap.update).toHaveBeenCalledWith(acceptedBy, {
+          activeCallId: callId,
+        });
+      });
+    });
   });
 
   describe('declineCallback(): ', () => {
@@ -365,18 +434,18 @@ describe('calls: ', () => {
 
   describe('finishCall(): ', () => {
     const callId = 'call42';
+    const acceptedBy = 'operator42';
+    const call = { id: callId, acceptedBy };
     beforeEach(() => {
-      callFinisher.markCallAsMissed = jest.fn(() => Promise.resolve());
-      callFinisher.markCallAsFinished = jest.fn(() => Promise.resolve());
-      callFinisher.markLastCallbackAsMissed = jest.fn(() => Promise.resolve());
-      callFinisher.markLastCallbackAsFinished = jest.fn(() => Promise.resolve());
+      callFinisher.markCallAsMissed = jest.fn(() => Promise.resolve(call));
+      callFinisher.markCallAsFinished = jest.fn(() => Promise.resolve(call));
+      callFinisher.markLastCallbackAsMissed = jest.fn(() => Promise.resolve(call));
+      callFinisher.markLastCallbackAsFinished = jest.fn(() => Promise.resolve(call));
+
+      connectionsHeap.update = jest.fn(() => Promise.resolve());
     });
 
     it('should mark call as missed if call is pending', () => {
-      const call = {
-        id: 'call42',
-      };
-
       storage.get = jest.fn(() => Promise.resolve(call));
       callStatusHelper.getCallStatus = jest.fn(() => statuses.CALL_PENDING);
 
@@ -389,9 +458,6 @@ describe('calls: ', () => {
     });
 
     it('should mark call as finished if call is active', () => {
-      const call = {
-        id: 'call42',
-      };
       const finishedBy = 'customer42';
 
       storage.get = jest.fn(() => Promise.resolve(call));
@@ -406,10 +472,6 @@ describe('calls: ', () => {
     });
 
     it('should mark last callback as missed as finished if callback is pending', () => {
-      const call = {
-        id: 'call42',
-      };
-
       storage.get = jest.fn(() => Promise.resolve(call));
       callStatusHelper.getCallStatus = jest.fn(() => statuses.CALLBACK_PENDING);
 
@@ -422,9 +484,6 @@ describe('calls: ', () => {
     });
 
     it('should mark last callback as finished as finished if callback is active', () => {
-      const call = {
-        id: 'call42',
-      };
       const finishedBy = 'customer42';
 
       storage.get = jest.fn(() => Promise.resolve(call));
@@ -435,6 +494,17 @@ describe('calls: ', () => {
         expect(callFinisher.markCallAsFinished).not.toHaveBeenCalled();
         expect(callFinisher.markLastCallbackAsMissed).not.toHaveBeenCalled();
         expect(callFinisher.markLastCallbackAsFinished).toHaveBeenCalledWith(callId, finishedBy);
+      });
+    });
+
+    it('should remove call data from connections', () => {
+      const finishedBy = 'customer42';
+
+      storage.get = jest.fn(() => Promise.resolve(call));
+      callStatusHelper.getCallStatus = jest.fn(() => statuses.CALL_ACTIVE);
+
+      return calls.finishCall(callId, finishedBy).then(() => {
+        expect(connectionsHeap.update).toHaveBeenCalledWith(acceptedBy, { activeCallId: null });
       });
     });
   });
