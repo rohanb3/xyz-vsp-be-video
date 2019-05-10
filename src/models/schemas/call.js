@@ -17,7 +17,6 @@ module.exports = {
   },
   salesRepId: {
     type: String,
-    required: true,
   },
   waitingTime: String,
   missedAt: String,
