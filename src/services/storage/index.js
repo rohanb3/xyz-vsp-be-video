@@ -47,7 +47,7 @@ function take(key) {
 
 function update(key, updates = {}) {
   if (!key) {
-    return Promise.resolve(null);
+    return Promise.resolve(false);
   }
   return get(key).then(value => set(key, { ...value, ...updates }));
 }

@@ -196,4 +196,47 @@ describe('storage: ', () => {
       });
     });
   });
+
+  describe('update(): ', () => {
+    it('should resolve with false if no key specified', () => {
+      client.exists = jest.fn(() => Promise.resolve(true));
+      client.get = jest.fn(() => Promise.resolve({}));
+
+      return storage.update().then((res) => {
+        expect(res).toBeFalsy();
+        expect(client.get).not.toHaveBeenCalled();
+      });
+    });
+
+    it('should reject with error if no item exists', () => {
+      const id = 'item42';
+
+      client.exists = jest.fn(() => Promise.resolve(false));
+      client.set = jest.fn(() => Promise.resolve(null));
+
+      return storage.update(id).catch((err) => {
+        expect(err).toBeInstanceOf(storage.errors.NotFoundItemError);
+        expect(client.set).not.toHaveBeenCalled();
+      });
+    });
+
+    it('should update item', () => {
+      const id = 'item42';
+      const itemFromStorage = {
+        id,
+      };
+      const updates = {
+        success: true,
+      };
+      const expectedValue = { ...itemFromStorage, ...updates };
+
+      client.exists = jest.fn(() => Promise.resolve(true));
+      client.get = jest.fn(() => Promise.resolve(itemFromStorage));
+      client.set = jest.fn(() => Promise.resolve(null));
+
+      return storage.update(id, updates).then(() => {
+        expect(client.set).toHaveBeenCalledWith(id, expectedValue);
+      });
+    });
+  });
 });

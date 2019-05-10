@@ -41,7 +41,7 @@ class HeapConnector {
 
   update(key, updates = {}) {
     if (!key) {
-      return Promise.resolve(null);
+      return Promise.resolve(false);
     }
     return this.isExist(key).then(exists => (exists ? storage.update(key, updates) : rejectWithNotFound(key)));
   }
