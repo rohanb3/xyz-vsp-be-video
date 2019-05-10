@@ -17,22 +17,25 @@ function shutDown(server, connections) {
       connections.forEach(curr => curr.destroy());
     }, 3000);
 
-    connectionsHeap
+    return connectionsHeap
       .destroy()
-      .then(() => new Promise((resolve, reject) => {
-        logger.info('Connections heap destroyed');
-        server.close((serverClosingError) => {
-          logger.info('Server closed');
-          mongoose.connection.close(false, (mongooseClosingError) => {
-            logger.info('Mongoose closed');
-            if (serverClosingError || mongooseClosingError) {
-              reject(serverClosingError || mongooseClosingError);
-            } else {
-              resolve();
-            }
+      .catch(err => logger.error('Connections heap was not destroyed: ', err))
+      .then(
+        () => new Promise((resolve, reject) => {
+          logger.info('Connections heap destroyed');
+          server.close((serverClosingError) => {
+            logger.info('Server closed');
+            mongoose.connection.close(false, (mongooseClosingError) => {
+              logger.info('Mongoose closed');
+              if (serverClosingError || mongooseClosingError) {
+                reject(serverClosingError || mongooseClosingError);
+              } else {
+                resolve();
+              }
+            });
           });
-        });
-      }))
+        }),
+      )
       .then(() => {
         logger.info('Gracefully exited');
         process.exit(0);
@@ -42,6 +45,7 @@ function shutDown(server, connections) {
         process.exit(1);
       });
   }
+  return Promise.resolve();
 }
 
 exports.shutDown = shutDown;
