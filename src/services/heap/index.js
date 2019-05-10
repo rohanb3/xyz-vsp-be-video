@@ -42,6 +42,10 @@ class Heap {
     return this.take(id);
   }
 
+  update(key, updates = {}) {
+    return this.connector.update(key, updates);
+  }
+
   isExist(id) {
     return this.connector.isExist(id);
   }

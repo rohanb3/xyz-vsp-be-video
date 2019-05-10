@@ -19,16 +19,9 @@ const {
 
 const BUSY = 'busy';
 
-const {
-  requestCall,
-  finishCall,
-  subscribeToCallAccepting,
-  subscribeToCallbackRequesting,
-  acceptCallback,
-  declineCallback,
-} = require('@/services/calls');
+const calls = require('@/services/calls');
 
-const { getToken } = require('@/services/twilio');
+const twilio = require('@/services/twilio');
 
 const { authenticateCustomer } = require('@/services/socketAuth');
 const { connectionsHeap } = require('@/services/connectionsHeap');
@@ -43,8 +36,8 @@ class CustomersRoom {
       authenticate: authenticateCustomer,
       postAuthenticate: this.onCustomerAuthenticated.bind(this),
     });
-    subscribeToCallAccepting(this.onCallAccepted.bind(this));
-    subscribeToCallbackRequesting(this.checkCustomerAndEmitCallbackRequesting.bind(this));
+    calls.subscribeToCallAccepting(this.onCallAccepted.bind(this));
+    calls.subscribeToCallbackRequesting(this.checkCustomerAndEmitCallbackRequesting.bind(this));
   }
 
   onCustomerConnected(customer) {
@@ -55,11 +48,13 @@ class CustomersRoom {
 
   onCustomerAuthenticated(customer) {
     logger.debug('Customer authenticated', customer.id, customer.identity, customer.deviceId);
-    this.mapDeviceIdToSocketId(customer);
+    return this.mapDeviceIdToSocketId(customer);
   }
 
-  onCustomerRequestedCall(customer) {
-    return requestCall(customer.identity, customer.deviceId)
+  onCustomerRequestedCall(customer, data) {
+    const { salesRepId } = data;
+    return calls
+      .requestCall(customer.identity, customer.deviceId, salesRepId)
       .then((call) => {
         logger.debug('Customer call: added to pending', call);
         customer.pendingCallId = call.id;
@@ -74,16 +69,24 @@ class CustomersRoom {
   onCustomerFinishedCall(customer, call) {
     logger.debug('Call: attempt to finish', call && call.id, customer.identity);
     return call && call.id
-      ? finishCall(call.id, customer.identity)
+      ? calls
+        .finishCall(call.id, customer.identity)
         .then(() => logger.debug('Call: finished by customer', call.id))
         .catch(err => logger.error('Call: finishing by customer failed', err))
       : Promise.resolve();
   }
 
   onCustomerDisconnected(customer) {
-    logger.debug('Customer disconneted', customer.identity, customer.pendingCallId);
-    this.checkAndUnmapDeviceIdFromSocketId(customer);
-    return customer.pendingCallId ? finishCall(customer.pendingCallId) : Promise.resolve();
+    logger.debug('Customer disconnected', customer.identity, customer.pendingCallId);
+    const finishingCallPromise = customer.pendingCallId
+      ? calls.finishCall(customer.pendingCallId, customer.identity)
+      : Promise.resolve();
+
+    return finishingCallPromise
+      .catch((err) => {
+        logger.error('Call: finishing by customer failed', err);
+      })
+      .finally(() => this.checkAndUnmapDeviceIdFromSocketId(customer));
   }
 
   onCallAccepted(call) {
@@ -101,8 +104,8 @@ class CustomersRoom {
     if (connectedCustomer) {
       logger.debug('Customer call: acception emitted to customer', callId, socketId);
       connectedCustomer.pendingCallId = null;
-      const token = getToken(connectedCustomer.identity, callId);
-      this.emitCallAccepting(socketId, { roomId: callId, operatorId, token });
+      const token = twilio.getToken(connectedCustomer.deviceId, callId);
+      this.emitCallAccepting(connectedCustomer, { roomId: callId, operatorId, token });
     }
   }
 
@@ -112,11 +115,12 @@ class CustomersRoom {
       const connectedCustomer = this.customers.connected[socketId];
       if (connectedCustomer) {
         logger.debug('Operator callback: emitting to customer', id);
-        this.emitCallbackRequesting(socketId, { roomId: id, operatorId: acceptedBy });
+        this.emitCallbackRequesting(connectedCustomer, { roomId: id, operatorId: acceptedBy });
 
         const onCallbackAccepted = () => {
           connectedCustomer.removeListener(CALLBACK_DECLINED, onCallbackDeclined);
-          acceptCallback(id)
+          calls
+            .acceptCallback(id)
             .then(() => connectedCustomer.emit(ROOM_CREATED, id))
             .then(() => logger.debug('Operator callback: accepted and emitted to customer'))
             .catch((err) => {
@@ -127,7 +131,7 @@ class CustomersRoom {
         const onCallbackDeclined = (data = {}) => {
           const reason = data.message === BUSY ? PEER_BUSY : '';
           connectedCustomer.removeListener(CALLBACK_ACCEPTED, onCallbackAccepted);
-          declineCallback(id, reason).catch((err) => {
+          calls.declineCallback(id, reason).catch((err) => {
             logger.error('Operator callback: declining failed', err);
           });
         };
@@ -138,12 +142,12 @@ class CustomersRoom {
     });
   }
 
-  emitCallAccepting(customerId, callData) {
-    this.customers.connected[customerId].emit(CALL_ACCEPTED, callData);
+  emitCallAccepting(customer, callData) {
+    customer.emit(CALL_ACCEPTED, callData);
   }
 
-  emitCallbackRequesting(customerId, callData) {
-    this.customers.connected[customerId].emit(CALLBACK_REQUESTED, callData);
+  emitCallbackRequesting(customer, callData) {
+    customer.emit(CALLBACK_REQUESTED, callData);
   }
 
   mapDeviceIdToSocketId(socket) {
@@ -151,11 +155,11 @@ class CustomersRoom {
   }
 
   checkAndUnmapDeviceIdFromSocketId(socket) {
-    return socket.identity ? connectionsHeap.remove(socket.deviceId) : Promise.resolve();
+    return socket.deviceId ? connectionsHeap.remove(socket.deviceId) : Promise.resolve();
   }
 
-  getSocketIdByDeviceId(identity) {
-    return connectionsHeap.get(identity);
+  getSocketIdByDeviceId(deviceId) {
+    return connectionsHeap.get(deviceId);
   }
 }
 

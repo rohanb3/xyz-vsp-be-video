@@ -63,9 +63,18 @@ class OperatorsRoom {
     logger.debug('Customer call: attempt to accept by operator', operator && operator.identity);
     return calls
       .acceptCall(operator.identity)
-      .then(({ id, requestedAt }) => {
+      .then((call) => {
+        const {
+          id, requestedAt, requestedBy, salesRepId,
+        } = call;
         const token = twilio.getToken(operator.identity, id);
-        operator.emit(ROOM_CREATED, { id, requestedAt, token });
+        operator.emit(ROOM_CREATED, {
+          id,
+          requestedAt,
+          token,
+          requestedBy,
+          salesRepId,
+        });
       })
       .then(() => logger.debug('Customer call: accepted by operator', operator.identity))
       .catch(err => this.onCallAcceptingFailed(err, operator));
@@ -114,12 +123,12 @@ class OperatorsRoom {
       });
   }
 
-  onOperatorFinishedCall(operator, call) {
-    logger.debug('Call: attempt to finish by operator', call && call.id, operator.identity);
-    return call && call.id
+  onOperatorFinishedCall(operator, callId) {
+    logger.debug('Call: attempt to finish by operator', callId, operator.identity);
+    return callId
       ? calls
-        .finishCall(call.id, operator.identity)
-        .then(() => logger.debug('Call: finished by operator', call.id, operator.identity))
+        .finishCall(callId, operator.identity)
+        .then(() => logger.debug('Call: finished by operator', callId, operator.identity))
         .catch(err => logger.error('Call: finishing by operator failed', err))
       : Promise.resolve();
   }
@@ -204,7 +213,7 @@ class OperatorsRoom {
   }
 
   mapSocketIdentityToId(socket) {
-    return connectionsHeap.add(socket.identity, socket.id);
+    return connectionsHeap.add(socket.identity, { socketId: socket.id });
   }
 
   checkAndUnmapSocketIdentityFromId(socket) {
@@ -212,7 +221,7 @@ class OperatorsRoom {
   }
 
   getSocketIdByIdentity(identity) {
-    return connectionsHeap.get(identity);
+    return connectionsHeap.get(identity).then((connectionData = {}) => connectionData.socketId);
   }
 }
 

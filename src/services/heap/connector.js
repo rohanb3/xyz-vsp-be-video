@@ -39,6 +39,13 @@ class HeapConnector {
       }));
   }
 
+  update(key, updates = {}) {
+    if (!key) {
+      return Promise.resolve(false);
+    }
+    return this.isExist(key).then(exists => (exists ? storage.update(key, updates) : rejectWithNotFound(key)));
+  }
+
   isExist(key) {
     return client.sismember(this.heapName, key).then(Boolean);
   }
