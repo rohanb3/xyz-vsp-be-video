@@ -20,9 +20,7 @@ const {
   connectionRetriesTimeout,
 } = config.get('logstash');
 
-const {
-  combine, timestamp, printf, colorize, align, label,
-} = format;
+const { combine, timestamp, printf, colorize, align, label } = format;
 
 const options = {
   console: {
@@ -44,19 +42,19 @@ if (logstashEnabled) {
   };
 }
 
-const isObject = (value) => {
+const isObject = value => {
   const type = typeof value;
   return value != null && (type === 'object' || type === 'function');
 };
 
-const formatObject = (param) => {
+const formatObject = param => {
   if (isObject(param)) {
     return JSON.stringify(param);
   }
   return param;
 };
 
-const all = format((info) => {
+const all = format(info => {
   const splat = info[SPLAT] || [];
   const message = formatObject(info.message);
   const rest = splat.map(formatObject).join(' ');
@@ -65,7 +63,8 @@ const all = format((info) => {
 });
 
 const customFormat = printf(
-  info => `\n ${info.timestamp} [${info.label}] ${info.level}: ${info.message} \n`,
+  info =>
+    `\n ${info.timestamp} [${info.label}] ${info.level}: ${info.message} \n`
 );
 
 const loggerTransports = [new transports.Console(options.console)];
@@ -74,7 +73,7 @@ if (logstashEnabled) {
   loggerTransports.push(new transports.Logstash(options.logstash));
 }
 
-const getLogger = (module) => {
+const getLogger = module => {
   const path = module.filename
     .split('/')
     .slice(-2)
@@ -82,7 +81,14 @@ const getLogger = (module) => {
 
   const logger = createLogger({
     transports: loggerTransports,
-    format: combine(all(), label({ label: path }), colorize(), timestamp(), align(), customFormat),
+    format: combine(
+      all(),
+      label({ label: path }),
+      colorize(),
+      timestamp(),
+      align(),
+      customFormat
+    ),
     level: 'debug',
     exitOnError: false,
   });

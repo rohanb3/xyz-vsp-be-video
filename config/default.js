@@ -9,6 +9,9 @@ const {
   TWILIO_AUTH_TOKEN,
   TWILIO_API_KEY,
   TWILIO_API_SECRET,
+  AZURE_TENANT_ID,
+  AZURE_CLIENT_ID,
+  AZURE_POLICY_NAME,
 } = process.env;
 
 module.exports = {
@@ -27,7 +30,9 @@ module.exports = {
     enabled: false,
   },
   mongoose: {
-    connectionString: CALLS_DB_URI || 'mongodb://customer:secret123@ds111765.mlab.com:11765/calls',
+    connectionString:
+      CALLS_DB_URI ||
+      'mongodb://customer:secret123@ds111765.mlab.com:11765/calls',
     dbName: CALLS_DB_NAME || 'calls',
     debug: true,
   },
@@ -40,5 +45,16 @@ module.exports = {
     authToken: TWILIO_AUTH_TOKEN,
     apiKey: TWILIO_API_KEY,
     apiSecret: TWILIO_API_SECRET,
+  },
+  azure: {
+    identityMetadata: `https://login.microsoftonline.com/${AZURE_TENANT_ID}/v2.0/.well-known/openid-configuration/`,
+    issuer: `https://devxyzies.b2clogin.com/${AZURE_TENANT_ID}/v2.0/`,
+    clientID: AZURE_CLIENT_ID,
+    policyName: AZURE_POLICY_NAME,
+    isB2C: true,
+    validateIssuer: true,
+    loggingLevel: 'error',
+    passReqToCallback: true,
+    loggingNoPII: false,
   },
 };

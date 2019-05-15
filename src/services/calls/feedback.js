@@ -28,7 +28,7 @@ function validateAndSaveFeedback(callId, feedback, feedbackType) {
   const updates = { [feedbackType]: feedback };
   return callsDBClient
     .getById(callId)
-    .then((call) => {
+    .then(call => {
       if (!call) {
         return Promise.reject(new CallUpdateError([CALL_NOT_EXIST]));
       }
@@ -37,7 +37,9 @@ function validateAndSaveFeedback(callId, feedback, feedbackType) {
       const validationError = callsDBClient.validateSync(callWithUpdates);
 
       if (validationError) {
-        const messages = Object.values(validationError.errors).map(e => e.message);
+        const messages = Object.values(validationError.errors).map(
+          e => e.message
+        );
         return Promise.reject(new CallUpdateError(messages));
       }
 

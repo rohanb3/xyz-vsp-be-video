@@ -25,7 +25,7 @@ describe('POST /api/video/call-feedback-customer: ', () => {
         expect(callFeedback.validateAndSaveFeedback).toHaveBeenCalledWith(
           callId,
           feedback,
-          CUSTOMER_FEEDBACK,
+          CUSTOMER_FEEDBACK
         );
       });
   });
@@ -46,12 +46,12 @@ describe('POST /api/video/call-feedback-customer: ', () => {
       .post('/api/video/call-feedback-customer')
       .send({ callId, ...feedback })
       .expect(400)
-      .then((res) => {
+      .then(res => {
         expect(res.body.messages).toEqual(messages);
         expect(callFeedback.validateAndSaveFeedback).toHaveBeenCalledWith(
           callId,
           feedback,
-          CUSTOMER_FEEDBACK,
+          CUSTOMER_FEEDBACK
         );
       });
   });
@@ -72,12 +72,12 @@ describe('POST /api/video/call-feedback-customer: ', () => {
       .post('/api/video/call-feedback-customer')
       .send({ callId, ...feedback })
       .expect(500)
-      .then((res) => {
+      .then(res => {
         expect(res.body.messages).toEqual([message]);
         expect(callFeedback.validateAndSaveFeedback).toHaveBeenCalledWith(
           callId,
           feedback,
-          CUSTOMER_FEEDBACK,
+          CUSTOMER_FEEDBACK
         );
       });
   });

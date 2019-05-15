@@ -3,7 +3,7 @@ module.exports={
   "_args": [
     [
       "@twilio/sip.js@0.7.7",
-      "/home/user/www/xys-vsp-be-video"
+      "/Users/user/Desktop/xyz-vsp-be-video"
     ]
   ],
   "_from": "@twilio/sip.js@0.7.7",
@@ -28,7 +28,7 @@ module.exports={
   ],
   "_resolved": "https://registry.npmjs.org/@twilio/sip.js/-/sip.js-0.7.7.tgz",
   "_spec": "0.7.7",
-  "_where": "/home/user/www/xys-vsp-be-video",
+  "_where": "/Users/user/Desktop/xyz-vsp-be-video",
   "author": {
     "name": "OnSIP",
     "email": "developer@onsip.com",
@@ -14447,6 +14447,12 @@ exports.updateUnifiedPlanTrackIdsToSSRCs = updateUnifiedPlanTrackIdsToSSRCs;
 
 },{"./":50}],53:[function(require,module,exports){
 module.exports={
+  "_args": [
+    [
+      "@twilio/webrtc@4.0.0",
+      "/Users/user/Desktop/xyz-vsp-be-video"
+    ]
+  ],
   "_from": "@twilio/webrtc@4.0.0",
   "_id": "@twilio/webrtc@4.0.0",
   "_inBundle": false,
@@ -14468,9 +14474,8 @@ module.exports={
     "/twilio-video"
   ],
   "_resolved": "https://registry.npmjs.org/@twilio/webrtc/-/webrtc-4.0.0.tgz",
-  "_shasum": "d170e1b9e2055728b94758085303dfa8e086c3c6",
-  "_spec": "@twilio/webrtc@4.0.0",
-  "_where": "/home/user/www/xys-vsp-be-video/node_modules/twilio-video",
+  "_spec": "4.0.0",
+  "_where": "/Users/user/Desktop/xyz-vsp-be-video",
   "author": {
     "name": "Manjesh Malavalli",
     "email": "mmalavalli@twilio.com"
@@ -14478,7 +14483,6 @@ module.exports={
   "bugs": {
     "url": "https://github.com/twilio/twilio-webrtc.js/issues"
   },
-  "bundleDependencies": false,
   "contributors": [
     {
       "name": "Mark Roberts",
@@ -14489,7 +14493,6 @@ module.exports={
       "email": "rrowland@twilio.com"
     }
   ],
-  "deprecated": false,
   "description": "WebRTC-related APIs and shims used by twilio-video.js",
   "devDependencies": {
     "browserify": "^14.4.0",
@@ -36538,30 +36541,34 @@ to get a new one, but we\'ve run out of retries; returning it anyway.');
 module.exports = workaround;
 },{"./audiocontext":184,"./detectsilence":185}],187:[function(require,module,exports){
 module.exports={
-  "_from": "twilio-video@^2.0.0-beta3",
+  "_args": [
+    [
+      "twilio-video@2.0.0-beta8",
+      "/Users/user/Desktop/xyz-vsp-be-video"
+    ]
+  ],
+  "_from": "twilio-video@2.0.0-beta8",
   "_id": "twilio-video@2.0.0-beta8",
   "_inBundle": false,
   "_integrity": "sha512-5qU/mfL6XzqduvwuztlbXQr6UqUAn5T2tRuIX2nO+otD8FbJd53EpDJY3KSo4V4vyDEGW424gAgD+ahwtW56ig==",
   "_location": "/twilio-video",
   "_phantomChildren": {},
   "_requested": {
-    "type": "range",
+    "type": "version",
     "registry": true,
-    "raw": "twilio-video@^2.0.0-beta3",
+    "raw": "twilio-video@2.0.0-beta8",
     "name": "twilio-video",
     "escapedName": "twilio-video",
-    "rawSpec": "^2.0.0-beta3",
+    "rawSpec": "2.0.0-beta8",
     "saveSpec": null,
-    "fetchSpec": "^2.0.0-beta3"
+    "fetchSpec": "2.0.0-beta8"
   },
   "_requiredBy": [
-    "#USER",
     "/"
   ],
   "_resolved": "https://registry.npmjs.org/twilio-video/-/twilio-video-2.0.0-beta8.tgz",
-  "_shasum": "1535a0e6d674a790bc71ad6ad11839178629f48f",
-  "_spec": "twilio-video@^2.0.0-beta3",
-  "_where": "/home/user/www/xys-vsp-be-video",
+  "_spec": "2.0.0-beta8",
+  "_where": "/Users/user/Desktop/xyz-vsp-be-video",
   "author": {
     "name": "Mark Andrus Roberts",
     "email": "mroberts@twilio.com"
@@ -36573,7 +36580,6 @@ module.exports={
   "bugs": {
     "url": "https://github.com/twilio/twilio-video.js/issues"
   },
-  "bundleDependencies": false,
   "contributors": [
     {
       "name": "Ryan Rowland",
@@ -36590,7 +36596,6 @@ module.exports={
     "ws": "^3.3.1",
     "xmlhttprequest": "^1.8.0"
   },
-  "deprecated": false,
   "description": "Twilio Video JavaScript library",
   "devDependencies": {
     "@types/express": "^4.11.0",
