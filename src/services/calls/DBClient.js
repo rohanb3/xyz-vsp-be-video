@@ -4,21 +4,25 @@ const Call = require('@/models/call');
 const getById = id => Call.findById(id).then(doc => doc.toObject());
 
 const getFilteredBy = (filter = {}, range, lazyLoad) => {
-  const filterObject = {
+  const filterObject = _removeEmptyFilter({
     ...filter,
     acceptedAt: _rangeFilter(range),
-  };
-  return Call.find(_removeEmptyFilter(filterObject))
-    .skip(Number(lazyLoad.offset))
-    .limit(Number(lazyLoad.limit));
+  });
+
+  const skip = lazyLoad && Number(lazyLoad.offset);
+  const limit = lazyLoad && Number(lazyLoad.limit);
+
+  return Call.find(filterObject)
+    .skip(skip)
+    .limit(limit);
 };
 
 const getCountFilteredBy = (filter = {}, range) => {
-  const filterObject = {
+  const filterObject = _removeEmptyFilter({
     ...filter,
     acceptedAt: _rangeFilter(range),
-  };
-  return Call.countDocuments(_removeEmptyFilter(filterObject));
+  });
+  return Call.countDocuments(filterObject);
 };
 
 const create = entity => Call.create(entity);
