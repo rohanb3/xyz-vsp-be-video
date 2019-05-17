@@ -22,14 +22,14 @@ socket(server);
 
 let connections = [];
 
-server.on('connection', (connection) => {
+server.on('connection', connection => {
   connections.push(connection);
   connection.on('close', () => {
     connections = connections.filter(curr => curr !== connection);
   });
 });
 
-process.on('unhandledRejection', (error) => {
+process.on('unhandledRejection', error => {
   logger.error('unhandledRejection', error);
 });
 
