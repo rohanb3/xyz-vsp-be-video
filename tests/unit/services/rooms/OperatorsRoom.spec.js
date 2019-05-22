@@ -258,20 +258,11 @@ describe('OperatorsRoom: ', () => {
   });
 
   describe('onOperatorFinishedCall(): ', () => {
-    it('should finish call', () => {
-      const call = {
-        id: callId,
-      };
-      return operatorsRoom.onOperatorFinishedCall(operator, call).then(() => {
-        expect(calls.finishCall).toHaveBeenCalledWith(callId, operatorIdentity);
-      });
-    });
-
-    it('should do nothing if no call was provided', () => operatorsRoom.onOperatorFinishedCall(operator).then(() => {
-      expect(calls.finishCall).not.toHaveBeenCalled();
+    it('should finish call', () => operatorsRoom.onOperatorFinishedCall(operator, callId).then(() => {
+      expect(calls.finishCall).toHaveBeenCalledWith(callId, operatorIdentity);
     }));
 
-    it('should do nothing if no call id was provided', () => operatorsRoom.onOperatorFinishedCall(operator, {}).then(() => {
+    it('should do nothing if no call was provided', () => operatorsRoom.onOperatorFinishedCall(operator).then(() => {
       expect(calls.finishCall).not.toHaveBeenCalled();
     }));
   });
@@ -438,7 +429,7 @@ describe('OperatorsRoom: ', () => {
         id: socketId,
       };
       return operatorsRoom.mapSocketIdentityToId(socket).then(() => {
-        expect(connectionsHeap.add).toHaveBeenCalledWith(operatorIdentity, socketId);
+        expect(connectionsHeap.add).toHaveBeenCalledWith(operatorIdentity, { socketId });
       });
     });
   });

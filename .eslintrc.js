@@ -1,16 +1,10 @@
 module.exports = {
-  parserOptions: {
-    parser: 'babel-eslint',
-  },
-  extends: [
-    'airbnb-base',
-    'plugin:jest/recommended',
-  ],
-  plugins: [
-    'import',
-  ],
+  parser: 'babel-eslint',
+  extends: ['eslint:recommended', 'prettier'],
+  plugins: ['import', 'prettier'],
   env: {
     node: true,
+    es6: true,
   },
   rules: {
     'no-underscore-dangle': 'off',
@@ -24,9 +18,7 @@ module.exports = {
   },
   settings: {
     'import/resolver': {
-      alias: [
-        ['@', './src'],
-      ],
+      alias: [['@', './src']],
     },
   },
-}
+};

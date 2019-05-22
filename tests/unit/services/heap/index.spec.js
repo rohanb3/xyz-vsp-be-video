@@ -30,11 +30,10 @@ describe('Heap: ', () => {
       heap.connector.add = jest.fn(() => Promise.resolve());
       pubSubChannel.publish = jest.fn();
 
-      return heap.add(id, call)
-        .then(() => {
-          expect(heap.connector.add).toHaveBeenCalledWith(id, call);
-          expect(pubSubChannel.publish).toHaveBeenCalledWith(ITEM_ADDED, call);
-        });
+      return heap.add(id, call).then(() => {
+        expect(heap.connector.add).toHaveBeenCalledWith(id, call);
+        expect(pubSubChannel.publish).toHaveBeenCalledWith(ITEM_ADDED, call);
+      });
     });
   });
 
@@ -52,11 +51,24 @@ describe('Heap: ', () => {
       heap.connector.take = jest.fn(() => Promise.resolve(call));
       pubSubChannel.publish = jest.fn();
 
-      return heap.take(id)
-        .then(() => {
-          expect(heap.connector.take).toHaveBeenCalledWith(id);
-          expect(pubSubChannel.publish).toHaveBeenCalledWith(ITEM_TAKEN, call);
-        });
+      return heap.take(id).then(() => {
+        expect(heap.connector.take).toHaveBeenCalledWith(id);
+        expect(pubSubChannel.publish).toHaveBeenCalledWith(ITEM_TAKEN, call);
+      });
+    });
+  });
+
+  describe('update(): ', () => {
+    it('should update value', () => {
+      const id = 'call42';
+      const updates = {
+        success: true,
+      };
+      heap.connector.update = jest.fn(() => Promise.resolve());
+
+      return heap
+        .update(id, updates)
+        .then(() => expect(heap.connector.update).toHaveBeenCalledWith(id, updates));
     });
   });
 

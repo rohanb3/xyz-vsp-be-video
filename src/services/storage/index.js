@@ -45,9 +45,17 @@ function take(key) {
     .then(() => result);
 }
 
+function update(key, updates = {}) {
+  if (!key) {
+    return Promise.resolve(false);
+  }
+  return get(key).then(value => set(key, { ...value, ...updates }));
+}
+
 exports.isExist = isExist;
 exports.get = get;
 exports.set = set;
 exports.take = take;
 exports.remove = remove;
+exports.update = update;
 exports.errors = errors;

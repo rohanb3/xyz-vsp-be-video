@@ -174,4 +174,42 @@ describe('HeapConnector: ', () => {
       });
     });
   });
+
+  describe('update(): ', () => {
+    it('should resolve with false if no key specified', () => {
+      connector.isExist = jest.fn(() => Promise.resolve(false));
+      storage.update = jest.fn(() => Promise.resolve());
+
+      return connector.update().then((res) => {
+        expect(res).toBeFalsy();
+        expect(connector.isExist).not.toHaveBeenCalled();
+        expect(storage.update).not.toHaveBeenCalled();
+      });
+    });
+
+    it('should reject with not found if key not exists', () => {
+      const id = 'call42';
+      connector.isExist = jest.fn(() => Promise.resolve(false));
+      storage.update = jest.fn(() => Promise.resolve());
+
+      return connector.update(id).catch((err) => {
+        expect(err).toBeInstanceOf(errors.NotFoundItemError);
+        expect(storage.update).not.toHaveBeenCalled();
+      });
+    });
+
+    it('should update value ins storage', () => {
+      const id = 'call42';
+      const updates = {
+        success: true,
+      };
+      connector.isExist = jest.fn(() => Promise.resolve(true));
+      storage.update = jest.fn(() => Promise.resolve());
+
+      return connector.update(id, updates).catch((err) => {
+        expect(err).toBeInstanceOf(errors.NotFoundItemError);
+        expect(storage.update).toHaveBeenCalledWith(id, updates);
+      });
+    });
+  });
 });

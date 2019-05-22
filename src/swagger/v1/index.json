@@ -151,6 +151,38 @@
           }
         }
       }
+    },
+    "/api/video/active-call-salesrep/{operatorId}": {
+      "get": {
+        "summary": "Get salesRep by active operator call",
+        "produces": ["application/json"],
+        "tags": ["ActiveCallSalesRep"],
+        "parameters": [
+          {
+            "name": "operatorId",
+            "description": "Operator Id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ActiveCallSalesRep"
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "404": {
+            "description": "Not found active call"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
     }
   },
   "consumes": ["application/json"],
@@ -174,6 +206,15 @@
               }
             ]
           }
+        }
+      }
+    },
+    "ActiveCallSalesRep": {
+      "type": "object",
+      "required": ["salesRepId"],
+      "properties": {
+        "salesRepId": {
+          "type": "string"
         }
       }
     }
