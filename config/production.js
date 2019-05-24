@@ -1,5 +1,6 @@
 const {
   REDIS_PASSWORD,
+  LOGSTASH_ENABLED,
   LOGSTASH_PORT,
   LOGSTASH_HOST,
   LOGSTASH_NODE_NAME,
@@ -13,7 +14,7 @@ module.exports = {
     password: REDIS_PASSWORD,
   },
   logstash: {
-    enabled: true,
+    enabled: Boolean(LOGSTASH_ENABLED),
     port: LOGSTASH_PORT,
     host: LOGSTASH_HOST,
     nodeName: LOGSTASH_NODE_NAME,
