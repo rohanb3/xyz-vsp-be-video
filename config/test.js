@@ -5,4 +5,7 @@ module.exports = {
   session: {
     enabled: false,
   },
+  logstash: {
+    enabled: false,
+  },
 };

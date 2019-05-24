@@ -12,6 +12,7 @@ const {
   AZURE_TENANT_ID,
   AZURE_CLIENT_ID,
   AZURE_POLICY_NAME,
+  LOGSTASH_ENABLED,
 } = process.env;
 
 module.exports = {
@@ -27,7 +28,7 @@ module.exports = {
     authRequired: false,
   },
   logstash: {
-    enabled: false,
+    enabled: Boolean(LOGSTASH_ENABLED),
   },
   mongoose: {
     connectionString:
