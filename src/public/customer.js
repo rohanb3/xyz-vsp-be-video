@@ -2,8 +2,10 @@
 
 const Video = require('twilio-video');
 
-const isLocal = prompt('Is local?');
-const isProd = prompt('Is production?');
+const isLocal = typeof prompt('Is local?') === 'string';
+const isDev = !isLocal && typeof prompt('Is dev?') === 'string';
+const isStage = !isLocal && !isDev && typeof prompt('Is stage?') === 'string';
+const isProd = !isLocal && !isDev && !isStage && typeof prompt('Is production?') === 'string';
 const deviceId = prompt('Tell me device id') || 'localTablet';
 const identity = prompt('Tell me your identity') || 'Joey';
 
@@ -13,12 +15,20 @@ let socketOptions = {
   transports: ['websocket'],
 };
 
-if (typeof isLocal === 'string') {
+if (isLocal) {
   socketUrl = '/customers';
   socketOptions = { transports: ['websocket'] };
 }
 
-if (typeof isProd === 'string') {
+if (isDev) {
+  socketUrl = 'wss://vsp.xyzies.ardas.biz/customers';
+}
+
+if (isStage) {
+  socketUrl = 'wss://vsp-stage.xyzies.ardas.biz/customers';
+}
+
+if (isProd) {
   socketUrl = 'wss://portal.xyzvsp.com/customers';
 }
 
