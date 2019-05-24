@@ -9,6 +9,7 @@ const {
   TWILIO_AUTH_TOKEN,
   TWILIO_API_KEY,
   TWILIO_API_SECRET,
+  AZURE_TENANT_NAME,
   AZURE_TENANT_ID,
   AZURE_CLIENT_ID,
   AZURE_POLICY_NAME,
@@ -49,7 +50,7 @@ module.exports = {
   },
   azure: {
     identityMetadata: `https://login.microsoftonline.com/${AZURE_TENANT_ID}/v2.0/.well-known/openid-configuration/`,
-    issuer: `https://devxyzies.b2clogin.com/${AZURE_TENANT_ID}/v2.0/`,
+    issuer: `https://${AZURE_TENANT_NAME}.b2clogin.com/${AZURE_TENANT_ID}/v2.0/`,
     clientID: AZURE_CLIENT_ID,
     policyName: AZURE_POLICY_NAME,
     isB2C: true,
