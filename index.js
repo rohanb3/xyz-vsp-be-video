@@ -15,7 +15,7 @@ const port = process.env.PORT || 3000;
 
 server.listen(port, () => {
   /* eslint-disable-next-line no-console */
-  console.log(`App is running at port ${port}`);
+  logger.info(`App is running at port ${port}`);
 });
 
 socket(server);

@@ -15,7 +15,7 @@ const {
   enabled: logstashEnabled,
   port,
   host,
-  node_name: nodeName,
+  nodeName,
   connectionRetries,
   connectionRetriesTimeout,
 } = config.get('logstash');

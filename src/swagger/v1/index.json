@@ -152,7 +152,7 @@
         }
       }
     },
-    "/api/video/active-call-salesrep": {
+    "/api/video/active-call-salesrep/{operatorId}": {
       "get": {
         "summary": "Get salesRep by active operator call",
         "produces": ["application/json"],

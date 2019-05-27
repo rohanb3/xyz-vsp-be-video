@@ -3,10 +3,7 @@ const router = require('express').Router();
 const callFeedbackCustomer = require('@/routes/callFeedbackCustomer');
 const callFeedbackOperator = require('@/routes/callFeedbackOperator');
 const { getCalls, getCallsValidationArray } = require('@/routes/calls');
-const {
-  getActiveCallSalesRep,
-  getActiveCallSalesRepValidationArray,
-} = require('@/routes/activeCallSalesRep');
+const { getActiveCallSalesRep } = require('@/routes/activeCallSalesRep');
 const {
   setupSwagger,
   validateRequest,
@@ -24,9 +21,6 @@ router
   .get(validateRequest(getCallsValidationArray()))
   .get(getCalls);
 
-router
-  .route('/active-call-salesrep')
-  .get(validateRequest(getActiveCallSalesRepValidationArray()))
-  .get(getActiveCallSalesRep);
+router.route('/active-call-salesrep/:operatorId').get(getActiveCallSalesRep);
 
 module.exports = router;

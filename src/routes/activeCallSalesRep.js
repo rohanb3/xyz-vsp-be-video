@@ -1,10 +1,8 @@
-const { check } = require('express-validator/check');
-
 const calls = require('@/services/calls/calls');
 const callSalesRepDTO = require('@/models/dto/call/callSalesRepDTO');
 
 async function getActiveCallSalesRep(req, res) {
-  const { operatorId } = req.query;
+  const { operatorId } = req.params;
 
   return calls
     .getActiveCall(operatorId)
@@ -14,13 +12,4 @@ async function getActiveCallSalesRep(req, res) {
     .catch(() => res.sendStatus(404));
 }
 
-function getActiveCallSalesRepValidationArray() {
-  return [
-    check('operatorId')
-      .exists()
-      .withMessage('operatorId is required'),
-  ];
-}
-
 exports.getActiveCallSalesRep = getActiveCallSalesRep;
-exports.getActiveCallSalesRepValidationArray = getActiveCallSalesRepValidationArray;
