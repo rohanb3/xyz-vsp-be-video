@@ -2,6 +2,7 @@ const {
   PORT,
   REDIS_HOST,
   REDIS_PORT,
+  REDIS_PASSWORD,
   CALLS_DB_URI,
   CALLS_DB_NAME,
   HTTP_SESSION_SECRET,
@@ -29,9 +30,10 @@ module.exports = {
     enabled: true,
   },
   redis: {
-    port: REDIS_PORT || 6379,
+    port: Number(REDIS_PORT) || 6379,
     host: REDIS_HOST || '127.0.0.1',
-    authRequired: false,
+    password: REDIS_PASSWORD,
+    authRequired: Boolean(REDIS_PASSWORD),
   },
   logstash: {
     enabled: Boolean(LOGSTASH_ENABLED),
