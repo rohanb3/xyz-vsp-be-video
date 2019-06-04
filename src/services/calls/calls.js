@@ -5,6 +5,7 @@ const { lazyLoadedData, lazyLoadDefault } = require('@/models/dto/utils');
 const callDetailDTO = require('@/models/dto/call/callDetailDTO');
 const callSalesRepDTO = require('@/models/dto/call/callSalesRepDTO');
 const { getDifferenceFromTo, formatTimeToFilter } = require('@/services/time');
+const logger = require('@/services/logger')(module);
 
 function getCallsLazy(filter, range, offset, limit) {
   const lazyLoad = {
@@ -29,11 +30,18 @@ function getCallsLazy(filter, range, offset, limit) {
 }
 
 function getActiveCall(operatorId) {
+  logger.info('Get active call for operator: ', operatorId);
   return connectionsHeap
     .get(operatorId)
-    .then(data => (data ? data.activeCallId : Promise.reject()))
+    .then(data => {
+      logger.info('Operator connection data found: ', data);
+      return data ? data.activeCallId : Promise.reject();
+    })
     .then(callId => activeCallsHeap.get(callId))
-    .then(call => (call ? callSalesRepDTO(call) : null));
+    .then(call => {
+      logger.info('Operator active call found: ', call);
+      return call ? callSalesRepDTO(call) : null;
+    });
 }
 
 function convertCallToResponseFormat(call) {
