@@ -1,6 +1,9 @@
 const callsDBClient = require('@/services/calls/DBClient');
+const { activeCallsHeap } = require('@/services/calls/activeCallsHeap');
+const { connectionsHeap } = require('@/services/connectionsHeap');
 const { lazyLoadedData, lazyLoadDefault } = require('@/models/dto/utils');
 const callDetailDTO = require('@/models/dto/call/callDetailDTO');
+const callSalesRepDTO = require('@/models/dto/call/callSalesRepDTO');
 const { getDifferenceFromTo, formatTimeToFilter } = require('@/services/time');
 
 function getCallsLazy(filter, range, offset, limit) {
@@ -25,20 +28,12 @@ function getCallsLazy(filter, range, offset, limit) {
   );
 }
 
-async function getActiveCall(operatorId) {
-  const calls = await callsDBClient.getFilteredBy({
-    acceptedBy: operatorId,
-    finishedAt: { $eq: undefined },
-  });
-
-  const isActiveCallExist = calls.length;
-
-  if (isActiveCallExist) {
-    const [call] = calls;
-    return call;
-  }
-
-  return Promise.reject();
+function getActiveCall(operatorId) {
+  return connectionsHeap
+    .get(operatorId)
+    .then(data => (data ? data.activeCallId : Promise.reject()))
+    .then(callId => activeCallsHeap.get(callId))
+    .then(call => (call ? callSalesRepDTO(call) : null));
 }
 
 function convertCallToResponseFormat(call) {
