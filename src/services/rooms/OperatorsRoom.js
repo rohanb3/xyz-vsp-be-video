@@ -65,7 +65,7 @@ class OperatorsRoom {
       .acceptCall(operator.identity)
       .then((call) => {
         const {
-          id, requestedAt, requestedBy, salesRepId,
+          id, requestedAt, requestedBy, salesRepId, callbackEnabled,
         } = call;
         const token = twilio.getToken(operator.identity, id);
         operator.emit(ROOM_CREATED, {
@@ -74,6 +74,7 @@ class OperatorsRoom {
           token,
           requestedBy,
           salesRepId,
+          callbackEnabled,
         });
       })
       .then(() => logger.debug('Customer call: accepted by operator', operator.identity))

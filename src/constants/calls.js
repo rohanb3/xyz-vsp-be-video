@@ -13,6 +13,7 @@ exports.CALLBACK_REQUESTING_FAILED = 'callback.requesting.failed';
 exports.PEER_OFFLINE = 'peer.offline';
 exports.PEER_BUSY = 'peer.busy';
 exports.CALL_FINISHED_BY_CUSTOMER = 'call.finished.by.customer';
+exports.CALLBACK_DISABLED = 'callback.disabled';
 
 exports.CALLS_PENDING = 'calls.pending';
 exports.CALLS_ACTIVE = 'calls.active';
