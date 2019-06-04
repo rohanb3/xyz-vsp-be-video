@@ -101,7 +101,8 @@ function onTokenReceived(data) {
 
 function requestConnection() {
   const salesRepId = 'd4b10474-a026-4487-87f8-96f3cdd749cb';
-  socket.emit('call.requested', { salesRepId });
+  const callbackEnabled = typeof prompt('Allow callback?') === 'string';
+  socket.emit('call.requested', { salesRepId, callbackEnabled });
   socket.once('call.enqueued', callId => {
     roomId = callId;
     document.getElementById('button-join').style.display = 'none';
