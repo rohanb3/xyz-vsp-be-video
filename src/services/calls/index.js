@@ -14,6 +14,7 @@ const callFinisher = require('@/services/calls/finisher');
 const {
   CallNotFoundError,
   PeerOfflineError,
+  CallbackDisabledError,
 } = require('@/services/calls/errors');
 const { connectionsHeap } = require('@/services/connectionsHeap');
 const {
@@ -27,12 +28,13 @@ const {
 } = require('@/constants/calls');
 const callsErrorHandler = require('@/services/calls/errorHandler');
 
-function requestCall(requestedBy, deviceId, salesRepId) {
+function requestCall({ requestedBy, deviceId, salesRepId, callbackEnabled }) {
   const call = {
     requestedBy,
     requestedAt: moment.utc().format(),
     deviceId,
     salesRepId,
+    callbackEnabled,
   };
 
   return callsDBClient
@@ -78,6 +80,7 @@ function requestCallback(callId) {
   return callsDBClient
     .getById(callId)
     .then(callFromDB => checkPeerConnection(callFromDB, call))
+    .then(checkCallbackAvailability)
     .then(callFromDB => {
       const callback = {
         requestedAt: moment.utc().format(),
@@ -96,7 +99,7 @@ function requestCallback(callId) {
       return callsDBClient.updateById(callId, { callbacks: call.callbacks });
     })
     .then(() => call)
-    .catch(err => callsErrorHandler.onRequestCallbackFailed(err, call.id));
+    .catch(err => callsErrorHandler.onRequestCallbackFailed(err, callId));
 }
 
 function acceptCallback(callId) {
@@ -200,6 +203,12 @@ function checkPeerConnection(callFromDB, call) {
     Object.assign(call, callFromDB);
     throw new PeerOfflineError(call.deviceId);
   });
+}
+
+function checkCallbackAvailability(call) {
+  return call.callbackEnabled
+    ? Promise.resolve(call)
+    : Promise.reject(new CallbackDisabledError(call.id));
 }
 
 function checkIsCallStillActive(callId) {

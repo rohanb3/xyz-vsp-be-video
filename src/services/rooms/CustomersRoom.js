@@ -52,9 +52,16 @@ class CustomersRoom {
   }
 
   onCustomerRequestedCall(customer, data) {
-    const { salesRepId } = data;
+    const { identity: requestedBy, deviceId } = customer;
+    const { salesRepId, callbackEnabled } = data;
+    const payload = {
+      requestedBy,
+      deviceId,
+      salesRepId,
+      callbackEnabled,
+    };
     return calls
-      .requestCall(customer.identity, customer.deviceId, salesRepId)
+      .requestCall(payload)
       .then((call) => {
         logger.debug('Customer call: added to pending', call);
         customer.pendingCallId = call.id;

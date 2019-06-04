@@ -1,9 +1,10 @@
-const { CALL_FINISHED_BY_CUSTOMER, CALLS_EMPTY, PEER_OFFLINE } = require('@/constants/calls');
+const {CALL_FINISHED_BY_CUSTOMER, CALLS_EMPTY, PEER_OFFLINE, CALLBACK_DISABLED } = require('@/constants/calls');
 
 const {
   CallsPendingEmptyError,
   CallNotFoundError,
   PeerOfflineError,
+  CallbackDisabledError,
 } = require('@/services/calls/errors');
 
 function getOperatorCallFailReason(err) {
@@ -19,6 +20,10 @@ function getOperatorCallFailReason(err) {
 
   if (err instanceof CallNotFoundError) {
     reason = CALL_FINISHED_BY_CUSTOMER;
+  }
+
+  if (err instanceof CallbackDisabledError) {
+    reason = CALLBACK_DISABLED;
   }
 
   return reason;
