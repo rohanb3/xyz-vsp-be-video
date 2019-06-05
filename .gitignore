@@ -2,3 +2,4 @@
 /coverage/
 .env.template
 /src/public/js/customer.js
+dump.rdb
