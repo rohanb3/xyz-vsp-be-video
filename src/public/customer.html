@@ -19,31 +19,22 @@
             <button id="button-join" class="button-join">Call</button>
             <button id="button-leave" class="button-leave">End</button>
           </div>
+          <div class="device-management-controls">
+            <label for="logged-in-user-input">Salesrep:</label>
+            <input type="text"  name="logged-in-user-input" class="input logged-in-user-input"/>
+            <label for="latiude-input">Latitude:</label>
+            <input type="text"  name="latiude-input" class="input latiude-input"/>
+            <label for="longitude-input">Longitude:</label>
+            <input type="text"  name="longitude-input" class="input longitude-input"/>
+            <button class="device-management-submit">Send</button>
+          </div>
+          <div class="power-off-display"></div>
         </div>
         <div class="control">
           <button class="ipad-button"><div class="inner-square"></div></button>
         </div>
       </div>
     </div>
-    <!--
-      <div id="remote-media"></div>
-      <div id="controls">
-        <div id="preview">
-          <p class="instructions">Hello Beautiful</p>
-          <div id="local-media"></div>
-          <button id="button-preview">Preview My Camera</button>
-        </div>
-        <div id="room-controls">
-          <p class="instructions">Room Name:</p>
-          <input id="room-name" type="text" placeholder="Enter a room name" />
-          <button id="button-join" class="button-join">Join Room</button>
-          <button id="button-leave">Leave Room</button>
-        </div>
-        <div id="log"></div>
-      </div>
-    -->
-
-    <script src="/socket.io/socket.io.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="/js/customer.js"></script>
   </body>
