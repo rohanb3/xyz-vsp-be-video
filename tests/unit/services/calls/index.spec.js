@@ -16,7 +16,7 @@ const calls = require('@/services/calls');
 const callStatusHelper = require('@/services/calls/statusHelper');
 const callFinisher = require('@/services/calls/finisher');
 const callsErrorHandler = require('@/services/calls/errorHandler');
-const { PeerOfflineError, CallNotFoundError } = require('@/services/calls/errors');
+const { PeerOfflineError, CallNotFoundError, CallbackDisabledError } = require('@/services/calls/errors');
 const {
   CALL_REQUESTED,
   CALL_ACCEPTED,
@@ -31,20 +31,32 @@ describe('calls: ', () => {
     it('should create call object, put it to DB and publish event', () => {
       const requestedBy = 'user42';
       const id = 'call42';
+      const deviceId = 'device42';
+      const salesRepId = 'salesRep42';
+      const callbackEnabled = true;
       const initialCall = {
         requestedAt: expect.any(String),
         requestedBy,
+        deviceId,
+        salesRepId,
+        callbackEnabled,
       };
       const expectedCall = {
         ...initialCall,
         id,
+      };
+      const payload = {
+        requestedBy,
+        deviceId,
+        salesRepId,
+        callbackEnabled,
       };
 
       callsDBClient.create = jest.fn(call => Promise.resolve({ ...call, id }));
       pendingCallsQueue.enqueue = jest.fn(() => Promise.resolve());
       pubSubChannel.publish = jest.fn();
 
-      return calls.requestCall(requestedBy).then((call) => {
+      return calls.requestCall(payload).then((call) => {
         expect(call).toEqual(expectedCall);
         expect(callsDBClient.create).toHaveBeenCalledWith(initialCall);
         expect(pendingCallsQueue.enqueue).toHaveBeenCalledWith(id, expectedCall);
@@ -242,10 +254,12 @@ describe('calls: ', () => {
       const callId = 'call42';
       const call = {
         id: 'call42',
+        callbackEnabled: true,
         callbacks,
       };
       const expectedCall = {
         id: 'call42',
+        callbackEnabled: true,
         callbacks: expectedCallbacks,
       };
 
@@ -266,10 +280,11 @@ describe('calls: ', () => {
       });
     });
 
-    it('should if peer is offline', () => {
+    it('should reject with error if peer is offline', () => {
       const callId = 'call42';
       const call = {
         id: 'call42',
+        callbackEnabled: true,
       };
 
       callsDBClient.getById = jest.fn(() => Promise.resolve(call));
@@ -282,6 +297,32 @@ describe('calls: ', () => {
       return calls.requestCallback(callId).then(() => {
         expect(callsErrorHandler.onRequestCallbackFailed).toHaveBeenCalledWith(
           expect.any(PeerOfflineError),
+          callId,
+        );
+        expect(callsDBClient.getById).toHaveBeenCalledWith(callId);
+        expect(pendingCallbacksHeap.add).not.toHaveBeenCalled();
+        expect(pubSubChannel.publish).not.toHaveBeenCalled();
+        expect(callsDBClient.updateById).not.toHaveBeenCalled();
+      });
+    });
+
+    it('should reject with error if callback is not allowed', () => {
+      const callId = 'call42';
+      const call = {
+        id: 'call42',
+        callbackEnabled: false,
+      };
+
+      callsDBClient.getById = jest.fn(() => Promise.resolve(call));
+      callsDBClient.updateById = jest.fn(() => Promise.resolve(call));
+      pendingCallbacksHeap.add = jest.fn(() => Promise.resolve(call));
+      connectionsHeap.isExist = jest.fn(() => Promise.resolve(true));
+      callsErrorHandler.onRequestCallbackFailed = jest.fn(() => Promise.resolve());
+      pubSubChannel.publish = jest.fn();
+
+      return calls.requestCallback(callId).then(() => {
+        expect(callsErrorHandler.onRequestCallbackFailed).toHaveBeenCalledWith(
+          expect.any(CallbackDisabledError),
           callId,
         );
         expect(callsDBClient.getById).toHaveBeenCalledWith(callId);

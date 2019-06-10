@@ -95,10 +95,18 @@ describe('CustomersRoom: ', () => {
       };
       const data = {
         salesRepId,
+        callbackEnabled: true,
+      };
+      const expectedPayload = {
+        requestedBy: customerIdentity,
+        salesRepId,
+        deviceId,
+        callbackEnabled: true,
       };
       calls.requestCall = jest.fn(() => Promise.resolve(call));
 
       return customersRoom.onCustomerRequestedCall(customer, data).then(() => {
+        expect(calls.requestCall).toHaveBeenCalledWith(expectedPayload);
         expect(customer.pendingCallId).toBe(callId);
         expect(customer.emit).toHaveBeenCalledWith(CALL_ENQUEUED, callId);
       });
@@ -107,11 +115,18 @@ describe('CustomersRoom: ', () => {
     it('should request call and notify customer about not enqueuing if error occured', () => {
       const data = {
         salesRepId,
+        callbackEnabled: true,
+      };
+      const expectedPayload = {
+        requestedBy: customerIdentity,
+        salesRepId,
+        deviceId,
+        callbackEnabled: true,
       };
       calls.requestCall = jest.fn(() => Promise.reject());
 
       return customersRoom.onCustomerRequestedCall(customer, data).then(() => {
-        expect(calls.requestCall).toHaveBeenCalledWith(customerIdentity, deviceId, salesRepId);
+        expect(calls.requestCall).toHaveBeenCalledWith(expectedPayload);
         expect(customer.pendingCallId).toBeUndefined();
         expect(customer.emit).toHaveBeenCalledWith(CALL_NOT_ENQUEUED);
       });
