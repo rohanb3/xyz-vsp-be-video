@@ -2621,7 +2621,7 @@ module.exports={
   "_args": [
     [
       "@twilio/sip.js@0.7.7",
-      "/Users/user/Desktop/xys-vsp-be-video"
+      "/Users/user/Desktop/xyz/xys-vsp-be-video"
     ]
   ],
   "_from": "@twilio/sip.js@0.7.7",
@@ -2646,7 +2646,7 @@ module.exports={
   ],
   "_resolved": "https://registry.npmjs.org/@twilio/sip.js/-/sip.js-0.7.7.tgz",
   "_spec": "0.7.7",
-  "_where": "/Users/user/Desktop/xys-vsp-be-video",
+  "_where": "/Users/user/Desktop/xyz/xys-vsp-be-video",
   "author": {
     "name": "OnSIP",
     "email": "developer@onsip.com",
@@ -17068,7 +17068,7 @@ module.exports={
   "_args": [
     [
       "@twilio/webrtc@4.0.0",
-      "/Users/user/Desktop/xys-vsp-be-video"
+      "/Users/user/Desktop/xyz/xys-vsp-be-video"
     ]
   ],
   "_from": "@twilio/webrtc@4.0.0",
@@ -17093,7 +17093,7 @@ module.exports={
   ],
   "_resolved": "https://registry.npmjs.org/@twilio/webrtc/-/webrtc-4.0.0.tgz",
   "_spec": "4.0.0",
-  "_where": "/Users/user/Desktop/xys-vsp-be-video",
+  "_where": "/Users/user/Desktop/xyz/xys-vsp-be-video",
   "author": {
     "name": "Manjesh Malavalli",
     "email": "mmalavalli@twilio.com"
@@ -47339,7 +47339,7 @@ module.exports={
   "_args": [
     [
       "twilio-video@2.0.0-beta8",
-      "/Users/user/Desktop/xys-vsp-be-video"
+      "/Users/user/Desktop/xyz/xys-vsp-be-video"
     ]
   ],
   "_from": "twilio-video@2.0.0-beta8",
@@ -47363,7 +47363,7 @@ module.exports={
   ],
   "_resolved": "https://registry.npmjs.org/twilio-video/-/twilio-video-2.0.0-beta8.tgz",
   "_spec": "2.0.0-beta8",
-  "_where": "/Users/user/Desktop/xys-vsp-be-video",
+  "_where": "/Users/user/Desktop/xyz/xys-vsp-be-video",
   "author": {
     "name": "Mark Andrus Roberts",
     "email": "mroberts@twilio.com"
