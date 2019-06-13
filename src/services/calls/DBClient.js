@@ -3,7 +3,7 @@ const Call = require('@/models/call');
 
 const getById = id => Call.findById(id).then(doc => doc.toObject());
 
-const getFilteredBy = (filter = {}, range, lazyLoad) => {
+const getFilteredBy = (filter = {}, range, sort, lazyLoad) => {
   const filterObject = _removeEmptyFilter({
     ...filter,
     acceptedAt: _rangeFilter(range),
@@ -13,6 +13,7 @@ const getFilteredBy = (filter = {}, range, lazyLoad) => {
   const limit = lazyLoad && Number(lazyLoad.limit);
 
   return Call.find(filterObject)
+    .sort(sort)
     .skip(skip)
     .limit(limit);
 };

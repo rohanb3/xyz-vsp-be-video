@@ -13,13 +13,17 @@ function getCallsLazy(filter, range, offset, limit) {
     limit: limit || lazyLoadDefault.limit,
   };
 
+  const sort = {
+    acceptedAt: -1,
+  };
+
   const rangeFilter = {
     from: formatTimeToFilter(range.from),
     to: formatTimeToFilter(range.to),
   };
 
   const getDataPromise = callsDBClient
-    .getFilteredBy(filter, rangeFilter, lazyLoad)
+    .getFilteredBy(filter, rangeFilter, sort, lazyLoad)
     .then(data => data.map(convertCallToResponseFormat));
 
   const getCountPromise = callsDBClient.getCountFilteredBy(filter, rangeFilter);
