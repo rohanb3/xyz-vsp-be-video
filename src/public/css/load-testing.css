@@ -1,0 +1,92 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto:400,500');
+
+body {
+  background-color: #eeeeee;
+  color: #4a4a4a;
+  font-family: Roboto;
+}
+
+.page-title {
+  height: 170px;
+}
+
+.page-title h1 {
+  font-size: 20px;
+  text-align: center;
+  padding: 10px;
+  height: 40px;
+  background-color: #eeeeee;
+}
+
+.testing-header {
+  display: flex;
+  flex-flow: row;
+}
+
+.testing-controls {
+  display: flex;
+  flex-flow: column;
+  justify-content: space-around;
+  align-items: center;
+  height: 100px;
+  flex: 1;
+  background-color: #a5d6a7;
+}
+
+.testing-statistics {
+  display: flex;
+  flex-flow: row;
+  justify-content: space-around;
+  flex: 3;
+}
+
+.users-statistics {
+  display: flex;
+  flex-flow: row;
+  justify-content: space-around;
+  flex: 1;
+}
+
+.customers-statistics {
+  background-color: #c5cae9;
+}
+
+.operators-statistics {
+  background-color: #c8e6c9;
+}
+
+.users-section {
+  display: flex;
+  flex-flow: row;
+  justify-content: space-around;
+}
+
+.user-section {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-around;
+  width: 45vw;
+  height: calc(100vh - 180px);
+  max-height: calc(100vh - 180px);
+  overflow-y: scroll;
+}
+
+.user-statistics-pane {
+  display: flex;
+  flex-flow: column;
+  justify-content: space-around;
+}
+
+.user-frame {
+  width: 45%;
+  max-width: 45%;
+  margin-top: 5px;
+}
+
+.customer-frame {
+  background-color: #cfd8dc;
+}
+
+.operator-frame {
+  background-color: #c8e6c9;
+}

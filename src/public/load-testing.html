@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Load testing page</title>
+    <link rel="stylesheet" href="/css/reset.css" />
+    <link rel="stylesheet" href="/css/load-testing.css" />
+  </head>
+  <body>
+    <header class="page-title">
+      <h1>This is a load testing for VSP calls</h1>
+      <section class="testing-header">
+        <section class="testing-controls">
+          <div class="testing-input-wrapper">
+            <label for="customersAmount">Customers amount:</label>
+            <input
+              type="number"
+              name="customersAmount"
+              value="200"
+              class="customers-amount"
+            />
+          </div>
+          <div class="testing-input-wrapper">
+            <label for="operatorsAmount">Operators amount:</label>
+            <input
+              type="number"
+              value="50"
+              name="operatorsAmount"
+              class="operators-amount"
+            />
+          </div>
+          <div class="testing-input-wrapper action-buttons">
+            <button type="button" name="startButton" class="start-button">
+              Start
+            </button>
+            <button type="button" name="startButton" class="stop-button">
+              Stop
+            </button>
+            <button type="button" name="resetButton" class="reset-button">
+              Reset
+            </button>
+          </div>
+        </section>
+
+        <section class="testing-statistics">
+          <section class="users-statistics customers-statistics">
+            <div class="user-statistics-pane user-type">Customers</div>
+            <div class="user-statistics-pane users-number">
+              <p class="total">Total: <span class="quantity">0</span></p>
+              <p class="authenticated">
+                Authenticated: <span class="quantity">0</span>
+              </p>
+              <p class="unauthorized">
+                Unauthorized: <span class="quantity">0</span>
+              </p>
+            </div>
+            <div class="user-statistics-pane calls-statistics">
+              <p class="waiting-for-queue-calls">
+                Waiting for queue: <span class="quantity">0</span>
+              </p>
+              <p class="pending-calls">
+                Pending: <span class="quantity">0</span>
+              </p>
+              <p class="active-calls">
+                Active: <span class="quantity">0</span>
+              </p>
+              <p class="finished-calls">
+                Finished: <span class="quantity">0</span>
+              </p>
+              <p class="missed-calls">
+                Missed: <span class="quantity">0</span>
+              </p>
+              <p class="total-calls">Total: <span class="quantity">0</span></p>
+            </div>
+          </section>
+          <section class="users-statistics operators-statistics">
+            <div class="user-statistics-pane user-type">Operators</div>
+            <div class="user-statistics-pane users-number">
+              <p class="total">Total: <span class="quantity">0</span></p>
+              <p class="authenticated">
+                Authenticated: <span class="quantity">0</span>
+              </p>
+              <p class="unauthorized">
+                Unauthorized: <span class="quantity">0</span>
+              </p>
+            </div>
+            <div class="user-statistics-pane calls-statistics"></div>
+          </section>
+        </section>
+      </section>
+    </header>
+    <main>
+      <section class="users-section">
+        <section class="user-section customers-section"></section>
+        <section class="user-section operators-section"></section>
+      </section>
+    </main>
+    <script src="/js/load-testing.js"></script>
+  </body>
+</html>
