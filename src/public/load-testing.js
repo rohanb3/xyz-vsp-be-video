@@ -138,6 +138,7 @@ function drawCustomersFrames(number) {
       iframe.contentWindow.io = io;
       iframe.contentWindow.userIdentity = `${now}-customer-${num}`;
       iframe.contentWindow.userType = CUSTOMERS;
+      iframe.contentWindow.startFirstCallAfter = number * 100;
     });
     fragment.appendChild(iframe);
     incrementField(CUSTOMERS, TOTAL);

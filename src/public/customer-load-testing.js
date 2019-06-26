@@ -4,11 +4,12 @@ const socketUrl = '/customers';
 const socketOptions = { transports: ['websocket'] };
 
 let socket = null;
-const { userIdentity: identity, userType } = window;
+const { userIdentity: identity, userType, startFirstCallAfter } = window;
 const { statisticsCallbacks } = window.parent;
 const deviceId = `device-${identity}`;
 
 window.disconnectFromSocket = disconnectFromSocket;
+document.body.style.fontSize = '10px';
 
 const colorsMap = {
   idle: '#CFD8DC',
@@ -67,7 +68,8 @@ function onAuthenticated(token) {
   globalToken = token;
   setAuthorizeStatus('Yes', globalToken);
   statisticsCallbacks.incrementAuthenticatedUsers(userType);
-  startCall();
+  console.log('startFirstCallAfter', startFirstCallAfter);
+  setTimeout(startCall, startFirstCallAfter);
 }
 
 function setAuthorizeStatus(status = 'No') {

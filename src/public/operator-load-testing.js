@@ -11,6 +11,7 @@ let isOperatorOnCall = false;
 let pendingCallsSize = 0;
 
 window.disconnectFromSocket = disconnectFromSocket;
+document.body.style.fontSize = '10px';
 
 const colorsMap = {
   idle: '#CFD8DC',
