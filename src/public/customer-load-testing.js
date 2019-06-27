@@ -4,12 +4,18 @@ const socketUrl = '/customers';
 const socketOptions = { transports: ['websocket'] };
 
 let socket = null;
-const { userIdentity: identity, userType, startFirstCallAfter } = window;
+const {
+  userIdentity: identity,
+  userType,
+  startFirstCallAfter,
+  callsPerCustomer,
+  minCallDuration,
+  maxCallDuration,
+} = window;
 const { statisticsCallbacks } = window.parent;
 const deviceId = `device-${identity}`;
 
 window.disconnectFromSocket = disconnectFromSocket;
-document.body.style.fontSize = '10px';
 
 const colorsMap = {
   idle: '#CFD8DC',
@@ -45,8 +51,13 @@ const finishedCallsIds = [];
 
 let globalToken = null;
 let callId = null;
+let startedCalls = 0;
+let requestedAtTime = null;
+let enqueuedAtTime = null;
+let acceptedAtTime = null;
+let finishedAtTime = null;
 
-setCallStatus(CALL_STATUSES.IDLE);
+setCallStatus(CALL_STATUSES.UNAUTHORIZED);
 connectToSocket();
 
 function connectToSocket() {
@@ -56,7 +67,6 @@ function connectToSocket() {
     socket = window.io(socketUrl, socketOptions);
 
     socket.on(SOCKET_EVENTS.CONNECT, () => {
-      setAuthorizeStatus('Authorizing...');
       socket.emit(SOCKET_EVENTS.AUTHENTICATION, { identity, deviceId });
       socket.on(SOCKET_EVENTS.AUTHENTICATED, onAuthenticated);
       socket.on(SOCKET_EVENTS.UNAUTHORIZED, onUnauthorized);
@@ -68,18 +78,15 @@ function onAuthenticated(token) {
   globalToken = token;
   setAuthorizeStatus('Yes', globalToken);
   statisticsCallbacks.incrementAuthenticatedUsers(userType);
-  console.log('startFirstCallAfter', startFirstCallAfter);
   setTimeout(startCall, startFirstCallAfter);
 }
 
-function setAuthorizeStatus(status = 'No') {
-  document.querySelector('.user-auth .auth-status').innerHTML = status;
+function setAuthorizeStatus() {
+  setCallStatus(CALL_STATUSES.IDLE);
 }
 
-function setCallStatus(status = 'Idle', peerId = '') {
-  const message = peerId ? `${status} witn ${peerId}` : status;
+function setCallStatus(status = 'Idle') {
   const colorsMapKey = toCamelCase(status);
-  document.querySelector('.user-status .status-title').innerHTML = message;
   document.body.style.backgroundColor = colorsMap[colorsMapKey];
 }
 
@@ -91,41 +98,54 @@ function onUnauthorized(error) {
 }
 
 function startCall() {
-  const startCallDelay = Math.ceil(Math.random() * 10000) || 3000;
-  const waitingForResponseDelay = Math.max(
-    10000,
-    Math.ceil(Math.random() * 20000)
-  );
-  const callDuration = Math.ceil(Math.random() * 20000) || 3000;
+  if (startedCalls < callsPerCustomer) {
+    startedCalls += 1;
+    const startCallDelay = Math.ceil(Math.random() * 10000) || 3000;
+    const waitingForResponseDelay = Math.max(
+      10000,
+      Math.ceil(Math.random() * 20000)
+    );
+    const callDuration = Math.max(Math.ceil(Math.random() * maxCallDuration), minCallDuration);
 
-  statisticsCallbacks.incrementWaitingForQueueCalls(userType);
+    statisticsCallbacks.incrementWaitingForQueueCalls(userType);
 
-  setTimeout(() => {
-    const missCallTimer = setTimeout(makeCallMissed, waitingForResponseDelay);
-    setCallStatus(CALL_STATUSES.CALL_REQUESTED);
-    socket.emit(SOCKET_EVENTS.CALL_REQUESTED, {
-      salesRepId: 'salesrep42',
-      callbackEnabled: Math.random > 0.4,
-    });
-    socket.once(SOCKET_EVENTS.CALL_ENQUEUED, onCallEnqueued);
-    socket.once(SOCKET_EVENTS.CALL_NOT_ENQUEUED, onCallNotEnqueued);
-    socket.once(SOCKET_EVENTS.CALL_ACCEPTED, ({ roomId, operatorId }) => {
-      callId = roomId;
-      clearTimeout(missCallTimer);
-      setCallStatus(CALL_STATUSES.ON_CALL, operatorId);
-      setTimeout(makeCallFinished, callDuration);
-      socket.once(SOCKET_EVENTS.CALL_FINISHED, onCallFinishedByOperator);
-      statisticsCallbacks.decrementPendingCalls(userType);
-      statisticsCallbacks.incrementActiveCalls(userType);
-    });
-  }, startCallDelay);
+    setTimeout(() => {
+      const missCallTimer = setTimeout(makeCallMissed, waitingForResponseDelay);
+      requestedAtTime = getNowSeconds();
+      setCallStatus(CALL_STATUSES.CALL_REQUESTED);
+      socket.emit(SOCKET_EVENTS.CALL_REQUESTED, {
+        salesRepId: 'salesrep42',
+        callbackEnabled: Math.random > 0.4,
+      });
+      socket.once(SOCKET_EVENTS.CALL_ENQUEUED, onCallEnqueued);
+      socket.once(SOCKET_EVENTS.CALL_NOT_ENQUEUED, onCallNotEnqueued);
+      socket.once(SOCKET_EVENTS.CALL_ACCEPTED, ({ roomId, operatorId }) => {
+        callId = roomId;
+        acceptedAtTime = getNowSeconds();
+        clearTimeout(missCallTimer);
+        setCallStatus(CALL_STATUSES.ON_CALL, operatorId);
+        setPeerId(operatorId);
+        const finishCallTimer = setTimeout(() => {
+          socket.removeListener(SOCKET_EVENTS.CALL_FINISHED, finishCallByCustomerListener);
+          makeCallFinished();
+        }, callDuration);
+        const finishCallByCustomerListener = () => onCallFinishedByOperator(finishCallTimer);
+        socket.once(SOCKET_EVENTS.CALL_FINISHED, finishCallByCustomerListener);
+        statisticsCallbacks.decrementPendingCalls(userType);
+        statisticsCallbacks.incrementActiveCalls(userType);
+        statisticsCallbacks.updateCallAcceptingTime(acceptedAtTime - enqueuedAtTime);
+      });
+    }, startCallDelay);
+  }
 }
 
 function onCallEnqueued(id) {
   callId = id;
+  enqueuedAtTime = getNowSeconds();
   setCallStatus(CALL_STATUSES.CALL_ENQUEUED);
   statisticsCallbacks.decrementWaitingForQueueCalls(userType);
   statisticsCallbacks.incrementPendingCalls(userType);
+  statisticsCallbacks.updateCallEnqueueingTime(enqueuedAtTime - requestedAtTime);
 }
 
 function onCallNotEnqueued() {
@@ -145,9 +165,11 @@ function makeCallMissed() {
 
 function makeCallFinished() {
   if (!finishedCallsIds.includes(callId)) {
+    finishedAtTime = getNowSeconds();
     finishedCallsIds.push(callId);
     statisticsCallbacks.decrementActiveCalls(userType);
     statisticsCallbacks.incrementFinishedCalls(userType);
+    statisticsCallbacks.updateCallDurationTime(finishedAtTime - acceptedAtTime);
   }
   finishCall();
 }
@@ -157,17 +179,26 @@ function finishCall() {
     socket.emit(SOCKET_EVENTS.CALL_FINISHED, { id: callId });
     callId = null;
   }
-  setCallStatus(CALL_STATUSES.IDLE);
+  makeCustomerIdle();
 }
 
-function onCallFinishedByOperator() {
+function onCallFinishedByOperator(finishCallTimer) {
+  clearTimeout(finishCallTimer);
   if (!finishedCallsIds.includes(callId)) {
+    finishedAtTime = getNowSeconds();
     finishedCallsIds.push(callId);
     statisticsCallbacks.decrementActiveCalls(userType);
     statisticsCallbacks.incrementFinishedCalls(userType);
+    statisticsCallbacks.updateCallDurationTime(finishedAtTime - acceptedAtTime);
+    makeCustomerIdle();
   }
   callId = null;
+}
+
+function makeCustomerIdle() {
+  setPeerId();
   setCallStatus(CALL_STATUSES.IDLE);
+  startCall();
 }
 
 function disconnectFromSocket() {
@@ -182,6 +213,19 @@ function toCamelCase(str) {
 
 function getUserNumber(id = '') {
   return Number(id.match(/[0-9]*$/)[0]);
+}
+
+function setPeerId(idRaw) {
+  if (idRaw) {
+    const peerId = getUserNumber(idRaw);
+    document.querySelector('.peer-id').innerHTML = `${peerId}`;
+  } else {
+    document.querySelector('.peer-id').innerHTML = '';
+  }
+}
+
+function getNowSeconds() {
+  return Date.now() / 1000;
 }
 
 window.addEventListener('beforeunload', disconnectFromSocket);

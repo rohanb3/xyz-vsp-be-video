@@ -4,14 +4,13 @@ const socketUrl = '/operators';
 const socketOptions = { transports: ['websocket'] };
 
 let socket = null;
-const { userIdentity: identity, userType } = window;
+const { userIdentity: identity, userType, minCallDuration, maxCallDuration } = window;
 const { statisticsCallbacks } = window.parent;
 
 let isOperatorOnCall = false;
 let pendingCallsSize = 0;
 
 window.disconnectFromSocket = disconnectFromSocket;
-document.body.style.fontSize = '10px';
 
 const colorsMap = {
   idle: '#CFD8DC',
@@ -49,7 +48,7 @@ const SOCKET_EVENTS = {
 
 let callId = null;
 
-setCallStatus(CALL_STATUSES.IDLE);
+setCallStatus(CALL_STATUSES.UNAUTHORIZED);
 connectToSocket();
 
 function connectToSocket() {
@@ -59,7 +58,6 @@ function connectToSocket() {
     socket = window.io(socketUrl, socketOptions);
 
     socket.on(SOCKET_EVENTS.CONNECT, () => {
-      setAuthorizeStatus('Authorizing...');
       socket.emit(SOCKET_EVENTS.AUTHENTICATION, { identity });
       socket.on(SOCKET_EVENTS.AUTHENTICATED, onAuthenticated);
       socket.on(SOCKET_EVENTS.UNAUTHORIZED, onUnauthorized);
@@ -68,25 +66,22 @@ function connectToSocket() {
 }
 
 function onAuthenticated() {
-  setAuthorizeStatus('Yes');
+  setAuthorizeStatus();
   statisticsCallbacks.incrementAuthenticatedUsers(userType);
   socket.on(SOCKET_EVENTS.CALLS_CHANGED, onCallsChanged);
 }
 
-function setAuthorizeStatus(status = 'No') {
-  document.querySelector('.user-auth .auth-status').innerHTML = status;
+function setAuthorizeStatus() {
+  setCallStatus(CALL_STATUSES.IDLE);
 }
 
-function setCallStatus(status = 'Idle', peerId = '') {
-  const message = peerId ? `${status} witn ${peerId}` : status;
+function setCallStatus(status = 'Idle') {
   const colorsMapKey = toCamelCase(status);
-  document.querySelector('.user-status .status-title').innerHTML = message;
   document.body.style.backgroundColor = colorsMap[colorsMapKey];
 }
 
 function onUnauthorized(error) {
   console.error(`Operator ${identity} was not authorized: ${error}`);
-  setAuthorizeStatus('No');
   setCallStatus(CALL_STATUSES.UNAUTHORIZED);
   statisticsCallbacks.incrementUnauthorizedUsers(userType);
 }
@@ -116,21 +111,21 @@ function acceptCall() {
   socket.once(SOCKET_EVENTS.CALL_ACCEPTING_FAILED, onCallAcceptingFailed);
 }
 
-function updatePendingCallsData({ peak, size } = {}) {
+function updatePendingCallsData({ size } = {}) {
   pendingCallsSize = size || 0;
-  document.querySelector('.calls-info .calls-size').innerHTML = size || 0;
-  if (peak && peak.requestedAt) {
-    document.querySelector('.calls-info .oldest-call').innerHTML =
-      peak.requestedAt || 0;
-  }
 }
 
 function onRoomCreated(call) {
   callId = call.id;
-  const callFinishDelay = Math.ceil(Math.random() * 10000) || 3000;
-  const callFinishingTimer = setTimeout(finishCall, callFinishDelay);
-  setCallStatus(CALL_STATUSES.ON_CALL, call.requestedBy);
-  socket.once(SOCKET_EVENTS.CALL_FINISED_BY_CUSTOMER, () => {
+  let callFinishingTimer = null;
+  if (Math.random() > 0.9) {
+    const callDuration = Math.max(Math.ceil(Math.random() * maxCallDuration), minCallDuration);
+    callFinishingTimer = setTimeout(finishCall, callDuration);
+  }
+
+  setCallStatus(CALL_STATUSES.ON_CALL);
+  setPeerId(call.requestedBy);
+  socket.once(SOCKET_EVENTS.CALL_FINISHED, () => {
     clearTimeout(callFinishingTimer);
     makeOperatorIdle();
   });
@@ -146,12 +141,12 @@ function onCallAcceptingFailed(data) {
 
 function finishCall() {
   socket.emit(SOCKET_EVENTS.CALL_FINISHED, callId);
-  setCallStatus(CALL_STATUSES.IDLE);
-  isOperatorOnCall = false;
+  makeOperatorIdle();
 }
 
 function makeOperatorIdle() {
   isOperatorOnCall = false;
+  setPeerId();
   setCallStatus(CALL_STATUSES.IDLE);
   acceptCallIfPossible();
 }
@@ -164,6 +159,15 @@ function toCamelCase(str) {
 
 function getUserNumber(id = '') {
   return Number(id.match(/[0-9]*$/)[0]);
+}
+
+function setPeerId(idRaw) {
+  if (idRaw) {
+    const peerId = getUserNumber(idRaw);
+    document.querySelector('.peer-id').innerHTML = `${peerId}`;
+  } else {
+    document.querySelector('.peer-id').innerHTML = '';
+  }
 }
 
 window.addEventListener('beforeunload', disconnectFromSocket);
