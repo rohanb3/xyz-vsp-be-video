@@ -8476,11 +8476,13 @@ const MIN_DURATION = 'minDuration';
 const MAX_DURATION = 'maxDuration';
 const AVERAGE_DURATION = 'averageDuration';
 const TOTAL_DURATION = 'totalDuration';
+const MAX_IN_QUEUE = 'maxInQueue';
 
 const defaultStatistics = {
   [QUEUE]: {
     [PENDING_IN_QUEUE]: 0,
     [OLDEST_IN_QUEUE]: 0,
+    [MAX_IN_QUEUE]: 0,
   },
   [CUSTOMERS]: {
     [TOTAL]: 0,
@@ -8510,6 +8512,9 @@ const defaultStatistics = {
     [UNAUTHORIZED]: 0,
     [ACTIVE_CALLS]: 0,
     [FINISHED_CALLS]: 0,
+    [MIN_ACCEPTING_TIME]: 0,
+    [MAX_ACCEPTING_TIME]: 0,
+    [AVERAGE_ACCEPTING_TIME]: 0,
   },
 };
 
@@ -8568,20 +8573,24 @@ function onAuthenticated() {
 function onUnauthorized() {}
 
 function onCallsChanged({ size = 0, peak } = {}) {
+  const prevMaxInQueue = getField(QUEUE, MAX_IN_QUEUE);
+
   setField(QUEUE, PENDING_IN_QUEUE, size);
   drawQueueStatisticsField(PENDING_IN_QUEUE);
   if (peak && peak.requestedAt) {
     setField(QUEUE, OLDEST_IN_QUEUE, peak.requestedAt);
     drawQueueStatisticsField(OLDEST_IN_QUEUE);
   }
+
+  if (size > prevMaxInQueue) {
+    setField(QUEUE, MAX_IN_QUEUE, size);
+    drawQueueStatisticsField(MAX_IN_QUEUE);
+  }
 }
 
 function subscribeToControls() {
   document.querySelector('.start-button').addEventListener('click', startTest);
   document.querySelector('.clear-button').addEventListener('click', clearTest);
-  // document
-  //   .querySelector('.reset-button')
-  //   .addEventListener('click', resetStatistics);
 }
 
 function startTest() {
@@ -8659,7 +8668,7 @@ function drawCustomersFrames(number, callsPerCustomer, minCallDuration, maxCallD
         <body>
           <p style="margin: 0; text-align: center">${num}</p>
           <p style="margin: 0; text-align: center" class="peer-id"></p>
-          <script src="/customer-load-testing.js"></script>
+          <script src="/js/customer-load-testing.js"></script>
         </body>
       </html>
     `;
@@ -8695,7 +8704,7 @@ function drawOperatorsFrames(number, minCallDuration, maxCallDuration) {
         <body>
           <p style="margin: 0; text-align: center">${num}</p>
           <p style="margin: 0; text-align: center" class="peer-id"></p>
-          <script src="/operator-load-testing.js"></script>
+          <script src="/js/operator-load-testing.js"></script>
         </body>
       </html>
     `;
@@ -8855,19 +8864,19 @@ function updateCallEnqueueingTime(value = 0) {
 
 function updateCallAcceptingTime(value = 0) {
   if (checkMinAcceptingTime(value)) {
-    drawCustomerStatisticsField(MIN_ACCEPTING_TIME);
+    drawOperatorStatisticsField(MIN_ACCEPTING_TIME);
   }
 
   if (checkMaxAcceptingTime(value)) {
-    drawCustomerStatisticsField(MAX_ACCEPTING_TIME);
+    drawOperatorStatisticsField(MAX_ACCEPTING_TIME);
   }
 
   totalAcceptingTime += value;
 
   const totalCalls = getField(CUSTOMERS, TOTAL_CALLS);
   const average = (Number(totalAcceptingTime) / totalCalls).toFixed(2);
-  setField(CUSTOMERS, AVERAGE_ACCEPTING_TIME, average);
-  drawCustomerStatisticsField(AVERAGE_ACCEPTING_TIME);
+  setField(OPERATORS, AVERAGE_ACCEPTING_TIME, average);
+  drawOperatorStatisticsField(AVERAGE_ACCEPTING_TIME);
 }
 
 function updateCallDurationTime(value = 0) {
@@ -8954,7 +8963,7 @@ function checkMaxEnqueueingTime(value = 0) {
 function checkMinAcceptingTime(value = 0) {
   if (value < minAcceptingTime) {
     minAcceptingTime = value;
-    setField(CUSTOMERS, MIN_ACCEPTING_TIME, value.toFixed(2));
+    setField(OPERATORS, MIN_ACCEPTING_TIME, value.toFixed(2));
     return true;
   }
   return false;
@@ -8963,7 +8972,7 @@ function checkMinAcceptingTime(value = 0) {
 function checkMaxAcceptingTime(value = 0) {
   if (value > maxAcceptingTime) {
     maxAcceptingTime = value;
-    setField(CUSTOMERS, MAX_ACCEPTING_TIME, value.toFixed(2));
+    setField(OPERATORS, MAX_ACCEPTING_TIME, value.toFixed(2));
     return true;
   }
   return false;

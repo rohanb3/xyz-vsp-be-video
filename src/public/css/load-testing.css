@@ -89,6 +89,10 @@ body {
   background-color: #E1F5FE;
 }
 
+.queue-statistics-pane {
+  text-align: center;
+}
+
 .pending-in-queue .quantity {
   font-size: 30px;
 }

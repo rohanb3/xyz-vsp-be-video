@@ -57,8 +57,7 @@ function getRoom(identity) {
 }
 
 function ensureRoom(identity) {
-  return {};
-  // return getRoom(identity).then(room => room || createRoom(identity));
+  return getRoom(identity).then(room => room || createRoom(identity));
 }
 
 exports.getToken = getToken;

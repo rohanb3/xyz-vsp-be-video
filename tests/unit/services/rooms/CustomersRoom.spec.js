@@ -2,6 +2,7 @@ jest.mock('socketio-auth', () => () => {});
 jest.mock('@/services/calls', () => ({
   subscribeToCallAccepting: jest.fn(() => {}),
   subscribeToCallbackRequesting: jest.fn(() => {}),
+  subscribeToCallFinishing: jest.fn(() => {}),
   requestCall: jest.fn(() => Promise.resolve()),
   acceptCallback: jest.fn(() => Promise.resolve({})),
   finishCall: jest.fn(() => Promise.resolve()),
