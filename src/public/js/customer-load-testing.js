@@ -73,26 +73,6 @@ function connectToSocket() {
       socket.on(SOCKET_EVENTS.AUTHENTICATED, onAuthenticated);
       socket.on(SOCKET_EVENTS.UNAUTHORIZED, onUnauthorized);
     });
-
-    socket.on('error', (error) => {
-      console.log('Customer error:', error, identity);
-    });
-
-    socket.on('connect_error’', (error) => {
-      console.log('Customer connect_error’:', error, identity);
-    });
-
-    socket.on('connect_timeout', (error) => {
-      console.log('Customer connect_timeout:', error, identity);
-    });
-
-    socket.on('reconnect_error', (error) => {
-      console.log('Customer reconnect_error:', error, identity);
-    });
-
-    socket.on('reconnect_failed', (error) => {
-      console.log('Customer reconnect_failed:', error, identity);
-    });
   }, connectDelay);
 }
 
