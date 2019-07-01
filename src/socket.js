@@ -9,7 +9,7 @@ const {
 } = require('@/services/rooms');
 
 const socket = server => {
-  const io = socketIO(server, { upgrade: false, transports: ['websocket'] });
+  const io = socketIO(server, { transports: ['websocket'] });
   const ioAdapter = createAdapter();
 
   io.adapter(ioAdapter);
