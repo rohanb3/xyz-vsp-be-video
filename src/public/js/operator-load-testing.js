@@ -2,10 +2,16 @@
 /* eslint-disable no-console */
 
 const socketUrl = '/operators';
-const socketOptions = { transports: ['websocket'] };
 
 let socket = null;
-const { userIdentity: identity, userType, minCallDuration, maxCallDuration } = window;
+const {
+  userIdentity: identity,
+  userType,
+  minCallDuration,
+  maxCallDuration,
+  socketOptions,
+  connectionDelay,
+} = window;
 const { statisticsCallbacks } = window.parent;
 
 let isOperatorOnCall = false;
@@ -57,7 +63,7 @@ connectToSocket();
 
 function connectToSocket() {
   const userNumber = getUserNumber(identity);
-  const connectDelay = userNumber * 100;
+  const connectDelay = userNumber * connectionDelay;
   setTimeout(() => {
     socket = window.io(socketUrl, socketOptions);
 
@@ -110,6 +116,7 @@ function acceptCallIfPossible() {
 function acceptCall() {
   isOperatorOnCall = true;
   acceptedAtTime = getNowSeconds();
+  statisticsCallbacks.incrementOperatorsAcceptedCalls();
   setCallStatus(CALL_STATUSES.CALL_ACCEPTED);
   socket.emit(SOCKET_EVENTS.CALL_ACCEPTED);
   socket.once(SOCKET_EVENTS.ROOM_CREATED, onRoomCreated);
