@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 
 const socketUrl = '/customers';
-const socketOptions = { transports: ['websocket'] };
 
 let socket = null;
 const {
@@ -11,6 +10,8 @@ const {
   callsPerCustomer,
   minCallDuration,
   maxCallDuration,
+  socketOptions,
+  connectionDelay,
 } = window;
 const { statisticsCallbacks } = window.parent;
 const deviceId = `device-${identity}`;
@@ -62,7 +63,7 @@ connectToSocket();
 
 function connectToSocket() {
   const userNumber = getUserNumber(identity);
-  const connectDelay = userNumber * 100;
+  const connectDelay = userNumber * connectionDelay;
   setTimeout(() => {
     socket = window.io(socketUrl, socketOptions);
 

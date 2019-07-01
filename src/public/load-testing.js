@@ -1,11 +1,17 @@
 /* eslint-disable no-console */
 const io = require('socket.io-client');
 
+const isLocal = typeof window.prompt('Is local?') === 'string';
 const now = Date.now();
 const socketUrl = '/operators';
 const socketOptions = { transports: ['websocket'] };
-const socket = io(socketUrl, socketOptions);
+
+if (!isLocal) {
+  socketOptions.path = '/api/video/socket.io';
+}
+
 const identity = `${now}-operator-0`;
+const socket = io(socketUrl, socketOptions);
 
 const SOCKET_EVENTS = {
   CONNECT: 'connect',
@@ -27,6 +33,7 @@ const WAITING_FOR_QUEUE_CALLS = 'waitingForQueueCalls';
 const PENDING_CALLS = 'pendingCalls';
 const NOT_ENQUEUED_CALLS = 'notEnqueuedCalls';
 const ACTIVE_CALLS = 'activeCalls';
+const MAX_ACTIVE_CALLS = 'maxActiveCalls';
 const FINISHED_CALLS = 'finishedCalls';
 const MISSED_CALLS = 'missedCalls';
 const TOTAL_CALLS = 'totalCalls';
@@ -58,6 +65,7 @@ const defaultStatistics = {
     [NOT_ENQUEUED_CALLS]: 0,
     [PENDING_CALLS]: 0,
     [ACTIVE_CALLS]: 0,
+    [MAX_ACTIVE_CALLS]: 0,
     [FINISHED_CALLS]: 0,
     [MISSED_CALLS]: 0,
     [TOTAL_CALLS]: 0,
@@ -81,6 +89,7 @@ const defaultStatistics = {
     [MIN_ACCEPTING_TIME]: 0,
     [MAX_ACCEPTING_TIME]: 0,
     [AVERAGE_ACCEPTING_TIME]: 0,
+    [TOTAL_CALLS]: 0,
   },
 };
 
@@ -107,6 +116,7 @@ const statisticsCallbacks = {
   updateCallEnqueueingTime,
   updateCallAcceptingTime,
   updateCallDurationTime,
+  incrementOperatorsAcceptedCalls,
 };
 
 let minEnqueueingTime = Infinity;
@@ -200,12 +210,15 @@ function preparePage() {
     (Number(document.querySelector('.min-call-duration').value) || 3) * 1000;
   const maxCallDuration =
     (Number(document.querySelector('.max-call-duration').value) || 5) * 1000;
-  prepareCustomers(minCallDuration, maxCallDuration);
-  prepareOperators(minCallDuration, maxCallDuration);
+  const connectionDelay =
+    (Number(document.querySelector('.connection-delay').value) || 0.1) * 1000;
+
+  prepareCustomers(minCallDuration, maxCallDuration, connectionDelay);
+  prepareOperators(minCallDuration, maxCallDuration, connectionDelay);
   drawStatisitics();
 }
 
-function prepareCustomers(minCallDuration, maxCallDuration) {
+function prepareCustomers(minCallDuration, maxCallDuration, connectionDelay) {
   const customersNumber =
     Number(document.querySelector('.customers-amount').value) || 200;
   const callsPerCustomer =
@@ -213,16 +226,16 @@ function prepareCustomers(minCallDuration, maxCallDuration) {
 
   totalCallsForTest = customersNumber * callsPerCustomer;
 
-  drawCustomersFrames(customersNumber, callsPerCustomer, minCallDuration, maxCallDuration);
+  drawCustomersFrames(customersNumber, callsPerCustomer, minCallDuration, maxCallDuration, connectionDelay);
 }
 
-function prepareOperators(minCallDuration, maxCallDuration) {
+function prepareOperators(minCallDuration, maxCallDuration, connectionDelay) {
   const operatorsNumber =
     Number(document.querySelector('.operators-amount').value) || 50;
-  drawOperatorsFrames(operatorsNumber, minCallDuration, maxCallDuration);
+  drawOperatorsFrames(operatorsNumber, minCallDuration, maxCallDuration, connectionDelay);
 }
 
-function drawCustomersFrames(number, callsPerCustomer, minCallDuration, maxCallDuration) {
+function drawCustomersFrames(number, callsPerCustomer, minCallDuration, maxCallDuration, connectionDelay) {
   const parent = document.querySelector('.customers-section');
   const fragment = document.createDocumentFragment();
 
@@ -244,9 +257,11 @@ function drawCustomersFrames(number, callsPerCustomer, minCallDuration, maxCallD
     iframe.srcdoc = frameContent;
     setTimeout(() => {
       iframe.contentWindow.io = io;
+      iframe.contentWindow.socketOptions = socketOptions;
+      iframe.contentWindow.connectionDelay = connectionDelay;
       iframe.contentWindow.userIdentity = `${now}-customer-${num}`;
       iframe.contentWindow.userType = CUSTOMERS;
-      iframe.contentWindow.startFirstCallAfter = number * 100;
+      iframe.contentWindow.startFirstCallAfter = number * connectionDelay;
       iframe.contentWindow.callsPerCustomer = callsPerCustomer;
       iframe.contentWindow.minCallDuration = minCallDuration;
       iframe.contentWindow.maxCallDuration = maxCallDuration;
@@ -258,7 +273,7 @@ function drawCustomersFrames(number, callsPerCustomer, minCallDuration, maxCallD
   parent.appendChild(fragment);
 }
 
-function drawOperatorsFrames(number, minCallDuration, maxCallDuration) {
+function drawOperatorsFrames(number, minCallDuration, maxCallDuration, connectionDelay) {
   const parent = document.querySelector('.operators-section');
   const fragment = document.createDocumentFragment();
 
@@ -280,6 +295,8 @@ function drawOperatorsFrames(number, minCallDuration, maxCallDuration) {
     iframe.srcdoc = frameContent;
     setTimeout(() => {
       iframe.contentWindow.io = io;
+      iframe.contentWindow.socketOptions = socketOptions;
+      iframe.contentWindow.connectionDelay = connectionDelay;
       iframe.contentWindow.userIdentity = `${now}-operator-${num}`;
       iframe.contentWindow.userType = OPERATORS;
       iframe.contentWindow.minCallDuration = minCallDuration;
@@ -392,6 +409,14 @@ function decrementPendingCalls(userType) {
 function incrementActiveCalls(userType) {
   incrementField(userType, ACTIVE_CALLS);
   getStatisticsFieldDrawer(userType)(ACTIVE_CALLS);
+
+  const currentActiveCalls = getField(userType, ACTIVE_CALLS);
+  const maxActiveCalls = getField(userType, MAX_ACTIVE_CALLS);
+
+  if (currentActiveCalls > maxActiveCalls) {
+    setField(userType, MAX_ACTIVE_CALLS, currentActiveCalls);
+    getStatisticsFieldDrawer(userType)(MAX_ACTIVE_CALLS);
+  }
 }
 
 function decrementActiveCalls(userType) {
@@ -411,6 +436,10 @@ function incrementMissedCalls(userType) {
   getStatisticsFieldDrawer(userType)(MISSED_CALLS);
 }
 
+function incrementOperatorsAcceptedCalls() {
+  incrementTotalCalls(OPERATORS);
+}
+
 function updateCallEnqueueingTime(value = 0) {
   if (checkMinEnqueueingTime(value)) {
     drawCustomerStatisticsField(MIN_ENQUEUEING_TIME);
@@ -420,10 +449,10 @@ function updateCallEnqueueingTime(value = 0) {
     drawCustomerStatisticsField(MAX_ENQUEUEING_TIME);
   }
 
-  totalEnqueueingTime += 0;
+  totalEnqueueingTime += value;
 
   const totalCalls = getField(CUSTOMERS, TOTAL_CALLS);
-  const average = (Number(totalEnqueueingTime) / totalCalls).toFixed(2);
+  const average = totalCalls ? (Number(totalEnqueueingTime) / totalCalls).toFixed(2) : 0;
   setField(CUSTOMERS, AVERAGE_ENQUEUEING_TIME, average);
   drawCustomerStatisticsField(AVERAGE_ENQUEUEING_TIME);
 }
@@ -439,8 +468,8 @@ function updateCallAcceptingTime(value = 0) {
 
   totalAcceptingTime += value;
 
-  const totalCalls = getField(CUSTOMERS, TOTAL_CALLS);
-  const average = (Number(totalAcceptingTime) / totalCalls).toFixed(2);
+  const totalCalls = getField(OPERATORS, TOTAL_CALLS);
+  const average = totalCalls ? (Number(totalAcceptingTime) / totalCalls).toFixed(2) : 0;
   setField(OPERATORS, AVERAGE_ACCEPTING_TIME, average);
   drawOperatorStatisticsField(AVERAGE_ACCEPTING_TIME);
 }
@@ -457,7 +486,7 @@ function updateCallDurationTime(value = 0) {
   totalDuration += value;
 
   const totalCalls = getField(CUSTOMERS, TOTAL_CALLS);
-  const average = (Number(totalDuration) / totalCalls).toFixed(2);
+  const average = totalCalls ? (Number(totalDuration) / totalCalls).toFixed(2) : 0;
   setField(CUSTOMERS, AVERAGE_DURATION, average);
   setField(CUSTOMERS, TOTAL_DURATION, totalDuration.toFixed(2));
   drawCustomerStatisticsField(AVERAGE_DURATION);
@@ -570,6 +599,14 @@ function getDefaultStatistics() {
   };
 }
 
+function disconnectFromSocket() {
+  if (socket) {
+    socket.disconnect();
+  }
+}
+
 function camelToKebab(str) {
   return str.replace(/[A-Z]/g, match => `-${match.toLowerCase()}`);
 }
+
+window.addEventListener('beforeunload', disconnectFromSocket);

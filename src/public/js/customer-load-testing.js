@@ -2,7 +2,6 @@
 /* eslint-disable no-console */
 
 const socketUrl = '/customers';
-const socketOptions = { transports: ['websocket'] };
 
 let socket = null;
 const {
@@ -12,6 +11,8 @@ const {
   callsPerCustomer,
   minCallDuration,
   maxCallDuration,
+  socketOptions,
+  connectionDelay,
 } = window;
 const { statisticsCallbacks } = window.parent;
 const deviceId = `device-${identity}`;
@@ -63,7 +64,7 @@ connectToSocket();
 
 function connectToSocket() {
   const userNumber = getUserNumber(identity);
-  const connectDelay = userNumber * 100;
+  const connectDelay = userNumber * connectionDelay;
   setTimeout(() => {
     socket = window.io(socketUrl, socketOptions);
 
@@ -71,6 +72,26 @@ function connectToSocket() {
       socket.emit(SOCKET_EVENTS.AUTHENTICATION, { identity, deviceId });
       socket.on(SOCKET_EVENTS.AUTHENTICATED, onAuthenticated);
       socket.on(SOCKET_EVENTS.UNAUTHORIZED, onUnauthorized);
+    });
+
+    socket.on('error', (error) => {
+      console.log('Customer error:', error, identity);
+    });
+
+    socket.on('connect_error’', (error) => {
+      console.log('Customer connect_error’:', error, identity);
+    });
+
+    socket.on('connect_timeout', (error) => {
+      console.log('Customer connect_timeout:', error, identity);
+    });
+
+    socket.on('reconnect_error', (error) => {
+      console.log('Customer reconnect_error:', error, identity);
+    });
+
+    socket.on('reconnect_failed', (error) => {
+      console.log('Customer reconnect_failed:', error, identity);
     });
   }, connectDelay);
 }
