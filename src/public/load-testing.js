@@ -261,7 +261,7 @@ function drawCustomersFrames(number, callsPerCustomer, minCallDuration, maxCallD
       iframe.contentWindow.connectionDelay = connectionDelay;
       iframe.contentWindow.userIdentity = `${now}-customer-${num}`;
       iframe.contentWindow.userType = CUSTOMERS;
-      iframe.contentWindow.startFirstCallAfter = number * connectionDelay;
+      iframe.contentWindow.startFirstCallAfter = (number - i) * connectionDelay;
       iframe.contentWindow.callsPerCustomer = callsPerCustomer;
       iframe.contentWindow.minCallDuration = minCallDuration;
       iframe.contentWindow.maxCallDuration = maxCallDuration;
