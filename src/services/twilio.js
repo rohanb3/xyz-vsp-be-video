@@ -26,7 +26,7 @@ function getToken(identity, roomName = '') {
     TWILIO_ACCOUNT_SID,
     TWILIO_API_KEY,
     TWILIO_API_SECRET,
-    tokenOptions,
+    tokenOptions
   );
 
   token.addGrant(grant);
@@ -51,7 +51,9 @@ function getRoom(identity) {
   //   client.video.rooms.each({ uniqueName: identity }, resolve);
   // });
   // return client.video.rooms(identity).fetch().then(logger.debug).catch(console.error);
-  return client.video.rooms.list().then((rooms = []) => rooms.find(r => r.uniqueName === identity));
+  return client.video.rooms
+    .list()
+    .then((rooms = []) => rooms.find(r => r.uniqueName === identity));
 }
 
 function ensureRoom(identity) {

@@ -37,6 +37,7 @@ class CustomersRoom {
       postAuthenticate: this.onCustomerAuthenticated.bind(this),
     });
     calls.subscribeToCallAccepting(this.onCallAccepted.bind(this));
+    calls.subscribeToCallFinishing(this.onCallFinished.bind(this));
     calls.subscribeToCallbackRequesting(this.checkCustomerAndEmitCallbackRequesting.bind(this));
   }
 
@@ -106,6 +107,13 @@ class CustomersRoom {
     });
   }
 
+  onCallFinished(call) {
+    const callFinishedNotByCustomer = call.finishedBy !== call.requestedBy;
+    if (callFinishedNotByCustomer) {
+      this.checkCustomerAndEmitCallFinishing(call);
+    }
+  }
+
   checkCustomerAndEmitCallAccepting(socketId, callId, operatorId) {
     const connectedCustomer = this.customers.connected[socketId];
     if (connectedCustomer) {
@@ -149,12 +157,27 @@ class CustomersRoom {
     });
   }
 
+  checkCustomerAndEmitCallFinishing(call) {
+    const { deviceId, id } = call;
+    return this.getSocketIdByDeviceId(deviceId).then((socketId) => {
+      const connectedCustomer = this.customers.connected[socketId];
+      if (connectedCustomer) {
+        logger.debug('Call finished: emitting to customer', id, deviceId);
+        this.emitCallFinishing(connectedCustomer, { id });
+      }
+    });
+  }
+
   emitCallAccepting(customer, callData) {
     customer.emit(CALL_ACCEPTED, callData);
   }
 
   emitCallbackRequesting(customer, callData) {
     customer.emit(CALLBACK_REQUESTED, callData);
+  }
+
+  emitCallFinishing(customer, data) {
+    customer.emit(CALL_FINISHED, data);
   }
 
   mapDeviceIdToSocketId(socket) {
