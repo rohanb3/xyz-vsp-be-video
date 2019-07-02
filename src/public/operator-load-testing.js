@@ -68,8 +68,8 @@ function connectToSocket() {
 
     socket.on(SOCKET_EVENTS.CONNECT, () => {
       socket.emit(SOCKET_EVENTS.AUTHENTICATION, { identity });
-      socket.on(SOCKET_EVENTS.AUTHENTICATED, onAuthenticated);
-      socket.on(SOCKET_EVENTS.UNAUTHORIZED, onUnauthorized);
+      socket.once(SOCKET_EVENTS.AUTHENTICATED, onAuthenticated);
+      socket.once(SOCKET_EVENTS.UNAUTHORIZED, onUnauthorized);
     });
   }, connectDelay);
 }
@@ -106,7 +106,7 @@ function onCallsChanged(data) {
 
 function acceptCallIfPossible() {
   const canCallBeAccepted =
-    !isOperatorOnCall && pendingCallsSize && Math.random() > 0.5;
+    !isOperatorOnCall && pendingCallsSize && Math.random() > 0.7;
   if (canCallBeAccepted) {
     acceptCall();
   }
@@ -127,6 +127,7 @@ function updatePendingCallsData({ size } = {}) {
 }
 
 function onRoomCreated(call) {
+  socket.off(SOCKET_EVENTS.CALL_ACCEPTING_FAILED);
   let callFinishingTimer = null;
 
   callId = call.id;
@@ -147,6 +148,7 @@ function onRoomCreated(call) {
 }
 
 function onCallAcceptingFailed(data) {
+  socket.off(SOCKET_EVENTS.ROOM_CREATED);
   callAcceptionFailedAtTime = getNowSeconds();
   statisticsCallbacks.updateCallAcceptingTime(callAcceptionFailedAtTime - acceptedAtTime);
   console.error(
@@ -157,6 +159,7 @@ function onCallAcceptingFailed(data) {
 }
 
 function finishCall() {
+  socket.off(SOCKET_EVENTS.CALL_FINISHED);
   socket.emit(SOCKET_EVENTS.CALL_FINISHED, callId);
   makeOperatorIdle();
 }
@@ -165,7 +168,7 @@ function makeOperatorIdle() {
   isOperatorOnCall = false;
   setPeerId();
   setCallStatus(CALL_STATUSES.IDLE);
-  acceptCallIfPossible();
+  setTimeout(acceptCallIfPossible, 2000);
 }
 
 function toCamelCase(str) {

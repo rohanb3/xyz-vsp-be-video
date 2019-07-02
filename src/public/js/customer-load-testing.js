@@ -70,8 +70,8 @@ function connectToSocket() {
 
     socket.on(SOCKET_EVENTS.CONNECT, () => {
       socket.emit(SOCKET_EVENTS.AUTHENTICATION, { identity, deviceId });
-      socket.on(SOCKET_EVENTS.AUTHENTICATED, onAuthenticated);
-      socket.on(SOCKET_EVENTS.UNAUTHORIZED, onUnauthorized);
+      socket.once(SOCKET_EVENTS.AUTHENTICATED, onAuthenticated);
+      socket.once(SOCKET_EVENTS.UNAUTHORIZED, onUnauthorized);
     });
   }, connectDelay);
 }
