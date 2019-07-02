@@ -48195,8 +48195,8 @@ const identity = prompt('Tell me your identity') || 'Joey';
 const shouldConnectToDeviceManagement =
   typeof prompt('Conect to device management?') === 'string';
 
-let deviceManagementHost = 'https://vsp.xyzies.ardas.biz';
-let socketUrl = 'wss://vsp.xyzies.ardas.biz/customers';
+let deviceManagementHost = 'https://dev-portal.xyzvsp.com';
+let socketUrl = 'wss://dev-portal.xyzvsp.com/customers';
 let socketOptions = {
   path: '/api/video/socket.io',
   transports: ['websocket'],
@@ -48208,12 +48208,12 @@ if (isLocal) {
 }
 
 if (isDev) {
-  socketUrl = 'wss://vsp.xyzies.ardas.biz/customers';
+  socketUrl = 'wss://dev-portal.xyzvsp.com/customers';
 }
 
 if (isStage) {
-  socketUrl = 'wss://vsp-stage.xyzies.ardas.biz/customers';
-  deviceManagementHost = 'https://vsp-stage.xyzies.ardas.biz';
+  socketUrl = 'wss://stage-portal.xyzvsp.com/customers';
+  deviceManagementHost = 'https://stage-portal.xyzvsp.com';
 }
 
 if (isProd) {
