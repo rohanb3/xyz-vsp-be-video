@@ -10,4 +10,4 @@ function idGetter() {
 call.virtual('id').get(idGetter);
 call.index({ 'operatorFeedback.disposition': 'text' });
 
-module.exports = mongoose.model('CallTest', call);
+module.exports = mongoose.model('Call', call);

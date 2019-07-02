@@ -1,0 +1,9 @@
+{
+  "lastRun": "1562055434156-remove-load-testing-calls.js",
+  "migrations": [
+    {
+      "title": "1562055434156-remove-load-testing-calls.js",
+      "timestamp": 1562056021501
+    }
+  ]
+}
