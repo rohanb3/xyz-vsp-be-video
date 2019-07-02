@@ -8646,13 +8646,15 @@ function preparePage() {
     (Number(document.querySelector('.max-call-duration').value) || 5) * 1000;
   const connectionDelay =
     (Number(document.querySelector('.connection-delay').value) || 0.1) * 1000;
+  const operatorsNumber =
+    Number(document.querySelector('.operators-amount').value) || 50;
 
-  prepareCustomers(minCallDuration, maxCallDuration, connectionDelay);
-  prepareOperators(minCallDuration, maxCallDuration, connectionDelay);
+  prepareCustomers(minCallDuration, maxCallDuration, connectionDelay, operatorsNumber);
+  prepareOperators(minCallDuration, maxCallDuration, connectionDelay, operatorsNumber);
   drawStatisitics();
 }
 
-function prepareCustomers(minCallDuration, maxCallDuration, connectionDelay) {
+function prepareCustomers(minCallDuration, maxCallDuration, connectionDelay, operatorsNumber) {
   const customersNumber =
     Number(document.querySelector('.customers-amount').value) || 200;
   const callsPerCustomer =
@@ -8662,17 +8664,15 @@ function prepareCustomers(minCallDuration, maxCallDuration, connectionDelay) {
 
   totalCallsForTest = customersNumber * callsPerCustomer;
 
-  drawCustomersFrames(customersNumber, callsPerCustomer, minCallDuration, maxCallDuration, connectionDelay, maxFirstCallDelay);
+  drawCustomersFrames(customersNumber, operatorsNumber, callsPerCustomer, minCallDuration, maxCallDuration, connectionDelay, maxFirstCallDelay);
 }
 
-function prepareOperators(minCallDuration, maxCallDuration, connectionDelay) {
-  const operatorsNumber =
-    Number(document.querySelector('.operators-amount').value) || 50;
+function prepareOperators(minCallDuration, maxCallDuration, connectionDelay, operatorsNumber) {
   const acceptingLikelihood = Number(document.querySelector('.operator-accepting-likelihood').value) || 0.5;
   drawOperatorsFrames(operatorsNumber, minCallDuration, maxCallDuration, connectionDelay, acceptingLikelihood);
 }
 
-function drawCustomersFrames(number, callsPerCustomer, minCallDuration, maxCallDuration, connectionDelay, maxFirstCallDelay) {
+function drawCustomersFrames(number, operatorsNumber, callsPerCustomer, minCallDuration, maxCallDuration, connectionDelay, maxFirstCallDelay) {
   const parent = document.querySelector('.customers-section');
   const fragment = document.createDocumentFragment();
 
@@ -8695,7 +8695,7 @@ function drawCustomersFrames(number, callsPerCustomer, minCallDuration, maxCallD
 
     setTimeout(() => {
       const firstCallDelay = Math.ceil(Math.random() * maxFirstCallDelay);
-      const startFirstCallAfter = (number - i) * connectionDelay + firstCallDelay;
+      const startFirstCallAfter = (Math.max(number, operatorsNumber) - i) * connectionDelay + firstCallDelay;
 
       iframe.contentWindow.io = io;
       iframe.contentWindow.socketOptions = socketOptions;

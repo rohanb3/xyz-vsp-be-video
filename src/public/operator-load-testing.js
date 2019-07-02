@@ -67,7 +67,7 @@ function connectToSocket() {
   setTimeout(() => {
     socket = window.io(socketUrl, socketOptions);
 
-    socket.on(SOCKET_EVENTS.CONNECT, () => {
+    socket.once(SOCKET_EVENTS.CONNECT, () => {
       socket.emit(SOCKET_EVENTS.AUTHENTICATION, { identity });
       socket.once(SOCKET_EVENTS.AUTHENTICATED, onAuthenticated);
       socket.once(SOCKET_EVENTS.UNAUTHORIZED, onUnauthorized);

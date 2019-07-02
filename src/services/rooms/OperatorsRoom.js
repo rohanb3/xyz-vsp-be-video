@@ -30,6 +30,8 @@ const { connectionsHeap } = require('@/services/connectionsHeap');
 const { getOperatorCallFailReason } = require('./utils');
 const logger = require('@/services/logger')(module);
 
+const isMaster = !process.env.INSTANCE_ID || process.env.INSTANCE_ID === '0';
+
 class OperatorsRoom {
   constructor(io) {
     this.operators = io.of(OPERATORS);
@@ -41,7 +43,9 @@ class OperatorsRoom {
     calls.subscribeToCallFinishing(this.onCallFinished.bind(this));
     calls.subscribeToCallbackAccepting(this.checkOperatorAndEmitCallbackAccepting.bind(this));
     calls.subscribeToCallbackDeclining(this.checkOperatorAndEmitCallbackDeclining.bind(this));
-    calls.subscribeToCallsLengthChanging(this.emitCallsInfo.bind(this));
+    if (isMaster) {
+      calls.subscribeToCallsLengthChanging(this.emitCallsInfo.bind(this));
+    }
   }
 
   onOperatorConnected(operator) {
