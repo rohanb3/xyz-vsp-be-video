@@ -10,6 +10,7 @@ const {
   maxCallDuration,
   socketOptions,
   connectionDelay,
+  acceptingLikelihood,
 } = window;
 const { statisticsCallbacks } = window.parent;
 
@@ -106,7 +107,7 @@ function onCallsChanged(data) {
 
 function acceptCallIfPossible() {
   const canCallBeAccepted =
-    !isOperatorOnCall && pendingCallsSize && Math.random() > 0.7;
+    !isOperatorOnCall && pendingCallsSize && (Math.random() < acceptingLikelihood);
   if (canCallBeAccepted) {
     acceptCall();
   }
