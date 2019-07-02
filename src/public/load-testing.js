@@ -99,6 +99,8 @@ const drawersMap = {
   [OPERATORS]: drawOperatorStatisticsField,
 };
 
+const FIRST_CALL_MAX_DELAY = 3000;
+
 let statistics = getDefaultStatistics();
 
 const statisticsCallbacks = {
@@ -255,17 +257,22 @@ function drawCustomersFrames(number, callsPerCustomer, minCallDuration, maxCallD
     iframe.id = `customer-${num}`;
     iframe.classList.add('user-frame', 'customer-frame');
     iframe.srcdoc = frameContent;
+
     setTimeout(() => {
+      const firstCallDelay = Math.ceil(Math.random() * FIRST_CALL_MAX_DELAY);
+      const startFirstCallAfter = (number - i) * connectionDelay + firstCallDelay;
+
       iframe.contentWindow.io = io;
       iframe.contentWindow.socketOptions = socketOptions;
       iframe.contentWindow.connectionDelay = connectionDelay;
       iframe.contentWindow.userIdentity = `${now}-customer-${num}`;
       iframe.contentWindow.userType = CUSTOMERS;
-      iframe.contentWindow.startFirstCallAfter = (number - i) * connectionDelay;
+      iframe.contentWindow.startFirstCallAfter = startFirstCallAfter;
       iframe.contentWindow.callsPerCustomer = callsPerCustomer;
       iframe.contentWindow.minCallDuration = minCallDuration;
       iframe.contentWindow.maxCallDuration = maxCallDuration;
     });
+
     fragment.appendChild(iframe);
     incrementField(CUSTOMERS, TOTAL);
   });
