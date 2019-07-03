@@ -126,11 +126,10 @@ let minAcceptingTime = Infinity;
 let maxAcceptingTime = 0;
 let totalAcceptingTime = 0;
 let minDuration = Infinity;
-let maxDuration= 0;
+let maxDuration = 0;
 let totalDuration = 0;
 
 let totalCallsForTest = 0;
-
 
 window.statisticsCallbacks = statisticsCallbacks;
 
@@ -172,7 +171,7 @@ function subscribeToControls() {
 function startTest() {
   if (!isStarted) {
     isStarted = true;
-    disableActionButtons()
+    disableActionButtons();
     preparePage();
   } else {
     window.alert('Test is running! Please, stop it before');
@@ -215,12 +214,27 @@ function preparePage() {
   const operatorsNumber =
     Number(document.querySelector('.operators-amount').value) || 50;
 
-  prepareCustomers(minCallDuration, maxCallDuration, connectionDelay, operatorsNumber);
-  prepareOperators(minCallDuration, maxCallDuration, connectionDelay, operatorsNumber);
+  prepareCustomers(
+    minCallDuration,
+    maxCallDuration,
+    connectionDelay,
+    operatorsNumber
+  );
+  prepareOperators(
+    minCallDuration,
+    maxCallDuration,
+    connectionDelay,
+    operatorsNumber
+  );
   drawStatisitics();
 }
 
-function prepareCustomers(minCallDuration, maxCallDuration, connectionDelay, operatorsNumber) {
+function prepareCustomers(
+  minCallDuration,
+  maxCallDuration,
+  connectionDelay,
+  operatorsNumber
+) {
   const customersNumber =
     Number(document.querySelector('.customers-amount').value) || 200;
   const callsPerCustomer =
@@ -230,15 +244,44 @@ function prepareCustomers(minCallDuration, maxCallDuration, connectionDelay, ope
 
   totalCallsForTest = customersNumber * callsPerCustomer;
 
-  drawCustomersFrames(customersNumber, operatorsNumber, callsPerCustomer, minCallDuration, maxCallDuration, connectionDelay, maxFirstCallDelay);
+  drawCustomersFrames(
+    customersNumber,
+    operatorsNumber,
+    callsPerCustomer,
+    minCallDuration,
+    maxCallDuration,
+    connectionDelay,
+    maxFirstCallDelay
+  );
 }
 
-function prepareOperators(minCallDuration, maxCallDuration, connectionDelay, operatorsNumber) {
-  const acceptingLikelihood = Number(document.querySelector('.operator-accepting-likelihood').value) || 0.5;
-  drawOperatorsFrames(operatorsNumber, minCallDuration, maxCallDuration, connectionDelay, acceptingLikelihood);
+function prepareOperators(
+  minCallDuration,
+  maxCallDuration,
+  connectionDelay,
+  operatorsNumber
+) {
+  const acceptingLikelihood =
+    Number(document.querySelector('.operator-accepting-likelihood').value) ||
+    0.5;
+  drawOperatorsFrames(
+    operatorsNumber,
+    minCallDuration,
+    maxCallDuration,
+    connectionDelay,
+    acceptingLikelihood
+  );
 }
 
-function drawCustomersFrames(number, operatorsNumber, callsPerCustomer, minCallDuration, maxCallDuration, connectionDelay, maxFirstCallDelay) {
+function drawCustomersFrames(
+  number,
+  operatorsNumber,
+  callsPerCustomer,
+  minCallDuration,
+  maxCallDuration,
+  connectionDelay,
+  maxFirstCallDelay
+) {
   const parent = document.querySelector('.customers-section');
   const fragment = document.createDocumentFragment();
 
@@ -248,8 +291,15 @@ function drawCustomersFrames(number, operatorsNumber, callsPerCustomer, minCallD
     const frameContent = `
       <html>
         <body>
-          <p style="margin: 0; text-align: center">${num}</p>
-          <p style="margin: 0; text-align: center" class="peer-id"></p>
+          <p style="margin: 0; text-align: center">
+            <span>${num}</span>
+            <span class="peer-id"></span>
+          </p>
+          <p style="margin: 0; text-align: center">
+            <span class="current-call-number">0</span>
+            <span>/</span>
+            <span class="total-allowed-calls">${callsPerCustomer}</span>
+          </p>
           <script src="/js/customer-load-testing.js"></script>
         </body>
       </html>
@@ -261,7 +311,9 @@ function drawCustomersFrames(number, operatorsNumber, callsPerCustomer, minCallD
 
     setTimeout(() => {
       const firstCallDelay = Math.ceil(Math.random() * maxFirstCallDelay);
-      const startFirstCallAfter = (Math.max(number, operatorsNumber) - i) * connectionDelay + firstCallDelay;
+      const startFirstCallAfter =
+        (Math.max(number, operatorsNumber) - i) * connectionDelay +
+        firstCallDelay;
 
       iframe.contentWindow.io = io;
       iframe.contentWindow.socketOptions = socketOptions;
@@ -281,7 +333,13 @@ function drawCustomersFrames(number, operatorsNumber, callsPerCustomer, minCallD
   parent.appendChild(fragment);
 }
 
-function drawOperatorsFrames(number, minCallDuration, maxCallDuration, connectionDelay, acceptingLikelihood) {
+function drawOperatorsFrames(
+  number,
+  minCallDuration,
+  maxCallDuration,
+  connectionDelay,
+  acceptingLikelihood
+) {
   const parent = document.querySelector('.operators-section');
   const fragment = document.createDocumentFragment();
 
@@ -291,8 +349,10 @@ function drawOperatorsFrames(number, minCallDuration, maxCallDuration, connectio
     const frameContent = `
       <html>
         <body>
-          <p style="margin: 0; text-align: center">${num}</p>
-          <p style="margin: 0; text-align: center" class="peer-id"></p>
+          <p style="margin: 0; text-align: center">
+            <span>${num}</span>
+            <span class="peer-id"></span>
+          </p>
           <script src="/js/operator-load-testing.js"></script>
         </body>
       </html>
@@ -461,7 +521,9 @@ function updateCallEnqueueingTime(value = 0) {
   totalEnqueueingTime += value;
 
   const totalCalls = getField(CUSTOMERS, TOTAL_CALLS);
-  const average = totalCalls ? (Number(totalEnqueueingTime) / totalCalls).toFixed(2) : 0;
+  const average = totalCalls
+    ? (Number(totalEnqueueingTime) / totalCalls).toFixed(2)
+    : 0;
   setField(CUSTOMERS, AVERAGE_ENQUEUEING_TIME, average);
   drawCustomerStatisticsField(AVERAGE_ENQUEUEING_TIME);
 }
@@ -478,7 +540,9 @@ function updateCallAcceptingTime(value = 0) {
   totalAcceptingTime += value;
 
   const totalCalls = getField(OPERATORS, TOTAL_CALLS);
-  const average = totalCalls ? (Number(totalAcceptingTime) / totalCalls).toFixed(2) : 0;
+  const average = totalCalls
+    ? (Number(totalAcceptingTime) / totalCalls).toFixed(2)
+    : 0;
   setField(OPERATORS, AVERAGE_ACCEPTING_TIME, average);
   drawOperatorStatisticsField(AVERAGE_ACCEPTING_TIME);
 }
@@ -495,7 +559,9 @@ function updateCallDurationTime(value = 0) {
   totalDuration += value;
 
   const totalCalls = getField(CUSTOMERS, TOTAL_CALLS);
-  const average = totalCalls ? (Number(totalDuration) / totalCalls).toFixed(2) : 0;
+  const average = totalCalls
+    ? (Number(totalDuration) / totalCalls).toFixed(2)
+    : 0;
   setField(CUSTOMERS, AVERAGE_DURATION, average);
   setField(CUSTOMERS, TOTAL_DURATION, totalDuration.toFixed(2));
   drawCustomerStatisticsField(AVERAGE_DURATION);
@@ -523,16 +589,20 @@ function setField(userType, field, value) {
   try {
     statistics[userType][field] = value;
   } catch (e) {
-    console.error(`Field ${field} cannot be set for ${userType} with ${value}: ${e}`);
+    console.error(
+      `Field ${field} cannot be set for ${userType} with ${value}: ${e}`
+    );
   }
 }
 
 function getField(userType, field) {
   let value = 0;
   try {
-    value = statistics[userType][field]
+    value = statistics[userType][field];
   } catch (e) {
-    console.error(`Field ${field} cannot be set for ${userType} with ${value}: ${e}`);
+    console.error(
+      `Field ${field} cannot be set for ${userType} with ${value}: ${e}`
+    );
     value = 0;
   }
   return value;
