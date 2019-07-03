@@ -107,7 +107,9 @@ function onCallsChanged(data) {
 
 function acceptCallIfPossible() {
   const canCallBeAccepted =
-    !isOperatorOnCall && pendingCallsSize && (Math.random() < acceptingLikelihood);
+    !isOperatorOnCall &&
+    pendingCallsSize &&
+    Math.random() < acceptingLikelihood;
   if (canCallBeAccepted) {
     acceptCall();
   }
@@ -133,10 +135,15 @@ function onRoomCreated(call) {
 
   callId = call.id;
   roomCreatedAtTime = getNowSeconds();
-  statisticsCallbacks.updateCallAcceptingTime(roomCreatedAtTime - acceptedAtTime);
+  statisticsCallbacks.updateCallAcceptingTime(
+    roomCreatedAtTime - acceptedAtTime
+  );
 
   if (Math.random() > 0.9) {
-    const callDuration = Math.max(Math.ceil(Math.random() * maxCallDuration), minCallDuration);
+    const callDuration = Math.max(
+      Math.ceil(Math.random() * maxCallDuration),
+      minCallDuration
+    );
     callFinishingTimer = setTimeout(finishCall, callDuration);
   }
 
@@ -151,7 +158,9 @@ function onRoomCreated(call) {
 function onCallAcceptingFailed(data) {
   socket.off(SOCKET_EVENTS.ROOM_CREATED);
   callAcceptionFailedAtTime = getNowSeconds();
-  statisticsCallbacks.updateCallAcceptingTime(callAcceptionFailedAtTime - acceptedAtTime);
+  statisticsCallbacks.updateCallAcceptingTime(
+    callAcceptionFailedAtTime - acceptedAtTime
+  );
   console.error(
     `Call accepting by operator ${identity} failed: ${data.reason}`
   );
@@ -185,7 +194,7 @@ function getUserNumber(id = '') {
 function setPeerId(idRaw) {
   if (idRaw) {
     const peerId = getUserNumber(idRaw);
-    document.querySelector('.peer-id').innerHTML = `${peerId}`;
+    document.querySelector('.peer-id').innerHTML = `/${peerId}`;
   } else {
     document.querySelector('.peer-id').innerHTML = '';
   }

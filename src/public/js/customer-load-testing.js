@@ -102,12 +102,16 @@ function onUnauthorized(error) {
 function startCall() {
   if (startedCalls < callsPerCustomer) {
     startedCalls += 1;
+    setCurrentCallNumber(startedCalls);
     const startCallDelay = Math.ceil(Math.random() * 10000) || 3000;
     const waitingForResponseDelay = Math.max(
       10000,
       Math.ceil(Math.random() * 20000)
     );
-    const callDuration = Math.max(Math.ceil(Math.random() * maxCallDuration), minCallDuration);
+    const callDuration = Math.max(
+      Math.ceil(Math.random() * maxCallDuration),
+      minCallDuration
+    );
 
     statisticsCallbacks.incrementWaitingForQueueCalls(userType);
 
@@ -128,10 +132,14 @@ function startCall() {
         setCallStatus(CALL_STATUSES.ON_CALL, operatorId);
         setPeerId(operatorId);
         const finishCallTimer = setTimeout(() => {
-          socket.removeListener(SOCKET_EVENTS.CALL_FINISHED, finishCallByCustomerListener);
+          socket.removeListener(
+            SOCKET_EVENTS.CALL_FINISHED,
+            finishCallByCustomerListener
+          );
           makeCallFinished();
         }, callDuration);
-        const finishCallByCustomerListener = () => onCallFinishedByOperator(finishCallTimer);
+        const finishCallByCustomerListener = () =>
+          onCallFinishedByOperator(finishCallTimer);
         socket.once(SOCKET_EVENTS.CALL_FINISHED, finishCallByCustomerListener);
         statisticsCallbacks.decrementPendingCalls(userType);
         statisticsCallbacks.incrementActiveCalls(userType);
@@ -146,7 +154,9 @@ function onCallEnqueued(id) {
   setCallStatus(CALL_STATUSES.CALL_ENQUEUED);
   statisticsCallbacks.decrementWaitingForQueueCalls(userType);
   statisticsCallbacks.incrementPendingCalls(userType);
-  statisticsCallbacks.updateCallEnqueueingTime(enqueuedAtTime - requestedAtTime);
+  statisticsCallbacks.updateCallEnqueueingTime(
+    enqueuedAtTime - requestedAtTime
+  );
 }
 
 function onCallNotEnqueued() {
@@ -219,10 +229,14 @@ function getUserNumber(id = '') {
 function setPeerId(idRaw) {
   if (idRaw) {
     const peerId = getUserNumber(idRaw);
-    document.querySelector('.peer-id').innerHTML = `${peerId}`;
+    document.querySelector('.peer-id').innerHTML = `/${peerId}`;
   } else {
     document.querySelector('.peer-id').innerHTML = '';
   }
+}
+
+function setCurrentCallNumber(number) {
+  document.querySelector('.current-call-number').innerHTML = number;
 }
 
 function getNowSeconds() {

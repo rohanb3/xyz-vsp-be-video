@@ -10,7 +10,7 @@ mongoose.plugin(beautifyUnique);
 mongoose.set('debug', debug);
 mongoose.set('useFindAndModify', false);
 
-mongoose.plugin((schema) => {
+mongoose.plugin(schema => {
   if (!schema.options.toObject) {
     schema.options.toObject = {};
   }
@@ -32,7 +32,7 @@ mongoose.connect(
     dbName,
     reconnectTries: Number.MAX_VALUE,
     reconnectInterval: 500,
-  },
+  }
 );
 
 module.exports = mongoose;
