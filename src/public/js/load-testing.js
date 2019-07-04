@@ -12994,7 +12994,8 @@ const statisticsCallbacks = {
   incrementFinishedCalls,
   incrementMissedCalls,
   onCallEnqueued,
-  onCallAcceptionHandled,
+  onCallAcceptionByOperatorHandled,
+  onCustomerCallAccepted,
   updateCallDurationTime,
   incrementOperatorsAcceptedCalls,
 };
@@ -13364,7 +13365,7 @@ function onCallEnqueued(id, requestTime, responseTime) {
   drawCustomerStatisticsField(FIELDS.AVERAGE_ENQUEUEING_TIME, statistics);
 }
 
-function onCallAcceptionHandled(id, requestTime, responseTime) {
+function onCallAcceptionByOperatorHandled(id, requestTime, responseTime) {
   const value = responseTime - requestTime;
 
   if (checkMinAcceptingTime(value)) {
@@ -13391,6 +13392,17 @@ function onCallAcceptionHandled(id, requestTime, responseTime) {
     : 0;
   setField(TYPES.OPERATORS, FIELDS.AVERAGE_ACCEPTING_TIME, average);
   drawOperatorStatisticsField(FIELDS.AVERAGE_ACCEPTING_TIME, statistics);
+}
+
+function onCustomerCallAccepted(id, requestTime, responseTime) {
+  const value = responseTime - requestTime;
+
+  if (id) {
+    updateAndDrawCall(id, {
+      [FIELDS.READY_FOR_CUSTOMER_AT]: moment(responseTime * 1000).format('HH:mm:ss'),
+      [FIELDS.WRAPPING_UP_CUSTOMER]: value.toFixed(3),
+    });
+  }
 }
 
 function updateCallDurationTime(value = 0) {

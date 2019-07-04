@@ -157,7 +157,7 @@ function onRoomCreated(call) {
 
   callId = call.id;
   roomCreatedAtTime = getNowSeconds();
-  statisticsCallbacks.onCallAcceptionHandled(
+  statisticsCallbacks.onCallAcceptionByOperatorHandled(
     call.id,
     acceptedAtTime,
     roomCreatedAtTime,
@@ -182,7 +182,7 @@ function onRoomCreated(call) {
 function onCallAcceptingFailed(data) {
   socket.off(SOCKET_EVENTS.ROOM_CREATED);
   callAcceptionFailedAtTime = getNowSeconds();
-  statisticsCallbacks.onCallAcceptionHandled(
+  statisticsCallbacks.onCallAcceptionByOperatorHandled(
     null,
     acceptedAtTime,
     callAcceptionFailedAtTime,

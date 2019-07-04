@@ -164,6 +164,7 @@ function startCall() {
         socket.once(SOCKET_EVENTS.CALL_FINISHED, finishCallByCustomerListener);
         statisticsCallbacks.decrementPendingCalls(userType);
         statisticsCallbacks.incrementActiveCalls(userType);
+        statisticsCallbacks.onCustomerCallAccepted(callId, enqueuedAtTime, acceptedAtTime);
       });
     }, startCallDelay);
   }
