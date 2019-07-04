@@ -24,7 +24,7 @@ function drawStatisiticsField(container, field, value) {
   const seclector = `.${camelToKebab(field)} .quantity`;
   const el = container.querySelector(seclector);
   if (el) {
-    el.innerHTML = (value === Infinity || isNaN(value)) ? 0 : value;
+    el.innerHTML = value === Infinity || isNaN(value) ? 0 : value;
   }
 }
 
@@ -62,16 +62,19 @@ function drawCall(id, updates) {
     callWrapper.classList.add(`call-${id}`);
     callWrapper.classList.add(`call-wrapper`);
     const callTemplate = `
-      <p>${id}</p>
-      <p class="requested-at">Requested at: <span class="value"></span></p>
-      <p class="enqueued-at">Enqueued at: <span class="value"></span></p>
-      <p class="wrapping-up-customer">Wrapped for customer: <span class="value"></span></p>
-      <p class="accepted-at">Accepted at: <span class="value"></span></p>
-      <p class="wrapping-up-operator">Wrapped for operator: <span class="value"></span></p>
-      <p class="ready-for-customer-at">Ready for customer at: <span class="value"></span></p>
-      <p class="ready-for-operator-at">Ready for operator at: <span class="value"></span></p>
-      <p class="connection-to-call-customer">Conneted customer: <span class="value"></span></p>
-      <p class="connection-to-call-operator">Conneted operator: <span class="value"></span></p>
+      <p>Id: ${id}</p>
+      <p class="requested-at">Requested at <span class="value"></span></p>
+      <p class="enqueued-at">Enqueued at <span class="value"></span></p>
+      <p class="enqueued-in">Added to queue in <span class="value">0</span> seconds</p>
+      <p class="accepted-at">Accepted at <span class="value"></span></p>
+      <p class="ready-for-customer-at">Customer got room at <span class="value"></span></p>
+      <p class="ready-for-operator-at">Operator got room at <span class="value"></span></p>
+      <p class="wrapping-up-customer">
+        Customer got room in <span class="value">0</span> seconds after acception
+      </p>
+      <p class="wrapping-up-operator">
+        Operator got room in <span class="value">0</span> seconds after acception
+      </p>
     `;
     callWrapper.innerHTML = callTemplate;
     container.appendChild(callWrapper);
@@ -80,7 +83,9 @@ function drawCall(id, updates) {
     Object.keys(updates).forEach(key => {
       const selector = `.${camelToKebab(key)} .value`;
       const el = callWrapper.querySelector(selector);
-      el.innerHTML = updates[key];
+      if (el) {
+        el.innerHTML = updates[key];
+      }
     });
   }
 }
@@ -98,4 +103,4 @@ module.exports = {
   drawCustomerStatisticsField,
   drawOperatorStatisticsField,
   drawCall,
-}
+};

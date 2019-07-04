@@ -4,7 +4,10 @@ const moment = require('moment');
 
 const { SOCKET_EVENTS, TYPES, FIELDS } = require('./src/constants');
 const { getDefaultStatistics, getDefaultCall } = require('./src/utils');
-const { drawCustomersFrames, drawOperatorsFrames } = require('./src/userDrawers');
+const {
+  drawCustomersFrames,
+  drawOperatorsFrames,
+} = require('./src/userDrawers');
 const {
   drawStatisitics,
   getStatisticsFieldDrawer,
@@ -105,7 +108,9 @@ function onCallsChanged({ size = 0, peak } = {}) {
 function subscribeToControls() {
   document.querySelector('.start-button').addEventListener('click', startTest);
   document.querySelector('.clear-button').addEventListener('click', clearTest);
-  document.querySelector('.all-calls-toggler').addEventListener('click', toggleCalls);
+  document
+    .querySelector('.all-calls-toggler')
+    .addEventListener('click', toggleCalls);
 }
 
 function startTest() {
@@ -128,7 +133,9 @@ function clearTest() {
 
 function toggleCalls() {
   document.querySelector('.all-calls-statistics').classList.toggle('opened');
-  const toggler = document.querySelector('.all-calls-statistics .all-calls-toggler');
+  const toggler = document.querySelector(
+    '.all-calls-statistics .all-calls-toggler'
+  );
   callsStatisticsOpened = !callsStatisticsOpened;
   toggler.innerHTML = callsStatisticsOpened ? '&#8250;' : '&#8249;';
 }
@@ -242,7 +249,7 @@ function removeUsers() {
 
 function removeCalls() {
   document.querySelector('.all-calls-statistics .all-calls').innerHTML = '';
-};
+}
 
 function removeFrames(selector) {
   const iframes = document.querySelectorAll(`${selector} iframe`);
@@ -294,12 +301,18 @@ function incrementUnauthorizedUsers(userType) {
 
 function incrementWaitingForQueueCalls(userType) {
   incrementField(userType, FIELDS.WAITING_FOR_QUEUE_CALLS);
-  getStatisticsFieldDrawer(userType)(FIELDS.WAITING_FOR_QUEUE_CALLS, statistics);
+  getStatisticsFieldDrawer(userType)(
+    FIELDS.WAITING_FOR_QUEUE_CALLS,
+    statistics
+  );
 }
 
 function decrementWaitingForQueueCalls(userType) {
   decrementField(userType, FIELDS.WAITING_FOR_QUEUE_CALLS);
-  getStatisticsFieldDrawer(userType)(FIELDS.WAITING_FOR_QUEUE_CALLS, statistics);
+  getStatisticsFieldDrawer(userType)(
+    FIELDS.WAITING_FOR_QUEUE_CALLS,
+    statistics
+  );
 }
 
 function incrementNotEnqueuedCalls(userType) {
@@ -354,7 +367,8 @@ function incrementOperatorsAcceptedCalls() {
 
 function onUserConnected(userType, requestTime, responseTime) {
   const value = responseTime - requestTime;
-  const totalConnectingTime = getField(userType, FIELDS.TOTAL_CONNECTING_TIME) + value;
+  const totalConnectingTime =
+    getField(userType, FIELDS.TOTAL_CONNECTING_TIME) + value;
   const totalUsers = getField(userType, FIELDS.CONNECTED);
 
   if (checkMinConnectingTime(userType, value)) {
@@ -371,12 +385,16 @@ function onUserConnected(userType, requestTime, responseTime) {
 
   setField(userType, FIELDS.TOTAL_CONNECTING_TIME, totalConnectingTime);
   setField(userType, FIELDS.AVERAGE_CONNECTING_TIME, average);
-  getStatisticsFieldDrawer(userType)(FIELDS.AVERAGE_CONNECTING_TIME, statistics);
+  getStatisticsFieldDrawer(userType)(
+    FIELDS.AVERAGE_CONNECTING_TIME,
+    statistics
+  );
 }
 
 function onUserAuthorized(userType, requestTime, responseTime) {
   const value = responseTime - requestTime;
-  const totalAuthorizingTime = getField(userType, FIELDS.TOTAL_AUTHORIZING_TIME) + value;
+  const totalAuthorizingTime =
+    getField(userType, FIELDS.TOTAL_AUTHORIZING_TIME) + value;
   const totalUsers = getField(userType, FIELDS.AUTHENTICATED);
 
   if (checkMinAuthorizingTime(userType, value)) {
@@ -393,7 +411,10 @@ function onUserAuthorized(userType, requestTime, responseTime) {
 
   setField(userType, FIELDS.TOTAL_AUTHORIZING_TIME, totalAuthorizingTime);
   setField(userType, FIELDS.AVERAGE_AUTHORIZING_TIME, average);
-  getStatisticsFieldDrawer(userType)(FIELDS.AVERAGE_AUTHORIZING_TIME, statistics);
+  getStatisticsFieldDrawer(userType)(
+    FIELDS.AVERAGE_AUTHORIZING_TIME,
+    statistics
+  );
 }
 
 function onCallEnqueued(id, requestTime, responseTime) {
@@ -410,7 +431,7 @@ function onCallEnqueued(id, requestTime, responseTime) {
   updateAndDrawCall(id, {
     [FIELDS.REQUESTED_AT]: moment(requestTime * 1000).format('HH:mm:ss'),
     [FIELDS.ENQUEUED_AT]: moment(responseTime * 1000).format('HH:mm:ss'),
-    [FIELDS.WRAPPING_UP_CUSTOMER]: value.toFixed(3),
+    [FIELDS.ENQUEUED_IN]: value.toFixed(3),
   });
 
   totalEnqueueingTime += value;
@@ -435,11 +456,26 @@ function onCallAcceptionByOperatorHandled(id, requestTime, responseTime) {
   }
 
   if (id) {
-    updateAndDrawCall(id, {
+    const updates = {
       [FIELDS.ACCEPTED_AT]: moment(requestTime * 1000).format('HH:mm:ss'),
-      [FIELDS.READY_FOR_OPERATOR_AT]: moment(responseTime * 1000).format('HH:mm:ss'),
+      [FIELDS.ACCEPTED_AT_RAW]: requestTime,
+      [FIELDS.READY_FOR_OPERATOR_AT]: moment(responseTime * 1000).format(
+        'HH:mm:ss'
+      ),
       [FIELDS.WRAPPING_UP_OPERATOR]: value.toFixed(3),
-    });
+    };
+
+    const readyForCustomerAt = getField(TYPES.CALLS, id)[
+      FIELDS.READY_FOR_CUSTOMER_AT_RAW
+    ];
+
+    if (readyForCustomerAt) {
+      updates[FIELDS.WRAPPING_UP_CUSTOMER] = (
+        readyForCustomerAt - requestTime
+      ).toFixed(3);
+    }
+
+    updateAndDrawCall(id, updates);
   }
 
   totalAcceptingTime += value;
@@ -453,13 +489,20 @@ function onCallAcceptionByOperatorHandled(id, requestTime, responseTime) {
 }
 
 function onCustomerCallAccepted(id, requestTime, responseTime) {
-  const value = responseTime - requestTime;
-
   if (id) {
-    updateAndDrawCall(id, {
-      [FIELDS.READY_FOR_CUSTOMER_AT]: moment(responseTime * 1000).format('HH:mm:ss'),
-      [FIELDS.WRAPPING_UP_CUSTOMER]: value.toFixed(3),
-    });
+    const acceptedAt = getField(TYPES.CALLS, id)[FIELDS.ACCEPTED_AT_RAW];
+    const updates = {
+      [FIELDS.READY_FOR_CUSTOMER_AT]: moment(responseTime * 1000).format(
+        'HH:mm:ss'
+      ),
+      [FIELDS.READY_FOR_CUSTOMER_AT_RAW]: responseTime,
+    };
+    if (acceptedAt) {
+      updates[FIELDS.WRAPPING_UP_CUSTOMER] = (
+        responseTime - acceptedAt
+      ).toFixed(3);
+    }
+    updateAndDrawCall(id, updates);
   }
 }
 
@@ -587,7 +630,9 @@ function checkMaxCallDuration(value = 0) {
 }
 
 function checkMinConnectingTime(userType, value) {
-  const minConnectingTime = parseFloat(getField(userType, FIELDS.MIN_CONNECTING_TIME));
+  const minConnectingTime = parseFloat(
+    getField(userType, FIELDS.MIN_CONNECTING_TIME)
+  );
   if (value < minConnectingTime) {
     setField(userType, FIELDS.MIN_CONNECTING_TIME, value.toFixed(3));
     return true;
@@ -596,7 +641,9 @@ function checkMinConnectingTime(userType, value) {
 }
 
 function checkMaxConnectingTime(userType, value) {
-  const maxConnectingTime = parseFloat(getField(userType, FIELDS.MAX_CONNECTING_TIME));
+  const maxConnectingTime = parseFloat(
+    getField(userType, FIELDS.MAX_CONNECTING_TIME)
+  );
   if (value > maxConnectingTime) {
     setField(userType, FIELDS.MAX_CONNECTING_TIME, value.toFixed(3));
     return true;
@@ -605,8 +652,10 @@ function checkMaxConnectingTime(userType, value) {
 }
 
 function checkMinAuthorizingTime(userType, value) {
-  const minAuthorizingTime = parseFloat(getField(userType, FIELDS.MIN_AUTHORIZING_TIME));
-  console.log('checkMinAuthorizingTime', minAuthorizingTime, value);
+  const minAuthorizingTime = parseFloat(
+    getField(userType, FIELDS.MIN_AUTHORIZING_TIME)
+  );
+
   if (value < minAuthorizingTime) {
     setField(userType, FIELDS.MIN_AUTHORIZING_TIME, value.toFixed(3));
     return true;
@@ -615,8 +664,10 @@ function checkMinAuthorizingTime(userType, value) {
 }
 
 function checkMaxAuthorizingTime(userType, value) {
-  const maxAuthorizingTime = parseFloat(getField(userType, FIELDS.MAX_AUTHORIZING_TIME));
-  console.log('checkMaxAuthorizingTime', maxAuthorizingTime, value);
+  const maxAuthorizingTime = parseFloat(
+    getField(userType, FIELDS.MAX_AUTHORIZING_TIME)
+  );
+
   if (value > maxAuthorizingTime) {
     setField(userType, FIELDS.MAX_AUTHORIZING_TIME, value.toFixed(3));
     return true;
@@ -642,7 +693,7 @@ function addCallToList(id) {
 }
 
 function updateAndDrawCall(id, updates) {
-  const updatedCall = { ...statistics[TYPES.CALLS][id], updates };
+  const updatedCall = { ...statistics[TYPES.CALLS][id], ...updates };
   statistics[TYPES.CALLS][id] = updatedCall;
   drawCall(id, updates);
 }

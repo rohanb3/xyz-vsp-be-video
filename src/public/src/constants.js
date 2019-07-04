@@ -32,9 +32,12 @@ const MAX_IN_QUEUE = 'maxInQueue';
 const REQUESTED_AT = 'requestedAt';
 const ENQUEUED_AT = 'enqueuedAt';
 const ACCEPTED_AT = 'acceptedAt';
+const ACCEPTED_AT_RAW = 'acceptedAtRaw';
+const ENQUEUED_IN = 'enqueuedIn';
 const WRAPPING_UP_CUSTOMER = 'wrappingUpCustomer';
 const WRAPPING_UP_OPERATOR = 'wrappingUpOperator';
 const READY_FOR_CUSTOMER_AT = 'readyForCustomerAt';
+const READY_FOR_CUSTOMER_AT_RAW = 'readyForCustomerAtRaw';
 const READY_FOR_OPERATOR_AT = 'readyForOperatorAt';
 const CONNECTION_TO_CALL_CUSTOMER = 'connectionToCallCustomer';
 const CONNECTION_TO_CALL_OPERATOR = 'connectionToCallOperator';
@@ -48,7 +51,10 @@ const TOTAL_CONNECTING_TIME = 'totalConnectingTime';
 const TOTAL_AUTHORIZING_TIME = 'totalAuthorizingTime';
 
 module.exports.TYPES = {
-  QUEUE, CUSTOMERS, OPERATORS, CALLS,
+  QUEUE,
+  CUSTOMERS,
+  OPERATORS,
+  CALLS,
 };
 
 module.exports.FIELDS = {
@@ -81,10 +87,13 @@ module.exports.FIELDS = {
   MAX_IN_QUEUE,
   REQUESTED_AT,
   ENQUEUED_AT,
+  ENQUEUED_IN,
   WRAPPING_UP_CUSTOMER,
   WRAPPING_UP_OPERATOR,
   ACCEPTED_AT,
+  ACCEPTED_AT_RAW,
   READY_FOR_CUSTOMER_AT,
+  READY_FOR_CUSTOMER_AT_RAW,
   READY_FOR_OPERATOR_AT,
   CONNECTION_TO_CALL_CUSTOMER,
   CONNECTION_TO_CALL_OPERATOR,
