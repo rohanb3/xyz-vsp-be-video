@@ -5,10 +5,10 @@ const { pendingCallbacksHeap } = require('@/services/calls/pendingCallbacksHeap'
 const callsDBClient = require('@/services/calls/DBClient');
 const logger = require('@/services/logger')(module);
 
-function markCallAsMissed(callId) {
+function markCallAsMissed(callId, finishedBy) {
   return pendingCallsQueue.remove(callId).then(() => {
     logger.debug('call.missed.removed.from.queue', callId);
-    const updates = { missedAt: moment.utc().format() };
+    const updates = { missedAt: moment.utc().format(), finishedBy };
     return callsDBClient.updateById(callId, updates);
   });
 }

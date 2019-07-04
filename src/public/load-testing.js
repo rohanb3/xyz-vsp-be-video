@@ -1,5 +1,18 @@
 /* eslint-disable no-console */
 const io = require('socket.io-client');
+const moment = require('moment');
+
+const { SOCKET_EVENTS, TYPES, FIELDS } = require('./src/constants');
+const { getDefaultStatistics, getDefaultCall } = require('./src/utils');
+const { drawCustomersFrames, drawOperatorsFrames } = require('./src/userDrawers');
+const {
+  drawStatisitics,
+  getStatisticsFieldDrawer,
+  drawQueueStatisticsField,
+  drawCustomerStatisticsField,
+  drawOperatorStatisticsField,
+  drawCall,
+} = require('./src/statisticsDrawers');
 
 const isLocal = typeof window.prompt('Is local?') === 'string';
 const now = Date.now();
@@ -13,95 +26,20 @@ if (!isLocal) {
 const identity = `${now}-operator-0`;
 const socket = io(socketUrl, socketOptions);
 
-const SOCKET_EVENTS = {
-  CONNECT: 'connect',
-  AUTHENTICATION: 'authentication',
-  AUTHENTICATED: 'authenticated',
-  UNAUTHORIZED: 'unauthorized',
-  CALLS_CHANGED: 'calls.changed',
-};
-
 let isStarted = false;
-
-const QUEUE = 'queue';
-const CUSTOMERS = 'customers';
-const OPERATORS = 'operators';
-const TOTAL = 'total';
-const AUTHENTICATED = 'authenticated';
-const UNAUTHORIZED = 'unauthorized';
-const WAITING_FOR_QUEUE_CALLS = 'waitingForQueueCalls';
-const PENDING_CALLS = 'pendingCalls';
-const NOT_ENQUEUED_CALLS = 'notEnqueuedCalls';
-const ACTIVE_CALLS = 'activeCalls';
-const MAX_ACTIVE_CALLS = 'maxActiveCalls';
-const FINISHED_CALLS = 'finishedCalls';
-const MISSED_CALLS = 'missedCalls';
-const TOTAL_CALLS = 'totalCalls';
-const PENDING_IN_QUEUE = 'pendingInQueue';
-const OLDEST_IN_QUEUE = 'oldestInQueue';
-const MIN_ENQUEUEING_TIME = 'minEnqueueingTime';
-const MAX_ENQUEUEING_TIME = 'maxEnqueueingTime';
-const AVERAGE_ENQUEUEING_TIME = 'averageEnqueueingTime';
-const MIN_ACCEPTING_TIME = 'minAcceptingTime';
-const MAX_ACCEPTING_TIME = 'maxAcceptingTime';
-const AVERAGE_ACCEPTING_TIME = 'averageAcceptingTime';
-const MIN_DURATION = 'minDuration';
-const MAX_DURATION = 'maxDuration';
-const AVERAGE_DURATION = 'averageDuration';
-const TOTAL_DURATION = 'totalDuration';
-const MAX_IN_QUEUE = 'maxInQueue';
-
-const defaultStatistics = {
-  [QUEUE]: {
-    [PENDING_IN_QUEUE]: 0,
-    [OLDEST_IN_QUEUE]: 0,
-    [MAX_IN_QUEUE]: 0,
-  },
-  [CUSTOMERS]: {
-    [TOTAL]: 0,
-    [AUTHENTICATED]: 0,
-    [UNAUTHORIZED]: 0,
-    [WAITING_FOR_QUEUE_CALLS]: 0,
-    [NOT_ENQUEUED_CALLS]: 0,
-    [PENDING_CALLS]: 0,
-    [ACTIVE_CALLS]: 0,
-    [MAX_ACTIVE_CALLS]: 0,
-    [FINISHED_CALLS]: 0,
-    [MISSED_CALLS]: 0,
-    [TOTAL_CALLS]: 0,
-    [MIN_ENQUEUEING_TIME]: 0,
-    [MAX_ENQUEUEING_TIME]: 0,
-    [AVERAGE_ENQUEUEING_TIME]: 0,
-    [MIN_ACCEPTING_TIME]: 0,
-    [MAX_ACCEPTING_TIME]: 0,
-    [AVERAGE_ACCEPTING_TIME]: 0,
-    [MIN_DURATION]: 0,
-    [MAX_DURATION]: 0,
-    [AVERAGE_DURATION]: 0,
-    [TOTAL_DURATION]: 0,
-  },
-  [OPERATORS]: {
-    [TOTAL]: 0,
-    [AUTHENTICATED]: 0,
-    [UNAUTHORIZED]: 0,
-    [ACTIVE_CALLS]: 0,
-    [FINISHED_CALLS]: 0,
-    [MIN_ACCEPTING_TIME]: 0,
-    [MAX_ACCEPTING_TIME]: 0,
-    [AVERAGE_ACCEPTING_TIME]: 0,
-    [TOTAL_CALLS]: 0,
-  },
-};
-
-const drawersMap = {
-  [QUEUE]: drawQueueStatisticsField,
-  [CUSTOMERS]: drawCustomerStatisticsField,
-  [OPERATORS]: drawOperatorStatisticsField,
-};
+let callsStatisticsOpened = false;
 
 let statistics = getDefaultStatistics();
 
 const statisticsCallbacks = {
+  onUserConnected,
+  onUserAuthorized,
+  incrementConnectingUsers,
+  decrementConnectingUsers,
+  incrementConnectedUsers,
+  decrementConnectedUsers,
+  incrementAuthorizingUsers,
+  decrementAuthorizingUsers,
   incrementAuthenticatedUsers,
   incrementUnauthorizedUsers,
   incrementWaitingForQueueCalls,
@@ -113,8 +51,8 @@ const statisticsCallbacks = {
   decrementActiveCalls,
   incrementFinishedCalls,
   incrementMissedCalls,
-  updateCallEnqueueingTime,
-  updateCallAcceptingTime,
+  onCallEnqueued,
+  onCallAcceptionHandled,
   updateCallDurationTime,
   incrementOperatorsAcceptedCalls,
 };
@@ -133,7 +71,7 @@ let totalCallsForTest = 0;
 
 window.statisticsCallbacks = statisticsCallbacks;
 
-subscribeToControls(io);
+subscribeToControls();
 
 socket.on(SOCKET_EVENTS.CONNECT, () => {
   socket.emit(SOCKET_EVENTS.AUTHENTICATION, { identity });
@@ -148,24 +86,25 @@ function onAuthenticated() {
 function onUnauthorized() {}
 
 function onCallsChanged({ size = 0, peak } = {}) {
-  const prevMaxInQueue = getField(QUEUE, MAX_IN_QUEUE);
+  const prevMaxInQueue = getField(TYPES.QUEUE, FIELDS.MAX_IN_QUEUE);
 
-  setField(QUEUE, PENDING_IN_QUEUE, size);
-  drawQueueStatisticsField(PENDING_IN_QUEUE);
+  setField(TYPES.QUEUE, FIELDS.PENDING_IN_QUEUE, size);
+  drawQueueStatisticsField(FIELDS.PENDING_IN_QUEUE, statistics);
   if (peak && peak.requestedAt) {
-    setField(QUEUE, OLDEST_IN_QUEUE, peak.requestedAt);
-    drawQueueStatisticsField(OLDEST_IN_QUEUE);
+    setField(TYPES.QUEUE, FIELDS.OLDEST_IN_QUEUE, peak.requestedAt);
+    drawQueueStatisticsField(FIELDS.OLDEST_IN_QUEUE, statistics);
   }
 
   if (size > prevMaxInQueue) {
-    setField(QUEUE, MAX_IN_QUEUE, size);
-    drawQueueStatisticsField(MAX_IN_QUEUE);
+    setField(TYPES.QUEUE, FIELDS.MAX_IN_QUEUE, size);
+    drawQueueStatisticsField(FIELDS.MAX_IN_QUEUE, statistics);
   }
 }
 
 function subscribeToControls() {
   document.querySelector('.start-button').addEventListener('click', startTest);
   document.querySelector('.clear-button').addEventListener('click', clearTest);
+  document.querySelector('.all-calls-toggler').addEventListener('click', toggleCalls);
 }
 
 function startTest() {
@@ -182,7 +121,15 @@ function clearTest() {
   isStarted = false;
   removeUsers();
   resetStatistics();
+  removeCalls();
   enableActionButtons();
+}
+
+function toggleCalls() {
+  document.querySelector('.all-calls-statistics').classList.toggle('opened');
+  const toggler = document.querySelector('.all-calls-statistics .all-calls-toggler');
+  callsStatisticsOpened = !callsStatisticsOpened;
+  toggler.innerHTML = callsStatisticsOpened ? '&#8250;' : '&#8249;';
 }
 
 function enableActionButtons() {
@@ -198,7 +145,7 @@ function disableActionButtons() {
 function resetStatistics() {
   if (!isStarted) {
     statistics = getDefaultStatistics();
-    drawStatisitics();
+    drawStatisitics(statistics);
   } else {
     window.alert('Test is running! Please, stop it before');
   }
@@ -226,7 +173,7 @@ function preparePage() {
     connectionDelay,
     operatorsNumber
   );
-  drawStatisitics();
+  drawStatisitics(statistics);
 }
 
 function prepareCustomers(
@@ -242,17 +189,24 @@ function prepareCustomers(
   const maxFirstCallDelay =
     (Number(document.querySelector('.max-first-call-delay').value) || 5) * 1000;
 
+  setField(TYPES.CUSTOMERS, FIELDS.TOTAL, customersNumber);
+
   totalCallsForTest = customersNumber * callsPerCustomer;
 
-  drawCustomersFrames(
+  const options = {
+    io,
     customersNumber,
     operatorsNumber,
     callsPerCustomer,
     minCallDuration,
     maxCallDuration,
     connectionDelay,
-    maxFirstCallDelay
-  );
+    maxFirstCallDelay,
+    socketOptions,
+    now,
+  };
+
+  drawCustomersFrames(options);
 }
 
 function prepareOperators(
@@ -264,124 +218,30 @@ function prepareOperators(
   const acceptingLikelihood =
     Number(document.querySelector('.operator-accepting-likelihood').value) ||
     0.5;
-  drawOperatorsFrames(
+
+  const options = {
+    io,
     operatorsNumber,
     minCallDuration,
     maxCallDuration,
     connectionDelay,
-    acceptingLikelihood
-  );
-}
+    acceptingLikelihood,
+    socketOptions,
+    now,
+  };
 
-function drawCustomersFrames(
-  number,
-  operatorsNumber,
-  callsPerCustomer,
-  minCallDuration,
-  maxCallDuration,
-  connectionDelay,
-  maxFirstCallDelay
-) {
-  const parent = document.querySelector('.customers-section');
-  const fragment = document.createDocumentFragment();
-
-  new Array(number).fill(1).forEach((_, i) => {
-    const iframe = document.createElement('iframe');
-    const num = i + 1;
-    const frameContent = `
-      <html>
-        <body>
-          <p style="margin: 0; text-align: center">
-            <span>${num}</span>
-            <span class="peer-id"></span>
-          </p>
-          <p style="margin: 0; text-align: center">
-            <span class="current-call-number">0</span>
-            <span>/</span>
-            <span class="total-allowed-calls">${callsPerCustomer}</span>
-          </p>
-          <script src="/js/customer-load-testing.js"></script>
-        </body>
-      </html>
-    `;
-
-    iframe.id = `customer-${num}`;
-    iframe.classList.add('user-frame', 'customer-frame');
-    iframe.srcdoc = frameContent;
-
-    setTimeout(() => {
-      const firstCallDelay = Math.ceil(Math.random() * maxFirstCallDelay);
-      const startFirstCallAfter =
-        (Math.max(number, operatorsNumber) - i) * connectionDelay +
-        firstCallDelay;
-
-      iframe.contentWindow.io = io;
-      iframe.contentWindow.socketOptions = socketOptions;
-      iframe.contentWindow.connectionDelay = connectionDelay;
-      iframe.contentWindow.userIdentity = `${now}-customer-${num}`;
-      iframe.contentWindow.userType = CUSTOMERS;
-      iframe.contentWindow.startFirstCallAfter = startFirstCallAfter;
-      iframe.contentWindow.callsPerCustomer = callsPerCustomer;
-      iframe.contentWindow.minCallDuration = minCallDuration;
-      iframe.contentWindow.maxCallDuration = maxCallDuration;
-    });
-
-    fragment.appendChild(iframe);
-    incrementField(CUSTOMERS, TOTAL);
-  });
-
-  parent.appendChild(fragment);
-}
-
-function drawOperatorsFrames(
-  number,
-  minCallDuration,
-  maxCallDuration,
-  connectionDelay,
-  acceptingLikelihood
-) {
-  const parent = document.querySelector('.operators-section');
-  const fragment = document.createDocumentFragment();
-
-  new Array(number).fill(1).forEach((_, i) => {
-    const iframe = document.createElement('iframe');
-    const num = i + 1;
-    const frameContent = `
-      <html>
-        <body>
-          <p style="margin: 0; text-align: center">
-            <span>${num}</span>
-            <span class="peer-id"></span>
-          </p>
-          <script src="/js/operator-load-testing.js"></script>
-        </body>
-      </html>
-    `;
-
-    iframe.id = `operator-${num}`;
-    iframe.classList.add('user-frame', 'operator-frame');
-    iframe.srcdoc = frameContent;
-    setTimeout(() => {
-      iframe.contentWindow.io = io;
-      iframe.contentWindow.socketOptions = socketOptions;
-      iframe.contentWindow.connectionDelay = connectionDelay;
-      iframe.contentWindow.userIdentity = `${now}-operator-${num}`;
-      iframe.contentWindow.userType = OPERATORS;
-      iframe.contentWindow.minCallDuration = minCallDuration;
-      iframe.contentWindow.maxCallDuration = maxCallDuration;
-      iframe.contentWindow.acceptingLikelihood = acceptingLikelihood;
-    });
-    fragment.appendChild(iframe);
-    incrementField(OPERATORS, TOTAL);
-  });
-
-  parent.appendChild(fragment);
+  setField(TYPES.OPERATORS, FIELDS.TOTAL, operatorsNumber);
+  drawOperatorsFrames(options);
 }
 
 function removeUsers() {
   removeFrames('.customers-section');
   removeFrames('.operators-section');
 }
+
+function removeCalls() {
+  document.querySelector('.all-calls-statistics .all-calls').innerHTML = '';
+};
 
 function removeFrames(selector) {
   const iframes = document.querySelectorAll(`${selector} iframe`);
@@ -391,187 +251,231 @@ function removeFrames(selector) {
   }
 }
 
-function drawStatisitics() {
-  Object.keys(statistics).forEach(userType => {
-    const container = getStatisticsContainer(userType);
-
-    if (container) {
-      const statisticData = statistics[userType];
-
-      Object.keys(statisticData).forEach(field =>
-        drawStatisiticsField(container, field, statisticData[field])
-      );
-    }
-  });
+function incrementConnectingUsers(userType) {
+  incrementField(userType, FIELDS.CONNECTING);
+  getStatisticsFieldDrawer(userType)(FIELDS.CONNECTING, statistics);
 }
 
-function getStatisticsContainer(userType) {
-  return document.querySelector(`.testing-statistics .${userType}-statistics`);
+function decrementConnectingUsers(userType) {
+  decrementField(userType, FIELDS.CONNECTING);
+  getStatisticsFieldDrawer(userType)(FIELDS.CONNECTING, statistics);
 }
 
-function getStatisticsFieldDrawer(userType) {
-  const defaultDrawer = () => {};
-  return drawersMap[userType] || defaultDrawer;
+function incrementConnectedUsers(userType) {
+  incrementField(userType, FIELDS.CONNECTED);
+  getStatisticsFieldDrawer(userType)(FIELDS.CONNECTED, statistics);
 }
 
-function drawQueueStatisticsField(field) {
-  const container = getStatisticsContainer(QUEUE);
-  const value = statistics[QUEUE][field];
-  drawStatisiticsField(container, field, value);
+function decrementConnectedUsers(userType) {
+  decrementField(userType, FIELDS.CONNECTED);
+  getStatisticsFieldDrawer(userType)(FIELDS.CONNECTED, statistics);
 }
 
-function drawCustomerStatisticsField(field) {
-  const container = getStatisticsContainer(CUSTOMERS);
-  const value = statistics[CUSTOMERS][field];
-  drawStatisiticsField(container, field, value);
+function incrementAuthorizingUsers(userType) {
+  incrementField(userType, FIELDS.AUTHORIZING);
+  getStatisticsFieldDrawer(userType)(FIELDS.AUTHORIZING, statistics);
 }
 
-function drawOperatorStatisticsField(field) {
-  const container = getStatisticsContainer(OPERATORS);
-  const value = statistics[OPERATORS][field];
-  drawStatisiticsField(container, field, value);
-}
-
-function drawStatisiticsField(container, field, value) {
-  const seclector = `.${camelToKebab(field)} .quantity`;
-  const el = container.querySelector(seclector);
-  if (el) {
-    el.innerHTML = value;
-  }
+function decrementAuthorizingUsers(userType) {
+  decrementField(userType, FIELDS.AUTHORIZING);
+  getStatisticsFieldDrawer(userType)(FIELDS.AUTHORIZING, statistics);
 }
 
 function incrementAuthenticatedUsers(userType) {
-  incrementField(userType, AUTHENTICATED);
-  getStatisticsFieldDrawer(userType)(AUTHENTICATED);
+  incrementField(userType, FIELDS.AUTHENTICATED);
+  getStatisticsFieldDrawer(userType)(FIELDS.AUTHENTICATED, statistics);
 }
 
 function incrementUnauthorizedUsers(userType) {
-  incrementField(userType, UNAUTHORIZED);
-  getStatisticsFieldDrawer(userType)(UNAUTHORIZED);
+  incrementField(userType, FIELDS.UNAUTHORIZED);
+  getStatisticsFieldDrawer(userType)(FIELDS.UNAUTHORIZED, statistics);
 }
 
 function incrementWaitingForQueueCalls(userType) {
-  incrementField(userType, WAITING_FOR_QUEUE_CALLS);
-  getStatisticsFieldDrawer(userType)(WAITING_FOR_QUEUE_CALLS);
+  incrementField(userType, FIELDS.WAITING_FOR_QUEUE_CALLS);
+  getStatisticsFieldDrawer(userType)(FIELDS.WAITING_FOR_QUEUE_CALLS, statistics);
 }
 
 function decrementWaitingForQueueCalls(userType) {
-  decrementField(userType, WAITING_FOR_QUEUE_CALLS);
-  getStatisticsFieldDrawer(userType)(WAITING_FOR_QUEUE_CALLS);
+  decrementField(userType, FIELDS.WAITING_FOR_QUEUE_CALLS);
+  getStatisticsFieldDrawer(userType)(FIELDS.WAITING_FOR_QUEUE_CALLS, statistics);
 }
 
 function incrementNotEnqueuedCalls(userType) {
-  incrementField(userType, NOT_ENQUEUED_CALLS);
-  getStatisticsFieldDrawer(userType)(NOT_ENQUEUED_CALLS);
+  incrementField(userType, FIELDS.NOT_ENQUEUED_CALLS);
+  getStatisticsFieldDrawer(userType)(FIELDS.NOT_ENQUEUED_CALLS, statistics);
 }
 
-function incrementPendingCalls(userType) {
-  incrementField(userType, PENDING_CALLS);
-  getStatisticsFieldDrawer(userType)(PENDING_CALLS);
+function incrementPendingCalls(userType, id) {
+  incrementField(userType, FIELDS.PENDING_CALLS);
+  checkAndAddCall(id);
+  getStatisticsFieldDrawer(userType)(FIELDS.PENDING_CALLS, statistics);
 }
 
 function decrementPendingCalls(userType) {
-  decrementField(userType, PENDING_CALLS);
-  getStatisticsFieldDrawer(userType)(PENDING_CALLS);
+  decrementField(userType, FIELDS.PENDING_CALLS);
+  getStatisticsFieldDrawer(userType)(FIELDS.PENDING_CALLS, statistics);
 }
 
 function incrementActiveCalls(userType) {
-  incrementField(userType, ACTIVE_CALLS);
-  getStatisticsFieldDrawer(userType)(ACTIVE_CALLS);
+  incrementField(userType, FIELDS.ACTIVE_CALLS);
+  getStatisticsFieldDrawer(userType)(FIELDS.ACTIVE_CALLS, statistics);
 
-  const currentActiveCalls = getField(userType, ACTIVE_CALLS);
-  const maxActiveCalls = getField(userType, MAX_ACTIVE_CALLS);
+  const currentActiveCalls = getField(userType, FIELDS.ACTIVE_CALLS);
+  const maxActiveCalls = getField(userType, FIELDS.MAX_ACTIVE_CALLS);
 
   if (currentActiveCalls > maxActiveCalls) {
-    setField(userType, MAX_ACTIVE_CALLS, currentActiveCalls);
-    getStatisticsFieldDrawer(userType)(MAX_ACTIVE_CALLS);
+    setField(userType, FIELDS.MAX_ACTIVE_CALLS, currentActiveCalls);
+    getStatisticsFieldDrawer(userType)(FIELDS.MAX_ACTIVE_CALLS, statistics);
   }
 }
 
 function decrementActiveCalls(userType) {
-  decrementField(userType, ACTIVE_CALLS);
-  getStatisticsFieldDrawer(userType)(ACTIVE_CALLS);
+  decrementField(userType, FIELDS.ACTIVE_CALLS);
+  getStatisticsFieldDrawer(userType)(FIELDS.ACTIVE_CALLS, statistics);
 }
 
 function incrementFinishedCalls(userType) {
-  incrementField(userType, FINISHED_CALLS);
+  incrementField(userType, FIELDS.FINISHED_CALLS);
   incrementTotalCalls(userType);
-  getStatisticsFieldDrawer(userType)(FINISHED_CALLS);
+  getStatisticsFieldDrawer(userType)(FIELDS.FINISHED_CALLS, statistics);
 }
 
 function incrementMissedCalls(userType) {
-  incrementField(userType, MISSED_CALLS);
+  incrementField(userType, FIELDS.MISSED_CALLS);
   incrementTotalCalls(userType);
-  getStatisticsFieldDrawer(userType)(MISSED_CALLS);
+  getStatisticsFieldDrawer(userType)(FIELDS.MISSED_CALLS, statistics);
 }
 
 function incrementOperatorsAcceptedCalls() {
-  incrementTotalCalls(OPERATORS);
+  incrementTotalCalls(TYPES.OPERATORS);
 }
 
-function updateCallEnqueueingTime(value = 0) {
+function onUserConnected(userType, requestTime, responseTime) {
+  const value = responseTime - requestTime;
+  const totalConnectingTime = getField(userType, FIELDS.TOTAL_CONNECTING_TIME) + value;
+  const totalUsers = getField(userType, FIELDS.CONNECTED);
+
+  if (checkMinConnectingTime(userType, value)) {
+    getStatisticsFieldDrawer(userType)(FIELDS.MIN_CONNECTING_TIME, statistics);
+  }
+
+  if (checkMaxConnectingTime(userType, value)) {
+    getStatisticsFieldDrawer(userType)(FIELDS.MAX_CONNECTING_TIME, statistics);
+  }
+
+  const average = totalUsers
+    ? (Number(totalConnectingTime) / totalUsers).toFixed(3)
+    : 0;
+
+  setField(userType, FIELDS.TOTAL_CONNECTING_TIME, totalConnectingTime);
+  setField(userType, FIELDS.AVERAGE_CONNECTING_TIME, average);
+  getStatisticsFieldDrawer(userType)(FIELDS.AVERAGE_CONNECTING_TIME, statistics);
+}
+
+function onUserAuthorized(userType, requestTime, responseTime) {
+  const value = responseTime - requestTime;
+  const totalAuthorizingTime = getField(userType, FIELDS.TOTAL_AUTHORIZING_TIME) + value;
+  const totalUsers = getField(userType, FIELDS.AUTHENTICATED);
+
+  if (checkMinAuthorizingTime(userType, value)) {
+    getStatisticsFieldDrawer(userType)(FIELDS.MIN_AUTHORIZING_TIME, statistics);
+  }
+
+  if (checkMaxAuthorizingTime(userType, value)) {
+    getStatisticsFieldDrawer(userType)(FIELDS.MAX_AUTHORIZING_TIME, statistics);
+  }
+
+  const average = totalUsers
+    ? (Number(totalAuthorizingTime) / totalUsers).toFixed(3)
+    : 0;
+
+  setField(userType, FIELDS.TOTAL_AUTHORIZING_TIME, totalAuthorizingTime);
+  setField(userType, FIELDS.AVERAGE_AUTHORIZING_TIME, average);
+  getStatisticsFieldDrawer(userType)(FIELDS.AVERAGE_AUTHORIZING_TIME, statistics);
+}
+
+function onCallEnqueued(id, requestTime, responseTime) {
+  const value = responseTime - requestTime;
+
   if (checkMinEnqueueingTime(value)) {
-    drawCustomerStatisticsField(MIN_ENQUEUEING_TIME);
+    drawCustomerStatisticsField(FIELDS.MIN_ENQUEUEING_TIME, statistics);
   }
 
   if (checkMaxEnqueueingTime(value)) {
-    drawCustomerStatisticsField(MAX_ENQUEUEING_TIME);
+    drawCustomerStatisticsField(FIELDS.MAX_ENQUEUEING_TIME, statistics);
   }
+
+  updateAndDrawCall(id, {
+    [FIELDS.REQUESTED_AT]: moment(requestTime * 1000).format('HH:mm:ss'),
+    [FIELDS.ENQUEUED_AT]: moment(responseTime * 1000).format('HH:mm:ss'),
+    [FIELDS.WRAPPING_UP_CUSTOMER]: value.toFixed(3),
+  });
 
   totalEnqueueingTime += value;
 
-  const totalCalls = getField(CUSTOMERS, TOTAL_CALLS);
+  const totalCalls = getField(TYPES.CUSTOMERS, FIELDS.TOTAL_CALLS);
   const average = totalCalls
     ? (Number(totalEnqueueingTime) / totalCalls).toFixed(2)
     : 0;
-  setField(CUSTOMERS, AVERAGE_ENQUEUEING_TIME, average);
-  drawCustomerStatisticsField(AVERAGE_ENQUEUEING_TIME);
+  setField(TYPES.CUSTOMERS, FIELDS.AVERAGE_ENQUEUEING_TIME, average);
+  drawCustomerStatisticsField(FIELDS.AVERAGE_ENQUEUEING_TIME, statistics);
 }
 
-function updateCallAcceptingTime(value = 0) {
+function onCallAcceptionHandled(id, requestTime, responseTime) {
+  const value = responseTime - requestTime;
+
   if (checkMinAcceptingTime(value)) {
-    drawOperatorStatisticsField(MIN_ACCEPTING_TIME);
+    drawOperatorStatisticsField(FIELDS.MIN_ACCEPTING_TIME, statistics);
   }
 
   if (checkMaxAcceptingTime(value)) {
-    drawOperatorStatisticsField(MAX_ACCEPTING_TIME);
+    drawOperatorStatisticsField(FIELDS.MAX_ACCEPTING_TIME, statistics);
+  }
+
+  if (id) {
+    updateAndDrawCall(id, {
+      [FIELDS.ACCEPTED_AT]: moment(requestTime * 1000).format('HH:mm:ss'),
+      [FIELDS.READY_FOR_OPERATOR_AT]: moment(responseTime * 1000).format('HH:mm:ss'),
+      [FIELDS.WRAPPING_UP_OPERATOR]: value.toFixed(3),
+    });
   }
 
   totalAcceptingTime += value;
 
-  const totalCalls = getField(OPERATORS, TOTAL_CALLS);
+  const totalCalls = getField(TYPES.OPERATORS, FIELDS.TOTAL_CALLS);
   const average = totalCalls
     ? (Number(totalAcceptingTime) / totalCalls).toFixed(2)
     : 0;
-  setField(OPERATORS, AVERAGE_ACCEPTING_TIME, average);
-  drawOperatorStatisticsField(AVERAGE_ACCEPTING_TIME);
+  setField(TYPES.OPERATORS, FIELDS.AVERAGE_ACCEPTING_TIME, average);
+  drawOperatorStatisticsField(FIELDS.AVERAGE_ACCEPTING_TIME, statistics);
 }
 
 function updateCallDurationTime(value = 0) {
   if (checkMinCallDuration(value)) {
-    drawCustomerStatisticsField(MIN_DURATION);
+    drawCustomerStatisticsField(FIELDS.MIN_DURATION, statistics);
   }
 
   if (checkMaxCallDuration(value)) {
-    drawCustomerStatisticsField(MAX_DURATION);
+    drawCustomerStatisticsField(FIELDS.MAX_DURATION, statistics);
   }
 
   totalDuration += value;
 
-  const totalCalls = getField(CUSTOMERS, TOTAL_CALLS);
+  const totalCalls = getField(TYPES.CUSTOMERS, FIELDS.TOTAL_CALLS);
   const average = totalCalls
     ? (Number(totalDuration) / totalCalls).toFixed(2)
     : 0;
-  setField(CUSTOMERS, AVERAGE_DURATION, average);
-  setField(CUSTOMERS, TOTAL_DURATION, totalDuration.toFixed(2));
-  drawCustomerStatisticsField(AVERAGE_DURATION);
-  drawCustomerStatisticsField(TOTAL_DURATION);
+  setField(TYPES.CUSTOMERS, FIELDS.AVERAGE_DURATION, average);
+  setField(TYPES.CUSTOMERS, FIELDS.TOTAL_DURATION, totalDuration.toFixed(2));
+  drawCustomerStatisticsField(FIELDS.AVERAGE_DURATION, statistics);
+  drawCustomerStatisticsField(FIELDS.TOTAL_DURATION, statistics);
 }
 
 function incrementTotalCalls(userType) {
-  incrementField(userType, TOTAL_CALLS);
-  getStatisticsFieldDrawer(userType)(TOTAL_CALLS);
-  const totalCalls = getField(CUSTOMERS, TOTAL_CALLS);
+  incrementField(userType, FIELDS.TOTAL_CALLS);
+  getStatisticsFieldDrawer(userType)(FIELDS.TOTAL_CALLS, statistics);
+  const totalCalls = getField(TYPES.CUSTOMERS, FIELDS.TOTAL_CALLS);
   if (totalCalls === totalCallsForTest) {
     enableActionButtons();
   }
@@ -619,7 +523,7 @@ function decrementField(userType, field) {
 function checkMinEnqueueingTime(value = 0) {
   if (value < minEnqueueingTime) {
     minEnqueueingTime = value;
-    setField(CUSTOMERS, MIN_ENQUEUEING_TIME, value.toFixed(2));
+    setField(TYPES.CUSTOMERS, FIELDS.MIN_ENQUEUEING_TIME, value.toFixed(2));
     return true;
   }
   return false;
@@ -628,7 +532,7 @@ function checkMinEnqueueingTime(value = 0) {
 function checkMaxEnqueueingTime(value = 0) {
   if (value > maxEnqueueingTime) {
     maxEnqueueingTime = value;
-    setField(CUSTOMERS, MAX_ENQUEUEING_TIME, value.toFixed(2));
+    setField(TYPES.CUSTOMERS, FIELDS.MAX_ENQUEUEING_TIME, value.toFixed(2));
     return true;
   }
   return false;
@@ -637,7 +541,7 @@ function checkMaxEnqueueingTime(value = 0) {
 function checkMinAcceptingTime(value = 0) {
   if (value < minAcceptingTime) {
     minAcceptingTime = value;
-    setField(OPERATORS, MIN_ACCEPTING_TIME, value.toFixed(2));
+    setField(TYPES.OPERATORS, FIELDS.MIN_ACCEPTING_TIME, value.toFixed(2));
     return true;
   }
   return false;
@@ -646,7 +550,7 @@ function checkMinAcceptingTime(value = 0) {
 function checkMaxAcceptingTime(value = 0) {
   if (value > maxAcceptingTime) {
     maxAcceptingTime = value;
-    setField(OPERATORS, MAX_ACCEPTING_TIME, value.toFixed(2));
+    setField(TYPES.OPERATORS, FIELDS.MAX_ACCEPTING_TIME, value.toFixed(2));
     return true;
   }
   return false;
@@ -655,7 +559,7 @@ function checkMaxAcceptingTime(value = 0) {
 function checkMinCallDuration(value = 0) {
   if (value < minDuration) {
     minDuration = value;
-    setField(CUSTOMERS, MIN_DURATION, value.toFixed(2));
+    setField(TYPES.CUSTOMERS, FIELDS.MIN_DURATION, value.toFixed(2));
     return true;
   }
   return false;
@@ -664,28 +568,77 @@ function checkMinCallDuration(value = 0) {
 function checkMaxCallDuration(value = 0) {
   if (value > maxDuration) {
     maxDuration = value;
-    setField(CUSTOMERS, MAX_DURATION, value.toFixed(2));
+    setField(TYPES.CUSTOMERS, FIELDS.MAX_DURATION, value.toFixed(2));
     return true;
   }
   return false;
 }
 
-function getDefaultStatistics() {
-  return {
-    [QUEUE]: { ...defaultStatistics[QUEUE] },
-    [CUSTOMERS]: { ...defaultStatistics[CUSTOMERS] },
-    [OPERATORS]: { ...defaultStatistics[OPERATORS] },
-  };
+function checkMinConnectingTime(userType, value) {
+  const minConnectingTime = parseFloat(getField(userType, FIELDS.MIN_CONNECTING_TIME));
+  if (value < minConnectingTime) {
+    setField(userType, FIELDS.MIN_CONNECTING_TIME, value.toFixed(3));
+    return true;
+  }
+  return false;
+}
+
+function checkMaxConnectingTime(userType, value) {
+  const maxConnectingTime = parseFloat(getField(userType, FIELDS.MAX_CONNECTING_TIME));
+  if (value > maxConnectingTime) {
+    setField(userType, FIELDS.MAX_CONNECTING_TIME, value.toFixed(3));
+    return true;
+  }
+  return false;
+}
+
+function checkMinAuthorizingTime(userType, value) {
+  const minAuthorizingTime = parseFloat(getField(userType, FIELDS.MIN_AUTHORIZING_TIME));
+  console.log('checkMinAuthorizingTime', minAuthorizingTime, value);
+  if (value < minAuthorizingTime) {
+    setField(userType, FIELDS.MIN_AUTHORIZING_TIME, value.toFixed(3));
+    return true;
+  }
+  return false;
+}
+
+function checkMaxAuthorizingTime(userType, value) {
+  const maxAuthorizingTime = parseFloat(getField(userType, FIELDS.MAX_AUTHORIZING_TIME));
+  console.log('checkMaxAuthorizingTime', maxAuthorizingTime, value);
+  if (value > maxAuthorizingTime) {
+    setField(userType, FIELDS.MAX_AUTHORIZING_TIME, value.toFixed(3));
+    return true;
+  }
+  return false;
+}
+
+function checkAndAddCall(id) {
+  if (id && !isCallInList(id)) {
+    addCallToList(id);
+    drawCall(id);
+    return true;
+  }
+  return false;
+}
+
+function isCallInList(id) {
+  return Boolean(statistics[TYPES.CALLS][id]);
+}
+
+function addCallToList(id) {
+  statistics[TYPES.CALLS][id] = getDefaultCall();
+}
+
+function updateAndDrawCall(id, updates) {
+  const updatedCall = { ...statistics[TYPES.CALLS][id], updates };
+  statistics[TYPES.CALLS][id] = updatedCall;
+  drawCall(id, updates);
 }
 
 function disconnectFromSocket() {
   if (socket) {
     socket.disconnect();
   }
-}
-
-function camelToKebab(str) {
-  return str.replace(/[A-Z]/g, match => `-${match.toLowerCase()}`);
 }
 
 window.addEventListener('beforeunload', disconnectFromSocket);

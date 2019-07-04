@@ -4,6 +4,7 @@ body {
   background-color: #eeeeee;
   color: #4a4a4a;
   font-family: Roboto;
+  overflow-x: hidden;
 }
 
 .page-title {
@@ -44,8 +45,8 @@ body {
 }
 
 .text-input {
-  width: 50px;
-  max-width: 50px;
+  width: 40px;
+  max-width: 40px;
   border: none;
 }
 
@@ -165,4 +166,39 @@ body {
 
 .operator-frame {
   background-color: #c8e6c9;
+}
+
+.all-calls-statistics {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 300px;
+  height: 100vh;
+  max-height: 100vh;
+  background-color: #607D8B;
+  color: #ECEFF1;
+  overflow-y: scroll;
+  transform: translateX(280px);
+  transition: transform 0.5s;
+}
+
+.all-calls-statistics.opened {
+  transform: translateX(0px);
+}
+
+.all-calls-toggler {
+  border: none;
+  color: #1976D2;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.all-calls {
+  font-size: 12px;
+}
+
+.call-wrapper {
+  margin-top: 10px;
+  margin-right: 20px;
 }

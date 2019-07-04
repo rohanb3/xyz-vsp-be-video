@@ -143,7 +143,7 @@ function finishCall(callId, finishedBy) {
 
       switch (callStatus) {
         case statuses.CALL_PENDING:
-          finishingPromise = callFinisher.markCallAsMissed(callId);
+          finishingPromise = callFinisher.markCallAsMissed(callId, finishedBy);
           break;
         case statuses.CALL_ACTIVE:
           finishingPromise = callFinisher.markCallAsFinished(
@@ -152,7 +152,7 @@ function finishCall(callId, finishedBy) {
           );
           break;
         case statuses.CALLBACK_PENDING:
-          finishingPromise = callFinisher.markLastCallbackAsMissed(callId);
+          finishingPromise = callFinisher.markLastCallbackAsMissed(callId, finishedBy);
           break;
         case statuses.CALLBACK_ACTIVE:
           finishingPromise = callFinisher.markLastCallbackAsFinished(

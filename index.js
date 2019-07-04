@@ -30,6 +30,7 @@ server.on('connection', connection => {
 });
 
 process.on('unhandledRejection', error => {
+  console.log('-------', error.message);
   logger.error('unhandledRejection', error);
 });
 

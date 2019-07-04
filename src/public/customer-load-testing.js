@@ -52,6 +52,10 @@ const finishedCallsIds = [];
 
 let globalToken = null;
 let callId = null;
+let startConnectingAt = null;
+let connectedAt = null;
+let startAuthorizingAt = null;
+let authorizedAt = null;
 let startedCalls = 0;
 let requestedAtTime = null;
 let enqueuedAtTime = null;
@@ -65,20 +69,36 @@ function connectToSocket() {
   const userNumber = getUserNumber(identity);
   const connectDelay = userNumber * connectionDelay;
   setTimeout(() => {
+    startConnectingAt = getNowSeconds();
     socket = window.io(socketUrl, socketOptions);
 
     socket.once(SOCKET_EVENTS.CONNECT, () => {
+      const now = getNowSeconds();
+      connectedAt = now;
+      startAuthorizingAt = now;
+
       socket.emit(SOCKET_EVENTS.AUTHENTICATION, { identity, deviceId });
       socket.once(SOCKET_EVENTS.AUTHENTICATED, onAuthenticated);
       socket.once(SOCKET_EVENTS.UNAUTHORIZED, onUnauthorized);
+
+      statisticsCallbacks.decrementConnectingUsers(userType);
+      statisticsCallbacks.incrementConnectedUsers(userType);
+      statisticsCallbacks.incrementAuthorizingUsers(userType);
+      statisticsCallbacks.onUserConnected(userType, startConnectingAt, connectedAt);
     });
+
+    statisticsCallbacks.incrementConnectingUsers(userType);
   }, connectDelay);
 }
 
 function onAuthenticated(token) {
   globalToken = token;
+  authorizedAt = getNowSeconds();
+
   setAuthorizeStatus('Yes', globalToken);
+  statisticsCallbacks.decrementAuthorizingUsers(userType);
   statisticsCallbacks.incrementAuthenticatedUsers(userType);
+  statisticsCallbacks.onUserAuthorized(userType, startAuthorizingAt, authorizedAt);
   setTimeout(startCall, startFirstCallAfter);
 }
 
@@ -95,6 +115,7 @@ function onUnauthorized(error) {
   console.error(`Customer ${identity} was not authorized: ${error}`);
   setAuthorizeStatus('No');
   setCallStatus(CALL_STATUSES.UNAUTHORIZED);
+  statisticsCallbacks.decrementAuthorizingUsers(userType);
   statisticsCallbacks.incrementUnauthorizedUsers(userType);
 }
 
@@ -152,10 +173,8 @@ function onCallEnqueued(id) {
   enqueuedAtTime = getNowSeconds();
   setCallStatus(CALL_STATUSES.CALL_ENQUEUED);
   statisticsCallbacks.decrementWaitingForQueueCalls(userType);
-  statisticsCallbacks.incrementPendingCalls(userType);
-  statisticsCallbacks.updateCallEnqueueingTime(
-    enqueuedAtTime - requestedAtTime
-  );
+  statisticsCallbacks.incrementPendingCalls(userType, id);
+  statisticsCallbacks.onCallEnqueued(id, requestedAtTime, enqueuedAtTime);
 }
 
 function onCallNotEnqueued() {

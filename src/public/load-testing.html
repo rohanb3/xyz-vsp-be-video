@@ -30,7 +30,7 @@
                 />
               </div>
               <div class="testing-input-wrapper">
-                <label for="connectionDelay">Connection delay:</label>
+                <label for="connectionDelay">Connection delay(s):</label>
                 <input
                   type="number"
                   value="1"
@@ -54,7 +54,7 @@
             </div>
             <div class="calls-settings">
               <div class="testing-input-wrapper">
-                <label for="callsPerCustomer">Calls per user:</label>
+                <label for="callsPerCustomer">Calls per customer:</label>
                 <input
                   type="number"
                   value="1"
@@ -63,7 +63,7 @@
                 />
               </div>
               <div class="testing-input-wrapper">
-                <label for="minCallDuration">Min duration:</label>
+                <label for="minCallDuration">Min duration(s):</label>
                 <input
                   type="number"
                   value="3"
@@ -72,7 +72,7 @@
                 />
               </div>
               <div class="testing-input-wrapper">
-                <label for="maxCallDuration">Max duration:</label>
+                <label for="maxCallDuration">Max duration(s):</label>
                 <input
                   type="number"
                   value="5"
@@ -81,7 +81,7 @@
                 />
               </div>
               <div class="testing-input-wrapper">
-                <label for="maxFirstCallDelay">Max 1st call delay:</label>
+                <label for="maxFirstCallDelay">Max 1st call delay(s):</label>
                 <input
                   type="number"
                   value="5"
@@ -112,7 +112,7 @@
                 <span class="quantity">0</span>
               </p>
               <p class="max-in-queue">
-                <span>Max: </span><span class="quantity">0</span>
+                <span>Max calls: </span><span class="quantity">0</span>
               </p>
               <!-- <p class="oldest-in-queue">
                 Oldest: <span class="quantity">0</span>
@@ -120,22 +120,54 @@
             </div>
           </section>
           <section class="users-statistics customers-statistics">
-            <div class="user-statistics-pane user-type">Customers</div>
             <div class="user-statistics-pane users-number">
-              <p class="total">Total: <span class="quantity">0</span></p>
+              <p>Customers</p>
+              <p class="connecting">
+                Connecting: <span class="quantity">0</span>
+              </p>
+              <p class="connected">
+                Connected: <span class="quantity">0</span>
+              </p>
+              <p class="authorizing">
+                Authorizing: <span class="quantity">0</span>
+              </p>
               <p class="authenticated">
                 Authenticated: <span class="quantity">0</span>
               </p>
               <p class="unauthorized">
                 Unauthorized: <span class="quantity">0</span>
               </p>
+              <p class="total">Total: <span class="quantity">0</span></p>
+            </div>
+            <div class="user-statistics-pane customers-connection-statistics">
+              <p>Connecting (sec)</p>
+              <p class="min-connecting-time">
+                Min: <span class="quantity">0</span>
+              </p>
+              <p class="max-connecting-time">
+                Max: <span class="quantity">0</span>
+              </p>
+              <p class="average-connecting-time">
+                Average: <span class="quantity">0</span>
+              </p>
+              <p>Authorizing (sec)</p>
+              <p class="min-authorizing-time">
+                Min: <span class="quantity">0</span>
+              </p>
+              <p class="max-authorizing-time">
+                Max: <span class="quantity">0</span>
+              </p>
+              <p class="average-authorizing-time">
+                Average: <span class="quantity">0</span>
+              </p>
             </div>
             <div class="user-statistics-pane calls-statistics">
+              <p>Calls</p>
               <p class="waiting-for-queue-calls">
-                Enqueueing: <span class="quantity">0</span>
+                Waiting for queue: <span class="quantity">0</span>
               </p>
               <p class="pending-calls">
-                Pending: <span class="quantity">0</span>
+                In queue: <span class="quantity">0</span>
               </p>
               <p class="active-calls">
                 Active: <span class="quantity">0</span>
@@ -152,7 +184,7 @@
               <p class="total-calls">Total: <span class="quantity">0</span></p>
             </div>
             <div class="user-statistics-pane calls-connection-statistics">
-              <p>Enqueueing time</p>
+              <p>Wrapping-up (sec)</p>
               <p class="min-enqueueing-time">
                 Min: <span class="quantity">0</span>
               </p>
@@ -164,7 +196,7 @@
               </p>
             </div>
             <div class="user-statistics-pane calls-duration-statistics">
-              <p>Duration</p>
+              <p>Call duration (sec)</p>
               <p class="min-duration">
                 Min: <span class="quantity">0</span>
               </p>
@@ -180,18 +212,49 @@
             </div>
           </section>
           <section class="users-statistics operators-statistics">
-            <div class="user-statistics-pane user-type">Operators</div>
             <div class="user-statistics-pane users-number">
-              <p class="total">Total: <span class="quantity">0</span></p>
+              <p>Operators</p>
+              <p class="connecting">
+                Connecting: <span class="quantity">0</span>
+              </p>
+              <p class="connected">
+                Connected: <span class="quantity">0</span>
+              </p>
+              <p class="authorizing">
+                Authorizing: <span class="quantity">0</span>
+              </p>
               <p class="authenticated">
                 Authenticated: <span class="quantity">0</span>
               </p>
               <p class="unauthorized">
                 Unauthorized: <span class="quantity">0</span>
               </p>
+              <p class="total">Total: <span class="quantity">0</span></p>
+            </div>
+            <div class="user-statistics-pane operators-connection-statistics">
+              <p>Connecting (sec)</p>
+              <p class="min-connecting-time">
+                Min: <span class="quantity">0</span>
+              </p>
+              <p class="max-connecting-time">
+                Max: <span class="quantity">0</span>
+              </p>
+              <p class="average-connecting-time">
+                Average: <span class="quantity">0</span>
+              </p>
+              <p>Authorizing (sec)</p>
+              <p class="min-authorizing-time">
+                Min: <span class="quantity">0</span>
+              </p>
+              <p class="max-authorizing-time">
+                Max: <span class="quantity">0</span>
+              </p>
+              <p class="average-authorizing-time">
+                Average: <span class="quantity">0</span>
+              </p>
             </div>
             <div class="user-statistics-pane calls-connection-statistics">
-              <p>Accepting time</p>
+              <p>Wrapping-up (sec)</p>
               <p class="min-accepting-time">
                 Min: <span class="quantity">0</span>
               </p>
@@ -212,6 +275,14 @@
         <section class="user-section operators-section"></section>
       </section>
     </main>
+    <aside>
+      <section class="all-calls-statistics">
+        <button type="button" name="allCallsToggler" class="all-calls-toggler">&#8249;</button>
+        <ul class="all-calls">
+
+        </ul>
+      </section>
+    </aside>
     <script src="/js/load-testing.js"></script>
   </body>
 </html>

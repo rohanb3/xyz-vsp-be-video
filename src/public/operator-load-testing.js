@@ -54,6 +54,10 @@ const SOCKET_EVENTS = {
 };
 
 let callId = null;
+let startConnectingAt = null;
+let connectedAt = null;
+let startAuthorizingAt = null;
+let authorizedAt = null;
 let acceptedAtTime = null;
 let roomCreatedAtTime = null;
 let callAcceptionFailedAtTime = null;
@@ -65,19 +69,35 @@ function connectToSocket() {
   const userNumber = getUserNumber(identity);
   const connectDelay = userNumber * connectionDelay;
   setTimeout(() => {
+    startConnectingAt = getNowSeconds();
     socket = window.io(socketUrl, socketOptions);
 
     socket.once(SOCKET_EVENTS.CONNECT, () => {
+      const now = getNowSeconds();
+      connectedAt = now;
+      startAuthorizingAt = now;
+
       socket.emit(SOCKET_EVENTS.AUTHENTICATION, { identity });
       socket.once(SOCKET_EVENTS.AUTHENTICATED, onAuthenticated);
       socket.once(SOCKET_EVENTS.UNAUTHORIZED, onUnauthorized);
+
+      statisticsCallbacks.decrementConnectingUsers(userType);
+      statisticsCallbacks.incrementConnectedUsers(userType);
+      statisticsCallbacks.incrementAuthorizingUsers(userType);
+      statisticsCallbacks.onUserConnected(userType, startConnectingAt, connectedAt);
     });
+
+    statisticsCallbacks.incrementConnectingUsers(userType);
   }, connectDelay);
 }
 
 function onAuthenticated() {
+  authorizedAt = getNowSeconds();
+
   setAuthorizeStatus();
+  statisticsCallbacks.decrementAuthorizingUsers(userType);
   statisticsCallbacks.incrementAuthenticatedUsers(userType);
+  statisticsCallbacks.onUserAuthorized(userType, startAuthorizingAt, authorizedAt);
   socket.on(SOCKET_EVENTS.CALLS_CHANGED, onCallsChanged);
 }
 
@@ -93,6 +113,7 @@ function setCallStatus(status = 'Idle') {
 function onUnauthorized(error) {
   console.error(`Operator ${identity} was not authorized: ${error}`);
   setCallStatus(CALL_STATUSES.UNAUTHORIZED);
+  statisticsCallbacks.decrementAuthorizingUsers(userType);
   statisticsCallbacks.incrementUnauthorizedUsers(userType);
 }
 
@@ -135,8 +156,10 @@ function onRoomCreated(call) {
 
   callId = call.id;
   roomCreatedAtTime = getNowSeconds();
-  statisticsCallbacks.updateCallAcceptingTime(
-    roomCreatedAtTime - acceptedAtTime
+  statisticsCallbacks.onCallAcceptionHandled(
+    call.id,
+    acceptedAtTime,
+    roomCreatedAtTime,
   );
 
   if (Math.random() > 0.9) {
@@ -158,8 +181,10 @@ function onRoomCreated(call) {
 function onCallAcceptingFailed(data) {
   socket.off(SOCKET_EVENTS.ROOM_CREATED);
   callAcceptionFailedAtTime = getNowSeconds();
-  statisticsCallbacks.updateCallAcceptingTime(
-    callAcceptionFailedAtTime - acceptedAtTime
+  statisticsCallbacks.onCallAcceptionHandled(
+    null,
+    acceptedAtTime,
+    callAcceptionFailedAtTime,
   );
   console.error(
     `Call accepting by operator ${identity} failed: ${data.reason}`
