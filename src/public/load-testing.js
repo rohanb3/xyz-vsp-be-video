@@ -465,9 +465,13 @@ function onCallAcceptionByOperatorHandled(id, requestTime, responseTime) {
       [FIELDS.WRAPPING_UP_OPERATOR]: value.toFixed(3),
     };
 
-    const readyForCustomerAt = getField(TYPES.CALLS, id)[
-      FIELDS.READY_FOR_CUSTOMER_AT_RAW
-    ];
+    let call = getField(TYPES.CALLS, id);
+
+    if (!call) {
+      call = checkAndAddCall(id);
+    }
+
+    const readyForCustomerAt = call[FIELDS.READY_FOR_CUSTOMER_AT_RAW];
 
     if (readyForCustomerAt) {
       updates[FIELDS.WRAPPING_UP_CUSTOMER] = (
@@ -490,7 +494,13 @@ function onCallAcceptionByOperatorHandled(id, requestTime, responseTime) {
 
 function onCustomerCallAccepted(id, requestTime, responseTime) {
   if (id) {
-    const acceptedAt = getField(TYPES.CALLS, id)[FIELDS.ACCEPTED_AT_RAW];
+    let call = getField(TYPES.CALLS, id);
+
+    if (!call) {
+      call = checkAndAddCall(id);
+    }
+
+    const acceptedAt = call[FIELDS.ACCEPTED_AT_RAW];
     const updates = {
       [FIELDS.READY_FOR_CUSTOMER_AT]: moment(responseTime * 1000).format(
         'HH:mm:ss'
@@ -677,11 +687,11 @@ function checkMaxAuthorizingTime(userType, value) {
 
 function checkAndAddCall(id) {
   if (id && !isCallInList(id)) {
-    addCallToList(id);
+    const defaultCall = addCallToList(id);
     drawCall(id);
-    return true;
+    return defaultCall;
   }
-  return false;
+  return null;
 }
 
 function isCallInList(id) {
@@ -689,7 +699,9 @@ function isCallInList(id) {
 }
 
 function addCallToList(id) {
-  statistics[TYPES.CALLS][id] = getDefaultCall();
+  const defaultCall = getDefaultCall()
+  statistics[TYPES.CALLS][id] = defaultCall;
+  return defaultCall;
 }
 
 function updateAndDrawCall(id, updates) {
