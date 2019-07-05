@@ -226,7 +226,9 @@ class OperatorsRoom {
   }
 
   getSocketIdByIdentity(identity) {
-    return connectionsHeap.get(identity).then((connectionData = {}) => connectionData.socketId);
+    return connectionsHeap
+      .get(identity)
+      .then((connectionData = {}) => connectionData ? connectionData.socketId : null);
   }
 }
 
