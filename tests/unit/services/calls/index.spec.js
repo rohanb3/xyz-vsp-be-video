@@ -487,11 +487,12 @@ describe('calls: ', () => {
     });
 
     it('should mark call as missed if call is pending', () => {
+      const finishedBy = 'customer42';
       storage.get = jest.fn(() => Promise.resolve(call));
       callStatusHelper.getCallStatus = jest.fn(() => statuses.CALL_PENDING);
 
-      return calls.finishCall(callId).then(() => {
-        expect(callFinisher.markCallAsMissed).toHaveBeenCalledWith(callId);
+      return calls.finishCall(callId, finishedBy).then(() => {
+        expect(callFinisher.markCallAsMissed).toHaveBeenCalledWith(callId, finishedBy);
         expect(callFinisher.markCallAsFinished).not.toHaveBeenCalled();
         expect(callFinisher.markLastCallbackAsMissed).not.toHaveBeenCalled();
         expect(callFinisher.markLastCallbackAsFinished).not.toHaveBeenCalled();
@@ -513,13 +514,15 @@ describe('calls: ', () => {
     });
 
     it('should mark last callback as missed as finished if callback is pending', () => {
+      const finishedBy = 'customer42';
+
       storage.get = jest.fn(() => Promise.resolve(call));
       callStatusHelper.getCallStatus = jest.fn(() => statuses.CALLBACK_PENDING);
 
-      return calls.finishCall(callId).then(() => {
+      return calls.finishCall(callId, finishedBy).then(() => {
         expect(callFinisher.markCallAsMissed).not.toHaveBeenCalled();
         expect(callFinisher.markCallAsFinished).not.toHaveBeenCalled();
-        expect(callFinisher.markLastCallbackAsMissed).toHaveBeenCalledWith(callId);
+        expect(callFinisher.markLastCallbackAsMissed).toHaveBeenCalledWith(callId, finishedBy);
         expect(callFinisher.markLastCallbackAsFinished).not.toHaveBeenCalled();
       });
     });
