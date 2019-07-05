@@ -5,4 +5,4 @@ apps:
     exec_mode: cluster
     name: vsp-be-video
     kill_timeout: 5000
-    node_args: "--max-old-space-size=2048"
+    node_args: "--max-old-space-size=4096"

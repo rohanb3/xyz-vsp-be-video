@@ -1,5 +1,7 @@
 const { TYPES } = require('./constants');
 
+const START_FIRST_CALL_ADDITIONAL_DELAY = 5000;
+
 function drawCustomersFrames({
   io,
   customersNumber,
@@ -43,7 +45,7 @@ function drawCustomersFrames({
       const firstCallDelay = Math.ceil(Math.random() * maxFirstCallDelay);
       const startFirstCallAfter =
         (Math.max(customersNumber, operatorsNumber) - i) * connectionDelay +
-        firstCallDelay;
+        firstCallDelay + START_FIRST_CALL_ADDITIONAL_DELAY;
 
       iframe.contentWindow.io = io;
       iframe.contentWindow.socketOptions = socketOptions;
