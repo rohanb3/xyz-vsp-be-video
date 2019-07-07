@@ -31,6 +31,7 @@ const socket = io(socketUrl, socketOptions);
 
 let isStarted = false;
 let callsStatisticsOpened = false;
+let legendOpened = false;
 
 let statistics = getDefaultStatistics();
 
@@ -111,6 +112,9 @@ function subscribeToControls() {
   document
     .querySelector('.all-calls-toggler')
     .addEventListener('click', toggleCalls);
+  document
+    .querySelector('.legend-toggler')
+    .addEventListener('click', toggleLegend);
 }
 
 function startTest() {
@@ -138,6 +142,15 @@ function toggleCalls() {
   );
   callsStatisticsOpened = !callsStatisticsOpened;
   toggler.innerHTML = callsStatisticsOpened ? '&#8250;' : '&#8249;';
+}
+
+function toggleLegend() {
+  document.querySelector('.users-connection-colors-legend').classList.toggle('opened');
+  const toggler = document.querySelector(
+    '.users-connection-colors-legend .legend-toggler'
+  );
+  legendOpened = !legendOpened;
+  toggler.innerHTML = legendOpened ? '&#8249;' : '&#8250;';
 }
 
 function enableActionButtons() {
@@ -224,8 +237,8 @@ function prepareOperators(
   operatorsNumber
 ) {
   const acceptingLikelihood =
-    Number(document.querySelector('.operator-accepting-likelihood').value) ||
-    0.5;
+    (Number(document.querySelector('.operator-accepting-likelihood').value) ||
+    20) / 100;
 
   const options = {
     io,

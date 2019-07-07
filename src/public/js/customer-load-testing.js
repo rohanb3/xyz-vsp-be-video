@@ -21,8 +21,8 @@ window.disconnectFromSocket = disconnectFromSocket;
 
 const colorsMap = {
   idle: '#CFD8DC',
-  callRequested: '#FFF9C4',
-  callEnqueued: '#C5CAE9',
+  callRequested: '#C5CAE9',
+  callEnqueued: '#FFF9C4',
   callNotEnqueued: '#ffcdd2',
   onCall: '#C8E6C9',
   unauthorized: '#B0BEC5',
