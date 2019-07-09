@@ -43,7 +43,7 @@ const CONNECTION_TO_CALL_CUSTOMER = 'connectionToCallCustomer';
 const CONNECTION_TO_CALL_OPERATOR = 'connectionToCallOperator';
 const MIN_CONNECTING_TIME = 'minConnectingTime';
 const MAX_CONNECTING_TIME = 'maxConnectingTime';
-const AVERAGE_CONNECTING_TIME = 'avergageConnectingTime';
+const AVERAGE_CONNECTING_TIME = 'averageConnectingTime';
 const MIN_AUTHORIZING_TIME = 'minAuthorizingTime';
 const MAX_AUTHORIZING_TIME = 'maxAuthorizingTime';
 const AVERAGE_AUTHORIZING_TIME = 'averageAuthorizingTime';
@@ -178,4 +178,38 @@ module.exports.SOCKET_EVENTS = {
   AUTHENTICATED: 'authenticated',
   UNAUTHORIZED: 'unauthorized',
   CALLS_CHANGED: 'calls.changed',
+  CALL_REQUESTED: 'call.requested',
+  CALL_ENQUEUED: 'call.enqueued',
+  CALL_NOT_ENQUEUED: 'call.not.enqueued',
+  CALL_ACCEPTED: 'call.accepted',
+  CALL_FINISHED: 'call.finished',
+  CALLBACK_REQUESTED: 'callback.requested',
+  CALLBACK_REQUESTING_FAILED: 'callback.requesting.failed',
+  CALLBACK_ACCEPTED: 'callback.accepted',
+  CALLBACK_DECLINED: 'callback.declined',
+  ROOM_CREATED: 'room.created',
+  CALLS_EMPTY: 'calls.empty',
+  CALL_ACCEPTING_FAILED: 'call.accepting.failed',
+};
+
+module.exports.CALL_STATUSES = {
+  IDLE: 'Idle',
+  CALL_REQUESTED: 'Call requested',
+  CALL_ENQUEUED: 'Call enqueued',
+  CALL_NOT_ENQUEUED: 'Call not enqueued',
+  CALL_ACCEPTED: 'Call accepted',
+  CALL_ACCEPTING_FAILED: 'Call accepting failed',
+  ON_CALL: 'On call',
+  UNAUTHORIZED: 'Unauthorized',
+};
+
+module.exports.COLORS_MAP = {
+  idle: '#CFD8DC',
+  callRequested: '#C5CAE9',
+  callEnqueued: '#FFF9C4',
+  callNotEnqueued: '#ffcdd2',
+  callAccepted: '#FFF9C4',
+  callAcceptingFailed: '#ffcdd2',
+  onCall: '#C8E6C9',
+  unauthorized: '#B0BEC5',
 };

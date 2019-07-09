@@ -1,4 +1,6 @@
 /* eslint-disable no-console */
+const { getNowSeconds, getUserNumber, toCamelCase } = require('./src/utils');
+const { SOCKET_EVENTS, CALL_STATUSES, COLORS_MAP } = require('./src/constants');
 
 const socketUrl = '/operators';
 
@@ -19,40 +21,6 @@ let pendingCallsSize = 0;
 
 window.disconnectFromSocket = disconnectFromSocket;
 
-const colorsMap = {
-  idle: '#CFD8DC',
-  callAccepted: '#FFF9C4',
-  callAcceptingFailed: '#ffcdd2',
-  onCall: '#C8E6C9',
-  unauthorized: '#B0BEC5',
-};
-
-const CALL_STATUSES = {
-  IDLE: 'Idle',
-  CALL_ACCEPTED: 'Call accepted',
-  CALL_ACCEPTING_FAILED: 'Call accepting failed',
-  ON_CALL: 'On call',
-  UNAUTHORIZED: 'Unauthorized',
-};
-
-const SOCKET_EVENTS = {
-  CONNECT: 'connect',
-  AUTHENTICATION: 'authentication',
-  AUTHENTICATED: 'authenticated',
-  UNAUTHORIZED: 'unauthorized',
-  CALL_ACCEPTED: 'call.accepted',
-  CALL_FINISHED: 'call.finished',
-  CALLBACK_REQUESTED: 'callback.requested',
-  CALLBACK_REQUESTING_FAILED: 'callback.requesting.failed',
-  CALLBACK_ACCEPTED: 'callback.accepted',
-  CALLBACK_DECLINED: 'callback.declined',
-  CALLS_CHANGED: 'calls.changed',
-  ROOM_CREATED: 'room.created',
-  CALLS_EMPTY: 'calls.empty',
-  CALL_ACCEPTING_FAILED: 'call.accepting.failed',
-  CALL_FINISED_BY_CUSTOMER: 'call.finished.by.customer',
-};
-
 let callId = null;
 let startConnectingAt = null;
 let connectedAt = null;
@@ -61,6 +29,7 @@ let authorizedAt = null;
 let acceptedAtTime = null;
 let roomCreatedAtTime = null;
 let callAcceptionFailedAtTime = null;
+let callFinishingTimer = null;
 
 setCallStatus(CALL_STATUSES.UNAUTHORIZED);
 connectToSocket();
@@ -84,7 +53,11 @@ function connectToSocket() {
       statisticsCallbacks.decrementConnectingUsers(userType);
       statisticsCallbacks.incrementConnectedUsers(userType);
       statisticsCallbacks.incrementAuthorizingUsers(userType);
-      statisticsCallbacks.onUserConnected(userType, startConnectingAt, connectedAt);
+      statisticsCallbacks.onUserConnected(
+        userType,
+        startConnectingAt,
+        connectedAt
+      );
     });
 
     statisticsCallbacks.incrementConnectingUsers(userType);
@@ -97,7 +70,11 @@ function onAuthenticated() {
   setAuthorizeStatus();
   statisticsCallbacks.decrementAuthorizingUsers(userType);
   statisticsCallbacks.incrementAuthenticatedUsers(userType);
-  statisticsCallbacks.onUserAuthorized(userType, startAuthorizingAt, authorizedAt);
+  statisticsCallbacks.onUserAuthorized(
+    userType,
+    startAuthorizingAt,
+    authorizedAt
+  );
   socket.on(SOCKET_EVENTS.CALLS_CHANGED, onCallsChanged);
 }
 
@@ -107,7 +84,7 @@ function setAuthorizeStatus() {
 
 function setCallStatus(status = 'Idle') {
   const colorsMapKey = toCamelCase(status);
-  document.body.style.backgroundColor = colorsMap[colorsMapKey];
+  document.body.style.backgroundColor = COLORS_MAP[colorsMapKey];
 }
 
 function onUnauthorized(error) {
@@ -151,15 +128,17 @@ function updatePendingCallsData({ size } = {}) {
 }
 
 function onRoomCreated(call) {
-  socket.off(SOCKET_EVENTS.CALL_ACCEPTING_FAILED);
-  let callFinishingTimer = null;
+  socket.removeListener(
+    SOCKET_EVENTS.CALL_ACCEPTING_FAILED,
+    onCallAcceptingFailed
+  );
 
   callId = call.id;
   roomCreatedAtTime = getNowSeconds();
   statisticsCallbacks.onCallAcceptionByOperatorHandled(
     call.id,
     acceptedAtTime,
-    roomCreatedAtTime,
+    roomCreatedAtTime
   );
 
   if (Math.random() > 0.9) {
@@ -172,19 +151,16 @@ function onRoomCreated(call) {
 
   setCallStatus(CALL_STATUSES.ON_CALL);
   setPeerId(call.requestedBy);
-  socket.once(SOCKET_EVENTS.CALL_FINISHED, () => {
-    clearTimeout(callFinishingTimer);
-    makeOperatorIdle();
-  });
+  socket.once(SOCKET_EVENTS.CALL_FINISHED, onCallFinishedByCustomer);
 }
 
 function onCallAcceptingFailed(data) {
-  socket.off(SOCKET_EVENTS.ROOM_CREATED);
+  socket.removeListener(SOCKET_EVENTS.ROOM_CREATED, onRoomCreated);
   callAcceptionFailedAtTime = getNowSeconds();
   statisticsCallbacks.onCallAcceptionByOperatorHandled(
     null,
     acceptedAtTime,
-    callAcceptionFailedAtTime,
+    callAcceptionFailedAtTime
   );
   console.error(
     `Call accepting by operator ${identity} failed: ${data.reason}`
@@ -194,8 +170,13 @@ function onCallAcceptingFailed(data) {
 }
 
 function finishCall() {
-  socket.off(SOCKET_EVENTS.CALL_FINISHED);
   socket.emit(SOCKET_EVENTS.CALL_FINISHED, callId);
+  socket.removeListener(SOCKET_EVENTS.CALL_FINISHED, onCallFinishedByCustomer);
+  makeOperatorIdle();
+}
+
+function onCallFinishedByCustomer() {
+  clearTimeout(callFinishingTimer);
   makeOperatorIdle();
 }
 
@@ -206,16 +187,6 @@ function makeOperatorIdle() {
   setTimeout(acceptCallIfPossible, 2000);
 }
 
-function toCamelCase(str) {
-  return str
-    .toLowerCase()
-    .replace(/\s[a-z]/g, match => match.trim().toUpperCase());
-}
-
-function getUserNumber(id = '') {
-  return Number(id.match(/[0-9]*$/)[0]);
-}
-
 function setPeerId(idRaw) {
   if (idRaw) {
     const peerId = getUserNumber(idRaw);
@@ -223,10 +194,6 @@ function setPeerId(idRaw) {
   } else {
     document.querySelector('.peer-id').innerHTML = '';
   }
-}
-
-function getNowSeconds() {
-  return Date.now() / 1000;
 }
 
 window.addEventListener('beforeunload', disconnectFromSocket);
