@@ -29,8 +29,8 @@ server.on('connection', connection => {
   });
 });
 
-process.on('unhandledRejection', error => {
-  logger.error('unhandledRejection', error);
+process.on('unhandledRejection', (error = {}) => {
+  logger.error('unhandledRejection', error, error.message);
 });
 
 process.on('SIGINT', () => shutDown(server, connections));
