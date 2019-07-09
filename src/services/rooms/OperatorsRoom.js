@@ -21,7 +21,10 @@ const {
   CALLBACK_REQUESTING_FAILED,
 } = require('@/constants/calls');
 
-const { STATUS_CHANGED_ONLINE, STATUS_CHANGED_OFFLINE } = require('@/constants/operatorStatuses');
+const {
+  STATUS_CHANGED_ONLINE,
+  STATUS_CHANGED_OFFLINE,
+} = require('@/constants/operatorStatuses');
 
 const calls = require('@/services/calls');
 const twilio = require('@/services/twilio');
@@ -41,8 +44,12 @@ class OperatorsRoom {
       postAuthenticate: this.onOperatorAuthenticated.bind(this),
     });
     calls.subscribeToCallFinishing(this.onCallFinished.bind(this));
-    calls.subscribeToCallbackAccepting(this.checkOperatorAndEmitCallbackAccepting.bind(this));
-    calls.subscribeToCallbackDeclining(this.checkOperatorAndEmitCallbackDeclining.bind(this));
+    calls.subscribeToCallbackAccepting(
+      this.checkOperatorAndEmitCallbackAccepting.bind(this)
+    );
+    calls.subscribeToCallbackDeclining(
+      this.checkOperatorAndEmitCallbackDeclining.bind(this)
+    );
     if (isMaster) {
       calls.subscribeToCallsLengthChanging(this.emitCallsInfo.bind(this));
     }
@@ -50,11 +57,23 @@ class OperatorsRoom {
 
   onOperatorConnected(operator) {
     operator.on(CALL_ACCEPTED, this.onOperatorAcceptCall.bind(this, operator));
-    operator.on(CALLBACK_REQUESTED, this.onOperatorRequestedCallback.bind(this, operator));
-    operator.on(CALL_FINISHED, this.onOperatorFinishedCall.bind(this, operator));
+    operator.on(
+      CALLBACK_REQUESTED,
+      this.onOperatorRequestedCallback.bind(this, operator)
+    );
+    operator.on(
+      CALL_FINISHED,
+      this.onOperatorFinishedCall.bind(this, operator)
+    );
     operator.on(DISCONNECT, this.onOperatorDisconnected.bind(this, operator));
-    operator.on(STATUS_CHANGED_ONLINE, this.addOperatorToActive.bind(this, operator));
-    operator.on(STATUS_CHANGED_OFFLINE, this.removeOperatorFromActive.bind(this, operator));
+    operator.on(
+      STATUS_CHANGED_ONLINE,
+      this.addOperatorToActive.bind(this, operator)
+    );
+    operator.on(
+      STATUS_CHANGED_OFFLINE,
+      this.removeOperatorFromActive.bind(this, operator)
+    );
   }
 
   onOperatorAuthenticated(operator) {
@@ -64,12 +83,19 @@ class OperatorsRoom {
   }
 
   onOperatorAcceptCall(operator) {
-    logger.debug('Customer call: attempt to accept by operator', operator && operator.identity);
+    logger.debug(
+      'Customer call: attempt to accept by operator',
+      operator && operator.identity
+    );
     return calls
       .acceptCall(operator.identity)
-      .then((call) => {
+      .then(call => {
         const {
-          id, requestedAt, requestedBy, salesRepId, callbackEnabled,
+          id,
+          requestedAt,
+          requestedBy,
+          salesRepId,
+          callbackEnabled,
         } = call;
         const token = twilio.getToken(operator.identity, id);
         operator.emit(ROOM_CREATED, {
@@ -81,7 +107,9 @@ class OperatorsRoom {
           callbackEnabled,
         });
       })
-      .then(() => logger.debug('Customer call: accepted by operator', operator.identity))
+      .then(() =>
+        logger.debug('Customer call: accepted by operator', operator.identity)
+      )
       .catch(err => this.onCallAcceptingFailed(err, operator));
   }
 
@@ -90,7 +118,12 @@ class OperatorsRoom {
       reason: getOperatorCallFailReason(err),
     };
 
-    logger.error('Customer call: accepting failed', operator.identity, err, data);
+    logger.error(
+      'Customer call: accepting failed',
+      operator.identity,
+      err,
+      data
+    );
     operator.emit(CALL_ACCEPTING_FAILED, data);
   }
 
@@ -102,18 +135,22 @@ class OperatorsRoom {
   }
 
   onOperatorRequestedCallback(operator, callId) {
-    logger.debug('Operator callback: attempt to request', operator.identity, callId);
+    logger.debug(
+      'Operator callback: attempt to request',
+      operator.identity,
+      callId
+    );
     if (!callId) {
       logger.error('Operator callback requested: no callId', operator.identity);
       return Promise.resolve();
     }
     return calls
       .requestCallback(callId, operator.identity)
-      .then((callback) => {
+      .then(callback => {
         operator.pendingCallbackId = callback.id;
       })
       .then(() => logger.debug('Operator callback: requested', operator.id))
-      .catch((err) => {
+      .catch(err => {
         const reason = getOperatorCallFailReason(err);
         if (reason) {
           logger.error('Operator callback: requesting failed: ', reason, err);
@@ -129,12 +166,22 @@ class OperatorsRoom {
   }
 
   onOperatorFinishedCall(operator, callId) {
-    logger.debug('Call: attempt to finish by operator', callId, operator.identity);
+    logger.debug(
+      'Call: attempt to finish by operator',
+      callId,
+      operator.identity
+    );
     return callId
       ? calls
-        .finishCall(callId, operator.identity)
-        .then(() => logger.debug('Call: finished by operator', callId, operator.identity))
-        .catch(err => logger.error('Call: finishing by operator failed', err))
+          .finishCall(callId, operator.identity)
+          .then(() =>
+            logger.debug(
+              'Call: finished by operator',
+              callId,
+              operator.identity
+            )
+          )
+          .catch(err => logger.error('Call: finishing by operator failed', err))
       : Promise.resolve();
   }
 
@@ -145,7 +192,7 @@ class OperatorsRoom {
 
   checkOperatorAndEmitCallbackAccepting(call) {
     const { acceptedBy, id } = call;
-    return this.getSocketIdByIdentity(acceptedBy).then((socketId) => {
+    return this.getSocketIdByIdentity(acceptedBy).then(socketId => {
       const connectedOperator = this.operators.connected[socketId];
       if (connectedOperator) {
         this.emitCallbackAccepting(connectedOperator, id);
@@ -155,7 +202,7 @@ class OperatorsRoom {
 
   checkOperatorAndEmitCallbackDeclining(call) {
     const { acceptedBy, id, reason } = call;
-    return this.getSocketIdByIdentity(acceptedBy).then((socketId) => {
+    return this.getSocketIdByIdentity(acceptedBy).then(socketId => {
       const connectedOperator = this.operators.connected[socketId];
       if (connectedOperator) {
         this.emitCallbackDeclining(connectedOperator, { id, reason });
@@ -165,7 +212,7 @@ class OperatorsRoom {
 
   checkOperatorAndEmitCallFinishing(call) {
     const { acceptedBy, id } = call;
-    return this.getSocketIdByIdentity(acceptedBy).then((socketId) => {
+    return this.getSocketIdByIdentity(acceptedBy).then(socketId => {
       const connectedOperator = this.operators.connected[socketId];
       if (connectedOperator) {
         logger.debug('Call finished: emitting to operator', id, acceptedBy);
@@ -199,11 +246,13 @@ class OperatorsRoom {
       connectedOperator.join(ACTIVE_OPERATORS);
       return calls
         .getCallsInfo()
-        .then((info) => {
+        .then(info => {
           connectedOperator.emit(CALLS_CHANGED, info);
           logger.debug('Operator: emitted calls info', operatorId);
         })
-        .catch(err => logger.error('Calls info: emitting to active operator failed', err));
+        .catch(err =>
+          logger.error('Calls info: emitting to active operator failed', err)
+        );
     }
     return Promise.resolve();
   }
@@ -218,17 +267,41 @@ class OperatorsRoom {
   }
 
   mapSocketIdentityToId(socket) {
-    return connectionsHeap.add(socket.identity, { socketId: socket.id });
+    return connectionsHeap
+      .add(socket.identity, { socketId: socket.id })
+      .catch(err => {
+        logger.error(
+          'Operator: mapping socket identity to id failed:',
+          socket.identity,
+          socket.id,
+          err
+        );
+      });
   }
 
   checkAndUnmapSocketIdentityFromId(socket) {
-    return socket.identity ? connectionsHeap.remove(socket.identity) : Promise.resolve();
+    return socket.identity
+      ? connectionsHeap
+          .remove(socket.identity)
+          .catch(err =>
+            logger.error(
+              'Operator: unmapping identity from id failed',
+              socket.identity,
+              err
+            )
+          )
+      : Promise.resolve();
   }
 
   getSocketIdByIdentity(identity) {
     return connectionsHeap
       .get(identity)
-      .then((connectionData = {}) => connectionData ? connectionData.socketId : null);
+      .then((connectionData = {}) =>
+        connectionData ? connectionData.socketId : null
+      )
+      .catch(err =>
+        logger.error('Operator: getting id by identity failed', identity, err)
+      );
   }
 }
 
