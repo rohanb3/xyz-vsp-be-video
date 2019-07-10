@@ -166,7 +166,7 @@ function onCallAccepted({ roomId, operatorId }) {
   statisticsCallbacks.incrementActiveCalls(userType, callId);
   statisticsCallbacks.onCustomerCallAccepted(
     callId,
-    enqueuedAtTime,
+    requestedAtTime,
     acceptedAtTime
   );
 }
@@ -284,6 +284,9 @@ const MAX_AUTHORIZING_TIME = 'maxAuthorizingTime';
 const AVERAGE_AUTHORIZING_TIME = 'averageAuthorizingTime';
 const TOTAL_CONNECTING_TIME = 'totalConnectingTime';
 const TOTAL_AUTHORIZING_TIME = 'totalAuthorizingTime';
+const MIN_CONNECTING_TO_CALL_TIME = 'minConnectingToCallTime';
+const MAX_CONNECTING_TO_CALL_TIME = 'maxConnectingToCallTime';
+const AVERAGE_CONNECTING_TO_CALL_TIME = 'averageConnectingToCallTime';
 
 module.exports.TYPES = {
   QUEUE,
@@ -340,6 +343,9 @@ module.exports.FIELDS = {
   MAX_AUTHORIZING_TIME,
   AVERAGE_AUTHORIZING_TIME,
   TOTAL_AUTHORIZING_TIME,
+  MIN_CONNECTING_TO_CALL_TIME,
+  MAX_CONNECTING_TO_CALL_TIME,
+  AVERAGE_CONNECTING_TO_CALL_TIME,
 };
 
 module.exports.DEFAULT_STATISTICS = {
@@ -381,6 +387,9 @@ module.exports.DEFAULT_STATISTICS = {
     [MAX_DURATION]: 0,
     [AVERAGE_DURATION]: 0,
     [TOTAL_DURATION]: 0,
+    [MIN_CONNECTING_TO_CALL_TIME]: Infinity,
+    [MAX_CONNECTING_TO_CALL_TIME]: 0,
+    [AVERAGE_CONNECTING_TO_CALL_TIME]: 0,
   },
   [OPERATORS]: {
     [TOTAL]: 0,

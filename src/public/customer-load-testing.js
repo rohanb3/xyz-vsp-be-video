@@ -165,7 +165,7 @@ function onCallAccepted({ roomId, operatorId }) {
   statisticsCallbacks.incrementActiveCalls(userType, callId);
   statisticsCallbacks.onCustomerCallAccepted(
     callId,
-    enqueuedAtTime,
+    requestedAtTime,
     acceptedAtTime
   );
 }
