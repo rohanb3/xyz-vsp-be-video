@@ -22,7 +22,9 @@ let missedCallsIds = [];
 
 let totalEnqueueingTime = 0;
 let totalAcceptingTime = 0;
+let totalConnectingToCallTime = 0;
 let totalDuration = 0;
+let totalAcceptedCalls = 0;
 
 let totalCallsForTest = 0;
 let onAllCallsPerformed = () => {};
@@ -56,6 +58,16 @@ module.exports = {
 };
 
 function init(totalCalls = 0, allCallsPerformedHandler = () => {}) {
+  pendingCallsIds = [];
+  activeCallsIds = [];
+  finishedCallsIds = [];
+  missedCallsIds = [];
+
+  totalEnqueueingTime = 0;
+  totalAcceptingTime = 0;
+  totalConnectingToCallTime = 0;
+  totalDuration = 0;
+  totalAcceptedCalls = 0;
   totalCallsForTest = totalCalls;
   onAllCallsPerformed = allCallsPerformedHandler;
 }
@@ -363,6 +375,36 @@ function onCustomerCallAccepted(id, requestTime, responseTime, statistics) {
         responseTime - acceptedAt
       ).toFixed(3);
     }
+    const value = responseTime - requestTime;
+    if (checkMinConnectingToCallTime(TYPES.CUSTOMERS, value, statistics)) {
+      drawCustomerStatisticsField(
+        FIELDS.MIN_CONNECTING_TO_CALL_TIME,
+        statistics
+      );
+    }
+    if (checkMaxConnectingToCallTime(TYPES.CUSTOMERS, value, statistics)) {
+      drawCustomerStatisticsField(
+        FIELDS.MAX_CONNECTING_TO_CALL_TIME,
+        statistics
+      );
+    }
+
+    totalConnectingToCallTime += value;
+    totalAcceptedCalls += 1;
+
+    const average = Number(
+      totalConnectingToCallTime / totalAcceptedCalls
+    ).toFixed(2);
+    setField(
+      statistics,
+      TYPES.CUSTOMERS,
+      FIELDS.AVERAGE_CONNECTING_TO_CALL_TIME,
+      average
+    );
+    drawCustomerStatisticsField(
+      FIELDS.AVERAGE_CONNECTING_TO_CALL_TIME,
+      statistics
+    );
     updateAndDrawCall(id, updates, statistics);
   }
 }
@@ -563,6 +605,40 @@ function checkMaxAuthorizingTime(userType, value, statistics) {
       statistics,
       userType,
       FIELDS.MAX_AUTHORIZING_TIME,
+      value.toFixed(3)
+    );
+    return true;
+  }
+  return false;
+}
+
+function checkMinConnectingToCallTime(userType, value, statistics) {
+  const minConnectingToCallTime = parseFloat(
+    getField(statistics, userType, FIELDS.MIN_CONNECTING_TO_CALL_TIME)
+  );
+
+  if (value < minConnectingToCallTime) {
+    setField(
+      statistics,
+      userType,
+      FIELDS.MIN_CONNECTING_TO_CALL_TIME,
+      value.toFixed(3)
+    );
+    return true;
+  }
+  return false;
+}
+
+function checkMaxConnectingToCallTime(userType, value, statistics) {
+  const maxConnectingToCallTime = parseFloat(
+    getField(statistics, userType, FIELDS.MAX_CONNECTING_TO_CALL_TIME)
+  );
+
+  if (value > maxConnectingToCallTime) {
+    setField(
+      statistics,
+      userType,
+      FIELDS.MAX_CONNECTING_TO_CALL_TIME,
       value.toFixed(3)
     );
     return true;

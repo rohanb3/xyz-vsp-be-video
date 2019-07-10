@@ -169,10 +169,11 @@ button {
   margin-left: 5px;
   overflow: hidden;
   font-size: 10px;
-  background-color: #B0BEC5;
+  background-color: #b0bec5;
 }
 
-.all-calls-statistics, .users-connection-colors-legend {
+.all-calls-statistics,
+.users-connection-colors-legend {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -192,17 +193,19 @@ button {
   transform: translateX(280px);
 }
 
-.users-connection-colors-legend  {
+.users-connection-colors-legend {
   width: 400px;
   left: 0;
   transform: translateX(-380px);
 }
 
-.all-calls-statistics.opened, .users-connection-colors-legend.opened {
+.all-calls-statistics.opened,
+.users-connection-colors-legend.opened {
   transform: translateX(0px);
 }
 
-.all-calls-toggler, .legend-toggler {
+.all-calls-toggler,
+.legend-toggler {
   border: none;
   color: #1976d2;
   cursor: pointer;
@@ -248,7 +251,7 @@ button {
 .legend-item-color {
   width: 20px;
   min-width: 20px;
-  max-width: 20px;;
+  max-width: 20px;
   height: 70px;
   min-height: 70px;
   max-height: 70px;
@@ -260,4 +263,8 @@ button {
   justify-content: space-around;
   margin-left: 10px;
   font-size: 14px;
+}
+
+.statistics-pane-title {
+  font-weight: 500;
 }
