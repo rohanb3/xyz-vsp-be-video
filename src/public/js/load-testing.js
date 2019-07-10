@@ -13290,6 +13290,9 @@ const MAX_AUTHORIZING_TIME = 'maxAuthorizingTime';
 const AVERAGE_AUTHORIZING_TIME = 'averageAuthorizingTime';
 const TOTAL_CONNECTING_TIME = 'totalConnectingTime';
 const TOTAL_AUTHORIZING_TIME = 'totalAuthorizingTime';
+const MIN_CONNECTING_TO_CALL_TIME = 'minConnectingToCallTime';
+const MAX_CONNECTING_TO_CALL_TIME = 'maxConnectingToCallTime';
+const AVERAGE_CONNECTING_TO_CALL_TIME = 'averageConnectingToCallTime';
 
 module.exports.TYPES = {
   QUEUE,
@@ -13346,6 +13349,9 @@ module.exports.FIELDS = {
   MAX_AUTHORIZING_TIME,
   AVERAGE_AUTHORIZING_TIME,
   TOTAL_AUTHORIZING_TIME,
+  MIN_CONNECTING_TO_CALL_TIME,
+  MAX_CONNECTING_TO_CALL_TIME,
+  AVERAGE_CONNECTING_TO_CALL_TIME,
 };
 
 module.exports.DEFAULT_STATISTICS = {
@@ -13387,6 +13393,9 @@ module.exports.DEFAULT_STATISTICS = {
     [MAX_DURATION]: 0,
     [AVERAGE_DURATION]: 0,
     [TOTAL_DURATION]: 0,
+    [MIN_CONNECTING_TO_CALL_TIME]: Infinity,
+    [MAX_CONNECTING_TO_CALL_TIME]: 0,
+    [AVERAGE_CONNECTING_TO_CALL_TIME]: 0,
   },
   [OPERATORS]: {
     [TOTAL]: 0,
@@ -13707,7 +13716,9 @@ let missedCallsIds = [];
 
 let totalEnqueueingTime = 0;
 let totalAcceptingTime = 0;
+let totalConnectingToCallTime = 0;
 let totalDuration = 0;
+let totalAcceptedCalls = 0;
 
 let totalCallsForTest = 0;
 let onAllCallsPerformed = () => {};
@@ -13741,6 +13752,16 @@ module.exports = {
 };
 
 function init(totalCalls = 0, allCallsPerformedHandler = () => {}) {
+  pendingCallsIds = [];
+  activeCallsIds = [];
+  finishedCallsIds = [];
+  missedCallsIds = [];
+
+  totalEnqueueingTime = 0;
+  totalAcceptingTime = 0;
+  totalConnectingToCallTime = 0;
+  totalDuration = 0;
+  totalAcceptedCalls = 0;
   totalCallsForTest = totalCalls;
   onAllCallsPerformed = allCallsPerformedHandler;
 }
@@ -14048,6 +14069,36 @@ function onCustomerCallAccepted(id, requestTime, responseTime, statistics) {
         responseTime - acceptedAt
       ).toFixed(3);
     }
+    const value = responseTime - requestTime;
+    if (checkMinConnectingToCallTime(TYPES.CUSTOMERS, value, statistics)) {
+      drawCustomerStatisticsField(
+        FIELDS.MIN_CONNECTING_TO_CALL_TIME,
+        statistics
+      );
+    }
+    if (checkMaxConnectingToCallTime(TYPES.CUSTOMERS, value, statistics)) {
+      drawCustomerStatisticsField(
+        FIELDS.MAX_CONNECTING_TO_CALL_TIME,
+        statistics
+      );
+    }
+
+    totalConnectingToCallTime += value;
+    totalAcceptedCalls += 1;
+
+    const average = Number(
+      totalConnectingToCallTime / totalAcceptedCalls
+    ).toFixed(2);
+    setField(
+      statistics,
+      TYPES.CUSTOMERS,
+      FIELDS.AVERAGE_CONNECTING_TO_CALL_TIME,
+      average
+    );
+    drawCustomerStatisticsField(
+      FIELDS.AVERAGE_CONNECTING_TO_CALL_TIME,
+      statistics
+    );
     updateAndDrawCall(id, updates, statistics);
   }
 }
@@ -14248,6 +14299,40 @@ function checkMaxAuthorizingTime(userType, value, statistics) {
       statistics,
       userType,
       FIELDS.MAX_AUTHORIZING_TIME,
+      value.toFixed(3)
+    );
+    return true;
+  }
+  return false;
+}
+
+function checkMinConnectingToCallTime(userType, value, statistics) {
+  const minConnectingToCallTime = parseFloat(
+    getField(statistics, userType, FIELDS.MIN_CONNECTING_TO_CALL_TIME)
+  );
+
+  if (value < minConnectingToCallTime) {
+    setField(
+      statistics,
+      userType,
+      FIELDS.MIN_CONNECTING_TO_CALL_TIME,
+      value.toFixed(3)
+    );
+    return true;
+  }
+  return false;
+}
+
+function checkMaxConnectingToCallTime(userType, value, statistics) {
+  const maxConnectingToCallTime = parseFloat(
+    getField(statistics, userType, FIELDS.MAX_CONNECTING_TO_CALL_TIME)
+  );
+
+  if (value > maxConnectingToCallTime) {
+    setField(
+      statistics,
+      userType,
+      FIELDS.MAX_CONNECTING_TO_CALL_TIME,
       value.toFixed(3)
     );
     return true;

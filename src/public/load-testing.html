@@ -40,7 +40,9 @@
                 />
               </div>
               <div class="testing-input-wrapper">
-                <label for="operatorAcceptingLikelihood">Chance the call will be accepted by operator, %:</label>
+                <label for="operatorAcceptingLikelihood"
+                  >Chance the call will be accepted by operator, %:</label
+                >
                 <input
                   type="number"
                   value="20"
@@ -92,15 +94,25 @@
             </div>
           </div>
           <div class="testing-input-wrapper action-buttons">
-            <button type="button" name="startButton" class="action-button start-button">
+            <button
+              type="button"
+              name="startButton"
+              class="action-button start-button"
+            >
               START
             </button>
-            <button type="button" name="clearButton" class="action-button clear-button">
+            <button
+              type="button"
+              name="clearButton"
+              class="action-button clear-button"
+            >
               CLEAR
             </button>
-            <!-- <button type="button" name="resetButton" class="action-button reset-button">
-              RESET
-            </button> -->
+            <!--
+              <button type="button" name="resetButton" class="action-button reset-button">
+                RESET
+              </button>
+            -->
           </div>
         </section>
 
@@ -108,20 +120,20 @@
           <section class="queue-statistics">
             <div class="queue-statistics-pane">Queue</div>
             <div class="queue-statistics-pane">
-              <p class="pending-in-queue">
-                <span class="quantity">0</span>
-              </p>
+              <p class="pending-in-queue"><span class="quantity">0</span></p>
               <p class="max-in-queue">
                 <span>Max calls: </span><span class="quantity">0</span>
               </p>
-              <!-- <p class="oldest-in-queue">
-                Oldest: <span class="quantity">0</span>
-              </p> -->
+              <!--
+                <p class="oldest-in-queue">
+                  Oldest: <span class="quantity">0</span>
+                </p>
+              -->
             </div>
           </section>
           <section class="users-statistics customers-statistics">
             <div class="user-statistics-pane users-number">
-              <p>Customers</p>
+              <p class="statistics-pane-title">Customers</p>
               <p class="connecting">
                 Connecting: <span class="quantity">0</span>
               </p>
@@ -140,7 +152,7 @@
               <p class="total">Total: <span class="quantity">0</span></p>
             </div>
             <div class="user-statistics-pane customers-connection-statistics">
-              <p>Connecting, s</p>
+              <p class="statistics-pane-title">Connecting, s</p>
               <p class="min-connecting-time">
                 Min: <span class="quantity">0</span>
               </p>
@@ -162,7 +174,7 @@
               </p>
             </div>
             <div class="user-statistics-pane calls-statistics">
-              <p>Calls</p>
+              <p class="statistics-pane-title">Calls</p>
               <p class="waiting-for-queue-calls">
                 Waiting for queue: <span class="quantity">0</span>
               </p>
@@ -184,7 +196,17 @@
               <p class="total-calls">Total: <span class="quantity">0</span></p>
             </div>
             <div class="user-statistics-pane calls-connection-statistics">
-              <p>Wrapping-up, s</p>
+              <p class="statistics-pane-title">Call connection time, s</p>
+              <p class="min-connecting-to-call-time">
+                Min: <span class="quantity">0</span>
+              </p>
+              <p class="max-connecting-to-call-time">
+                Max: <span class="quantity">0</span>
+              </p>
+              <p class="average-connecting-to-call-time">
+                Average: <span class="quantity">0</span>
+              </p>
+              <p class="statistics-pane-title">Wrapping-up, s</p>
               <p class="min-enqueueing-time">
                 Min: <span class="quantity">0</span>
               </p>
@@ -196,13 +218,9 @@
               </p>
             </div>
             <div class="user-statistics-pane calls-duration-statistics">
-              <p>Call duration, s</p>
-              <p class="min-duration">
-                Min: <span class="quantity">0</span>
-              </p>
-              <p class="max-duration">
-                Max: <span class="quantity">0</span>
-              </p>
+              <p class="statistics-pane-title">Call duration, s</p>
+              <p class="min-duration">Min: <span class="quantity">0</span></p>
+              <p class="max-duration">Max: <span class="quantity">0</span></p>
               <p class="average-duration">
                 Average: <span class="quantity">0</span>
               </p>
@@ -213,7 +231,7 @@
           </section>
           <section class="users-statistics operators-statistics">
             <div class="user-statistics-pane users-number">
-              <p>Operators</p>
+              <p class="statistics-pane-title">Operators</p>
               <p class="connecting">
                 Connecting: <span class="quantity">0</span>
               </p>
@@ -232,7 +250,7 @@
               <p class="total">Total: <span class="quantity">0</span></p>
             </div>
             <div class="user-statistics-pane operators-connection-statistics">
-              <p>Connecting, s</p>
+              <p class="statistics-pane-title">Connecting, s</p>
               <p class="min-connecting-time">
                 Min: <span class="quantity">0</span>
               </p>
@@ -254,7 +272,7 @@
               </p>
             </div>
             <div class="user-statistics-pane calls-connection-statistics">
-              <p>Wrapping-up, s</p>
+              <p class="statistics-pane-title">Wrapping-up, s</p>
               <p class="min-accepting-time">
                 Min: <span class="quantity">0</span>
               </p>
@@ -277,53 +295,76 @@
     </main>
     <aside>
       <section class="all-calls-statistics">
-        <button type="button" name="allCallsToggler" class="all-calls-toggler">&#8249;</button>
-        <ul class="all-calls">
-
-        </ul>
+        <button type="button" name="allCallsToggler" class="all-calls-toggler">
+          &#8249;
+        </button>
+        <ul class="all-calls"></ul>
       </section>
       <section class="users-connection-colors-legend">
         <header class="legend-header">
           <h4 class="legend-title">Legend</h4>
-          <button type="button" name="legendToggler" class="legend-toggler">&#8250;</button>
+          <button type="button" name="legendToggler" class="legend-toggler">
+            &#8250;
+          </button>
         </header>
         <ul class="colors-legend">
           <li class="legend-item">
-            <div class="legend-item-color" style="background-color: #B0BEC5"></div>
+            <div
+              class="legend-item-color"
+              style="background-color: #B0BEC5"
+            ></div>
             <div class="legend-item-description">
               <p>Customer is not authorized yet</p>
               <p>Operator is not authorized yet</p>
             </div>
           </li>
           <li class="legend-item">
-            <div class="legend-item-color" style="background-color: #CFD8DC"></div>
+            <div
+              class="legend-item-color"
+              style="background-color: #CFD8DC"
+            ></div>
             <div class="legend-item-description">
               <p>Customer has been authorized and/or is not on the call</p>
               <p>Operator has been authorized and/or is not on the call</p>
             </div>
           </li>
           <li class="legend-item">
-            <div class="legend-item-color" style="background-color: #C5CAE9"></div>
+            <div
+              class="legend-item-color"
+              style="background-color: #C5CAE9"
+            ></div>
             <div class="legend-item-description">
               <p>Customer has requested call, but it is not in queue yet</p>
             </div>
           </li>
           <li class="legend-item">
-            <div class="legend-item-color" style="background-color: #FFF9C4"></div>
+            <div
+              class="legend-item-color"
+              style="background-color: #FFF9C4"
+            ></div>
             <div class="legend-item-description">
               <p>Customer's call is in queue and can be accepted soon</p>
               <p>Operator has accepted call and is connecting to it</p>
             </div>
           </li>
           <li class="legend-item">
-            <div class="legend-item-color" style="background-color: #ffcdd2"></div>
+            <div
+              class="legend-item-color"
+              style="background-color: #ffcdd2"
+            ></div>
             <div class="legend-item-description">
               <p>Customer's call was not added to queue for some reason</p>
-              <p>Operator's call acception failed: queue is empty or customer finished call before</p>
+              <p>
+                Operator's call acception failed: queue is empty or customer
+                finished call before
+              </p>
             </div>
           </li>
           <li class="legend-item">
-            <div class="legend-item-color" style="background-color: #C8E6C9"></div>
+            <div
+              class="legend-item-color"
+              style="background-color: #C8E6C9"
+            ></div>
             <div class="legend-item-description">
               <p>Customer's call was accepted, customer is on call now</p>
               <p>Operator is on call now</p>
