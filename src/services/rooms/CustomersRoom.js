@@ -119,8 +119,14 @@ class CustomersRoom {
 
   onCallAccepted(call) {
     const { id, requestedBy, acceptedBy, deviceId } = call;
+    logger.debug(
+      'Customer call: accepted',
+      id,
+      requestedBy,
+      acceptedBy,
+      deviceId
+    );
     return this.getSocketIdByDeviceId(deviceId).then(socketId => {
-      logger.debug('Customer call: accepted', id, requestedBy, acceptedBy);
       this.checkCustomerAndEmitCallAccepting(socketId, id, acceptedBy);
     });
   }
@@ -134,6 +140,13 @@ class CustomersRoom {
 
   checkCustomerAndEmitCallAccepting(socketId, callId, operatorId) {
     const connectedCustomer = this.customers.connected[socketId];
+    logger.debug(
+      'Checking customer before accept call emit',
+      !!connectedCustomer,
+      socketId,
+      callId,
+      operatorId
+    );
     if (connectedCustomer) {
       logger.debug(
         'Customer call: acception emitted to customer',
@@ -223,9 +236,14 @@ class CustomersRoom {
   }
 
   mapDeviceIdToSocketId(socket) {
+    logger.debug(
+      'Customer mapDeviceIdToSocketId: ',
+      socket.deviceId,
+      socket.id
+    );
     return connectionsHeap.add(socket.deviceId, socket.id).catch(err => {
       logger.error(
-        'Customer: mapping device id to id failed:',
+        'Customer: mapDeviceIdToSocketId failed:',
         socket.deviceId,
         socket.id,
         err
@@ -234,12 +252,16 @@ class CustomersRoom {
   }
 
   checkAndUnmapDeviceIdFromSocketId(socket) {
+    logger.debug(
+      'Customer checkAndUnmapDeviceIdFromSocketId: ',
+      socket.deviceId
+    );
     return socket.deviceId
       ? connectionsHeap
           .remove(socket.deviceId)
           .catch(err =>
             logger.error(
-              'Customer: unmapping deviceId from id failed',
+              'Customer checkAndUnmapDeviceIdFromSocketId failed: ',
               socket.deviceId,
               err
             )
@@ -248,10 +270,11 @@ class CustomersRoom {
   }
 
   getSocketIdByDeviceId(deviceId) {
+    logger.debug('Customer getSocketIdByDeviceId: ', deviceId);
     return connectionsHeap
       .get(deviceId)
       .catch(err =>
-        logger.error('Customer: getting id by deviceId failed', deviceId, err)
+        logger.error('Customer getSocketIdByDeviceId failed: ', deviceId, err)
       );
   }
 }
