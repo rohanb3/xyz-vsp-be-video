@@ -114,6 +114,10 @@ class CustomersRoom {
       .catch(err => {
         logger.error('Call: finishing by customer failed', err);
       })
+      .then(() => this.getSocketIdByDeviceId(customer.deviceId))
+      .then(socketId => {
+        logger.debug('Customer disconnection: ', socketId, customer.id);
+      })
       .finally(() => this.checkAndUnmapDeviceIdFromSocketId(customer));
   }
 
