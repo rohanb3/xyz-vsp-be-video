@@ -65,7 +65,31 @@ class CustomersRoom {
       customer.identity,
       customer.deviceId
     );
-    return this.mapDeviceIdToSocketId(customer);
+    return this.getSocketIdByDeviceId(customer.deviceId)
+      .then(socketId => {
+        const connectedSocket = this.customers.connected[socketId];
+        const isPreviousConnectionExist =
+          !!connectedSocket &&
+          connectedSocket !== customer &&
+          connectedSocket.id !== customer.id;
+        logger.debug(
+          'Customer isPreviousConnectionExist: ',
+          socketId,
+          isPreviousConnectionExist,
+          !!connectedSocket,
+          connectedSocket !== customer
+        );
+        if (isPreviousConnectionExist) {
+          logger.debug(
+            'Customer previous connection exists: ',
+            connectedSocket.deviceId,
+            connectedSocket.identity
+          );
+          connectedSocket.deviceId = null;
+          connectedSocket.identity = null;
+        }
+      })
+      .finally(() => this.mapDeviceIdToSocketId(customer));
   }
 
   onCustomerRequestedCall(customer, data) {
@@ -113,6 +137,10 @@ class CustomersRoom {
     return finishingCallPromise
       .catch(err => {
         logger.error('Call: finishing by customer failed', err);
+      })
+      .then(() => this.getSocketIdByDeviceId(customer.deviceId))
+      .then(socketId => {
+        logger.debug('Customer disconnection: ', socketId, customer.id);
       })
       .finally(() => this.checkAndUnmapDeviceIdFromSocketId(customer));
   }

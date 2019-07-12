@@ -224,7 +224,7 @@ function prepareCustomers(
   const callsPerCustomer =
     Number(document.querySelector('.calls-per-customer').value) || 1;
   const maxFirstCallDelay =
-    (Number(document.querySelector('.max-first-call-delay').value) || 5) * 1000;
+    Number(document.querySelector('.max-first-call-delay').value) * 1000;
 
   setField(statistics, TYPES.CUSTOMERS, FIELDS.TOTAL, customersNumber);
 

@@ -13166,7 +13166,7 @@ function prepareCustomers(
   const callsPerCustomer =
     Number(document.querySelector('.calls-per-customer').value) || 1;
   const maxFirstCallDelay =
-    (Number(document.querySelector('.max-first-call-delay').value) || 5) * 1000;
+    Number(document.querySelector('.max-first-call-delay').value) * 1000;
 
   setField(statistics, TYPES.CUSTOMERS, FIELDS.TOTAL, customersNumber);
 
@@ -13620,7 +13620,8 @@ function drawCustomersFrames({
       const firstCallDelay = Math.ceil(Math.random() * maxFirstCallDelay);
       const startFirstCallAfter =
         (Math.max(customersNumber, operatorsNumber) - i) * connectionDelay +
-        firstCallDelay + START_FIRST_CALL_ADDITIONAL_DELAY;
+        firstCallDelay +
+        START_FIRST_CALL_ADDITIONAL_DELAY;
 
       iframe.contentWindow.io = io;
       iframe.contentWindow.socketOptions = socketOptions;
@@ -13689,7 +13690,7 @@ function drawOperatorsFrames({
 module.exports = {
   drawCustomersFrames,
   drawOperatorsFrames,
-}
+};
 
 },{"./constants":51}],54:[function(require,module,exports){
 /* eslint-disable no-console */
