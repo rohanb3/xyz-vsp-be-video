@@ -45,7 +45,8 @@ function drawCustomersFrames({
       const firstCallDelay = Math.ceil(Math.random() * maxFirstCallDelay);
       const startFirstCallAfter =
         (Math.max(customersNumber, operatorsNumber) - i) * connectionDelay +
-        firstCallDelay + START_FIRST_CALL_ADDITIONAL_DELAY;
+        firstCallDelay +
+        START_FIRST_CALL_ADDITIONAL_DELAY;
 
       iframe.contentWindow.io = io;
       iframe.contentWindow.socketOptions = socketOptions;
@@ -114,4 +115,4 @@ function drawOperatorsFrames({
 module.exports = {
   drawCustomersFrames,
   drawOperatorsFrames,
-}
+};
