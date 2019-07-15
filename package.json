@@ -1,6 +1,6 @@
 {
   "name": "xyzies-vsp-be",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "description": "SimpleBE",
   "main": "index.js",
   "scripts": {
