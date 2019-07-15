@@ -28,5 +28,6 @@ module.exports = {
   roomId: String,
   customerFeedback,
   operatorFeedback,
+  callbackEnabled: Boolean,
   callbacks: [callback],
 };

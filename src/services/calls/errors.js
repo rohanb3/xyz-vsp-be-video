@@ -68,8 +68,23 @@ class PeerOfflineError extends Error {
   }
 }
 
+class CallbackDisabledError extends Error {
+  constructor() {
+    const message = 'Callback disabled';
+    super(message);
+    this.name = 'CallbackDisabledError';
+
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, this.constructor);
+    } else {
+      this.stack = new Error(message).stack;
+    }
+  }
+}
+
 exports.CallUpdateError = CallUpdateError;
 exports.CallNotFoundError = CallNotFoundError;
 exports.CallOverrideError = CallOverrideError;
 exports.CallsPendingEmptyError = CallsPendingEmptyError;
 exports.PeerOfflineError = PeerOfflineError;
+exports.CallbackDisabledError = CallbackDisabledError;

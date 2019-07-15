@@ -3,13 +3,8 @@
 const calls = require('@/services/calls/calls');
 
 async function getCalls(req, res) {
-  const { retailerId, from, to, offset, limit } = req.query;
-  const list = await calls.getCallsLazy(
-    { retailerId },
-    { from, to },
-    offset,
-    limit
-  );
+  const { ...query } = req.query;
+  const list = await calls.getCallsLazy(query);
   res.status(200).send(list);
 }
 

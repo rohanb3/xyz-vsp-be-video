@@ -1,28 +1,71 @@
-/* eslint-disable no-use-before-define */
+/* eslint-disable no-use-before-define, no-console, no-undef */
 
 const Video = require('twilio-video');
+const {
+  HubConnectionBuilder,
+  HttpTransportType,
+  LogLevel,
+} = require('@aspnet/signalr');
+const io = require('socket.io-client');
 
-const isLocal = prompt('Is local?');
-const isProd = prompt('Is production?');
-const deviceId = prompt('Tell me device id') || 'localTablet';
+const isLocal = typeof prompt('Is local?') === 'string';
+const isDev = !isLocal && typeof prompt('Is dev?') === 'string';
+const isStage = !isLocal && !isDev && typeof prompt('Is stage?') === 'string';
+const isProd =
+  !isLocal &&
+  !isDev &&
+  !isStage &&
+  typeof prompt('Is production?') === 'string';
+const deviceId = prompt('Tell me device id') || 'new-device-id';
 const identity = prompt('Tell me your identity') || 'Joey';
+const shouldConnectToDeviceManagement =
+  typeof prompt('Conect to device management?') === 'string';
 
-let socketUrl = 'wss://vsp.xyzies.ardas.biz/customers';
+let deviceManagementHost = 'https://dev-portal.xyzvsp.com';
+let socketUrl = 'wss://dev-portal.xyzvsp.com/customers';
 let socketOptions = {
   path: '/api/video/socket.io',
   transports: ['websocket'],
 };
 
-if (typeof isLocal === 'string') {
+if (isLocal) {
   socketUrl = '/customers';
   socketOptions = { transports: ['websocket'] };
 }
 
-if (typeof isProd === 'string') {
+if (isDev) {
+  socketUrl = 'wss://dev-portal.xyzvsp.com/customers';
+}
+
+if (isStage) {
+  socketUrl = 'wss://stage-portal.xyzvsp.com/customers';
+  deviceManagementHost = 'https://stage-portal.xyzvsp.com';
+}
+
+if (isProd) {
   socketUrl = 'wss://portal.xyzvsp.com/customers';
+  deviceManagementHost = 'https://portal.xyzvsp.com';
 }
 
 const socket = io(socketUrl, socketOptions);
+
+const deviceManagementPath = `${deviceManagementHost}/api/device-management-api/deviceSocket`;
+const deviceManagementUrl = `${deviceManagementPath}?udid=${deviceId}`;
+const hubConnection = new HubConnectionBuilder()
+  .withUrl(deviceManagementUrl, {
+    skipNegotiation: true,
+    transport: HttpTransportType.WebSockets,
+  })
+  .configureLogging(LogLevel.Information)
+  .build();
+
+if (shouldConnectToDeviceManagement) {
+  hubConnection
+    .start()
+    .catch(() => console.error('Device management socket failed'));
+  document.querySelector('.device-management-controls').style.display = 'flex';
+  setTimeout(subscribeToDeviceManagementControls);
+}
 
 let globalToken = null;
 let roomId = null;
@@ -91,13 +134,14 @@ function onTokenReceived(data) {
 
 function requestConnection() {
   const salesRepId = 'd4b10474-a026-4487-87f8-96f3cdd749cb';
-  socket.emit('call.requested', { salesRepId });
+  const callbackEnabled = typeof prompt('Allow callback?') === 'string';
+  socket.emit('call.requested', { salesRepId, callbackEnabled });
   socket.once('call.enqueued', callId => {
     roomId = callId;
     document.getElementById('button-join').style.display = 'none';
     document.getElementById('button-leave').style.display = 'inline';
   });
-  socket.once('call.accepted', ({ roomId, operatorId, token }) =>
+  socket.once('call.accepted', ({ roomId, token }) =>
     connectToRoom(roomId, token)
   );
 }
@@ -135,7 +179,10 @@ function connectToRoom(name, token) {
     connectOptions.tracks = previewTracks;
   }
 
-  return Video.connect(token, connectOptions)
+  return Video.connect(
+    token,
+    connectOptions
+  )
     .then(roomJoined)
     .catch(error => console.error('Could not connect: ', error.message));
 }
@@ -151,8 +198,8 @@ function roomJoined(room) {
     attachParticipantTracks(room.localParticipant, previewContainer);
   }
 
-  room.participants.forEach(participant => {
-    const container = document.getElementById('remote-media');
+  room.participants.forEach(() => {
+    // const container = document.getElementById('remote-media');
     // attachParticipantTracks(participant, container);
   });
 
@@ -222,4 +269,50 @@ function leaveRoomIfJoined(notifyBE = true) {
     document.getElementById('button-join').style.display = 'inline';
     document.getElementById('button-leave').style.display = 'none';
   }
+}
+
+function subscribeToDeviceManagementControls() {
+  document
+    .querySelector('.ipad-button')
+    .addEventListener('click', toggleDevicePower);
+  document
+    .querySelector('.device-management-submit')
+    .addEventListener('click', sendDeviceInfo);
+}
+
+function toggleDevicePower() {
+  if (hubConnection.state) {
+    hubConnection.stop();
+    showTurnOffDisplay();
+  } else {
+    hubConnection.start();
+    hideTurnOffDisplay();
+  }
+}
+
+function sendDeviceInfo() {
+  const salesRepId = document.querySelector('.logged-in-user-input').value;
+  const lat = document.querySelector('.latiude-input').value;
+  const long = document.querySelector('.longitude-input').value;
+
+  if (salesRepId) {
+    hubConnection.invoke('UpdateSaledRep', {
+      salesRepId,
+    });
+  }
+
+  if (lat && long) {
+    hubConnection.invoke('UpdateLocation', {
+      Latitude: lat,
+      Longitude: long,
+    });
+  }
+}
+
+function showTurnOffDisplay() {
+  document.querySelector('.power-off-display').style.display = 'block';
+}
+
+function hideTurnOffDisplay() {
+  document.querySelector('.power-off-display').style.display = 'none';
 }
