@@ -1,4 +1,5 @@
 /node_modules
 /coverage/
 .env.template
-/src/public/js/customer.js
+.migrate
+dump.rdb

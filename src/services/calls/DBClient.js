@@ -3,27 +3,11 @@ const Call = require('@/models/call');
 
 const getById = id => Call.findById(id).then(doc => doc.toObject());
 
-const getFilteredBy = (filter = {}, range, lazyLoad) => {
-  const filterObject = _removeEmptyFilter({
-    ...filter,
-    acceptedAt: _rangeFilter(range),
-  });
+const getFilteredBy = (filter, range, sort, lazyLoad) =>
+  lazyLoadQuery(Call.find(getQuery(filter, range)).sort(sort), lazyLoad);
 
-  const skip = lazyLoad && Number(lazyLoad.offset);
-  const limit = lazyLoad && Number(lazyLoad.limit);
-
-  return Call.find(filterObject)
-    .skip(skip)
-    .limit(limit);
-};
-
-const getCountFilteredBy = (filter = {}, range) => {
-  const filterObject = _removeEmptyFilter({
-    ...filter,
-    acceptedAt: _rangeFilter(range),
-  });
-  return Call.countDocuments(filterObject);
-};
+const getCountFilteredBy = (filter, range) =>
+  Call.countDocuments(getQuery(filter, range));
 
 const create = entity => Call.create(entity);
 
@@ -39,14 +23,37 @@ const validateSync = data => {
   return call.validateSync();
 };
 
-const _rangeFilter = (range = {}) => {
+const lazyLoadQuery = (query, lazyLoad) => {
+  const offset = lazyLoad && Number(lazyLoad.offset);
+  const limit = lazyLoad && Number(lazyLoad.limit);
+  return query.skip(offset).limit(limit);
+};
+
+const getQuery = (query = {}, range) => {
+  const { search, type, rate, ...filter } = query;
+
+  const findQuery = removeUndefined({
+    ...filter,
+    acceptedAt: getRangeFilter(range),
+    'operatorFeedback.callType': type,
+    'customerFeedback.rate': rate,
+  });
+
+  if (search) {
+    findQuery.$text = { $search: search, $diacriticSensitive: true };
+  }
+
+  return findQuery;
+};
+
+const getRangeFilter = (range = {}) => {
   if (!range.from && !range.to) {
     return null;
   }
-  return _removeEmptyFilter({ $gte: range.from, $lte: range.to });
+  return removeUndefined({ $gte: range.from, $lte: range.to });
 };
 
-const _removeEmptyFilter = filter => _.pickBy(filter, _.identity);
+const removeUndefined = filter => _.pickBy(filter, _.identity);
 
 exports.getById = getById;
 exports.getFilteredBy = getFilteredBy;

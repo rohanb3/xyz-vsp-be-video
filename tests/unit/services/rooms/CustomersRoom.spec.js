@@ -2,6 +2,7 @@ jest.mock('socketio-auth', () => () => {});
 jest.mock('@/services/calls', () => ({
   subscribeToCallAccepting: jest.fn(() => {}),
   subscribeToCallbackRequesting: jest.fn(() => {}),
+  subscribeToCallFinishing: jest.fn(() => {}),
   requestCall: jest.fn(() => Promise.resolve()),
   acceptCallback: jest.fn(() => Promise.resolve({})),
   finishCall: jest.fn(() => Promise.resolve()),
@@ -66,24 +67,37 @@ describe('CustomersRoom: ', () => {
     });
 
     it('should add listener to namespace connection event', () => {
-      expect(mockedNamespace.on).toHaveBeenCalledWith(CONNECTION, expect.any(Function));
+      expect(mockedNamespace.on).toHaveBeenCalledWith(
+        CONNECTION,
+        expect.any(Function)
+      );
     });
 
     it('should subscribe to call accepting', () => {
-      expect(calls.subscribeToCallAccepting).toHaveBeenCalledWith(expect.any(Function));
+      expect(calls.subscribeToCallAccepting).toHaveBeenCalledWith(
+        expect.any(Function)
+      );
     });
 
     it('should subscribe to callback requesting', () => {
-      expect(calls.subscribeToCallbackRequesting).toHaveBeenCalledWith(expect.any(Function));
+      expect(calls.subscribeToCallbackRequesting).toHaveBeenCalledWith(
+        expect.any(Function)
+      );
     });
   });
 
   describe('onCustomerAuthenticated(): ', () => {
     it('should map device id on socket id', () => {
       customersRoom.mapDeviceIdToSocketId = jest.fn(() => Promise.resolve());
+      customersRoom.getSocketIdByDeviceId = jest.fn(() =>
+        Promise.resolve(socketId)
+      );
+      customersRoom.customers.connected = {};
 
       return customersRoom.onCustomerAuthenticated(customer).then(() => {
-        expect(customersRoom.mapDeviceIdToSocketId).toHaveBeenCalledWith(customer);
+        expect(customersRoom.mapDeviceIdToSocketId).toHaveBeenCalledWith(
+          customer
+        );
       });
     });
   });
@@ -95,10 +109,18 @@ describe('CustomersRoom: ', () => {
       };
       const data = {
         salesRepId,
+        callbackEnabled: true,
+      };
+      const expectedPayload = {
+        requestedBy: customerIdentity,
+        salesRepId,
+        deviceId,
+        callbackEnabled: true,
       };
       calls.requestCall = jest.fn(() => Promise.resolve(call));
 
       return customersRoom.onCustomerRequestedCall(customer, data).then(() => {
+        expect(calls.requestCall).toHaveBeenCalledWith(expectedPayload);
         expect(customer.pendingCallId).toBe(callId);
         expect(customer.emit).toHaveBeenCalledWith(CALL_ENQUEUED, callId);
       });
@@ -107,11 +129,18 @@ describe('CustomersRoom: ', () => {
     it('should request call and notify customer about not enqueuing if error occured', () => {
       const data = {
         salesRepId,
+        callbackEnabled: true,
+      };
+      const expectedPayload = {
+        requestedBy: customerIdentity,
+        salesRepId,
+        deviceId,
+        callbackEnabled: true,
       };
       calls.requestCall = jest.fn(() => Promise.reject());
 
       return customersRoom.onCustomerRequestedCall(customer, data).then(() => {
-        expect(calls.requestCall).toHaveBeenCalledWith(customerIdentity, deviceId, salesRepId);
+        expect(calls.requestCall).toHaveBeenCalledWith(expectedPayload);
         expect(customer.pendingCallId).toBeUndefined();
         expect(customer.emit).toHaveBeenCalledWith(CALL_NOT_ENQUEUED);
       });
@@ -146,23 +175,31 @@ describe('CustomersRoom: ', () => {
 
   describe('onCustomerDisconnected(): ', () => {
     it('should unmap socket id from deviceId if no pending call from customer', () => {
-      customersRoom.checkAndUnmapDeviceIdFromSocketId = jest.fn(() => Promise.resolve());
+      customersRoom.checkAndUnmapDeviceIdFromSocketId = jest.fn(() =>
+        Promise.resolve()
+      );
       calls.finishCall = jest.fn(() => Promise.resolve());
 
       return customersRoom.onCustomerDisconnected(customer).then(() => {
         expect(calls.finishCall).not.toHaveBeenCalled();
-        expect(customersRoom.checkAndUnmapDeviceIdFromSocketId).toHaveBeenCalledWith(customer);
+        expect(
+          customersRoom.checkAndUnmapDeviceIdFromSocketId
+        ).toHaveBeenCalledWith(customer);
       });
     });
 
     it('should finish call if call was pending', () => {
-      customersRoom.checkAndUnmapDeviceIdFromSocketId = jest.fn(() => Promise.resolve());
+      customersRoom.checkAndUnmapDeviceIdFromSocketId = jest.fn(() =>
+        Promise.resolve()
+      );
       calls.finishCall = jest.fn(() => Promise.resolve());
       customer.pendingCallId = callId;
 
       return customersRoom.onCustomerDisconnected(customer).then(() => {
         expect(calls.finishCall).toHaveBeenCalledWith(callId, customerIdentity);
-        expect(customersRoom.checkAndUnmapDeviceIdFromSocketId).toHaveBeenCalledWith(customer);
+        expect(
+          customersRoom.checkAndUnmapDeviceIdFromSocketId
+        ).toHaveBeenCalledWith(customer);
       });
     });
   });
@@ -176,16 +213,20 @@ describe('CustomersRoom: ', () => {
         acceptedBy,
         deviceId,
       };
-      customersRoom.getSocketIdByDeviceId = jest.fn(() => Promise.resolve(socketId));
-      customersRoom.checkCustomerAndEmitCallAccepting = jest.fn(() => Promise.resolve());
+      customersRoom.getSocketIdByDeviceId = jest.fn(() =>
+        Promise.resolve(socketId)
+      );
+      customersRoom.checkCustomerAndEmitCallAccepting = jest.fn(() =>
+        Promise.resolve()
+      );
 
       return customersRoom.onCallAccepted(call).then(() => {
-        expect(customersRoom.getSocketIdByDeviceId).toHaveBeenCalledWith(deviceId);
-        expect(customersRoom.checkCustomerAndEmitCallAccepting).toHaveBeenCalledWith(
-          socketId,
-          callId,
-          acceptedBy,
+        expect(customersRoom.getSocketIdByDeviceId).toHaveBeenCalledWith(
+          deviceId
         );
+        expect(
+          customersRoom.checkCustomerAndEmitCallAccepting
+        ).toHaveBeenCalledWith(socketId, callId, acceptedBy);
       });
     });
   });
@@ -197,7 +238,11 @@ describe('CustomersRoom: ', () => {
       customersRoom.emitCallAccepting = jest.fn();
       customersRoom.customers.connected = {};
 
-      customersRoom.checkCustomerAndEmitCallAccepting(socketId, callId, acceptedBy);
+      customersRoom.checkCustomerAndEmitCallAccepting(
+        socketId,
+        callId,
+        acceptedBy
+      );
 
       expect(twilio.getToken).not.toHaveBeenCalled();
       expect(customersRoom.emitCallAccepting).not.toHaveBeenCalled();
@@ -217,10 +262,17 @@ describe('CustomersRoom: ', () => {
         [socketId]: customer,
       };
 
-      customersRoom.checkCustomerAndEmitCallAccepting(socketId, callId, acceptedBy);
+      customersRoom.checkCustomerAndEmitCallAccepting(
+        socketId,
+        callId,
+        acceptedBy
+      );
 
       expect(twilio.getToken).toHaveBeenCalledWith(deviceId, callId);
-      expect(customersRoom.emitCallAccepting).toHaveBeenCalledWith(customer, expectedCallData);
+      expect(customersRoom.emitCallAccepting).toHaveBeenCalledWith(
+        customer,
+        expectedCallData
+      );
     });
   });
 
@@ -266,9 +318,11 @@ describe('CustomersRoom: ', () => {
     it('should remove device id', () => {
       connectionsHeap.remove = jest.fn(() => Promise.resolve());
 
-      return customersRoom.checkAndUnmapDeviceIdFromSocketId(customer).then(() => {
-        expect(connectionsHeap.remove).toHaveBeenCalledWith(deviceId);
-      });
+      return customersRoom
+        .checkAndUnmapDeviceIdFromSocketId(customer)
+        .then(() => {
+          expect(connectionsHeap.remove).toHaveBeenCalledWith(deviceId);
+        });
     });
   });
 

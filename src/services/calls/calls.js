@@ -7,22 +7,28 @@ const callSalesRepDTO = require('@/models/dto/call/callSalesRepDTO');
 const { getDifferenceFromTo, formatTimeToFilter } = require('@/services/time');
 const logger = require('@/services/logger')(module);
 
-function getCallsLazy(filter, range, offset, limit) {
+function getCallsLazy(query) {
+  const { from, to, offset, limit, ...filter } = query;
+
   const lazyLoad = {
     offset: offset || lazyLoadDefault.offset,
     limit: limit || lazyLoadDefault.limit,
   };
 
-  const rangeFilter = {
-    from: formatTimeToFilter(range.from),
-    to: formatTimeToFilter(range.to),
+  const sort = {
+    acceptedAt: -1,
+  };
+
+  const dateRange = {
+    from: formatTimeToFilter(from),
+    to: formatTimeToFilter(to),
   };
 
   const getDataPromise = callsDBClient
-    .getFilteredBy(filter, rangeFilter, lazyLoad)
+    .getFilteredBy(filter, dateRange, sort, lazyLoad)
     .then(data => data.map(convertCallToResponseFormat));
 
-  const getCountPromise = callsDBClient.getCountFilteredBy(filter, rangeFilter);
+  const getCountPromise = callsDBClient.getCountFilteredBy(filter, dateRange);
 
   return Promise.all([getDataPromise, getCountPromise]).then(([data, count]) =>
     lazyLoadedData(data, count, lazyLoad)

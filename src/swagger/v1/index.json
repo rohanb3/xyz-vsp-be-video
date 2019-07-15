@@ -183,6 +183,62 @@
           }
         }
       }
+    },
+    "/api/video/calls": {
+      "get": {
+        "summary": "Get calls",
+        "produces": ["application/json"],
+        "tags": ["Calls"],
+        "parameters": [
+          {
+            "name": "type",
+            "description": "call type",
+            "type": "string"
+          },
+          {
+            "name": "rate",
+            "description": "customer rate",
+            "type": "number"
+          },
+          {
+            "name": "offset",
+            "description": "offset",
+            "type": "number"
+          },
+          {
+            "name": "limit",
+            "description": "limit",
+            "type": "number"
+          },
+          {
+            "name": "from",
+            "description": "from",
+            "type": "string"
+          },
+          {
+            "name": "to",
+            "description": "to",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/CallsDTO"
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Not authorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
     }
   },
   "consumes": ["application/json"],
@@ -193,6 +249,77 @@
     }
   ],
   "definitions": {
+    "CallsDTO": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "offset": {
+          "type": "number"
+        },
+        "count": {
+          "type": "number"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "date": {
+                "type": "string"
+              },
+              "operator": {
+                "type": "string"
+              },
+              "operatorFeedback": {
+                "type": "object",
+                "properties": {
+                  "operatorId": {
+                    "type": "string"
+                  },
+                  "callType": {
+                    "type": "string"
+                  },
+                  "disposition": {
+                    "type": "string"
+                  },
+                  "quality": {
+                    "type": "number"
+                  },
+                  "note": {
+                    "type": "string"
+                  }
+                }
+              },
+              "customerFeedback": {
+                "type": "object",
+                "properties": {
+                  "quality": {
+                    "type": "number"
+                  },
+                  "note": {
+                    "type": "string"
+                  },
+                  "customerId": {
+                    "type": "string"
+                  },
+                  "experienceRate": {
+                    "type": "number"
+                  }
+                }
+              },
+              "duration": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      }
+    },
     "BadFeedbackError": {
       "type": "object",
       "required": ["messages"],
