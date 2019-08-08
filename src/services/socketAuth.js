@@ -3,7 +3,7 @@ const { connectionsHeap } = require('@/services/connectionsHeap');
 
 const NO_IDENTITY = 'identity.not.provided';
 const NO_DEVICE_ID = 'device.id.not.provided';
-const ALREADY_LOGGED_IN = 'already.logged.in';
+// const ALREADY_LOGGED_IN = 'already.logged.in';
 
 function authenticateOperator(socket, data, callback) {
   const { identity } = data;
