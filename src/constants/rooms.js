@@ -11,3 +11,4 @@ exports.CUSTOMERS = '/customers';
 
 // rooms
 exports.ACTIVE_OPERATORS = 'activeOperators';
+exports.OPERATOR_ON_CALL = 'operatorOnCall';

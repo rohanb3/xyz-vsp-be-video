@@ -8,6 +8,7 @@ const {
   ROOM_CREATED,
   ACTIVE_OPERATORS,
   OPERATORS,
+  OPERATOR_ON_CALL
 } = require('@/constants/rooms');
 
 const {
@@ -106,6 +107,12 @@ class OperatorsRoom {
           salesRepId,
           callbackEnabled,
         });
+
+        const operatorId = operator.id;
+        const connectedOperator = this.operators.connected[operatorId];
+         connectedOperator.join(OPERATOR_ON_CALL, ()=>{
+           this.leave(ACTIVE_OPERATORS,()=>{});
+         });
       })
       .then(() =>
         logger.debug('Customer call: accepted by operator', operator.identity)
@@ -173,15 +180,15 @@ class OperatorsRoom {
     );
     return callId
       ? calls
-          .finishCall(callId, operator.identity)
-          .then(() =>
-            logger.debug(
-              'Call: finished by operator',
-              callId,
-              operator.identity
-            )
+        .finishCall(callId, operator.identity)
+        .then(() =>
+          logger.debug(
+            'Call: finished by operator',
+            callId,
+            operator.identity
           )
-          .catch(err => logger.error('Call: finishing by operator failed', err))
+        )
+        .catch(err => logger.error('Call: finishing by operator failed', err))
       : Promise.resolve();
   }
 
@@ -230,15 +237,19 @@ class OperatorsRoom {
   }
 
   emitCallFinishing(operator, data) {
+    const operatorId = operator.id;
+    const connectedOperator = this.operators.connected[operatorId];
+    connectedOperator.leave(OPERATOR_ON_CALL);
+    connectedOperator.join(ACTIVE_OPERATORS);
     operator.emit(CALL_FINISHED, data);
   }
 
   emitCallsInfo(info) {
-    logger.debug('Calls info: emitting to active operators', info);
     return this.operators.to(ACTIVE_OPERATORS).emit(CALLS_CHANGED, info);
   }
 
   addOperatorToActive(operator) {
+
     const operatorId = operator.id;
     const connectedOperator = this.operators.connected[operatorId];
     if (connectedOperator) {
@@ -282,14 +293,14 @@ class OperatorsRoom {
   checkAndUnmapSocketIdentityFromId(socket) {
     return socket.identity
       ? connectionsHeap
-          .remove(socket.identity)
-          .catch(err =>
-            logger.error(
-              'Operator: unmapping identity from id failed',
-              socket.identity,
-              err
-            )
+        .remove(socket.identity)
+        .catch(err =>
+          logger.error(
+            'Operator: unmapping identity from id failed',
+            socket.identity,
+            err
           )
+        )
       : Promise.resolve();
   }
 
