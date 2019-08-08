@@ -27,19 +27,19 @@ describe('socketAuth: ', () => {
       });
     });
 
-    it('should call callback with error if already connected', () => {
-      const callback = jest.fn();
-      const data = { identity: '42' };
+    // it('should call callback with error if already connected', () => {
+    //   const callback = jest.fn();
+    //   const data = { identity: '42' };
 
-      connectionsHeap.isExist = jest.fn(() => Promise.resolve(true));
+    //   connectionsHeap.isExist = jest.fn(() => Promise.resolve(true));
 
-      return authenticateOperator(socket, data, callback).then(() => {
-        const error = callback.mock.calls[0][0];
+    //   return authenticateOperator(socket, data, callback).then(() => {
+    //     const error = callback.mock.calls[0][0];
 
-        expect(callback).toHaveBeenCalledWith(expect.any(Error));
-        expect(error.message).toBe('already.logged.in');
-      });
-    });
+    //     expect(callback).toHaveBeenCalledWith(expect.any(Error));
+    //     expect(error.message).toBe('already.logged.in');
+    //   });
+    // });
 
     it('should call callback with error if no identity provided', () => {
       const callback = jest.fn();

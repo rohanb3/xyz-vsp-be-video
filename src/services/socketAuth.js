@@ -10,10 +10,10 @@ function authenticateOperator(socket, data, callback) {
   if (!identity) {
     return Promise.reject(new Error(NO_IDENTITY)).catch(callback);
   }
-  return connectionsHeap.isExist(identity).then((isExist) => {
-    if (isExist) {
-      return callback(new Error(ALREADY_LOGGED_IN));
-    }
+  return connectionsHeap.isExist(identity).then(() => {
+    // if (isExist) {
+    //   return callback(new Error(ALREADY_LOGGED_IN));
+    //}
     const token = twilio.getToken(identity);
     socket.identity = identity;
     return callback(null, token);
