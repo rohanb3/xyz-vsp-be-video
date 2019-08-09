@@ -8,7 +8,7 @@ const {
   ROOM_CREATED,
   ACTIVE_OPERATORS,
   OPERATORS,
-  OPERATOR_ON_CALL
+  CONNECTION_DROPPED
 } = require('@/constants/rooms');
 
 const {
@@ -41,7 +41,7 @@ class OperatorsRoom {
     this.operators = io.of(OPERATORS);
     this.operators.on(CONNECTION, this.onOperatorConnected.bind(this));
     socketIOAuth(this.operators, {
-      authenticate: authenticateOperator,
+      authenticate: authenticateOperator.bind(null, this.disconnectOldSocket.bind(this)),
       postAuthenticate: this.onOperatorAuthenticated.bind(this),
     });
     calls.subscribeToCallFinishing(this.onCallFinished.bind(this));
@@ -55,6 +55,14 @@ class OperatorsRoom {
       calls.subscribeToCallsLengthChanging(this.emitCallsInfo.bind(this));
     }
   }
+
+  disconnectOldSocket(socketId){
+    const connectedOperator = this.operators.connected[socketId];
+    if(connectedOperator)
+    {
+      connectedOperator.emit(CONNECTION_DROPPED);
+    }
+  };
 
   onOperatorConnected(operator) {
     operator.on(CALL_ACCEPTED, this.onOperatorAcceptCall.bind(this, operator));
@@ -107,12 +115,6 @@ class OperatorsRoom {
           salesRepId,
           callbackEnabled,
         });
-
-        const operatorId = operator.id;
-        const connectedOperator = this.operators.connected[operatorId];
-         connectedOperator.join(OPERATOR_ON_CALL, ()=>{
-           this.leave(ACTIVE_OPERATORS,()=>{});
-         });
       })
       .then(() =>
         logger.debug('Customer call: accepted by operator', operator.identity)
@@ -237,10 +239,6 @@ class OperatorsRoom {
   }
 
   emitCallFinishing(operator, data) {
-    const operatorId = operator.id;
-    const connectedOperator = this.operators.connected[operatorId];
-    connectedOperator.leave(OPERATOR_ON_CALL);
-    connectedOperator.join(ACTIVE_OPERATORS);
     operator.emit(CALL_FINISHED, data);
   }
 
@@ -293,7 +291,12 @@ class OperatorsRoom {
   checkAndUnmapSocketIdentityFromId(socket) {
     return socket.identity
       ? connectionsHeap
-        .remove(socket.identity)
+        .get(socket.identity)
+        .then(heapSocket => {
+          if (heapSocket.socketId === socket.id) {
+            return connectionsHeap.remove(socket.identity);
+          }
+        })        
         .catch(err =>
           logger.error(
             'Operator: unmapping identity from id failed',

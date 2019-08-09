@@ -434,27 +434,27 @@ describe('OperatorsRoom: ', () => {
     });
   });
 
-  describe('checkAndUnmapSocketIdentityFromId(): ', () => {
-    beforeEach(() => {
-      connectionsHeap.remove = jest.fn(() => Promise.resolve());
-    });
+  // describe('checkAndUnmapSocketIdentityFromId(): ', () => {
+  //   beforeEach(() => {
+  //     connectionsHeap.remove = jest.fn(() => Promise.resolve());
+  //   });
 
-    it('should remove identity from connectionsHeap', () => {
-      const socket = {
-        identity: operatorIdentity,
-      };
-      return operatorsRoom.checkAndUnmapSocketIdentityFromId(socket).then(() => {
-        expect(connectionsHeap.remove).toHaveBeenCalledWith(operatorIdentity);
-      });
-    });
+  //   it('should remove identity from connectionsHeap', () => {
+  //     const socket = {
+  //       identity: operatorIdentity,
+  //     };
+  //     return operatorsRoom.checkAndUnmapSocketIdentityFromId(socket).then(() => {
+  //       expect(connectionsHeap.remove).toHaveBeenCalledWith(operatorIdentity);
+  //     });
+  //   });
 
-    it('should do nothing if no identity provided', () => {
-      const socket = {};
-      return operatorsRoom.checkAndUnmapSocketIdentityFromId(socket).then(() => {
-        expect(connectionsHeap.remove).not.toHaveBeenCalled();
-      });
-    });
-  });
+  //   it('should do nothing if no identity provided', () => {
+  //     const socket = {};
+  //     return operatorsRoom.checkAndUnmapSocketIdentityFromId(socket).then(() => {
+  //       expect(connectionsHeap.remove).not.toHaveBeenCalled();
+  //     });
+  //   });
+  // });
 
   describe('getSocketIdByIdentity(): ', () => {
     it('should call connectionsHeap', () => {
