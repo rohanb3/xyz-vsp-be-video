@@ -600,7 +600,7 @@ var HttpConnection = /** @class */ (function () {
                         transport = this.resolveTransport(endpoint, requestedTransport, requestedTransferFormat);
                         if (!(typeof transport === "number")) return [3 /*break*/, 8];
                         this.transport = this.constructTransport(transport);
-                        if (!!negotiateResponse.connectionId) return [3 /*break*/, 5];
+                        if (negotiateResponse.connectionId) return [3 /*break*/, 5];
                         return [4 /*yield*/, this.getNegotiationResponse(url)];
                     case 4:
                         negotiateResponse = _a.sent();
