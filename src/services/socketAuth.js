@@ -11,7 +11,7 @@ function authenticateOperator(disconnectCallBack, socket, data, callback) {
     return Promise.reject(new Error(NO_IDENTITY)).catch(callback);
   }
 
-  connectionsHeap.get(identity).then((oldSocket)=>{    
+  return connectionsHeap.get(identity).then((oldSocket)=>{    
         if (oldSocket) {
           disconnectCallBack(!oldSocket.activeCallId ? oldSocket.socketId : socket.id);
         }
