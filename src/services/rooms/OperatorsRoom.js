@@ -8,6 +8,7 @@ const {
   ROOM_CREATED,
   ACTIVE_OPERATORS,
   OPERATORS,
+  CONNECTION_DROPPED
 } = require('@/constants/rooms');
 
 const {
@@ -40,7 +41,7 @@ class OperatorsRoom {
     this.operators = io.of(OPERATORS);
     this.operators.on(CONNECTION, this.onOperatorConnected.bind(this));
     socketIOAuth(this.operators, {
-      authenticate: authenticateOperator,
+      authenticate: authenticateOperator.bind(null, this.disconnectOldSocket.bind(this)),
       postAuthenticate: this.onOperatorAuthenticated.bind(this),
     });
     calls.subscribeToCallFinishing(this.onCallFinished.bind(this));
@@ -54,6 +55,14 @@ class OperatorsRoom {
       calls.subscribeToCallsLengthChanging(this.emitCallsInfo.bind(this));
     }
   }
+
+  disconnectOldSocket(socketId){
+    const connectedOperator = this.operators.connected[socketId];
+    if(connectedOperator)
+    {
+      connectedOperator.emit(CONNECTION_DROPPED);
+    }
+  };
 
   onOperatorConnected(operator) {
     operator.on(CALL_ACCEPTED, this.onOperatorAcceptCall.bind(this, operator));
@@ -173,15 +182,15 @@ class OperatorsRoom {
     );
     return callId
       ? calls
-          .finishCall(callId, operator.identity)
-          .then(() =>
-            logger.debug(
-              'Call: finished by operator',
-              callId,
-              operator.identity
-            )
+        .finishCall(callId, operator.identity)
+        .then(() =>
+          logger.debug(
+            'Call: finished by operator',
+            callId,
+            operator.identity
           )
-          .catch(err => logger.error('Call: finishing by operator failed', err))
+        )
+        .catch(err => logger.error('Call: finishing by operator failed', err))
       : Promise.resolve();
   }
 
@@ -234,11 +243,11 @@ class OperatorsRoom {
   }
 
   emitCallsInfo(info) {
-    logger.debug('Calls info: emitting to active operators', info);
     return this.operators.to(ACTIVE_OPERATORS).emit(CALLS_CHANGED, info);
   }
 
   addOperatorToActive(operator) {
+
     const operatorId = operator.id;
     const connectedOperator = this.operators.connected[operatorId];
     if (connectedOperator) {
@@ -282,14 +291,19 @@ class OperatorsRoom {
   checkAndUnmapSocketIdentityFromId(socket) {
     return socket.identity
       ? connectionsHeap
-          .remove(socket.identity)
-          .catch(err =>
-            logger.error(
-              'Operator: unmapping identity from id failed',
-              socket.identity,
-              err
-            )
+        .get(socket.identity)
+        .then(heapSocket => {
+          if (heapSocket.socketId === socket.id) {
+            return connectionsHeap.remove(socket.identity);
+          }
+        })        
+        .catch(err =>
+          logger.error(
+            'Operator: unmapping identity from id failed',
+            socket.identity,
+            err
           )
+        )
       : Promise.resolve();
   }
 
