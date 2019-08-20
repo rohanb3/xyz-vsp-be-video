@@ -12943,7 +12943,7 @@ module.exports = yeast;
 /* eslint-disable no-console */
 const io = require('socket.io-client');
 
-const { SOCKET_EVENTS, TYPES, FIELDS } = require('./src/constants');
+const { SOCKET_EVENTS, TYPES, FIELDS, APP_MODES } = require('./src/constants');
 const { getDefaultStatistics, getField, setField } = require('./src/utils');
 const {
   drawCustomersFrames,
@@ -12970,6 +12970,7 @@ if (!isLocal) {
 const identity = `${now}-operator-0`;
 const socket = io(socketUrl, socketOptions);
 
+let workmode = APP_MODES.FULL;
 let isStarted = false;
 let callsStatisticsOpened = false;
 let legendOpened = false;
@@ -13070,6 +13071,14 @@ function subscribeToControls() {
   document
     .querySelector('.legend-toggler')
     .addEventListener('click', toggleLegend);
+  document
+    .querySelectorAll('.check-mode')
+    .forEach(item => item.addEventListener('click', checkMode));
+}
+
+function checkMode() { 
+  clearTest();
+  workmode = this.value;
 }
 
 function startTest() {
@@ -13079,8 +13088,14 @@ function startTest() {
     preparePage();
     initUserStatistics(totalCallsForTest, enableActionButtons);
   } else {
-    window.alert('Test is running! Please, stop it before');
-  }
+      if(workmode === APP_MODES.STEPS_BY_STEP){
+        disableActionButtons();
+        stepByStepStartCalls();
+      }
+      else{
+        window.alert('Test is running! Please, stop it before');
+      }
+    }
 }
 
 function clearTest() {
@@ -13089,6 +13104,13 @@ function clearTest() {
   resetStatistics();
   removeCalls();
   enableActionButtons();
+}
+
+function stepByStepStartCalls() {
+  const iframes = document.querySelectorAll(`.customers-section iframe`);
+  for (var i = 0; i < iframes.length; i++) {
+    iframes[i].contentWindow.byStepModeStartCalls();
+  }
 }
 
 function toggleCalls() {
@@ -13117,8 +13139,8 @@ function enableActionButtons() {
 }
 
 function disableActionButtons() {
-  document.querySelector('.start-button').disabled = true;
-  document.querySelector('.clear-button').disabled = true;
+    document.querySelector('.start-button').disabled = true;
+    document.querySelector('.clear-button').disabled = true;
 }
 
 function resetStatistics() {
@@ -13183,9 +13205,10 @@ function prepareCustomers(
     maxFirstCallDelay,
     socketOptions,
     now,
+    workmode,
   };
 
-  drawCustomersFrames(options);
+  drawCustomersFrames(options, enableActionButtons);
 }
 
 function prepareOperators(
@@ -13453,6 +13476,11 @@ module.exports.CALL_STATUSES = {
   UNAUTHORIZED: 'Unauthorized',
 };
 
+module.exports.APP_MODES = {
+  FULL: '1',
+  STEPS_BY_STEP: '2',
+};
+
 module.exports.COLORS_MAP = {
   idle: '#CFD8DC',
   callRequested: '#C5CAE9',
@@ -13573,7 +13601,7 @@ module.exports = {
 };
 
 },{"./constants":51}],53:[function(require,module,exports){
-const { TYPES } = require('./constants');
+const { TYPES, APP_MODES } = require('./constants');
 
 const START_FIRST_CALL_ADDITIONAL_DELAY = 5000;
 
@@ -13588,11 +13616,12 @@ function drawCustomersFrames({
   maxFirstCallDelay,
   socketOptions,
   now,
-}) {
+  workmode,
+}, enableActionButtons) {
   const parent = document.querySelector('.customers-section');
   const fragment = document.createDocumentFragment();
 
-  new Array(customersNumber).fill(1).forEach((_, i) => {
+  const promises = new Array(customersNumber).fill(1).map((_, i) => {
     const iframe = document.createElement('iframe');
     const num = i + 1;
     const frameContent = `
@@ -13615,8 +13644,8 @@ function drawCustomersFrames({
     iframe.id = `customer-${num}`;
     iframe.classList.add('user-frame', 'customer-frame');
     iframe.srcdoc = frameContent;
-
-    setTimeout(() => {
+    fragment.appendChild(iframe);
+    return new Promise((resolve) => {setTimeout(() => {
       const firstCallDelay = Math.ceil(Math.random() * maxFirstCallDelay);
       const startFirstCallAfter =
         (Math.max(customersNumber, operatorsNumber) - i) * connectionDelay +
@@ -13632,12 +13661,16 @@ function drawCustomersFrames({
       iframe.contentWindow.callsPerCustomer = callsPerCustomer;
       iframe.contentWindow.minCallDuration = minCallDuration;
       iframe.contentWindow.maxCallDuration = maxCallDuration;
-    });
-
-    fragment.appendChild(iframe);
+      iframe.contentWindow.workmode = workmode;
+      iframe.contentWindow.promisesResolver = resolve; 
+    })});
   });
-
   parent.appendChild(fragment);
+  
+  Promise.all(promises).then(()=>{
+    if(workmode === APP_MODES.STEPS_BY_STEP)
+    enableActionButtons();
+  });
 }
 
 function drawOperatorsFrames({
@@ -13670,7 +13703,7 @@ function drawOperatorsFrames({
 
     iframe.id = `operator-${num}`;
     iframe.classList.add('user-frame', 'operator-frame');
-    iframe.srcdoc = frameContent;
+    iframe.srcdoc = frameContent;  
     setTimeout(() => {
       iframe.contentWindow.io = io;
       iframe.contentWindow.socketOptions = socketOptions;
@@ -13679,7 +13712,7 @@ function drawOperatorsFrames({
       iframe.contentWindow.userType = TYPES.OPERATORS;
       iframe.contentWindow.minCallDuration = minCallDuration;
       iframe.contentWindow.maxCallDuration = maxCallDuration;
-      iframe.contentWindow.acceptingLikelihood = acceptingLikelihood;
+      iframe.contentWindow.acceptingLikelihood = acceptingLikelihood;     
     });
     fragment.appendChild(iframe);
   });
@@ -13958,7 +13991,7 @@ function onUserAuthorized(userType, requestTime, responseTime, statistics) {
   getStatisticsFieldDrawer(userType)(
     FIELDS.AVERAGE_AUTHORIZING_TIME,
     statistics
-  );
+  );  
 }
 
 function onCallEnqueued(id, requestTime, responseTime, statistics) {
