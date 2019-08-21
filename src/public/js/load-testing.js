@@ -13073,12 +13073,16 @@ function subscribeToControls() {
     .addEventListener('click', toggleLegend);
   document
     .querySelectorAll('.check-mode')
-    .forEach(item => item.addEventListener('click', checkMode));
+    .forEach(item => item.addEventListener('click', setWorkMode));
 }
 
-function checkMode() { 
+function setWorkMode() { 
   clearTest();
   workmode = this.value;
+}
+
+function checkWorkMode(appMode){
+  return workmode === appMode
 }
 
 function startTest() {
@@ -13088,7 +13092,7 @@ function startTest() {
     preparePage();
     initUserStatistics(totalCallsForTest, enableActionButtons);
   } else {
-      if(workmode === APP_MODES.STEPS_BY_STEP){
+      if(checkWorkMode(APP_MODES.STEPS_BY_STEP)){
         disableActionButtons();
         stepByStepStartCalls();
       }
@@ -13205,10 +13209,15 @@ function prepareCustomers(
     maxFirstCallDelay,
     socketOptions,
     now,
-    workmode,
+    checkWorkMode,
   };
 
-  drawCustomersFrames(options, enableActionButtons);
+  drawCustomersFrames(options).then(()=> {
+    if(checkWorkMode(APP_MODES.STEPS_BY_STEP)){
+       enableActionButtons();
+      }
+      else { stepByStepStartCalls();}
+  });
 }
 
 function prepareOperators(
@@ -13616,8 +13625,7 @@ function drawCustomersFrames({
   maxFirstCallDelay,
   socketOptions,
   now,
-  workmode,
-}, enableActionButtons) {
+}) {
   const parent = document.querySelector('.customers-section');
   const fragment = document.createDocumentFragment();
 
@@ -13661,16 +13669,12 @@ function drawCustomersFrames({
       iframe.contentWindow.callsPerCustomer = callsPerCustomer;
       iframe.contentWindow.minCallDuration = minCallDuration;
       iframe.contentWindow.maxCallDuration = maxCallDuration;
-      iframe.contentWindow.workmode = workmode;
       iframe.contentWindow.promisesResolver = resolve; 
     })});
   });
   parent.appendChild(fragment);
-  
-  Promise.all(promises).then(()=>{
-    if(workmode === APP_MODES.STEPS_BY_STEP)
-    enableActionButtons();
-  });
+
+  return Promise.all(promises);
 }
 
 function drawOperatorsFrames({

@@ -15,7 +15,6 @@ const {
   maxCallDuration,
   socketOptions,
   connectionDelay,
-  workmode,
 } = window;
 const { statisticsCallbacks } = window.parent;
 const deviceId = `device-${identity}`;
@@ -81,13 +80,10 @@ function onAuthenticated(token) {
   statisticsCallbacks.onUserAuthorized(
     userType,
     startAuthorizingAt,
-    authorizedAt
+    authorizedAt,
   );
     
   window.promisesResolver();
-  if(workmode === APP_MODES.FULL){
-        setTimeout(startCall, startFirstCallAfter);
-  }
 }
 
 function byStepModeStartCalls(){
