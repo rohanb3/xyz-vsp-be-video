@@ -33,6 +33,7 @@ const {
   CALLS_EMPTY,
   CALL_ACCEPTING_FAILED,
   CALL_FINISHED_BY_CUSTOMER,
+  CUSTOMER_DISCONNECTED,
 } = require('@/constants/calls');
 
 const { STATUS_CHANGED_ONLINE, STATUS_CHANGED_OFFLINE } = require('@/constants/operatorStatuses');
@@ -54,13 +55,17 @@ const io = {
   of: jest.fn(() => mockedNamespace),
 };
 
+const mediator = {
+  on: jest.fn(() => mockedNamespace),
+};
+
 describe('OperatorsRoom: ', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     socketId = '/operators#42';
     operatorIdentity = 'operator42';
     callId = 'call42';
-    operatorsRoom = new OperatorsRoom(io);
+    operatorsRoom = new OperatorsRoom(io, mediator);
     operator = {
       on: jest.fn(),
       emit: jest.fn(),
@@ -74,6 +79,9 @@ describe('OperatorsRoom: ', () => {
   describe('constructor(): ', () => {
     it('should create operators namespace', () => {
       expect(io.of).toHaveBeenCalledWith(OPERATORS);
+    });
+    it('should add listener to namespace customer disconnected event', () => {
+      expect(mediator.on).toHaveBeenCalledWith(CUSTOMER_DISCONNECTED, expect.any(Function));
     });
 
     it('should add listener to namespace connection event', () => {

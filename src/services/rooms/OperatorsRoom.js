@@ -20,6 +20,7 @@ const {
   CALLS_CHANGED,
   CALL_ACCEPTING_FAILED,
   CALLBACK_REQUESTING_FAILED,
+  CUSTOMER_DISCONNECTED,
 } = require('@/constants/calls');
 
 const {
@@ -37,9 +38,14 @@ const logger = require('@/services/logger')(module);
 const isMaster = !process.env.INSTANCE_ID || process.env.INSTANCE_ID === '0';
 
 class OperatorsRoom {
-  constructor(io) {
+  constructor(io, mediator) {
     this.operators = io.of(OPERATORS);
     this.operators.on(CONNECTION, this.onOperatorConnected.bind(this));
+
+    this.mediator = mediator;
+
+    this.mediator.on(CUSTOMER_DISCONNECTED, this.notifyAboutCustomerDisconnected.bind(this));
+
     socketIOAuth(this.operators, {
       authenticate: authenticateOperator.bind(null, this.disconnectOldSocket.bind(this)),
       postAuthenticate: this.onOperatorAuthenticated.bind(this),
@@ -57,7 +63,7 @@ class OperatorsRoom {
   }
 
   disconnectOldSocket(socketId){
-    const connectedOperator = this.operators.connected[socketId];
+    const connectedOperator = this.getConnectedOperator(socketId);
     if(connectedOperator)
     {
       connectedOperator.emit(CONNECTION_DROPPED);
@@ -202,7 +208,7 @@ class OperatorsRoom {
   checkOperatorAndEmitCallbackAccepting(call) {
     const { acceptedBy, id } = call;
     return this.getSocketIdByIdentity(acceptedBy).then(socketId => {
-      const connectedOperator = this.operators.connected[socketId];
+      const connectedOperator = this.getConnectedOperator(socketId);
       if (connectedOperator) {
         this.emitCallbackAccepting(connectedOperator, id);
       }
@@ -212,7 +218,7 @@ class OperatorsRoom {
   checkOperatorAndEmitCallbackDeclining(call) {
     const { acceptedBy, id, reason } = call;
     return this.getSocketIdByIdentity(acceptedBy).then(socketId => {
-      const connectedOperator = this.operators.connected[socketId];
+      const connectedOperator = this.getConnectedOperator(socketId);
       if (connectedOperator) {
         this.emitCallbackDeclining(connectedOperator, { id, reason });
       }
@@ -222,7 +228,7 @@ class OperatorsRoom {
   checkOperatorAndEmitCallFinishing(call) {
     const { acceptedBy, id } = call;
     return this.getSocketIdByIdentity(acceptedBy).then(socketId => {
-      const connectedOperator = this.operators.connected[socketId];
+      const connectedOperator = this.getConnectedOperator(socketId);
       if (connectedOperator) {
         logger.debug('Call finished: emitting to operator', id, acceptedBy);
         this.emitCallFinishing(connectedOperator, { id });
@@ -249,7 +255,7 @@ class OperatorsRoom {
   addOperatorToActive(operator) {
 
     const operatorId = operator.id;
-    const connectedOperator = this.operators.connected[operatorId];
+    const connectedOperator = this.getConnectedOperator(operatorId);
     if (connectedOperator) {
       logger.debug('Operator: added to active', operatorId);
       connectedOperator.join(ACTIVE_OPERATORS);
@@ -268,7 +274,7 @@ class OperatorsRoom {
 
   removeOperatorFromActive(operator) {
     const operatorId = operator.id;
-    const connectedOperator = this.operators.connected[operatorId];
+    const connectedOperator = this.getConnectedOperator(operatorId);
     if (connectedOperator) {
       logger.debug('Operator: removed from active', operatorId);
       connectedOperator.leave(ACTIVE_OPERATORS);
@@ -296,7 +302,7 @@ class OperatorsRoom {
           if (heapSocket.socketId === socket.id) {
             return connectionsHeap.remove(socket.identity);
           }
-        })        
+        })
         .catch(err =>
           logger.error(
             'Operator: unmapping identity from id failed',
@@ -316,6 +322,20 @@ class OperatorsRoom {
       .catch(err =>
         logger.error('Operator: getting id by identity failed', identity, err)
       );
+  }
+
+  notifyAboutCustomerDisconnected({ operatorId }) {
+    return this
+      .getSocketIdByIdentity(operatorId)
+      .then(socketId => {
+        const connectedOperator = this.getConnectedOperator(socketId);
+
+        connectedOperator.emit(CUSTOMER_DISCONNECTED);
+      })
+  }
+
+  getConnectedOperator(id) {
+    return this.operators.connected[id];
   }
 }
 

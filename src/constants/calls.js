@@ -14,6 +14,8 @@ exports.PEER_OFFLINE = 'peer.offline';
 exports.PEER_BUSY = 'peer.busy';
 exports.CALL_FINISHED_BY_CUSTOMER = 'call.finished.by.customer';
 exports.CALLBACK_DISABLED = 'callback.disabled';
+exports.CUSTOMER_CONNECTED = 'customer.connected';
+exports.CUSTOMER_DISCONNECTED = 'customer.disconnected';
 
 exports.CALLS_PENDING = 'calls.pending';
 exports.CALLS_ACTIVE = 'calls.active';
