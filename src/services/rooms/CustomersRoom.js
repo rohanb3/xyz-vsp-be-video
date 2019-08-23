@@ -165,9 +165,9 @@ class CustomersRoom {
       .then(({connectedCustomer, callData}) => {
         return repeatUntilDelivered(() =>
             this.emitCallAccepting(connectedCustomer, callData),
-            next => {
-              connectedCustomer.once(CUSTOMER_CONNECTED, next);
-              return () => connectedCustomer.off(CUSTOMER_CONNECTED, next);
+            delivered => {
+              connectedCustomer.once(CUSTOMER_CONNECTED, delivered);
+              return () => connectedCustomer.off(CUSTOMER_CONNECTED, delivered);
             }
           )
           .catch(error => {
@@ -188,7 +188,6 @@ class CustomersRoom {
 
   getCustomer(socketId, callId, operatorId) {
     const connectedCustomer = this.getConnectedCustomer(socketId);
-    let callData;
 
     logger.debug(
       'Checking customer before accept call emit',
@@ -205,13 +204,13 @@ class CustomersRoom {
       );
       connectedCustomer.pendingCallId = null;
       const token = twilio.getToken(connectedCustomer.deviceId, callId);
-      callData = {
+      let callData = {
         roomId: callId,
         operatorId,
         token,
       };
+      return {connectedCustomer, callData};
     }
-    return {connectedCustomer, callData};
   }
 
   checkCustomerAndEmitCallbackRequesting(call) {
