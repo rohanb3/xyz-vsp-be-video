@@ -154,6 +154,8 @@ class CustomersRoom {
       acceptedBy,
       deviceId
     );
+
+    console.log('deviceId', deviceId);
     return this.getSocketIdByDeviceId(deviceId).then(socketId => {
       this.checkCustomerAndEmitCallAccepting(socketId, id, acceptedBy);
     });
