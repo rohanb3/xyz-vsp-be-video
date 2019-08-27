@@ -9,6 +9,10 @@ jest.mock('@/services/calls', () => ({
 }));
 jest.mock('@/services/twilio');
 
+jest.mock('@/services/rooms/utils', () => ({
+  repeatUntilDelivered: jest.fn(() => Promise.resolve({})),
+}));
+
 const twilio = require('@/services/twilio');
 const calls = require('@/services/calls');
 const CustomersRoom = require('@/services/rooms/CustomersRoom');
@@ -41,6 +45,11 @@ const io = {
   of: jest.fn(() => mockedNamespace),
 };
 
+const mediator = {
+  on: jest.fn(() => mockedNamespace),
+  once: jest.fn(() => mockedNamespace),
+};
+
 describe('CustomersRoom: ', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -49,7 +58,7 @@ describe('CustomersRoom: ', () => {
     deviceId = 'device42';
     callId = 'call42';
     salesRepId = 'salesRep42';
-    customersRoom = new CustomersRoom(io);
+    customersRoom = new CustomersRoom(io, mediator);
     customer = {
       on: jest.fn(),
       emit: jest.fn(),
@@ -58,6 +67,7 @@ describe('CustomersRoom: ', () => {
       identity: customerIdentity,
       deviceId,
       id: socketId,
+      once: jest.fn(),
     };
   });
 
@@ -216,8 +226,8 @@ describe('CustomersRoom: ', () => {
       customersRoom.getSocketIdByDeviceId = jest.fn(() =>
         Promise.resolve(socketId)
       );
-      customersRoom.checkCustomerAndEmitCallAccepting = jest.fn(() =>
-        Promise.resolve()
+      customersRoom.getCustomer = jest.fn(() =>
+        Promise.resolve({ connectedCustomer: customer, callData: {} })
       );
 
       return customersRoom.onCallAccepted(call).then(() => {
@@ -225,20 +235,21 @@ describe('CustomersRoom: ', () => {
           deviceId
         );
         expect(
-          customersRoom.checkCustomerAndEmitCallAccepting
+          customersRoom.getCustomer
         ).toHaveBeenCalledWith(socketId, callId, acceptedBy);
+
       });
     });
   });
 
-  describe('checkCustomerAndEmitCallAccepting(): ', () => {
+  describe('getCustomer(): ', () => {
     it('should do nothing if not connected customer', () => {
       const acceptedBy = 'operator42';
       twilio.getToken = jest.fn(() => Promise.resolve());
       customersRoom.emitCallAccepting = jest.fn();
       customersRoom.customers.connected = {};
 
-      customersRoom.checkCustomerAndEmitCallAccepting(
+      customersRoom.getCustomer(
         socketId,
         callId,
         acceptedBy
@@ -251,28 +262,21 @@ describe('CustomersRoom: ', () => {
     it('should emit to connected customer', () => {
       const acceptedBy = 'operator42';
       const token = 'token';
-      const expectedCallData = {
-        roomId: callId,
-        operatorId: acceptedBy,
-        token,
-      };
+
       twilio.getToken = jest.fn(() => token);
       customersRoom.emitCallAccepting = jest.fn();
       customersRoom.customers.connected = {
         [socketId]: customer,
       };
 
-      customersRoom.checkCustomerAndEmitCallAccepting(
+      customersRoom.getCustomer(
         socketId,
         callId,
         acceptedBy
       );
 
       expect(twilio.getToken).toHaveBeenCalledWith(deviceId, callId);
-      expect(customersRoom.emitCallAccepting).toHaveBeenCalledWith(
-        customer,
-        expectedCallData
-      );
+
     });
   });
 
