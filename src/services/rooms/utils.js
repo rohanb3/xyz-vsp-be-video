@@ -1,4 +1,9 @@
-const {CALL_FINISHED_BY_CUSTOMER, CALLS_EMPTY, PEER_OFFLINE, CALLBACK_DISABLED } = require('@/constants/calls');
+const {
+  CALL_FINISHED_BY_CUSTOMER,
+  CALLS_EMPTY,
+  PEER_OFFLINE,
+  CALLBACK_DISABLED,
+} = require('@/constants/calls');
 
 const {
   CallsPendingEmptyError,
@@ -38,7 +43,7 @@ function repeatUntilDelivered(emit, delivered, options = {}) {
     let cb = delivered(() => {
       clearInterval(interval);
       if (cb) {
-        cb()
+        cb();
       }
       resolve();
     });
