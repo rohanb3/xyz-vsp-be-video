@@ -5,9 +5,9 @@ const __RND_TWILIO_API_SECRET = 'RV8qBYA2lM0OY0oWsATsYYWkNXhXyzrO';
 const __RND_TWILIO_CALLER_NUMBER = '+12563803157';
 const __RND_TWILIO_CALL_CENTER_NUMBER = '+380938821599';
 
-const AccessToken = require('twilio').jwt.AccessToken;
-const VoiceGrant = AccessToken.VoiceGrant;
-const VoiceResponse = require('twilio').twiml.VoiceResponse;
+const AccessToken = (require('twilio').jwt || {}).AccessToken;
+const VoiceGrant = (AccessToken || {}).VoiceGrant;
+const VoiceResponse = (require('twilio').twiml || {}).VoiceResponse;
 const defaultIdentity = 'alice';
 const callerId = 'client:quick_start';
 
