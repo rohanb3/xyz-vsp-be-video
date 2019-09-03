@@ -212,6 +212,11 @@ module.exports.CALL_STATUSES = {
   UNAUTHORIZED: 'Unauthorized',
 };
 
+module.exports.APP_MODES = {
+  FULL: '1',
+  STEPS_BY_STEP: '2',
+};
+
 module.exports.COLORS_MAP = {
   idle: '#CFD8DC',
   callRequested: '#C5CAE9',

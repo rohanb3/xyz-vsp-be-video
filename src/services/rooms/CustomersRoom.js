@@ -18,6 +18,8 @@ const {
   CALLBACK_ACCEPTED,
   CALLBACK_DECLINED,
   PEER_BUSY,
+  CUSTOMER_CONNECTED,
+  CUSTOMER_DISCONNECTED,
 } = require('@/constants/calls');
 
 const BUSY = 'busy';
@@ -30,10 +32,14 @@ const { authenticateCustomer } = require('@/services/socketAuth');
 const { connectionsHeap } = require('@/services/connectionsHeap');
 const logger = require('@/services/logger')(module);
 
+const { repeatUntilDelivered } = require('./utils');
+
 class CustomersRoom {
-  constructor(io) {
+  constructor(io, mediator) {
     this.customers = io.of(CUSTOMERS);
     this.customers.on(CONNECTION, this.onCustomerConnected.bind(this));
+
+    this.mediator = mediator;
 
     socketIOAuth(this.customers, {
       authenticate: authenticateCustomer,
@@ -67,7 +73,7 @@ class CustomersRoom {
     );
     return this.getSocketIdByDeviceId(customer.deviceId)
       .then(socketId => {
-        const connectedSocket = this.customers.connected[socketId];
+        const connectedSocket = this.getConnectedCustomer(socketId);
         const isPreviousConnectionExist =
           !!connectedSocket &&
           connectedSocket !== customer &&
@@ -154,9 +160,20 @@ class CustomersRoom {
       acceptedBy,
       deviceId
     );
-    return this.getSocketIdByDeviceId(deviceId).then(socketId => {
-      this.checkCustomerAndEmitCallAccepting(socketId, id, acceptedBy);
-    });
+    return this.getSocketIdByDeviceId(deviceId)
+      .then(socketId => this.getCustomer(socketId, id, acceptedBy))
+      .then(({ connectedCustomer, callData } = {}) => {
+        return repeatUntilDelivered(
+          () => this.emitCallAccepting(connectedCustomer, callData),
+          delivered => {
+            connectedCustomer.once(CUSTOMER_CONNECTED, delivered);
+            return () => connectedCustomer.off(CUSTOMER_CONNECTED, delivered);
+          }
+        ).catch(error => {
+          this.mediator.emit(CUSTOMER_DISCONNECTED, callData);
+          logger.error(error);
+        });
+      });
   }
 
   onCallFinished(call) {
@@ -166,8 +183,9 @@ class CustomersRoom {
     }
   }
 
-  checkCustomerAndEmitCallAccepting(socketId, callId, operatorId) {
-    const connectedCustomer = this.customers.connected[socketId];
+  getCustomer(socketId, callId, operatorId) {
+    const connectedCustomer = this.getConnectedCustomer(socketId);
+
     logger.debug(
       'Checking customer before accept call emit',
       !!connectedCustomer,
@@ -183,18 +201,19 @@ class CustomersRoom {
       );
       connectedCustomer.pendingCallId = null;
       const token = twilio.getToken(connectedCustomer.deviceId, callId);
-      this.emitCallAccepting(connectedCustomer, {
+      let callData = {
         roomId: callId,
         operatorId,
         token,
-      });
+      };
+      return { connectedCustomer, callData };
     }
   }
 
   checkCustomerAndEmitCallbackRequesting(call) {
     const { deviceId, id, acceptedBy } = call;
     return this.getSocketIdByDeviceId(deviceId).then(socketId => {
-      const connectedCustomer = this.customers.connected[socketId];
+      const connectedCustomer = this.getConnectedCustomer(socketId);
       if (connectedCustomer) {
         logger.debug('Operator callback: emitting to customer', id);
         this.emitCallbackRequesting(connectedCustomer, {
@@ -243,7 +262,7 @@ class CustomersRoom {
   checkCustomerAndEmitCallFinishing(call) {
     const { deviceId, id } = call;
     return this.getSocketIdByDeviceId(deviceId).then(socketId => {
-      const connectedCustomer = this.customers.connected[socketId];
+      const connectedCustomer = this.getConnectedCustomer(socketId);
       if (connectedCustomer) {
         logger.debug('Call finished: emitting to customer', id, deviceId);
         this.emitCallFinishing(connectedCustomer, { id });
@@ -304,6 +323,10 @@ class CustomersRoom {
       .catch(err =>
         logger.error('Customer getSocketIdByDeviceId failed: ', deviceId, err)
       );
+  }
+
+  getConnectedCustomer(socketId) {
+    return this.customers.connected[socketId];
   }
 }
 

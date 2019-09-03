@@ -8,7 +8,7 @@ const {
   ROOM_CREATED,
   ACTIVE_OPERATORS,
   OPERATORS,
-  CONNECTION_DROPPED
+  CONNECTION_DROPPED,
 } = require('@/constants/rooms');
 
 const {
@@ -20,6 +20,7 @@ const {
   CALLS_CHANGED,
   CALL_ACCEPTING_FAILED,
   CALLBACK_REQUESTING_FAILED,
+  CUSTOMER_DISCONNECTED,
 } = require('@/constants/calls');
 
 const {
@@ -37,11 +38,22 @@ const logger = require('@/services/logger')(module);
 const isMaster = !process.env.INSTANCE_ID || process.env.INSTANCE_ID === '0';
 
 class OperatorsRoom {
-  constructor(io) {
+  constructor(io, mediator) {
     this.operators = io.of(OPERATORS);
     this.operators.on(CONNECTION, this.onOperatorConnected.bind(this));
+
+    this.mediator = mediator;
+
+    this.mediator.on(
+      CUSTOMER_DISCONNECTED,
+      this.notifyAboutCustomerDisconnected.bind(this)
+    );
+
     socketIOAuth(this.operators, {
-      authenticate: authenticateOperator.bind(null, this.disconnectOldSocket.bind(this)),
+      authenticate: authenticateOperator.bind(
+        null,
+        this.disconnectOldSocket.bind(this)
+      ),
       postAuthenticate: this.onOperatorAuthenticated.bind(this),
     });
     calls.subscribeToCallFinishing(this.onCallFinished.bind(this));
@@ -56,13 +68,12 @@ class OperatorsRoom {
     }
   }
 
-  disconnectOldSocket(socketId){
-    const connectedOperator = this.operators.connected[socketId];
-    if(connectedOperator)
-    {
+  disconnectOldSocket(socketId) {
+    const connectedOperator = this.getConnectedOperator(socketId);
+    if (connectedOperator) {
       connectedOperator.emit(CONNECTION_DROPPED);
     }
-  };
+  }
 
   onOperatorConnected(operator) {
     operator.on(CALL_ACCEPTED, this.onOperatorAcceptCall.bind(this, operator));
@@ -182,15 +193,15 @@ class OperatorsRoom {
     );
     return callId
       ? calls
-        .finishCall(callId, operator.identity)
-        .then(() =>
-          logger.debug(
-            'Call: finished by operator',
-            callId,
-            operator.identity
+          .finishCall(callId, operator.identity)
+          .then(() =>
+            logger.debug(
+              'Call: finished by operator',
+              callId,
+              operator.identity
+            )
           )
-        )
-        .catch(err => logger.error('Call: finishing by operator failed', err))
+          .catch(err => logger.error('Call: finishing by operator failed', err))
       : Promise.resolve();
   }
 
@@ -202,7 +213,7 @@ class OperatorsRoom {
   checkOperatorAndEmitCallbackAccepting(call) {
     const { acceptedBy, id } = call;
     return this.getSocketIdByIdentity(acceptedBy).then(socketId => {
-      const connectedOperator = this.operators.connected[socketId];
+      const connectedOperator = this.getConnectedOperator(socketId);
       if (connectedOperator) {
         this.emitCallbackAccepting(connectedOperator, id);
       }
@@ -212,7 +223,7 @@ class OperatorsRoom {
   checkOperatorAndEmitCallbackDeclining(call) {
     const { acceptedBy, id, reason } = call;
     return this.getSocketIdByIdentity(acceptedBy).then(socketId => {
-      const connectedOperator = this.operators.connected[socketId];
+      const connectedOperator = this.getConnectedOperator(socketId);
       if (connectedOperator) {
         this.emitCallbackDeclining(connectedOperator, { id, reason });
       }
@@ -222,7 +233,7 @@ class OperatorsRoom {
   checkOperatorAndEmitCallFinishing(call) {
     const { acceptedBy, id } = call;
     return this.getSocketIdByIdentity(acceptedBy).then(socketId => {
-      const connectedOperator = this.operators.connected[socketId];
+      const connectedOperator = this.getConnectedOperator(socketId);
       if (connectedOperator) {
         logger.debug('Call finished: emitting to operator', id, acceptedBy);
         this.emitCallFinishing(connectedOperator, { id });
@@ -247,9 +258,8 @@ class OperatorsRoom {
   }
 
   addOperatorToActive(operator) {
-
     const operatorId = operator.id;
-    const connectedOperator = this.operators.connected[operatorId];
+    const connectedOperator = this.getConnectedOperator(operatorId);
     if (connectedOperator) {
       logger.debug('Operator: added to active', operatorId);
       connectedOperator.join(ACTIVE_OPERATORS);
@@ -268,7 +278,7 @@ class OperatorsRoom {
 
   removeOperatorFromActive(operator) {
     const operatorId = operator.id;
-    const connectedOperator = this.operators.connected[operatorId];
+    const connectedOperator = this.getConnectedOperator(operatorId);
     if (connectedOperator) {
       logger.debug('Operator: removed from active', operatorId);
       connectedOperator.leave(ACTIVE_OPERATORS);
@@ -291,19 +301,19 @@ class OperatorsRoom {
   checkAndUnmapSocketIdentityFromId(socket) {
     return socket.identity
       ? connectionsHeap
-        .get(socket.identity)
-        .then(heapSocket => {
-          if (heapSocket.socketId === socket.id) {
-            return connectionsHeap.remove(socket.identity);
-          }
-        })        
-        .catch(err =>
-          logger.error(
-            'Operator: unmapping identity from id failed',
-            socket.identity,
-            err
+          .get(socket.identity)
+          .then(heapSocket => {
+            if (heapSocket.socketId === socket.id) {
+              return connectionsHeap.remove(socket.identity);
+            }
+          })
+          .catch(err =>
+            logger.error(
+              'Operator: unmapping identity from id failed',
+              socket.identity,
+              err
+            )
           )
-        )
       : Promise.resolve();
   }
 
@@ -316,6 +326,20 @@ class OperatorsRoom {
       .catch(err =>
         logger.error('Operator: getting id by identity failed', identity, err)
       );
+  }
+
+  notifyAboutCustomerDisconnected({ operatorId }) {
+    return this.getSocketIdByIdentity(operatorId).then(socketId => {
+      const connectedOperator = this.getConnectedOperator(socketId);
+
+      if (connectedOperator) {
+        connectedOperator.emit(CUSTOMER_DISCONNECTED);
+      }
+    });
+  }
+
+  getConnectedOperator(id) {
+    return this.operators.connected[id];
   }
 }
 

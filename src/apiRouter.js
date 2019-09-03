@@ -23,4 +23,12 @@ router
 
 router.route('/active-call-salesrep/:operatorId').get(getActiveCallSalesRep);
 
+//////////// RND calls
+const { makeCall, tokenGenerator } = require('./rnd_calls');
+router.get('/accessToken', tokenGenerator);
+router.post('/accessToken', tokenGenerator);
+router.get('/placeCall', makeCall);
+router.post('/placeCall', makeCall);
+///////////
+
 module.exports = router;
