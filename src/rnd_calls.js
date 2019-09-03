@@ -68,6 +68,7 @@ function tokenGenerator(request, response) {
   // token.addGrant(voiceGrant);
   token.identity = identity;
   console.log('Token:' + token.toJwt());
+  response.writeHead(200, { 'Content-Type': 'application/json' });
   return response.send(token.toJwt());
 }
 
