@@ -36,7 +36,7 @@ function getOperatorCallFailReason(err) {
 
 function repeatUntilDelivered(emit, delivered, options = {}) {
   const { timeout, ...opts } = { timeout: 3000, repeats: 3, ...options };
-  const repeats = Math.min(opts.repeats - 1, 1);
+  const repeats = Math.max(opts.repeats - 1, 1);
 
   let count = 1;
   let interval;
