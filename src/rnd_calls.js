@@ -2,6 +2,7 @@ const __RND_TWILIO_ACCOUNT_SID = 'ACa47c6bb6db23ad0cced9b17a0212c61d';
 const __RND_TWILIO_AUTH_TOKEN = 'cedff002b570ff971c85c2a782e111f3';
 const __RND_TWILIO_API_KEY = 'SK34e57d73eed4ad55dd1d0ac7f38e44c9';
 const __RND_TWILIO_API_SECRET = 'RV8qBYA2lM0OY0oWsATsYYWkNXhXyzrO';
+const __RND_TWILIO_APP_SID = 'AP409db1abd4a56913ffbbba86e075eea0';
 const __RND_TWILIO_CALLER_NUMBER = '+12563803157';
 const __RND_TWILIO_CALL_CENTER_NUMBER = '+380938821599';
 
@@ -34,6 +35,7 @@ function isNumber(to) {
 }
 
 function tokenGenerator(request, response) {
+  console.log('token');
   // Parse the identity from the http request
   var identity = null;
   if (request.method == 'POST') {
@@ -53,19 +55,19 @@ function tokenGenerator(request, response) {
 
   // Used specifically for creating Voice tokens
   // const pushCredSid = process.env.PUSH_CREDENTIAL_SID;
-  // const outgoingApplicationSid = process.env.APP_SID;
+  const outgoingApplicationSid = __RND_TWILIO_APP_SID;
 
   // Create an access token which we will sign and return to the client,
   // containing the grant we just created
-  // const voiceGrant = new VoiceGrant({
-  //     outgoingApplicationSid: outgoingApplicationSid,
-  //     pushCredentialSid: pushCredSid
-  //   });
+  const voiceGrant = new VoiceGrant({
+    outgoingApplicationSid: outgoingApplicationSid,
+    // pushCredentialSid: pushCredSid
+  });
 
   // Create an access token which we will sign and return to the client,
   // containing the grant we just created
   const token = new AccessToken(accountSid, apiKey, apiSecret);
-  // token.addGrant(voiceGrant);
+  token.addGrant(voiceGrant);
   token.identity = identity;
   console.log('Token:' + token.toJwt());
   return response.send(token.toJwt());
