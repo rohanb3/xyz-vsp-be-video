@@ -12,30 +12,31 @@ const VoiceResponse = (require('twilio').twiml || {}).VoiceResponse;
 const defaultIdentity = 'alice';
 const callerId = 'client:quick_start';
 
+const logger = require('@/services/logger')(module);
+
 function isNumber(to) {
   if (to.length == 1) {
     if (!isNaN(to)) {
-      console.log('It is a 1 digit long number' + to);
+      logger.debug('It is a 1 digit long number' + to);
       return true;
     }
   } else if (String(to).charAt(0) == '+') {
     number = to.substring(1);
     if (!isNaN(number)) {
-      console.log('It is a number ' + to);
+      logger.debug('It is a number ' + to);
       return true;
     }
   } else {
     if (!isNaN(to)) {
-      console.log('It is a number ' + to);
+      logger.debug('It is a number ' + to);
       return true;
     }
   }
-  console.log('not a number');
+  logger.debug('not a number');
   return false;
 }
 
 function tokenGenerator(request, response) {
-  console.log('token');
   // Parse the identity from the http request
   var identity = null;
   if (request.method == 'POST') {
@@ -69,7 +70,6 @@ function tokenGenerator(request, response) {
   const token = new AccessToken(accountSid, apiKey, apiSecret);
   token.addGrant(voiceGrant);
   token.identity = identity;
-  console.log('Token:' + token.toJwt());
   return response.send(token.toJwt());
 }
 
@@ -83,6 +83,8 @@ function makeCall(request, response) {
   }
 
   const voiceResponse = new VoiceResponse();
+
+  logger.debug('makeCall', to, isNumber(to));
 
   if (!to) {
     voiceResponse.say(
