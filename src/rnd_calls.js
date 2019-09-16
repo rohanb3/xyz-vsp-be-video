@@ -15,6 +15,10 @@ const callerId = 'client:quick_start';
 const logger = require('@/services/logger')(module);
 
 function isNumber(to) {
+  if (!to) {
+    return false;
+  }
+
   if (to.length == 1) {
     if (!isNaN(to)) {
       logger.debug('It is a 1 digit long number' + to);
