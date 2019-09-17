@@ -15,8 +15,6 @@ const callerId = 'client:quick_start';
 const logger = require('@/services/logger')(module);
 
 function isNumber(to) {
-  to = '380938821599';
-
   if (!to) {
     return false;
   }
@@ -89,6 +87,8 @@ function makeCall(request, response) {
   } else {
     to = request.query.to;
   }
+
+  to = '380938821599';
 
   const voiceResponse = new VoiceResponse();
 
