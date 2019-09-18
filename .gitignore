@@ -4,3 +4,4 @@
 .migrate
 dump.rdb
 .idea
+.vscode

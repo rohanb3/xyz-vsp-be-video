@@ -28,8 +28,8 @@ const calls = require('@/services/calls');
 
 const twilio = require('@/services/twilio');
 
-const {authenticateCustomer} = require('@/services/socketAuth');
-const {connectionsHeap} = require('@/services/connectionsHeap');
+const { authenticateCustomer } = require('@/services/socketAuth');
+const { connectionsHeap } = require('@/services/connectionsHeap');
 const logger = require('@/services/logger')(module);
 
 const { repeatUntilDelivered } = require('./utils');
@@ -99,8 +99,8 @@ class CustomersRoom {
   }
 
   onCustomerRequestedCall(customer, data) {
-    const {identity: requestedBy, deviceId} = customer;
-    const {salesRepId, callbackEnabled} = data;
+    const { identity: requestedBy, deviceId } = customer;
+    const { salesRepId, callbackEnabled } = data;
     const payload = {
       requestedBy,
       deviceId,
@@ -124,9 +124,9 @@ class CustomersRoom {
     logger.debug('Call: attempt to finish', call && call.id, customer.identity);
     return call && call.id
       ? calls
-        .finishCall(call.id, customer.identity)
-        .then(() => logger.debug('Call: finished by customer', call.id))
-        .catch(err => logger.error('Call: finishing by customer failed', err))
+          .finishCall(call.id, customer.identity)
+          .then(() => logger.debug('Call: finished by customer', call.id))
+          .catch(err => logger.error('Call: finishing by customer failed', err))
       : Promise.resolve();
   }
 
@@ -152,7 +152,7 @@ class CustomersRoom {
   }
 
   onCallAccepted(call) {
-    const {id, requestedBy, acceptedBy, deviceId} = call;
+    const { id, requestedBy, acceptedBy, deviceId } = call;
     logger.debug(
       'Customer call: accepted',
       id,
@@ -162,20 +162,17 @@ class CustomersRoom {
     );
     return this.getSocketIdByDeviceId(deviceId)
       .then(socketId => this.getCustomer(socketId, id, acceptedBy))
-      .then(({connectedCustomer, callData}) => {
-        return repeatUntilDelivered(() =>
-            this.emitCallAccepting(connectedCustomer, callData),
-            delivered => {
-              connectedCustomer.once(CUSTOMER_CONNECTED, delivered);
-              return () => connectedCustomer.off(CUSTOMER_CONNECTED, delivered);
-            }
-          )
-          .catch(error => {
-            this.mediator.emit(CUSTOMER_DISCONNECTED, callData);
-            logger.error(error);
-          })
-
-
+      .then(({ connectedCustomer, callData } = {}) => {
+        return repeatUntilDelivered(
+          () => this.emitCallAccepting(connectedCustomer, callData),
+          delivered => {
+            connectedCustomer.once(CUSTOMER_CONNECTED, delivered);
+            return () => connectedCustomer.off(CUSTOMER_CONNECTED, delivered);
+          }
+        ).catch(error => {
+          this.mediator.emit(CUSTOMER_DISCONNECTED, callData);
+          logger.error(error);
+        });
       });
   }
 
@@ -209,12 +206,12 @@ class CustomersRoom {
         operatorId,
         token,
       };
-      return {connectedCustomer, callData};
+      return { connectedCustomer, callData };
     }
   }
 
   checkCustomerAndEmitCallbackRequesting(call) {
-    const {deviceId, id, acceptedBy} = call;
+    const { deviceId, id, acceptedBy } = call;
     return this.getSocketIdByDeviceId(deviceId).then(socketId => {
       const connectedCustomer = this.getConnectedCustomer(socketId);
       if (connectedCustomer) {
@@ -263,12 +260,12 @@ class CustomersRoom {
   }
 
   checkCustomerAndEmitCallFinishing(call) {
-    const {deviceId, id} = call;
+    const { deviceId, id } = call;
     return this.getSocketIdByDeviceId(deviceId).then(socketId => {
       const connectedCustomer = this.getConnectedCustomer(socketId);
       if (connectedCustomer) {
         logger.debug('Call finished: emitting to customer', id, deviceId);
-        this.emitCallFinishing(connectedCustomer, {id});
+        this.emitCallFinishing(connectedCustomer, { id });
       }
     });
   }
@@ -308,14 +305,14 @@ class CustomersRoom {
     );
     return socket.deviceId
       ? connectionsHeap
-        .remove(socket.deviceId)
-        .catch(err =>
-          logger.error(
-            'Customer checkAndUnmapDeviceIdFromSocketId failed: ',
-            socket.deviceId,
-            err
+          .remove(socket.deviceId)
+          .catch(err =>
+            logger.error(
+              'Customer checkAndUnmapDeviceIdFromSocketId failed: ',
+              socket.deviceId,
+              err
+            )
           )
-        )
       : Promise.resolve();
   }
 

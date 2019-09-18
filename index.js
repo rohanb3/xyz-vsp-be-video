@@ -34,4 +34,4 @@ process.on('unhandledRejection', (error = {}) => {
 });
 
 process.on('SIGINT', () => shutDown(server, connections));
-process.on('SIGTERM', () => shutDown(server, connections));
+process.on('SIGTERM', () => shutDown(server, connections));//

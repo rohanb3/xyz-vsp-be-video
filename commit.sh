@@ -1,5 +1,7 @@
 #!/bin/bash
 
+git branch
+
 git pull
 
 git add --all .

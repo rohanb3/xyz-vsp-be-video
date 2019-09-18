@@ -1,4 +1,9 @@
-const {CALL_FINISHED_BY_CUSTOMER, CALLS_EMPTY, PEER_OFFLINE, CALLBACK_DISABLED } = require('@/constants/calls');
+const {
+  CALL_FINISHED_BY_CUSTOMER,
+  CALLS_EMPTY,
+  PEER_OFFLINE,
+  CALLBACK_DISABLED,
+} = require('@/constants/calls');
 
 const {
   CallsPendingEmptyError,
@@ -30,7 +35,10 @@ function getOperatorCallFailReason(err) {
 }
 
 function repeatUntilDelivered(emit, delivered, options = {}) {
-  let count = 0;
+  const { timeout, ...opts } = { timeout: 3000, repeats: 3, ...options };
+  const repeats = Math.max(opts.repeats - 1, 1);
+
+  let count = 1;
   let interval;
 
   emit();
@@ -38,20 +46,20 @@ function repeatUntilDelivered(emit, delivered, options = {}) {
     let cb = delivered(() => {
       clearInterval(interval);
       if (cb) {
-        cb()
+        cb();
       }
       resolve();
     });
 
     interval = setInterval(() => {
-      if (count < (options.repeats - 1 || 3)) {
+      if (count < repeats) {
         emit();
         count++;
       } else {
         clearInterval(interval);
         reject(new Error('Repeats limit reached'));
       }
-    }, options.timeout || 5000);
+    }, timeout);
   });
 }
 
