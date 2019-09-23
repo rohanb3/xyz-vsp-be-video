@@ -1,21 +1,9 @@
-//////////// dev acc
-const __RND_TWILIO_ACCOUNT_SID = 'ACd6afdd671e2355516d0c6fbcfd64a892';
-const __RND_TWILIO_AUTH_TOKEN = '86527c4a67ebeb32835fa4868db48dd8';
-const __RND_TWILIO_API_KEY = 'SK34e57d73eed4ad55dd1d0ac7f38e44c9';
-const __RND_TWILIO_API_SECRET = 'RV8qBYA2lM0OY0oWsATsYYWkNXhXyzrO';
-const __RND_TWILIO_APP_SID = 'AP91dbdcf82a8c99ec2489fb9194b6abf5';
-const __RND_TWILIO_CALLER_NUMBER = '+12563803157';
-const __RND_TWILIO_CALL_CENTER_NUMBER = '+380938821599';
-////////////
-
-//////////// dev
-// const __RND_TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
-// const __RND_TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
-// const __RND_TWILIO_API_KEY = process.env.TWILIO_API_KEY;
-// const __RND_TWILIO_API_SECRET = process.env.TWILIO_API_SECRET;
-// const __RND_TWILIO_APP_SID = process.env.TWILIO_VOICE_CALL_TWIML_APP_SID;
-// const __RND_TWILIO_CALL_CENTER_NUMBER = process.env.TWILIO_CALL_CENTER_NUMBER;
-///////////
+const __RND_TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
+const __RND_TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
+const __RND_TWILIO_API_KEY = process.env.TWILIO_API_KEY;
+const __RND_TWILIO_API_SECRET = process.env.TWILIO_API_SECRET;
+const __RND_TWILIO_APP_SID = process.env.TWILIO_VOICE_CALL_TWIML_APP_SID;
+const __RND_TWILIO_CALL_CENTER_NUMBER = process.env.TWILIO_CALL_CENTER_NUMBER;
 
 const AccessToken = (require('twilio').jwt || {}).AccessToken;
 const VoiceGrant = (AccessToken || {}).VoiceGrant;
