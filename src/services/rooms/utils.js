@@ -35,7 +35,10 @@ function getOperatorCallFailReason(err) {
 }
 
 function repeatUntilDelivered(emit, delivered, options = {}) {
-  let count = 0;
+  const { timeout, ...opts } = { timeout: 3000, repeats: 3, ...options };
+  const repeats = Math.max(opts.repeats - 1, 1);
+
+  let count = 1;
   let interval;
 
   emit();
@@ -49,14 +52,14 @@ function repeatUntilDelivered(emit, delivered, options = {}) {
     });
 
     interval = setInterval(() => {
-      if (count < (options.repeats - 1 || 3)) {
+      if (count < repeats) {
         emit();
         count++;
       } else {
         clearInterval(interval);
         reject(new Error('Repeats limit reached'));
       }
-    }, options.timeout || 5000);
+    }, timeout);
   });
 }
 

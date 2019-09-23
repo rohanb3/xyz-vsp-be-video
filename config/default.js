@@ -3,6 +3,7 @@ const {
   REDIS_HOST,
   REDIS_PORT,
   REDIS_PASSWORD,
+  REDIS_PREFIX,
   CALLS_DB_URI,
   CALLS_DB_NAME,
   HTTP_SESSION_SECRET,
@@ -34,6 +35,7 @@ module.exports = {
     host: REDIS_HOST || '127.0.0.1',
     password: REDIS_PASSWORD,
     authRequired: Boolean(REDIS_PASSWORD),
+    prefix: REDIS_PREFIX || 'VSP_CALLS_Prefix_',
   },
   logstash: {
     enabled: Boolean(LOGSTASH_ENABLED),

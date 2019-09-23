@@ -1,7 +1,7 @@
 const config = require('config');
 
 const {
-  port, host, authRequired, password,
+  port, host, authRequired, password, prefix
 } = config.get('redis');
 
 const options = authRequired
@@ -10,8 +10,9 @@ const options = authRequired
     tls: {
       serverName: host,
     },
+    prefix: prefix,
   }
-  : {};
+  : {prefix: prefix,};
 
 exports.REDIS_HOST = host;
 exports.REDIS_PORT = port;
