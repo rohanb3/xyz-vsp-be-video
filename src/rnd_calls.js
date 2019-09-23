@@ -88,7 +88,7 @@ function tokenGenerator(request, response) {
 
 function makeCall(request, response) {
   console.log(request);
-  logger.debug('makeCall', request.body, request.query);
+  logger.debug('makeCall', request.body, request.query, request.headers);
   // The recipient of the call, a phone number or a client
   var to = __RND_TWILIO_CALL_CENTER_NUMBER;
   var from;
