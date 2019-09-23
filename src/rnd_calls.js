@@ -88,7 +88,6 @@ function makeCall(request, response) {
   }
 
   const voiceResponse = new VoiceResponse();
-
   if (isNumber(from)) {
     const dial = voiceResponse.dial({ callerId: from });
     dial.number(to);
