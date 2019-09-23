@@ -13,6 +13,7 @@ const logger = require('@/services/logger')(module);
 
 function isNumber(to) {
   if (!to) {
+    logger.debug('Number not set');
     return false;
   }
 
