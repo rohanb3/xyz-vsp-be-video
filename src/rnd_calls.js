@@ -1,3 +1,4 @@
+//////////// dev acc
 const __RND_TWILIO_ACCOUNT_SID = 'ACd6afdd671e2355516d0c6fbcfd64a892';
 const __RND_TWILIO_AUTH_TOKEN = '86527c4a67ebeb32835fa4868db48dd8';
 const __RND_TWILIO_API_KEY = 'SK34e57d73eed4ad55dd1d0ac7f38e44c9';
@@ -5,12 +6,20 @@ const __RND_TWILIO_API_SECRET = 'RV8qBYA2lM0OY0oWsATsYYWkNXhXyzrO';
 const __RND_TWILIO_APP_SID = 'AP409db1abd4a56913ffbbba86e075eea0';
 const __RND_TWILIO_CALLER_NUMBER = '+12563803157';
 const __RND_TWILIO_CALL_CENTER_NUMBER = '+380938821599';
+////////////
+
+//////////// dev
+// const __RND_TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
+// const __RND_TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
+// const __RND_TWILIO_API_KEY = process.env.TWILIO_API_KEY;
+// const __RND_TWILIO_API_SECRET = process.env.TWILIO_API_SECRET;
+// const __RND_TWILIO_APP_SID = process.env.TWILIO_VOICE_CALL_TWIML_APP_SID;
+// const __RND_TWILIO_CALL_CENTER_NUMBER = process.env.TWILIO_CALL_CENTER_NUMBER;
+///////////
 
 const AccessToken = (require('twilio').jwt || {}).AccessToken;
 const VoiceGrant = (AccessToken || {}).VoiceGrant;
 const VoiceResponse = (require('twilio').twiml || {}).VoiceResponse;
-const defaultIdentity = 'alice';
-const callerId = 'client:quick_start';
 
 const logger = require('@/services/logger')(module);
 
@@ -50,7 +59,7 @@ function tokenGenerator(request, response) {
   }
 
   if (!identity) {
-    identity = defaultIdentity;
+    return response.status(400).send('Identity is required');
   }
 
   // Used when generating any kind of tokens
@@ -82,28 +91,24 @@ function makeCall(request, response) {
   logger.debug('makeCall', request.body, request.query);
   // The recipient of the call, a phone number or a client
   var to = __RND_TWILIO_CALL_CENTER_NUMBER;
-  if (request.method == 'POST') {
-    to = request.body.to;
-  } else {
-    to = request.query.to;
-  }
+  var from;
 
-  to = '380938821599';
+  if (request.method == 'POST') {
+    from = request.body.from;
+  } else {
+    from = request.query.from;
+  }
 
   const voiceResponse = new VoiceResponse();
 
-  if (!to) {
+  if (isNumber(from)) {
+    const dial = voiceResponse.dial({ callerId: from });
+    dial.number(to);
+  } else {
     voiceResponse.say(
       'Congratulations! You have made your first call! Good bye.'
     );
-  } else if (isNumber(to)) {
-    const dial = voiceResponse.dial({ callerId: __RND_TWILIO_CALLER_NUMBER });
-    dial.number(to);
-  } else {
-    const dial = voiceResponse.dial({ callerId: callerId });
-    dial.client(to);
   }
-  console.log('Response:' + voiceResponse.toString());
   return response.send(voiceResponse.toString());
 }
 
