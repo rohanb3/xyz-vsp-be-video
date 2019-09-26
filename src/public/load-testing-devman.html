@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Load testing page</title>
+    <link rel="stylesheet" href="/css/reset.css" />
+    <link rel="stylesheet" href="/css/load-testing.css" />
+  </head>
+  <body>
+    <header class="page-title">
+      <section class="testing-header">
+        <section class="testing-controls">
+          <div class="inputs-wrapper">
+            <div class="users-number">
+              <div class="testing-input-wrapper">
+                <label for="customersAmount">Customers:</label>
+                <input
+                  type="number"
+                  name="customersAmount"
+                  value="1"
+                  class="text-input customers-amount"
+                  id="deviceCountGenID"
+                />
+              </div>
+              <div class="testing-input-wrapper">
+                <label for="operatorsAmount">Operators:</label>
+                <input
+                  type="number"
+                  value="1"
+                  name="operatorsAmount"
+                  class="text-input operators-amount"
+                />
+              </div>
+              
+            </div>
+          </div>
+          <div class="testing-input-wrapper action-buttons">
+            <button
+              type="button"
+              name="startButton"
+              class="action-button start-button"
+            >
+              START
+            </button>         
+            <button
+              type="button"
+              name="clearButton"
+              class="action-button clear-button"
+            >
+              CLEAR
+            </button>
+            <button
+              type="button"
+              name="updateButton"
+              class="action-button update-button"
+            >
+              UPDATE
+            </button>  
+          </div>
+        </section>
+
+        <section class="testing-statistics">
+          <section class="queue-statistics">
+            <div class="queue-statistics-pane">Requests:</div>
+            <div class="queue-statistics-pane">
+              <p class="pending-in-queue">Authorize: <span id="authorizeFieldId" class="quantity">0</span></p>
+              <p class="pending-in-queue">Update: <span id="updateFieldId" class="quantity">0</span></p>
+            </div>
+          </section>
+        </section>
+        <section class="testing-statistics">
+            <section class="queue-statistics">
+              <div class="queue-statistics-pane">Responses:</div>
+              <div class="queue-statistics-pane">
+                <p class="pending-in-queue"> Device Updated:  <span id="UpdatedFieldId" class="quantity">0</span></p>
+              </div>
+            </section>
+          </section>
+      </section>
+    </header>
+    <main>
+      <section class="users-section">
+        <section class="user-section customers-section"></section>
+        <section class="user-section operators-section"></section>
+      </section>
+    </main>
+    <script src="/js/load-testing-devmanager.js"></script>
+  </body>
+</html>
