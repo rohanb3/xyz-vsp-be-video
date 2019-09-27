@@ -4855,9 +4855,12 @@ const {
     LogLevel,
   } = require('@aspnet/signalr');
 
+  const PING_INTERVAL = 30 * 1000;
+
 class Device {
-    constructor(deviceId, deviceManagementUrl) {
-      this.deviceId = deviceId;       
+    constructor(deviceId, deviceManagementUrl, requestTimeDelay) {
+      this.deviceId = deviceId;  
+      this.requestTimeDelay = requestTimeDelay;      
       this.hubConnection = new HubConnectionBuilder()
       .withUrl(deviceManagementUrl, {
         skipNegotiation: true,
@@ -4866,33 +4869,52 @@ class Device {
       .configureLogging(LogLevel.Information)
       .build();
       
-      this.hubConnection
-      .start()
-      .then(()=>{
-        let count = Number(document.querySelector('#authorizeFieldId').innerText);
-        document.querySelector('#authorizeFieldId').innerText = count + 1;
-      })
-      .catch(() => console.error('Device management socket failed'));
+      setTimeout(async ()=>{
+        this.hubConnection
+        .start()
+        .then(()=>{
+          this.startPing();
+          let count = Number(document.querySelector('#authorizeFieldId').innerText);
+          document.querySelector('#authorizeFieldId').innerText = count + 1;
+        })
+        .catch(() => {
+          console.error('Device management socket failed');
+          clearInterval(this._pingTimer);
+        });
+      }, 50); 
     }
 
     sendDeviceInfo() {
       let salesRepId = '68D4FC28-08A4-4B09-AF00-86A3713EA2A3';
-      this.hubConnection.invoke('UpdateSalesRep', {
-        salesRepId,
-      }).then(()=>{
-        let count = Number(document.querySelector('#updateFieldId').innerText);
-        document.querySelector('#updateFieldId').innerText = count + 1;
-      });
-      
+      return new Promise((resolve, reject) => {
+        setTimeout(async ()=>{
+          await this.hubConnection
+            .invoke('UpdateSalesRep', {
+              salesRepId,
+            })
+            let count = Number(document.querySelector('#updateFieldId').innerText);
+            document.querySelector('#updateFieldId').innerText = count + 1;
+            resolve();
+            
+        }, this.requestTimeDelay); 
+      })
+          
   }
 
   disconnect(){
     this.hubConnection.stop();
+    clearInterval(this._pingTimer);
+  }
+
+  startPing() {
+    this._pingTimer = setInterval(() => this.hubConnection
+            .invoke('PingFromClientSide', '1'), PING_INTERVAL);
   }
 }
 
+
 module.exports = {
-  createDevice: (deviceId, deviceManagementUrl) => new Device(deviceId, deviceManagementUrl),
+  createDevice: (deviceId, deviceManagementUrl, requestTimeDelay) => new Device(deviceId, deviceManagementUrl, requestTimeDelay),
 };
 },{"@aspnet/signalr":21}],31:[function(require,module,exports){
 const uuid = require('uuid');
@@ -4916,8 +4938,12 @@ if (isStage) {
 
 const deviceManagementDevicePath = isLocal ? `${deviceManagementHost}/deviceSocket` : `${deviceManagementHost}/api/device-management-api/deviceSocket`;
 const deviceManagementOperatorPath = isLocal ? `${deviceManagementHost}/operatorSocket` : `${deviceManagementHost}/api/device-management-api/operatorSocket`;
+let operatorsArr = [];
 let arr = [];
 let arrID = [];
+let sendUpdateMin;
+let sendUpdateMax;
+let operatorCount;
 
 subscribeToControls();
 
@@ -4933,7 +4959,12 @@ function subscribeToControls() {
       entry.disconnect();
     });
    }
-   operator.disconnect();
+   
+   if(operatorsArr){
+    operatorsArr.forEach(function(entry) {
+      entry.disconnect();
+    });
+   }
 
    document.getElementById('authorizeFieldId').innerText = 0;
    document.getElementById('updateFieldId').innerText = 0;
@@ -4944,6 +4975,9 @@ function subscribeToControls() {
 
  function takeFieldsValueFromPage(){
   deviceCount = document.querySelector('#deviceCountGenID').value
+  sendUpdateMin = document.querySelector('#sendUpdateMinID').value;
+  sendUpdateMax = document.querySelector('#sendUpdateMaxID').value;
+  operatorCount = document.querySelector('#operatorCountID').value;
  }
 
 function startTest(){
@@ -4951,21 +4985,32 @@ takeFieldsValueFromPage();
 
   for (let i = 0; i < deviceCount; i++) {   
     let deviceId = uuid.v4();
+    let requestTimeDelay = random(sendUpdateMin, sendUpdateMax);
     let deviceManagementUrl = `${deviceManagementDevicePath}?udid=${deviceId}`;
-    let device = createDevice(deviceId, deviceManagementUrl);
+    let device = createDevice(deviceId, deviceManagementUrl, requestTimeDelay);
     arr.push(device);
     arrID.push(deviceId);
   }
 
-  operator = createOperator(deviceManagementOperatorPath, arrID);
+  for (let i = 0; i < operatorCount; i++) {   
+    let operator = createOperator(deviceManagementOperatorPath, arrID);
+    operatorsArr.push(operator);
+  }
+  
 }
 
 function updateTest(){
   if(arr){
-    arr.forEach(function(entry) {
-      entry.sendDeviceInfo();
+    arr.forEach(async function(entry) {
+      await entry.sendDeviceInfo();     
     });
    }
+}
+
+function random(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 },{"./device-to-devmanager":30,"./operator-to-devmanager":32,"uuid":25}],32:[function(require,module,exports){
 const {

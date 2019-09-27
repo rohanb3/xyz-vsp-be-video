@@ -12,7 +12,7 @@
           <div class="inputs-wrapper">
             <div class="users-number">
               <div class="testing-input-wrapper">
-                <label for="customersAmount">Customers:</label>
+                <label for="customersAmount">Devices:</label>
                 <input
                   type="number"
                   name="customersAmount"
@@ -28,9 +28,29 @@
                   value="1"
                   name="operatorsAmount"
                   class="text-input operators-amount"
+                  id="operatorCountID"
                 />
               </div>
-              
+              <div class="testing-input-wrapper">
+                <label for="connectionDelay">Send Update min delay, ms:</label>
+                <input
+                  type="number"
+                  value="1000"
+                  name="sendUpdateMin"
+                  class="text-input sendUpdateMin"
+                  id="sendUpdateMinID"
+                />
+              </div>
+              <div class="testing-input-wrapper">
+                <label for="connectionDelay">Send Update max delay, ms:</label>
+                <input
+                  type="number"
+                  value="5000"
+                  name="sendUpdateMax"
+                  class="text-input sendUpdateMax"
+                  id="sendUpdateMaxID"
+                />
+              </div>
             </div>
           </div>
           <div class="testing-input-wrapper action-buttons">
