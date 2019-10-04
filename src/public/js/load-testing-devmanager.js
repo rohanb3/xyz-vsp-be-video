@@ -4894,11 +4894,9 @@ class Device {
             })
             let count = Number(document.querySelector('#updateFieldId').innerText);
             document.querySelector('#updateFieldId').innerText = count + 1;
-            resolve();
-            
+            resolve();          
         }, this.requestTimeDelay); 
-      })
-          
+      })         
   }
 
   disconnect(){
@@ -4944,6 +4942,8 @@ let arrID = [];
 let sendUpdateMin;
 let sendUpdateMax;
 let operatorCount;
+let devPerOperator;
+const now = Date.now();
 
 subscribeToControls();
 
@@ -4959,7 +4959,7 @@ function subscribeToControls() {
       entry.disconnect();
     });
    }
-   
+
    if(operatorsArr){
     operatorsArr.forEach(function(entry) {
       entry.disconnect();
@@ -4971,38 +4971,51 @@ function subscribeToControls() {
    document.getElementById('UpdatedFieldId').innerText = 0;
    arr = [];
    arrID = [];
+
+   removeUsers();
  }
 
  function takeFieldsValueFromPage(){
   deviceCount = document.querySelector('#deviceCountGenID').value
   sendUpdateMin = document.querySelector('#sendUpdateMinID').value;
   sendUpdateMax = document.querySelector('#sendUpdateMaxID').value;
-  operatorCount = document.querySelector('#operatorCountID').value;
+  operatorCount = Number(document.querySelector('#operatorCountID').value);
+  devPerOperator = Number(document.querySelector('#devPerOperatorID').value);
  }
 
-function startTest(){
+async function startTest(){
 takeFieldsValueFromPage();
 
-  for (let i = 0; i < deviceCount; i++) {   
-    let deviceId = uuid.v4();
-    let requestTimeDelay = random(sendUpdateMin, sendUpdateMax);
-    let deviceManagementUrl = `${deviceManagementDevicePath}?udid=${deviceId}`;
-    let device = createDevice(deviceId, deviceManagementUrl, requestTimeDelay);
-    arr.push(device);
-    arrID.push(deviceId);
-  }
+  await registrationDevices();
 
-  for (let i = 0; i < operatorCount; i++) {   
-    let operator = createOperator(deviceManagementOperatorPath, arrID);
-    operatorsArr.push(operator);
-  }
-  
+  drawOperatorsFrames();  
+
+}
+
+function registrationDevices() {
+  return new Promise((resolve, reject) => {
+    for (let i = 0; i < deviceCount; i++) {
+      let deviceId = uuid.v4();
+      let requestTimeDelay = random(sendUpdateMin, sendUpdateMax);
+      let deviceManagementUrl = `${deviceManagementDevicePath}?udid=${deviceId}`;
+      let device = createDevice(deviceId, deviceManagementUrl, requestTimeDelay);
+      arr.push(device);
+      arrID.push(deviceId);
+    }
+    resolve();
+  });
 }
 
 function updateTest(){
   if(arr){
-    arr.forEach(async function(entry) {
-      await entry.sendDeviceInfo();     
+    arr.forEach(async function(devEntry) {
+      await devEntry.sendDeviceInfo().then(()=>{
+        operatorsArr.forEach(function(opEntry){
+          if(opEntry.devicesId.includes(devEntry.deviceId)){
+            opEntry.updateDeviceEvent();
+          }
+        });     
+      });
     });
    }
 }
@@ -5012,6 +5025,66 @@ function random(min, max) {
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+
+function getRandomElements(sourceArray, neededElements) {
+  let result = [];
+  for (var i = 0; i < neededElements; i++) {
+    const random = sourceArray[Math.floor(Math.random()*sourceArray.length)];
+    result.includes(random) ? i-- : result.push(random);
+  }
+  return result;
+}
+
+function drawOperatorsFrames() {
+  const parent = document.querySelector('.operators-section');
+  const fragment = document.createDocumentFragment();
+
+  new Array(operatorCount).fill(1).forEach((_, i) => {
+    let devArrayId = getRandomElements(arrID, devPerOperator);
+    let operator = createOperator(deviceManagementOperatorPath, devArrayId);
+    operatorsArr.push(operator);
+
+    const iframe = document.createElement('iframe');
+    const num = i + 1;
+    const frameContent = `
+      <html>
+        <body>
+          <p style="margin: 0; text-align: center">
+            <span id="deviceFollowCountId">0</span> /
+            <span id="deviceUpdateSentCountId">0</span> /
+            <span id="operatorReciveCountId">0</span>
+            <span class="peer-id"></span>
+          </p>
+          <script src="/js/operator-devman-wrapper.js"></script>
+        </body>
+      </html>
+    `;
+
+    iframe.id = `operator-${num}`;
+    iframe.classList.add('user-frame', 'operator-frame');
+    iframe.srcdoc = frameContent;
+    setTimeout(() => {
+      iframe.contentWindow.operator = operator;
+      iframe.contentWindow.userIdentity = `${now}-operator-${num}`;
+    });
+    fragment.appendChild(iframe);
+  });
+
+  parent.appendChild(fragment);
+}
+
+function removeUsers() {
+  removeFrames('.operators-section');
+}
+
+function removeFrames(selector) {
+  const iframes = document.querySelectorAll(`${selector} iframe`);
+  for (var i = 0; i < iframes.length; i++) {
+    iframes[i].parentNode.removeChild(iframes[i]);
+  }
+}
+
+
 },{"./device-to-devmanager":30,"./operator-to-devmanager":32,"uuid":25}],32:[function(require,module,exports){
 const {
     HubConnectionBuilder,
@@ -5045,6 +5118,9 @@ this.hubConnection = new HubConnectionBuilder()
 
 }
 
+updateDeviceEvent(){};
+catchReciveDeviceUpdate(){};
+
   subscribeToDeviceChanges(ids = []) {
     return this.hubConnection.invoke(SUBSCRIBE_DEVICES_UPDATES, { Udids: ids });
   }
@@ -5053,6 +5129,7 @@ this.hubConnection = new HubConnectionBuilder()
     return this.hubConnection.invoke(SUBSCRIBE_DEVICES_UPDATES, { Udids: [] });
   }
   onDeviceUpdated(updates){
+    this.catchReciveDeviceUpdate();
     let count = Number(document.getElementById('UpdatedFieldId').innerText);
     document.getElementById('UpdatedFieldId').innerText = count + 1;
   }

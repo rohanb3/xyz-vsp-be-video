@@ -43,11 +43,9 @@ class Device {
             })
             let count = Number(document.querySelector('#updateFieldId').innerText);
             document.querySelector('#updateFieldId').innerText = count + 1;
-            resolve();
-            
+            resolve();          
         }, this.requestTimeDelay); 
-      })
-          
+      })         
   }
 
   disconnect(){

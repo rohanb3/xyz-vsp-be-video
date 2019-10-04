@@ -30,6 +30,9 @@ this.hubConnection = new HubConnectionBuilder()
 
 }
 
+updateDeviceEvent(){};
+catchReciveDeviceUpdate(){};
+
   subscribeToDeviceChanges(ids = []) {
     return this.hubConnection.invoke(SUBSCRIBE_DEVICES_UPDATES, { Udids: ids });
   }
@@ -38,6 +41,7 @@ this.hubConnection = new HubConnectionBuilder()
     return this.hubConnection.invoke(SUBSCRIBE_DEVICES_UPDATES, { Udids: [] });
   }
   onDeviceUpdated(updates){
+    this.catchReciveDeviceUpdate();
     let count = Number(document.getElementById('UpdatedFieldId').innerText);
     document.getElementById('UpdatedFieldId').innerText = count + 1;
   }
