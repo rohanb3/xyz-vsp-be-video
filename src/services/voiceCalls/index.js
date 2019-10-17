@@ -4,7 +4,7 @@ const logger = require('@/services/logger')(module);
 const { isNumber, getParam } = require('@/services/voiceCalls/utils');
 
 function tokenGenerator(request, response) {
-  const identity = getParam('identity');
+  const identity = getParam(request, 'identity');
 
   if (!identity) {
     return response.status(400).send('Identity is required');
