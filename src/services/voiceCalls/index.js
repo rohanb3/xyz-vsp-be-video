@@ -16,7 +16,7 @@ function tokenGenerator(request, response) {
 
   const { AccessToken } = twilio.jwt;
   const { VoiceGrant } = AccessToken;
-  const token = new tAccessToken(accountSid, apiKey, apiSecret);
+  const token = new AccessToken(accountSid, apiKey, apiSecret);
   token.addGrant(
     new VoiceGrant({
       outgoingApplicationSid: voiceCallTwimlAppSid,
