@@ -11,6 +11,7 @@ const {
   TWILIO_AUTH_TOKEN,
   TWILIO_API_KEY,
   TWILIO_API_SECRET,
+  TWILIO_VOICE_CALL_TWIML_APP_SID,
   AZURE_TENANT_NAME,
   AZURE_TENANT_ID,
   AZURE_CLIENT_ID,
@@ -61,6 +62,7 @@ module.exports = {
     authToken: TWILIO_AUTH_TOKEN,
     apiKey: TWILIO_API_KEY,
     apiSecret: TWILIO_API_SECRET,
+    voiceCallTwimlAppSid: TWILIO_VOICE_CALL_TWIML_APP_SID,
   },
   azure: {
     identityMetadata: `https://login.microsoftonline.com/${AZURE_TENANT_ID}/v2.0/.well-known/openid-configuration/`,

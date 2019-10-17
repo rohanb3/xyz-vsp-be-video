@@ -9,6 +9,7 @@ const {
   validateRequest,
   authenticateRequest,
 } = require('@/routes/utils');
+const { makeCall, tokenGenerator } = require('@/services/voiceCalls');
 
 setupSwagger(router);
 
@@ -23,12 +24,9 @@ router
 
 router.route('/active-call-salesrep/:operatorId').get(getActiveCallSalesRep);
 
-//////////// RND calls
-const { makeCall, tokenGenerator } = require('./rnd_calls');
 router.get('/accessToken', tokenGenerator);
 router.post('/accessToken', tokenGenerator);
 router.get('/makeCall', makeCall);
 router.post('/makeCall', makeCall);
-///////////
 
 module.exports = router;
