@@ -1,4 +1,5 @@
 const Nexmo = require('nexmo');
+const logger = require('./services/logger')(module);
 const { 
   NEXMO_API_KEY, 
   NEXMO_API_SECRET, 
@@ -26,27 +27,38 @@ const ncco = [
     },
   ];
 
-  const createCall = nexmo.calls.create(
-    {
-      to: [{ type: 'phone', number: '15626447621' }],
-      from: { type: 'phone', number: '15626447621' },
-      ncco,
-    },
-    //(err, result) => {
-      //console.log(err || result);
-    //},
-  );
+  const createCall = (request) => {
+    const { to, from } = request.params;
+    return new Promise((resolve) => {
+      nexmo.calls.create(
+        {
+          to: [{ type: 'phone', number: to }],
+          from: { type: 'phone', number: from},
+          ncco,
+        },
+        (err, result) => {
+          logger.debug(err || result);
+          resolve(err || result);
+        },
+      );
+    })
+  }
 
   function getEvent(request, response) {
-    //console.log(request);
-    return response;
+    logger.debug('NEXMO EVENT :', request.params);
+    return response.status(200).send();
   }
   
   function getAnswer(request, response) {
-   // console.log(request);
-    return response;
+    logger.debug('NEXMO ANSWER :', request.params);
+    return response.status(200).send();
+  }
+
+  async function startCall(request, response) {
+    let result = await createCall(request);
+    return response.status(200).send(result);
   }
   
   exports.getEvent = getEvent;
   exports.getAnswer = getAnswer;
-  exports.createCall = createCall;
+  exports.startCall = startCall;

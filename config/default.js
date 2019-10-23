@@ -35,7 +35,7 @@ module.exports = {
     enabled: true,
   },
   redis: {
-    port: Number(REDIS_PORT) || 7890,
+    port: Number(REDIS_PORT) || 6380,
     host: REDIS_HOST || '127.0.0.1',
     password: REDIS_PASSWORD,
     authRequired: Boolean(REDIS_PASSWORD),
@@ -78,9 +78,9 @@ module.exports = {
     loggingNoPII: false,
   },
   nexmo: {
-    apiKey: NEXMO_API_KEY || 'afeaf',
-    apiSecret: NEXMO_API_SECRET || 'afewfawe',
-    applicationId: NEXMO_APPLICATION_ID || 'sgdfgs',
-    privateKey: NEXMO_PATH_TO_PRIVATE_KEY || './private.key',
+    apiKey: NEXMO_API_KEY || 'aa27ba82',
+    apiSecret: NEXMO_API_SECRET || 'eKLLBvDBA875kh20',
+    applicationId: NEXMO_APPLICATION_ID,
+    privateKey: NEXMO_PATH_TO_PRIVATE_KEY,
   },
 };
