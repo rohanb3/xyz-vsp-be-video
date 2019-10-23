@@ -123,8 +123,8 @@ function drawOperatorsFrames() {
   const fragment = document.createDocumentFragment();
 
   new Array(operatorCount).fill(1).forEach((_, i) => {
-    let devArrayId = getRandomElements(arrID, devPerOperator);
-    let operator = createOperator(deviceManagementOperatorPath, devArrayId);
+    const devArrayId = getRandomElements(arrID, devPerOperator);
+    const operator = createOperator(deviceManagementOperatorPath, devArrayId);
     operatorsArr.push(operator);
 
     const iframe = document.createElement('iframe');

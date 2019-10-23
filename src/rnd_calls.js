@@ -1,5 +1,5 @@
 const __RND_TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
-const __RND_TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
+//const __RND_TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
 const __RND_TWILIO_API_KEY = process.env.TWILIO_API_KEY;
 const __RND_TWILIO_API_SECRET = process.env.TWILIO_API_SECRET;
 const __RND_TWILIO_APP_SID = process.env.TWILIO_VOICE_CALL_TWIML_APP_SID;
@@ -10,7 +10,7 @@ const VoiceGrant = (AccessToken || {}).VoiceGrant;
 const VoiceResponse = (require('twilio').twiml || {}).VoiceResponse;
 
 const logger = require('@/services/logger')(module);
-
+let number;
 function isNumber(to) {
   if (!to) {
     logger.debug('Number not set');
@@ -76,7 +76,7 @@ function tokenGenerator(request, response) {
 }
 
 function makeCall(request, response) {
-  console.log(request);
+ // console.log(request);
   logger.debug('makeCall', request.body, request.query, request.headers);
   // The recipient of the call, a phone number or a client
   var to = __RND_TWILIO_CALL_CENTER_NUMBER;

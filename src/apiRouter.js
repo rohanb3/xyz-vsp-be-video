@@ -31,4 +31,10 @@ router.get('/makeCall', makeCall);
 router.post('/makeCall', makeCall);
 ///////////
 
+//////////// Nexmo calls
+const { getEvent, getAnswer } = require('./nexmo');
+router.get('/nexmo/answer', getAnswer);
+router.post('/nexmo/event ', getEvent);
+///////////
+
 module.exports = router;

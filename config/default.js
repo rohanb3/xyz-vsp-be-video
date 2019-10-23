@@ -21,6 +21,10 @@ const {
   LOGSTASH_NODE_NAME,
   LOGSTASH_CONNECTION_RETRIES,
   LOGSTASH_CONNECTION_RETRIES_TIMEOUT,
+  NEXMO_API_KEY,
+  NEXMO_API_SECRET,
+  NEXMO_APPLICATION_ID,
+  NEXMO_PATH_TO_PRIVATE_KEY,
 } = process.env;
 
 module.exports = {
@@ -31,7 +35,7 @@ module.exports = {
     enabled: true,
   },
   redis: {
-    port: Number(REDIS_PORT) || 6379,
+    port: Number(REDIS_PORT) || 7890,
     host: REDIS_HOST || '127.0.0.1',
     password: REDIS_PASSWORD,
     authRequired: Boolean(REDIS_PASSWORD),
@@ -47,7 +51,7 @@ module.exports = {
   },
   mongoose: {
     connectionString:
-      CALLS_DB_URI ||
+    CALLS_DB_URI ||
       'mongodb://customer:secret123@ds111765.mlab.com:11765/calls',
     dbName: CALLS_DB_NAME || 'calls',
     debug: true,
@@ -72,5 +76,11 @@ module.exports = {
     loggingLevel: 'error',
     passReqToCallback: true,
     loggingNoPII: false,
+  },
+  nexmo: {
+    apiKey: NEXMO_API_KEY || 'afeaf',
+    apiSecret: NEXMO_API_SECRET || 'afewfawe',
+    applicationId: NEXMO_APPLICATION_ID || 'sgdfgs',
+    privateKey: NEXMO_PATH_TO_PRIVATE_KEY || './private.key',
   },
 };
