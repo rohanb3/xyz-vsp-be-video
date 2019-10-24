@@ -1,5 +1,6 @@
 /* eslint-disable jest/no-test-prefixes, jest/no-disabled-tests */
 jest.mock('@/services/calls/feedback');
+jest.mock('@/services/voiceCalls');
 
 const request = require('supertest');
 const app = require('@/app');
@@ -25,7 +26,7 @@ describe('POST /api/video/call-feedback-operator: ', () => {
         expect(callFeedback.validateAndSaveFeedback).toHaveBeenCalledWith(
           callId,
           feedback,
-          OPERATOR_FEEDBACK,
+          OPERATOR_FEEDBACK
         );
       });
   });
@@ -46,12 +47,12 @@ describe('POST /api/video/call-feedback-operator: ', () => {
       .post('/api/video/call-feedback-operator')
       .send({ callId, ...feedback })
       .expect(400)
-      .then((res) => {
+      .then(res => {
         expect(res.body.messages).toEqual(messages);
         expect(callFeedback.validateAndSaveFeedback).toHaveBeenCalledWith(
           callId,
           feedback,
-          OPERATOR_FEEDBACK,
+          OPERATOR_FEEDBACK
         );
       });
   });
@@ -72,12 +73,12 @@ describe('POST /api/video/call-feedback-operator: ', () => {
       .post('/api/video/call-feedback-operator')
       .send({ callId, ...feedback })
       .expect(500)
-      .then((res) => {
+      .then(res => {
         expect(res.body.messages).toEqual([message]);
         expect(callFeedback.validateAndSaveFeedback).toHaveBeenCalledWith(
           callId,
           feedback,
-          OPERATOR_FEEDBACK,
+          OPERATOR_FEEDBACK
         );
       });
   });
