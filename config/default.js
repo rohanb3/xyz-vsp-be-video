@@ -36,7 +36,7 @@ module.exports = {
     enabled: true,
   },
   redis: {
-    port: Number(REDIS_PORT) || 6380,
+    port: Number(REDIS_PORT) || 6379,
     host: REDIS_HOST || '127.0.0.1',
     password: REDIS_PASSWORD,
     authRequired: Boolean(REDIS_PASSWORD),
