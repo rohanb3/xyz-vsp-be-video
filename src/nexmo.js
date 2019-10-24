@@ -44,6 +44,22 @@ const ncco = [
     })
   }
 
+  const endCall = (request) => {
+    const { callid } = request.params;
+    return new Promise((resolve) => {
+      nexmo.calls.update(
+        callid,
+        {
+          action: 'hangup'
+        },
+        (err, result) => {
+          logger.debug(err || result);
+          resolve(err || result);
+        },
+      );
+    })
+  }
+
   function getEvent(request, response) {
     logger.debug('NEXMO EVENT :', request.params);
     return response.status(200).send();
@@ -54,11 +70,18 @@ const ncco = [
     return response.status(200).send();
   }
 
+  async function finishCall(request, response) {
+    let result = await endCall(request);
+    return response.status(200).send(result);
+  }
+
   async function startCall(request, response) {
     let result = await createCall(request);
     return response.status(200).send(result);
   }
-  
+
+
   exports.getEvent = getEvent;
   exports.getAnswer = getAnswer;
   exports.startCall = startCall;
+  exports.endCall = finishCall;
