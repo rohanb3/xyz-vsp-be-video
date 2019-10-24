@@ -5040,8 +5040,8 @@ function drawOperatorsFrames() {
   const fragment = document.createDocumentFragment();
 
   new Array(operatorCount).fill(1).forEach((_, i) => {
-    let devArrayId = getRandomElements(arrID, devPerOperator);
-    let operator = createOperator(deviceManagementOperatorPath, devArrayId);
+    const devArrayId = getRandomElements(arrID, devPerOperator);
+    const operator = createOperator(deviceManagementOperatorPath, devArrayId);
     operatorsArr.push(operator);
 
     const iframe = document.createElement('iframe');
@@ -5106,7 +5106,9 @@ this.hubConnection = new HubConnectionBuilder()
   })
   .configureLogging(LogLevel.Information)
   .build();
+}
 
+connectOperator(){
   this.hubConnection
   .start()
   .then(()=>{
@@ -5115,7 +5117,6 @@ this.hubConnection = new HubConnectionBuilder()
     this.subscribeToDeviceChanges(this.devicesId);
   })
   .catch(() => console.error('Device management socket failed'));
-
 }
 
 updateDeviceEvent(){};

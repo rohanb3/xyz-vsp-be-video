@@ -4,6 +4,8 @@ const {
 
 document.getElementById('deviceFollowCountId').innerText = operator.devicesId.length;
 
+operator.connectOperator();
+
 operator.updateDeviceEvent = function(){
     let count = Number(document.getElementById('deviceUpdateSentCountId').innerText);
     document.getElementById('deviceUpdateSentCountId').innerText = count + 1;

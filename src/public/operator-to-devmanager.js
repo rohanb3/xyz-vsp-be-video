@@ -18,7 +18,9 @@ this.hubConnection = new HubConnectionBuilder()
   })
   .configureLogging(LogLevel.Information)
   .build();
+}
 
+connectOperator(){
   this.hubConnection
   .start()
   .then(()=>{
@@ -27,7 +29,6 @@ this.hubConnection = new HubConnectionBuilder()
     this.subscribeToDeviceChanges(this.devicesId);
   })
   .catch(() => console.error('Device management socket failed'));
-
 }
 
 updateDeviceEvent(){};

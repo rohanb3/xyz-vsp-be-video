@@ -29,4 +29,12 @@ router.post('/accessToken', tokenGenerator);
 router.get('/makeCall', makeCall);
 router.post('/makeCall', makeCall);
 
+//////////// Nexmo calls
+const { getEvent, getAnswer, startCall, endCall } = require('./nexmo');
+router.get('/nexmo/testcall/:from-:to', startCall);
+router.get('/nexmo/answer', getAnswer);
+router.post('/nexmo/event ', getEvent);
+router.get('/nexmo/endcall/:callid', endCall);
+///////////
+
 module.exports = router;
