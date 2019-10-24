@@ -61,12 +61,12 @@ const ncco = [
   }
 
   function getEvent(request, response) {
-    logger.debug('NEXMO EVENT :', request.params);
+    logger.debug('NEXMO EVENT :', request.params, request.body, request.query);
     return response.status(200).send();
   }
   
   function getAnswer(request, response) {
-    logger.debug('NEXMO ANSWER :', request.params);
+    logger.debug('NEXMO ANSWER :', request.query);
     return response.status(200).send();
   }
 
