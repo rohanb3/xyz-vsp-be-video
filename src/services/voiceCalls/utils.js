@@ -20,10 +20,10 @@ function isNumber(number) {
   return false;
 }
 
-function getParam(request, paramName) {
+function getParams(request) {
   const params = request.method == 'POST' ? request.body : request.query;
-  return params[paramName];
+  return { ...params };
 }
 
 exports.isNumber = isNumber;
-exports.getParam = getParam;
+exports.getParams = getParams;

@@ -1,10 +1,10 @@
 const twilio = require('twilio');
 const config = require('config');
 const logger = require('@/services/logger')(module);
-const { isNumber, getParam } = require('@/services/voiceCalls/utils');
+const { isNumber, getParams } = require('@/services/voiceCalls/utils');
 
 function tokenGenerator(request, response) {
-  const identity = getParam(request, 'identity');
+  const { identity } = getParams(request);
 
   if (!identity) {
     return response.status(400).send('Identity is required');
@@ -27,8 +27,7 @@ function tokenGenerator(request, response) {
 }
 
 function makeCall(request, response) {
-  const to = getParam(request, 'to');
-  const from = getParam(request, 'from');
+  const { to, from } = getParams(request);
 
   logger.debug(`makeCall from:${from} to:${to}`);
 
