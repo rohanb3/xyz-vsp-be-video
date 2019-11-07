@@ -16,10 +16,14 @@ exports.CALL_FINISHED_BY_CUSTOMER = 'call.finished.by.customer';
 exports.CALLBACK_DISABLED = 'callback.disabled';
 exports.CUSTOMER_CONNECTED = 'customer.connected';
 exports.CUSTOMER_DISCONNECTED = 'customer.disconnected';
-
 exports.CALLS_PENDING = 'calls.pending';
 exports.CALLS_ACTIVE = 'calls.active';
 exports.CALLBACKS_PENDING = 'callbacks.pending';
+exports.VOICE_CALL_REQUESTED = 'call.voice.requested';
+exports.VOICE_CALL_FAILED = 'call.voice.failed';
+exports.VOICE_CALL_ACCEPTED = 'call.voice.accepted';
+exports.VOICE_CALL_STARTED = 'call.voice.started';
+exports.VOICE_CALL_FINISHED = 'call.voice.finished';
 
 exports.statuses = {
   CALL_PENDING: 'call.pending',
@@ -27,4 +31,9 @@ exports.statuses = {
   CALL_FINISHED: 'call.finished',
   CALLBACK_PENDING: 'callback.pnding',
   CALLBACK_ACTIVE: 'callback.active',
+};
+
+exports.callTypes = {
+  VIDEO: 'call.video',
+  AUDIO: 'call.audio',
 };
