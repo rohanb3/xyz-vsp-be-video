@@ -20,11 +20,17 @@ const {
   PEER_BUSY,
   CUSTOMER_CONNECTED,
   CUSTOMER_DISCONNECTED,
+  VOICE_CALL_REQUESTED,
+  VOICE_CALL_FINISHED,
+  VOICE_CALL_ACCEPTED,
+  VOICE_CALL_STARTED,
+  VOICE_CALL_FAILED,
 } = require('@/constants/calls');
 
 const BUSY = 'busy';
 
 const calls = require('@/services/calls');
+const voiceCalls = require('@/services/voiceCalls');
 
 const twilio = require('@/services/twilio');
 
@@ -62,6 +68,18 @@ class CustomersRoom {
       this.onCustomerFinishedCall.bind(this, customer)
     );
     customer.on(DISCONNECT, this.onCustomerDisconnected.bind(this, customer));
+    customer.on(
+      VOICE_CALL_REQUESTED,
+      this.onCustomerRequestedVoiceCall.bind(this, customer)
+    );
+    customer.on(
+      VOICE_CALL_FINISHED,
+      this.onCustomerFinishVoiceCall.bind(this, customer)
+    );
+    customer.on(
+      VOICE_CALL_STARTED,
+      this.onCustomerVoiceCallStarted.bind(this, customer)
+    );
   }
 
   onCustomerAuthenticated(customer) {
@@ -327,6 +345,39 @@ class CustomersRoom {
 
   getConnectedCustomer(socketId) {
     return this.customers.connected[socketId];
+  }
+
+  onCustomerRequestedVoiceCall(customer, data) {
+    const { identity: requestedBy, deviceId } = customer;
+    const call = {
+      ...data,
+      requestedBy,
+      deviceId,
+    };
+
+    voiceCalls
+      .requestCall(call)
+      .then(acceptedCall => customer.emit(VOICE_CALL_ACCEPTED, acceptedCall))
+      .catch(error => customer.emit(VOICE_CALL_FAILED, error));
+  }
+
+  onCustomerFinishVoiceCall(customer, data) {
+    const { identity } = customer;
+    const { id } = data;
+
+    voiceCalls.finishCall(id, identity);
+  }
+
+  onCustomerVoiceCallStarted(customer, data) {
+    const { identity: startedBy } = customer;
+    const { id, roomId } = data;
+
+    const call = {
+      roomId,
+      startedBy,
+    };
+
+    voiceCalls.startCall(id, call);
   }
 }
 

@@ -12,5 +12,10 @@ function formatTimeToFilter(time) {
     : null;
 }
 
+function formattedTimestamp() {
+  return moment.utc().format();
+}
+
 exports.getDifferenceFromTo = getDifferenceFromTo;
 exports.formatTimeToFilter = formatTimeToFilter;
+exports.formattedTimestamp = formattedTimestamp;
