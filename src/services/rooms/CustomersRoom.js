@@ -355,15 +355,29 @@ class CustomersRoom {
       deviceId,
     };
 
+    logger.debug('Customer requested voice call', call);
+
     voiceCalls
       .requestCall(call)
-      .then(acceptedCall => customer.emit(VOICE_CALL_ACCEPTED, acceptedCall))
-      .catch(error => customer.emit(VOICE_CALL_FAILED, error));
+      .then(acceptedCall => {
+        logger.debug(
+          'Customers voice call was accepted',
+          call.requestedBy,
+          acceptedCall.id
+        );
+        customer.emit(VOICE_CALL_ACCEPTED, acceptedCall);
+      })
+      .catch(error => {
+        logger.debug('Customers voice call was failed', error);
+        customer.emit(VOICE_CALL_FAILED, error);
+      });
   }
 
   onCustomerFinishVoiceCall(customer, data) {
     const { identity } = customer;
     const { id } = data;
+
+    logger.debug('Customers voice call was finished', id);
 
     voiceCalls.finishCall(id, identity);
   }
@@ -376,6 +390,8 @@ class CustomersRoom {
       roomId,
       startedBy,
     };
+
+    logger.debug('Customers voice call was started', id);
 
     voiceCalls.startCall(id, call);
   }
