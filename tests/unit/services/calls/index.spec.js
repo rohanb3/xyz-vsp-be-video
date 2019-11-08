@@ -6,7 +6,9 @@ jest.mock('@/services/pubSubChannel');
 
 const { pendingCallsQueue } = require('@/services/calls/pendingCallsQueue');
 const { activeCallsHeap } = require('@/services/calls/activeCallsHeap');
-const { pendingCallbacksHeap } = require('@/services/calls/pendingCallbacksHeap');
+const {
+  pendingCallbacksHeap,
+} = require('@/services/calls/pendingCallbacksHeap');
 const callsDBClient = require('@/services/calls/DBClient');
 const { connectionsHeap } = require('@/services/connectionsHeap');
 const storage = require('@/services/storage');
@@ -16,7 +18,11 @@ const calls = require('@/services/calls');
 const callStatusHelper = require('@/services/calls/statusHelper');
 const callFinisher = require('@/services/calls/finisher');
 const callsErrorHandler = require('@/services/calls/errorHandler');
-const { PeerOfflineError, CallNotFoundError, CallbackDisabledError } = require('@/services/calls/errors');
+const {
+  PeerOfflineError,
+  CallNotFoundError,
+  CallbackDisabledError,
+} = require('@/services/calls/errors');
 const {
   CALL_REQUESTED,
   CALL_ACCEPTED,
@@ -40,6 +46,7 @@ describe('calls: ', () => {
         deviceId,
         salesRepId,
         callbackEnabled,
+        callType: 'call.video',
       };
       const expectedCall = {
         ...initialCall,
@@ -56,11 +63,17 @@ describe('calls: ', () => {
       pendingCallsQueue.enqueue = jest.fn(() => Promise.resolve());
       pubSubChannel.publish = jest.fn();
 
-      return calls.requestCall(payload).then((call) => {
+      return calls.requestCall(payload).then(call => {
         expect(call).toEqual(expectedCall);
         expect(callsDBClient.create).toHaveBeenCalledWith(initialCall);
-        expect(pendingCallsQueue.enqueue).toHaveBeenCalledWith(id, expectedCall);
-        expect(pubSubChannel.publish).toHaveBeenCalledWith(CALL_REQUESTED, expectedCall);
+        expect(pendingCallsQueue.enqueue).toHaveBeenCalledWith(
+          id,
+          expectedCall
+        );
+        expect(pubSubChannel.publish).toHaveBeenCalledWith(
+          CALL_REQUESTED,
+          expectedCall
+        );
       });
     });
   });
@@ -95,13 +108,16 @@ describe('calls: ', () => {
       activeCallsHeap.isExist = jest.fn(() => Promise.resolve(true));
       connectionsHeap.update = jest.fn(() => Promise.resolve());
 
-      return calls.acceptCall(acceptedBy).then((call) => {
+      return calls.acceptCall(acceptedBy).then(call => {
         expect(call).toEqual(expectedCall);
         expect(pendingCallsQueue.dequeue).toHaveBeenCalled();
         expect(twilio.ensureRoom).toHaveBeenCalledWith(id);
         expect(activeCallsHeap.add).toHaveBeenCalledWith(id, expectedCall);
         expect(callsDBClient.updateById).toHaveBeenCalledWith(id, updates);
-        expect(pubSubChannel.publish).toHaveBeenCalledWith(CALL_ACCEPTED, expectedCall);
+        expect(pubSubChannel.publish).toHaveBeenCalledWith(
+          CALL_ACCEPTED,
+          expectedCall
+        );
       });
     });
 
@@ -124,12 +140,14 @@ describe('calls: ', () => {
 
       pendingCallsQueue.dequeue = jest.fn(() => Promise.resolve(callFromQueue));
       callsErrorHandler.onAcceptCallFailed = jest.fn(() => Promise.resolve());
-      activeCallsHeap.isExist = jest.fn().mockReturnValueOnce(Promise.resolve(false));
+      activeCallsHeap.isExist = jest
+        .fn()
+        .mockReturnValueOnce(Promise.resolve(false));
 
       return calls.acceptCall(acceptedBy).then(() => {
         expect(callsErrorHandler.onAcceptCallFailed).toHaveBeenCalledWith(
           expect.any(CallNotFoundError),
-          id,
+          id
         );
         expect(pendingCallsQueue.dequeue).toHaveBeenCalled();
         expect(activeCallsHeap.add).toHaveBeenCalledWith(id, expectedCall);
@@ -166,7 +184,7 @@ describe('calls: ', () => {
       return calls.acceptCall(acceptedBy).then(() => {
         expect(callsErrorHandler.onAcceptCallFailed).toHaveBeenCalledWith(
           expect.any(CallNotFoundError),
-          id,
+          id
         );
         expect(pendingCallsQueue.dequeue).toHaveBeenCalled();
         expect(activeCallsHeap.add).toHaveBeenCalledWith(id, expectedCall);
@@ -204,7 +222,7 @@ describe('calls: ', () => {
       return calls.acceptCall(acceptedBy).then(() => {
         expect(callsErrorHandler.onAcceptCallFailed).toHaveBeenCalledWith(
           expect.any(CallNotFoundError),
-          id,
+          id
         );
         expect(pendingCallsQueue.dequeue).toHaveBeenCalled();
         expect(activeCallsHeap.add).toHaveBeenCalledWith(id, expectedCall);
@@ -269,11 +287,17 @@ describe('calls: ', () => {
       connectionsHeap.isExist = jest.fn(() => Promise.resolve(true));
       pubSubChannel.publish = jest.fn();
 
-      return calls.requestCallback(callId).then((result) => {
+      return calls.requestCallback(callId).then(result => {
         expect(result).toEqual(expectedCall);
         expect(callsDBClient.getById).toHaveBeenCalledWith(callId);
-        expect(pendingCallbacksHeap.add).toHaveBeenCalledWith(callId, expectedCall);
-        expect(pubSubChannel.publish).toHaveBeenCalledWith(CALLBACK_REQUESTED, expectedCall);
+        expect(pendingCallbacksHeap.add).toHaveBeenCalledWith(
+          callId,
+          expectedCall
+        );
+        expect(pubSubChannel.publish).toHaveBeenCalledWith(
+          CALLBACK_REQUESTED,
+          expectedCall
+        );
         expect(callsDBClient.updateById).toHaveBeenCalledWith(callId, {
           callbacks: expectedCallbacks,
         });
@@ -291,13 +315,15 @@ describe('calls: ', () => {
       callsDBClient.updateById = jest.fn(() => Promise.resolve(call));
       pendingCallbacksHeap.add = jest.fn(() => Promise.resolve(call));
       connectionsHeap.isExist = jest.fn(() => Promise.resolve(false));
-      callsErrorHandler.onRequestCallbackFailed = jest.fn(() => Promise.resolve());
+      callsErrorHandler.onRequestCallbackFailed = jest.fn(() =>
+        Promise.resolve()
+      );
       pubSubChannel.publish = jest.fn();
 
       return calls.requestCallback(callId).then(() => {
         expect(callsErrorHandler.onRequestCallbackFailed).toHaveBeenCalledWith(
           expect.any(PeerOfflineError),
-          callId,
+          callId
         );
         expect(callsDBClient.getById).toHaveBeenCalledWith(callId);
         expect(pendingCallbacksHeap.add).not.toHaveBeenCalled();
@@ -317,13 +343,15 @@ describe('calls: ', () => {
       callsDBClient.updateById = jest.fn(() => Promise.resolve(call));
       pendingCallbacksHeap.add = jest.fn(() => Promise.resolve(call));
       connectionsHeap.isExist = jest.fn(() => Promise.resolve(true));
-      callsErrorHandler.onRequestCallbackFailed = jest.fn(() => Promise.resolve());
+      callsErrorHandler.onRequestCallbackFailed = jest.fn(() =>
+        Promise.resolve()
+      );
       pubSubChannel.publish = jest.fn();
 
       return calls.requestCallback(callId).then(() => {
         expect(callsErrorHandler.onRequestCallbackFailed).toHaveBeenCalledWith(
           expect.any(CallbackDisabledError),
-          callId,
+          callId
         );
         expect(callsDBClient.getById).toHaveBeenCalledWith(callId);
         expect(pendingCallbacksHeap.add).not.toHaveBeenCalled();
@@ -367,12 +395,15 @@ describe('calls: ', () => {
       activeCallsHeap.add = jest.fn(() => Promise.resolve(expectedCall));
       pubSubChannel.publish = jest.fn();
 
-      return calls.acceptCallback(callId).then((result) => {
+      return calls.acceptCallback(callId).then(result => {
         expect(result).toEqual(expectedCall);
         expect(twilio.ensureRoom).toHaveBeenCalledWith(callId);
         expect(pendingCallbacksHeap.take).toHaveBeenCalledWith(callId);
         expect(activeCallsHeap.add).toHaveBeenCalledWith(callId, expectedCall);
-        expect(pubSubChannel.publish).toHaveBeenCalledWith(CALLBACK_ACCEPTED, expectedCall);
+        expect(pubSubChannel.publish).toHaveBeenCalledWith(
+          CALLBACK_ACCEPTED,
+          expectedCall
+        );
         expect(callsDBClient.updateById).toHaveBeenCalledWith(callId, {
           callbacks: expectedCallbacks,
         });
@@ -459,7 +490,7 @@ describe('calls: ', () => {
       pendingCallbacksHeap.take = jest.fn(() => Promise.resolve(call));
       pubSubChannel.publish = jest.fn();
 
-      return calls.declineCallback(callId, reason).then((result) => {
+      return calls.declineCallback(callId, reason).then(result => {
         expect(result).toEqual(expectedCall);
         expect(pendingCallbacksHeap.take).toHaveBeenCalledWith(callId);
         expect(pubSubChannel.publish).toHaveBeenCalledWith(CALLBACK_DECLINED, {
@@ -480,8 +511,12 @@ describe('calls: ', () => {
     beforeEach(() => {
       callFinisher.markCallAsMissed = jest.fn(() => Promise.resolve(call));
       callFinisher.markCallAsFinished = jest.fn(() => Promise.resolve(call));
-      callFinisher.markLastCallbackAsMissed = jest.fn(() => Promise.resolve(call));
-      callFinisher.markLastCallbackAsFinished = jest.fn(() => Promise.resolve(call));
+      callFinisher.markLastCallbackAsMissed = jest.fn(() =>
+        Promise.resolve(call)
+      );
+      callFinisher.markLastCallbackAsFinished = jest.fn(() =>
+        Promise.resolve(call)
+      );
 
       connectionsHeap.update = jest.fn(() => Promise.resolve());
     });
@@ -492,7 +527,10 @@ describe('calls: ', () => {
       callStatusHelper.getCallStatus = jest.fn(() => statuses.CALL_PENDING);
 
       return calls.finishCall(callId, finishedBy).then(() => {
-        expect(callFinisher.markCallAsMissed).toHaveBeenCalledWith(callId, finishedBy);
+        expect(callFinisher.markCallAsMissed).toHaveBeenCalledWith(
+          callId,
+          finishedBy
+        );
         expect(callFinisher.markCallAsFinished).not.toHaveBeenCalled();
         expect(callFinisher.markLastCallbackAsMissed).not.toHaveBeenCalled();
         expect(callFinisher.markLastCallbackAsFinished).not.toHaveBeenCalled();
@@ -507,7 +545,10 @@ describe('calls: ', () => {
 
       return calls.finishCall(callId, finishedBy).then(() => {
         expect(callFinisher.markCallAsMissed).not.toHaveBeenCalled();
-        expect(callFinisher.markCallAsFinished).toHaveBeenCalledWith(callId, finishedBy);
+        expect(callFinisher.markCallAsFinished).toHaveBeenCalledWith(
+          callId,
+          finishedBy
+        );
         expect(callFinisher.markLastCallbackAsMissed).not.toHaveBeenCalled();
         expect(callFinisher.markLastCallbackAsFinished).not.toHaveBeenCalled();
       });
@@ -522,7 +563,10 @@ describe('calls: ', () => {
       return calls.finishCall(callId, finishedBy).then(() => {
         expect(callFinisher.markCallAsMissed).not.toHaveBeenCalled();
         expect(callFinisher.markCallAsFinished).not.toHaveBeenCalled();
-        expect(callFinisher.markLastCallbackAsMissed).toHaveBeenCalledWith(callId, finishedBy);
+        expect(callFinisher.markLastCallbackAsMissed).toHaveBeenCalledWith(
+          callId,
+          finishedBy
+        );
         expect(callFinisher.markLastCallbackAsFinished).not.toHaveBeenCalled();
       });
     });
@@ -537,7 +581,10 @@ describe('calls: ', () => {
         expect(callFinisher.markCallAsMissed).not.toHaveBeenCalled();
         expect(callFinisher.markCallAsFinished).not.toHaveBeenCalled();
         expect(callFinisher.markLastCallbackAsMissed).not.toHaveBeenCalled();
-        expect(callFinisher.markLastCallbackAsFinished).toHaveBeenCalledWith(callId, finishedBy);
+        expect(callFinisher.markLastCallbackAsFinished).toHaveBeenCalledWith(
+          callId,
+          finishedBy
+        );
       });
     });
 
@@ -548,7 +595,9 @@ describe('calls: ', () => {
       callStatusHelper.getCallStatus = jest.fn(() => statuses.CALL_ACTIVE);
 
       return calls.finishCall(callId, finishedBy).then(() => {
-        expect(connectionsHeap.update).toHaveBeenCalledWith(acceptedBy, { activeCallId: null });
+        expect(connectionsHeap.update).toHaveBeenCalledWith(acceptedBy, {
+          activeCallId: null,
+        });
       });
     });
   });
@@ -558,7 +607,7 @@ describe('calls: ', () => {
       const expectedPeak = { id: 123 };
       pendingCallsQueue.getPeak = jest.fn(() => Promise.resolve(expectedPeak));
 
-      return calls.getOldestCall().then((oldestCall) => {
+      return calls.getOldestCall().then(oldestCall => {
         expect(oldestCall).toBe(expectedPeak);
         expect(pendingCallsQueue.getPeak).toHaveBeenCalled();
       });
@@ -569,7 +618,7 @@ describe('calls: ', () => {
     it('should take size from queue', () => {
       pendingCallsQueue.getSize = jest.fn(() => Promise.resolve(42));
 
-      return calls.getPendingCallsLength().then((size) => {
+      return calls.getPendingCallsLength().then(size => {
         expect(size).toBe(42);
         expect(pendingCallsQueue.getSize).toHaveBeenCalled();
       });
@@ -583,7 +632,9 @@ describe('calls: ', () => {
 
       calls.subscribeToCallsLengthChanging(listener);
 
-      expect(pendingCallsQueue.subscribeToQueueChanging).toHaveBeenCalledWith(listener);
+      expect(pendingCallsQueue.subscribeToQueueChanging).toHaveBeenCalledWith(
+        listener
+      );
     });
   });
 
@@ -594,7 +645,9 @@ describe('calls: ', () => {
 
       calls.unsubscribeFromCallsLengthChanging(listener);
 
-      expect(pendingCallsQueue.unsubscribeFromQueueChanging).toHaveBeenCalledWith(listener);
+      expect(
+        pendingCallsQueue.unsubscribeFromQueueChanging
+      ).toHaveBeenCalledWith(listener);
     });
   });
 });
