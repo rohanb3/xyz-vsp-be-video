@@ -100,12 +100,13 @@ class CustomersRoom {
 
   onCustomerRequestedCall(customer, data) {
     const { identity: requestedBy, deviceId } = customer;
-    const { salesRepId, callbackEnabled } = data;
+    const { salesRepId, callbackEnabled, service } = data;
     const payload = {
       requestedBy,
       deviceId,
       salesRepId,
       callbackEnabled,
+      service,
     };
     return calls
       .requestCall(payload)

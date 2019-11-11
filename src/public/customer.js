@@ -135,7 +135,8 @@ function onTokenReceived(data) {
 function requestConnection() {
   const salesRepId = 'd4b10474-a026-4487-87f8-96f3cdd749cb';
   const callbackEnabled = typeof prompt('Allow callback?') === 'string';
-  socket.emit('call.requested', { salesRepId, callbackEnabled });
+  const service = 'spectrum';
+  socket.emit('call.requested', { salesRepId, callbackEnabled, service });
   socket.once('call.enqueued', callId => {
     roomId = callId;
     document.getElementById('button-join').style.display = 'none';

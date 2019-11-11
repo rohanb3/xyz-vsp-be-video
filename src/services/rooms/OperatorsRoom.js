@@ -259,6 +259,7 @@ class OperatorsRoom {
 
   addOperatorToActive(operator) {
     const operatorId = operator.id;
+    //const name = operator.serviceProvider;
     const connectedOperator = this.getConnectedOperator(operatorId);
     if (connectedOperator) {
       logger.debug('Operator: added to active', operatorId);
@@ -278,6 +279,7 @@ class OperatorsRoom {
 
   removeOperatorFromActive(operator) {
     const operatorId = operator.id;
+    //const {name} = operator.serviceProvider;
     const connectedOperator = this.getConnectedOperator(operatorId);
     if (connectedOperator) {
       logger.debug('Operator: removed from active', operatorId);

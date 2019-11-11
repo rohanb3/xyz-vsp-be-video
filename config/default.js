@@ -26,6 +26,8 @@ const {
   NEXMO_API_SECRET,
   NEXMO_APPLICATION_ID,
   NEXMO_PATH_TO_PRIVATE_KEY,
+  PUBLIC_API_URL,
+  PUBLIC_API_TOKEN,
 } = process.env;
 
 module.exports = {
@@ -84,5 +86,9 @@ module.exports = {
     apiSecret: NEXMO_API_SECRET || 'eKLLBvDBA875kh20',
     applicationId: NEXMO_APPLICATION_ID,
     privateKey: NEXMO_PATH_TO_PRIVATE_KEY,
+  },
+  publicapi: {
+    publicApiUrl: PUBLIC_API_URL,
+    staticToken: PUBLIC_API_TOKEN,
   },
 };

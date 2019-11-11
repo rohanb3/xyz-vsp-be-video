@@ -1,11 +1,14 @@
 const twilio = require('@/services/twilio');
+const publicApi = require('@/services/httpServices/publicApiRequests');
+
 const { connectionsHeap } = require('@/services/connectionsHeap');
+
 
 const NO_IDENTITY = 'identity.not.provided';
 const NO_DEVICE_ID = 'device.id.not.provided';
 
 function authenticateOperator(disconnectCallBack, socket, data, callback) {
-  const { identity } = data;
+  const { identity, companyId } = data;
 
   if (!identity) {
     return Promise.reject(new Error(NO_IDENTITY)).catch(callback);
@@ -18,12 +21,15 @@ function authenticateOperator(disconnectCallBack, socket, data, callback) {
 
     const token = twilio.getToken(identity);
     socket.identity = identity;
+
+    const serviceProvider = publicApi.getServiceProviderByCompanyId(companyId);
+    socket.serviceProvider = serviceProvider;
     callback(null, token);
   });
 }
 
 function authenticateCustomer(socket, data, callback) {
-  const { identity, deviceId } = data;
+  const { identity, deviceId, companyId } = data;
   if (!identity) {
     return Promise.reject(new Error(NO_IDENTITY)).catch(callback);
   }
@@ -33,6 +39,9 @@ function authenticateCustomer(socket, data, callback) {
   const token = twilio.getToken(identity);
   socket.identity = identity;
   socket.deviceId = deviceId;
+
+  const serviceProvider = publicApi.getServiceProviderByCompanyId(companyId);
+  socket.serviceProvider = serviceProvider;
   return Promise.resolve().then(() => callback(null, token));
 }
 
