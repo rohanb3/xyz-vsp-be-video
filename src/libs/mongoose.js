@@ -27,7 +27,7 @@ mongoose.connect(
   connectionString,
   {
     keepAlive: 1,
-    poolSize: 5,
+    poolSize: 50,
     useNewUrlParser: true,
     dbName,
     reconnectTries: Number.MAX_VALUE,
