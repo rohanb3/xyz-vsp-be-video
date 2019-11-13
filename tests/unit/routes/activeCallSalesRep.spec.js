@@ -1,5 +1,6 @@
 /* eslint-disable jest/no-test-prefixes, jest/no-disabled-tests */
 jest.mock('@/services/calls/feedback');
+jest.mock('@/services/voiceCalls');
 
 const request = require('supertest');
 const app = require('@/app');

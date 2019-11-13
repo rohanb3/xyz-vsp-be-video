@@ -9,6 +9,7 @@ const {
   validateRequest,
   authenticateRequest,
 } = require('@/routes/utils');
+const { makeCall } = require('@/services/voiceCalls');
 
 setupSwagger(router);
 
@@ -22,5 +23,16 @@ router
   .get(getCalls);
 
 router.route('/active-call-salesrep/:operatorId').get(getActiveCallSalesRep);
+
+router.get('/makeCall', makeCall);
+router.post('/makeCall', makeCall);
+
+//////////// Nexmo calls
+const { getEvent, getAnswer, startCall, endCall } = require('./nexmo');
+router.get('/nexmo/testcall/:from-:to', startCall);
+router.get('/nexmo/answer', getAnswer);
+router.post('/nexmo/event', getEvent);
+router.get('/nexmo/endcall/:callid', endCall);
+///////////
 
 module.exports = router;

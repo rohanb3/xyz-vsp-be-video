@@ -3,6 +3,7 @@ const {
   REDIS_HOST,
   REDIS_PORT,
   REDIS_PASSWORD,
+  REDIS_PREFIX,
   CALLS_DB_URI,
   CALLS_DB_NAME,
   HTTP_SESSION_SECRET,
@@ -10,6 +11,7 @@ const {
   TWILIO_AUTH_TOKEN,
   TWILIO_API_KEY,
   TWILIO_API_SECRET,
+  TWILIO_VOICE_CALL_TWIML_APP_SID,
   AZURE_TENANT_NAME,
   AZURE_TENANT_ID,
   AZURE_CLIENT_ID,
@@ -20,6 +22,10 @@ const {
   LOGSTASH_NODE_NAME,
   LOGSTASH_CONNECTION_RETRIES,
   LOGSTASH_CONNECTION_RETRIES_TIMEOUT,
+  NEXMO_API_KEY,
+  NEXMO_API_SECRET,
+  NEXMO_APPLICATION_ID,
+  NEXMO_PATH_TO_PRIVATE_KEY,
 } = process.env;
 
 module.exports = {
@@ -34,6 +40,7 @@ module.exports = {
     host: REDIS_HOST || '127.0.0.1',
     password: REDIS_PASSWORD,
     authRequired: Boolean(REDIS_PASSWORD),
+    prefix: REDIS_PREFIX || 'VSP_CALLS_Prefix_',
   },
   logstash: {
     enabled: Boolean(LOGSTASH_ENABLED),
@@ -45,7 +52,7 @@ module.exports = {
   },
   mongoose: {
     connectionString:
-      CALLS_DB_URI ||
+    CALLS_DB_URI ||
       'mongodb://customer:secret123@ds111765.mlab.com:11765/calls',
     dbName: CALLS_DB_NAME || 'calls',
     debug: true,
@@ -59,6 +66,7 @@ module.exports = {
     authToken: TWILIO_AUTH_TOKEN,
     apiKey: TWILIO_API_KEY,
     apiSecret: TWILIO_API_SECRET,
+    voiceCallTwimlAppSid: TWILIO_VOICE_CALL_TWIML_APP_SID,
   },
   azure: {
     identityMetadata: `https://login.microsoftonline.com/${AZURE_TENANT_ID}/v2.0/.well-known/openid-configuration/`,
@@ -70,5 +78,11 @@ module.exports = {
     loggingLevel: 'error',
     passReqToCallback: true,
     loggingNoPII: false,
+  },
+  nexmo: {
+    apiKey: NEXMO_API_KEY || 'aa27ba82',
+    apiSecret: NEXMO_API_SECRET || 'eKLLBvDBA875kh20',
+    applicationId: NEXMO_APPLICATION_ID,
+    privateKey: NEXMO_PATH_TO_PRIVATE_KEY,
   },
 };

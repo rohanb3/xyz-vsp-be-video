@@ -23,16 +23,13 @@ mongoose.plugin(schema => {
   }
 });
 
-mongoose.connect(
-  connectionString,
-  {
-    keepAlive: 1,
-    poolSize: 5,
-    useNewUrlParser: true,
-    dbName,
-    reconnectTries: Number.MAX_VALUE,
-    reconnectInterval: 500,
-  }
-);
+mongoose.connect(connectionString, {
+  keepAlive: 1,
+  poolSize: 10,
+  useNewUrlParser: true,
+  dbName,
+  reconnectTries: Number.MAX_VALUE,
+  reconnectInterval: 500,
+});
 
 module.exports = mongoose;
