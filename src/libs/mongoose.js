@@ -25,7 +25,7 @@ mongoose.plugin(schema => {
 
 mongoose.connect(connectionString, {
   keepAlive: 1,
-  poolSize: 15,
+  poolSize: 10,
   useNewUrlParser: true,
   dbName,
   reconnectTries: Number.MAX_VALUE,
