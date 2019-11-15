@@ -19,13 +19,14 @@ const nexmo = new Nexmo({
   privateKey: PATH_TO_PRIVATE_KEY,
 });
 
-// const ncco = [
-//   {
-//     action: 'talk',
-//     voiceName: 'Joey',
-//     text: 'This is a text-to-speech test message.',
-//   },
-// ];
+const ncco = [
+  {
+    action: 'talk',
+    voiceName: 'Joey',
+    text: 'VSP and Vonage integration call.',
+    loop: 0,
+  },
+];
 
 const createCall = request => {
   const { to, from } = request.params;
@@ -34,6 +35,7 @@ const createCall = request => {
       {
         to: [{ type: 'phone', number: to }],
         from: { type: 'phone', number: from },
+        ncco,
       },
       (err, result) => {
         logger.debug(err || result);
