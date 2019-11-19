@@ -98,7 +98,7 @@ class CustomersRoom {
       .finally(() => this.mapDeviceIdToSocketId(customer));
   }
 
-  async onCustomerRequestedCall(customer, data) {
+  onCustomerRequestedCall(customer, data) {
     const { identity: requestedBy, deviceId, tenant } = customer;
     const { salesRepId, callbackEnabled } = data;
 
