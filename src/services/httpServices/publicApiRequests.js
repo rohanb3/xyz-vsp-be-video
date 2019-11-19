@@ -1,16 +1,17 @@
-const requestGetBuild = require('./httpGet');
+const axios = require('axios');
 
 const { PUBLIC_API_URL, STATIC_TOKEN } = require('@/constants/publicApi');
 
-function getServiceProviderByCompanyId(companyId){
-    let options = {
-        host: PUBLIC_API_URL,
-        path: '/serviceProvider/'+ {STATIC_TOKEN} +'/trusted'+{companyId},
-        port: 443,
-        method: 'GET'
-    };
-
-    return requestGetBuild.getRequestSend(options);
+async function getServiceProviderByCompanyId(companyId) {
+  return axios
+    .get(
+      `https://${PUBLIC_API_URL}/tenant/trusted/${STATIC_TOKEN}/single/${companyId}/by-company/`
+    )
+    .then(response => response.data.name)
+    .catch(e => {
+      throw e;
+      //console.log('err', e);
+    });
 }
 
 exports.getServiceProviderByCompanyId = getServiceProviderByCompanyId;

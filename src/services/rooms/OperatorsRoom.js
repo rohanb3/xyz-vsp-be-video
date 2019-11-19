@@ -6,7 +6,6 @@ const {
   CONNECTION,
   DISCONNECT,
   ROOM_CREATED,
-  ACTIVE_OPERATORS,
   OPERATORS,
   CONNECTION_DROPPED,
 } = require('@/constants/rooms');
@@ -56,13 +55,16 @@ class OperatorsRoom {
       ),
       postAuthenticate: this.onOperatorAuthenticated.bind(this),
     });
+
     calls.subscribeToCallFinishing(this.onCallFinished.bind(this));
+
     calls.subscribeToCallbackAccepting(
       this.checkOperatorAndEmitCallbackAccepting.bind(this)
     );
     calls.subscribeToCallbackDeclining(
       this.checkOperatorAndEmitCallbackDeclining.bind(this)
     );
+
     if (isMaster) {
       calls.subscribeToCallsLengthChanging(this.emitCallsInfo.bind(this));
     }
@@ -108,7 +110,7 @@ class OperatorsRoom {
       operator && operator.identity
     );
     return calls
-      .acceptCall(operator.identity)
+      .acceptCall(operator.identity, operator.tenant)
       .then(call => {
         const {
           id,
@@ -254,18 +256,21 @@ class OperatorsRoom {
   }
 
   emitCallsInfo(info) {
-    return this.operators.to(ACTIVE_OPERATORS).emit(CALLS_CHANGED, info);
+    const { data, tenant } = info;
+    return this.operators.to(tenant).emit(CALLS_CHANGED, data);
   }
 
   addOperatorToActive(operator) {
     const operatorId = operator.id;
-    //const name = operator.serviceProvider;
+
     const connectedOperator = this.getConnectedOperator(operatorId);
+    const tenant = connectedOperator.tenant;
     if (connectedOperator) {
       logger.debug('Operator: added to active', operatorId);
-      connectedOperator.join(ACTIVE_OPERATORS);
+      connectedOperator.join(tenant);
+
       return calls
-        .getCallsInfo()
+        .getCallsInfo(tenant)
         .then(info => {
           connectedOperator.emit(CALLS_CHANGED, info);
           logger.debug('Operator: emitted calls info', operatorId);
@@ -279,11 +284,11 @@ class OperatorsRoom {
 
   removeOperatorFromActive(operator) {
     const operatorId = operator.id;
-    //const {name} = operator.serviceProvider;
+    const tenant = operator.tenant;
     const connectedOperator = this.getConnectedOperator(operatorId);
     if (connectedOperator) {
       logger.debug('Operator: removed from active', operatorId);
-      connectedOperator.leave(ACTIVE_OPERATORS);
+      connectedOperator.leave(tenant);
     }
   }
 

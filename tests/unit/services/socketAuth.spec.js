@@ -1,7 +1,13 @@
 jest.mock('@/services/twilio');
+jest.mock('@/services/twilio');
 
 const { connectionsHeap } = require('@/services/connectionsHeap');
-const { authenticateCustomer, authenticateOperator } = require('@/services/socketAuth');
+const {
+  authenticateCustomer,
+  authenticateOperator,
+} = require('@/services/socketAuth');
+const publicApi = require('@/services/httpServices/publicApiRequests');
+const identityApi = require('@/services/httpServices/identityApiRequests');
 
 let socket = null;
 
@@ -16,10 +22,20 @@ describe('socketAuth: ', () => {
       const callback = jest.fn();
       const data = { identity: '42' };
       const expectedToken = 'token';
+      const tenant = 'spectrum';
 
       connectionsHeap.get = jest.fn(() => Promise.resolve(false));
+      identityApi.getCompanyByUserId = jest.fn(() => Promise.resolve());
+      publicApi.getServiceProviderByCompanyId = jest.fn(() =>
+        Promise.resolve(tenant)
+      );
 
-      return authenticateOperator(callbackOldDelete, socket, data, callback).then(() => {
+      return authenticateOperator(
+        callbackOldDelete,
+        socket,
+        data,
+        callback
+      ).then(() => {
         const token = callback.mock.calls[0][1];
 
         expect(callback).toHaveBeenCalledWith(null, expectedToken);
@@ -47,7 +63,12 @@ describe('socketAuth: ', () => {
       const callback = jest.fn();
       const data = {};
 
-      return authenticateOperator(callbackOldDelete, socket, data, callback).then(() => {
+      return authenticateOperator(
+        callbackOldDelete,
+        socket,
+        data,
+        callback
+      ).then(() => {
         const error = callback.mock.calls[0][0];
 
         expect(callback).toHaveBeenCalledWith(expect.any(Error));

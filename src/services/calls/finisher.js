@@ -1,16 +1,21 @@
 const moment = require('moment');
-const { pendingCallsQueue } = require('@/services/calls/pendingCallsQueue');
+const pendingCallsQueue = require('@/services/calls/pendingCallsQueue');
 const { activeCallsHeap } = require('@/services/calls/activeCallsHeap');
-const { pendingCallbacksHeap } = require('@/services/calls/pendingCallbacksHeap');
+const {
+  pendingCallbacksHeap,
+} = require('@/services/calls/pendingCallbacksHeap');
 const callsDBClient = require('@/services/calls/DBClient');
 const logger = require('@/services/logger')(module);
 
-function markCallAsMissed(callId, finishedBy) {
-  return pendingCallsQueue.remove(callId).then(() => {
-    logger.debug('call.missed.removed.from.queue', callId);
-    const updates = { missedAt: moment.utc().format(), finishedBy };
-    return callsDBClient.updateById(callId, updates);
-  });
+function markCallAsMissed(callId, finishedBy, tenant) {
+  return pendingCallsQueue
+    .getPendingCallsQueue(tenant)
+    .remove(callId)
+    .then(() => {
+      logger.debug('call.missed.removed.from.queue', callId);
+      const updates = { missedAt: moment.utc().format(), finishedBy };
+      return callsDBClient.updateById(callId, updates);
+    });
 }
 
 function markCallAsFinished(callId, finishedBy) {
@@ -18,11 +23,13 @@ function markCallAsFinished(callId, finishedBy) {
     finishedBy,
     finishedAt: moment.utc().format(),
   };
-  return activeCallsHeap.remove(callId).then(() => callsDBClient.updateById(callId, updates));
+  return activeCallsHeap
+    .remove(callId)
+    .then(() => callsDBClient.updateById(callId, updates));
 }
 
 function markLastCallbackAsMissed(callId) {
-  return pendingCallbacksHeap.remove(callId).then((call) => {
+  return pendingCallbacksHeap.remove(callId).then(call => {
     const callbacks = [...call.callbacks];
     const lastCallback = callbacks[callbacks.length - 1];
 
@@ -34,7 +41,7 @@ function markLastCallbackAsMissed(callId) {
 }
 
 function markLastCallbackAsFinished(callId, finishedBy) {
-  return activeCallsHeap.remove(callId).then((call) => {
+  return activeCallsHeap.remove(callId).then(call => {
     const callbacks = [...call.callbacks];
     const lastCallback = callbacks[callbacks.length - 1];
 
