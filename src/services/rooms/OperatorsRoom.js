@@ -110,7 +110,7 @@ class OperatorsRoom {
       operator && operator.identity
     );
     return calls
-      .acceptCall(operator.identity, operator.tenant)
+      .acceptCall(operator)
       .then(call => {
         const {
           id,

@@ -19,28 +19,21 @@ async function authenticateOperator(
     return Promise.reject(new Error(NO_IDENTITY)).catch(callback);
   }
 
-  try {
-    const companyId = await identityApi.getCompanyByUserId(identity);
-    const tenant = await publicApi.getServiceProviderByCompanyId(companyId);
+  const companyId = await identityApi.getCompanyIdByUserId(identity);
+  const tenant = await publicApi.getTenantByCompanyId(companyId);
 
-    const oldSocket = await connectionsHeap.get(identity);
-    if (oldSocket) {
-      disconnectCallBack(
-        !oldSocket.activeCallId ? oldSocket.socketId : socket.id
-      );
-    }
-    const token = twilio.getToken(identity);
-
-    socket.identity = identity;
-    socket.tenant = tenant;
-
-    callback(null, token);
-  } catch (err) {
-    const token = '';
-    const e = new Error(err);
-    callback(e, token);
-    throw e;
+  const oldSocket = await connectionsHeap.get(identity);
+  if (oldSocket) {
+    disconnectCallBack(
+      !oldSocket.activeCallId ? oldSocket.socketId : socket.id
+    );
   }
+  const token = twilio.getToken(identity);
+
+  socket.identity = identity;
+  socket.tenant = tenant;
+
+  callback(null, token);
 }
 
 async function authenticateCustomer(socket, data, callback) {
@@ -53,22 +46,15 @@ async function authenticateCustomer(socket, data, callback) {
     return Promise.reject(new Error(NO_DEVICE_ID)).catch(callback);
   }
 
-  try {
-    const companyId = await identityApi.getCompanyByUserId(identity);
-    const tenant = await publicApi.getServiceProviderByCompanyId(companyId);
+  const companyId = await identityApi.getCompanyIdByUserId(identity);
+  const tenant = await publicApi.getTenantByCompanyId(companyId);
 
-    const token = twilio.getToken(identity);
-    socket.identity = identity;
-    socket.deviceId = deviceId;
-    socket.tenant = tenant;
+  const token = twilio.getToken(identity);
+  socket.identity = identity;
+  socket.deviceId = deviceId;
+  socket.tenant = tenant;
 
-    callback(null, token);
-  } catch (err) {
-    const token = '';
-    const e = new Error(err);
-    callback(e, token);
-    throw e;
-  }
+  callback(null, token);
 }
 
 exports.authenticateOperator = authenticateOperator;

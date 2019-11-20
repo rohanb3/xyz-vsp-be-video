@@ -49,7 +49,7 @@ let operator = null;
 let socketId;
 let operatorIdentity;
 let callId;
-let operatorserviceProvider;
+let tenant;
 
 const mockedNamespace = {
   on: jest.fn(),
@@ -70,7 +70,7 @@ describe('OperatorsRoom: ', () => {
     jest.clearAllMocks();
     socketId = '/operators#42';
     operatorIdentity = 'operator42';
-    operatorserviceProvider = 'spectrum';
+    tenant = 'spectrum';
     callId = 'call42';
     operatorsRoom = new OperatorsRoom(io, mediator);
     operator = {
@@ -80,7 +80,7 @@ describe('OperatorsRoom: ', () => {
       leave: jest.fn(),
       identity: operatorIdentity,
       id: socketId,
-      tenant: operatorserviceProvider,
+      tenant: tenant,
     };
   });
 
@@ -243,10 +243,7 @@ describe('OperatorsRoom: ', () => {
       );
 
       return operatorsRoom.onOperatorAcceptCall(operator).then(() => {
-        expect(calls.acceptCall).toHaveBeenCalledWith(
-          operatorIdentity,
-          operatorserviceProvider
-        );
+        expect(calls.acceptCall).toHaveBeenCalledWith(operator);
         expect(twilio.getToken).toHaveBeenCalledWith(operatorIdentity, callId);
         expect(operator.emit).toHaveBeenCalledWith(ROOM_CREATED, roomData);
       });
@@ -263,10 +260,7 @@ describe('OperatorsRoom: ', () => {
       calls.acceptCall = jest.fn(() => Promise.reject(error));
 
       return operatorsRoom.onOperatorAcceptCall(operator).then(() => {
-        expect(calls.acceptCall).toHaveBeenCalledWith(
-          operatorIdentity,
-          operatorserviceProvider
-        );
+        expect(calls.acceptCall).toHaveBeenCalledWith(operator);
         expect(twilio.getToken).not.toHaveBeenCalled();
         expect(operator.emit).not.toHaveBeenCalledWith(
           ROOM_CREATED,
@@ -290,10 +284,7 @@ describe('OperatorsRoom: ', () => {
       calls.acceptCall = jest.fn(() => Promise.reject(error));
 
       return operatorsRoom.onOperatorAcceptCall(operator).then(() => {
-        expect(calls.acceptCall).toHaveBeenCalledWith(
-          operatorIdentity,
-          operatorserviceProvider
-        );
+        expect(calls.acceptCall).toHaveBeenCalledWith(operator);
         expect(twilio.getToken).not.toHaveBeenCalled();
         expect(operator.emit).not.toHaveBeenCalledWith(
           ROOM_CREATED,
@@ -317,10 +308,7 @@ describe('OperatorsRoom: ', () => {
       calls.acceptCall = jest.fn(() => Promise.reject(error));
 
       return operatorsRoom.onOperatorAcceptCall(operator).then(() => {
-        expect(calls.acceptCall).toHaveBeenCalledWith(
-          operatorIdentity,
-          operatorserviceProvider
-        );
+        expect(calls.acceptCall).toHaveBeenCalledWith(operator);
         expect(twilio.getToken).not.toHaveBeenCalled();
         expect(operator.emit).not.toHaveBeenCalledWith(
           ROOM_CREATED,
@@ -501,16 +489,14 @@ describe('OperatorsRoom: ', () => {
 
   describe('emitCallsInfo(): ', () => {
     it('should emit only to active operators', () => {
-      const info = { tenant: operatorserviceProvider };
+      const info = { tenant: tenant };
       const callsInfo = {
         data: info,
-        tenant: operatorserviceProvider,
+        tenant: tenant,
       };
 
       operatorsRoom.emitCallsInfo(callsInfo);
-      expect(operatorsRoom.operators.to).toHaveBeenCalledWith(
-        operatorserviceProvider
-      );
+      expect(operatorsRoom.operators.to).toHaveBeenCalledWith(tenant);
       expect(operatorsRoom.operators.emit).toHaveBeenCalledWith(
         CALLS_CHANGED,
         info
@@ -527,7 +513,7 @@ describe('OperatorsRoom: ', () => {
       };
 
       return operatorsRoom.addOperatorToActive(operator).then(() => {
-        expect(operator.join).toHaveBeenCalledWith(operatorserviceProvider);
+        expect(operator.join).toHaveBeenCalledWith(tenant);
         expect(operator.emit).toHaveBeenCalledWith(CALLS_CHANGED, {});
       });
     });
@@ -543,7 +529,7 @@ describe('OperatorsRoom: ', () => {
 
       operatorsRoom.removeOperatorFromActive(operator);
 
-      expect(operator.leave).toHaveBeenCalledWith(operatorserviceProvider);
+      expect(operator.leave).toHaveBeenCalledWith(tenant);
     });
   });
 

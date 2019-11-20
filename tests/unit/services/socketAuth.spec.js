@@ -25,10 +25,8 @@ describe('socketAuth: ', () => {
       const tenant = 'spectrum';
 
       connectionsHeap.get = jest.fn(() => Promise.resolve(false));
-      identityApi.getCompanyByUserId = jest.fn(() => Promise.resolve());
-      publicApi.getServiceProviderByCompanyId = jest.fn(() =>
-        Promise.resolve(tenant)
-      );
+      identityApi.getCompanyIdByUserId = jest.fn(() => Promise.resolve());
+      publicApi.getTenantByCompanyId = jest.fn(() => Promise.resolve(tenant));
 
       return authenticateOperator(
         callbackOldDelete,

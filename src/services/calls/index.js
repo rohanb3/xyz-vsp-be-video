@@ -1,6 +1,6 @@
 /* eslint-disable no-use-before-define */
 const moment = require('moment');
-const pendingCallsQueue = require('@/services/calls/pendingCallsQueue');
+const pendingCallsQueues = require('@/services/calls/pendingCallsQueue');
 const { activeCallsHeap } = require('@/services/calls/activeCallsHeap');
 const {
   pendingCallbacksHeap,
@@ -48,7 +48,7 @@ function requestCall({
     .create({ ...call })
     .then(({ id }) => {
       call.id = id;
-      return pendingCallsQueue.getPendingCallsQueue(tenant).enqueue(id, call);
+      return pendingCallsQueues.getPendingCallsQueue(tenant).enqueue(id, call);
     })
     .then(() => pubSubChannel.publish(CALL_REQUESTED, call))
     .then(() => call)
@@ -56,18 +56,18 @@ function requestCall({
 }
 
 function takeCall(tenant) {
-  return pendingCallsQueue.getPendingCallsQueue(tenant).dequeue();
+  return pendingCallsQueues.getPendingCallsQueue(tenant).dequeue();
 }
 //TODO
-function acceptCall(acceptedBy, tenant) {
+function acceptCall(operator) {
   const updates = {
-    acceptedBy,
+    acceptedBy: operator.identity,
     acceptedAt: moment.utc().format(),
   };
   const call = {
     ...updates,
   };
-  return takeCall(tenant)
+  return takeCall(operator.tenant)
     .then(callFromQueue => {
       Object.assign(call, callFromQueue);
       return activeCallsHeap.add(call.id, call);
@@ -191,23 +191,23 @@ function finishCall(callId, finishedBy) {
 }
 
 function getOldestCall(tenant) {
-  return pendingCallsQueue.getPendingCallsQueue(tenant).getPeak();
+  return pendingCallsQueues.getPendingCallsQueue(tenant).getPeak();
 }
 
 function getPendingCallsLength(tenant) {
-  return pendingCallsQueue.getPendingCallsQueue(tenant).getSize();
+  return pendingCallsQueues.getPendingCallsQueue(tenant).getSize();
 }
 
 function getCallsInfo(tenant) {
-  return pendingCallsQueue.getPendingCallsQueue(tenant).getQueueInfo();
+  return pendingCallsQueues.getPendingCallsQueue(tenant).getQueueInfo();
 }
 
 function subscribeToCallsLengthChanging(listener) {
-  return pendingCallsQueue.subscribeQueuesChanges(listener);
+  return pendingCallsQueues.subscribeOnQueuesChanges(listener);
 }
 
 function unsubscribeFromCallsLengthChanging(listener) {
-  return pendingCallsQueue.unsubscribeFromQueueChanging(listener);
+  return pendingCallsQueues.unsubscribeFromQueueChanging(listener);
 }
 
 function checkPeerConnection(callFromDB, call) {

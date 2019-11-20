@@ -2,16 +2,12 @@ const axios = require('axios');
 
 const { PUBLIC_API_URL, STATIC_TOKEN } = require('@/constants/publicApi');
 
-async function getServiceProviderByCompanyId(companyId) {
+async function getTenantByCompanyId(companyId) {
   return axios
     .get(
-      `https://${PUBLIC_API_URL}/tenant/trusted/${STATIC_TOKEN}/single/${companyId}/by-company/`
+      `${PUBLIC_API_URL}/tenant/trusted/${STATIC_TOKEN}/single/${companyId}/by-company/`
     )
-    .then(response => response.data.name)
-    .catch(e => {
-      throw e;
-      //console.log('err', e);
-    });
+    .then(response => response.data.name);
 }
 
-exports.getServiceProviderByCompanyId = getServiceProviderByCompanyId;
+exports.getTenantByCompanyId = getTenantByCompanyId;

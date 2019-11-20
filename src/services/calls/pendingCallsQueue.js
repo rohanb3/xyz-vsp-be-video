@@ -1,42 +1,42 @@
 const { createQueue, getErrors } = require('@/services/queue');
+const { QueuesChangesEmitter } = require('@/services/queue/changesEmitter');
 const { CALLS_PENDING } = require('@/constants/calls');
 const { reduceToKey } = require('@/services/redisUtils');
-
-const EventEmitter = require('events');
-
-class QueuesChangesEmitter extends EventEmitter {}
 
 const queuesChangesEmitter = new QueuesChangesEmitter();
 
 const queuesChangesEventEmit = tenant => data =>
-  queuesChangesEmitter.emit('queuesChanged', { data, tenant });
+  queuesChangesEmitter.emit('pendingCallsQueuesChanged', {
+    data,
+    tenant,
+  });
 
 const errors = getErrors();
 
-const pendingCallsQueue = {};
+const pendingCallsQueues = {};
 
 function getPendingCallsQueue(tenant) {
-  let queueName = reduceToKey(CALLS_PENDING, tenant);
+  const queueName = reduceToKey(CALLS_PENDING, tenant);
 
-  if (!pendingCallsQueue[queueName]) {
-    pendingCallsQueue[queueName] = createQueue(queueName);
-    pendingCallsQueue[queueName].subscribeToQueueChanging(
+  if (!pendingCallsQueues[queueName]) {
+    pendingCallsQueues[queueName] = createQueue(queueName);
+    pendingCallsQueues[queueName].subscribeToQueueChanging(
       queuesChangesEventEmit(tenant)
     );
   }
 
-  return pendingCallsQueue[queueName];
+  return pendingCallsQueues[queueName];
 }
 
-function queuesChangedListner(listener) {
-  queuesChangesEmitter.on('queuesChanged', listener);
+function subscribeOnQueuesChanges(listener) {
+  queuesChangesEmitter.on('pendingCallsQueuesChanged', listener);
 }
 
 function unsubscribeFromQueueChanging(listener) {
-  queuesChangesEmitter.removeListener('queuesChanged', listener);
+  queuesChangesEmitter.removeListener('pendingCallsQueuesChanged', listener);
 }
 
-exports.subscribeQueuesChanges = queuesChangedListner;
+exports.subscribeOnQueuesChanges = subscribeOnQueuesChanges;
 exports.getPendingCallsQueue = getPendingCallsQueue;
 exports.unsubscribeFromQueueChanging = unsubscribeFromQueueChanging;
 

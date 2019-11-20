@@ -1,5 +1,5 @@
 const moment = require('moment');
-const pendingCallsQueue = require('@/services/calls/pendingCallsQueue');
+const pendingCallsQueues = require('@/services/calls/pendingCallsQueue');
 const { activeCallsHeap } = require('@/services/calls/activeCallsHeap');
 const {
   pendingCallbacksHeap,
@@ -8,7 +8,7 @@ const callsDBClient = require('@/services/calls/DBClient');
 const logger = require('@/services/logger')(module);
 
 function markCallAsMissed(callId, finishedBy, tenant) {
-  return pendingCallsQueue
+  return pendingCallsQueues
     .getPendingCallsQueue(tenant)
     .remove(callId)
     .then(() => {
