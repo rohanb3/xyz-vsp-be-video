@@ -2,12 +2,14 @@ const twilio = require('twilio');
 const config = require('config');
 const logger = require('@/services/logger')(module);
 const { isNumber, getParams } = require('@/services/voiceCalls/utils');
+const { formattedTimestamp } = require('@/services/time');
+const { callTypes } = require('@/constants/calls');
+const finisher = require('./finisher');
+const callsDBClient = require('../calls/DBClient');
 
-function tokenGenerator(request, response) {
-  const { identity } = getParams(request);
-
+function tokenGenerator(identity) {
   if (!identity) {
-    return response.status(400).send('Identity is required');
+    throw new Error('Identity is required');
   }
 
   const { accountSid, apiKey, apiSecret, voiceCallTwimlAppSid } = config.get(
@@ -23,7 +25,7 @@ function tokenGenerator(request, response) {
     })
   );
   token.identity = identity;
-  return response.send(token.toJwt());
+  return token.toJwt();
 }
 
 function makeCall(request, response) {
@@ -46,5 +48,55 @@ function makeCall(request, response) {
   return response.send(resp);
 }
 
-exports.tokenGenerator = tokenGenerator;
+async function requestCall({
+  callId,
+  salesRepId,
+  requestedBy,
+  deviceId,
+  from,
+  to,
+}) {
+  const call = {
+    requestedBy,
+    requestedAt: formattedTimestamp(),
+    deviceId,
+    salesRepId,
+    callType: callTypes.AUDIO,
+    roomId: callId,
+  };
+
+  const token = tokenGenerator(from);
+
+  return callsDBClient.create(call).then(savedCall => ({
+    token,
+    from,
+    to,
+    callId: savedCall.id,
+  }));
+}
+
+function finishCall(id, finishedBy) {
+  if (!id) {
+    return Promise.reject();
+  }
+
+  return finisher.markCallAsFinished(id, finishedBy);
+}
+
+function startCall(id, data) {
+  if (!id) {
+    return Promise.reject();
+  }
+
+  const updates = {
+    ...data,
+    startedAt: formattedTimestamp(),
+  };
+
+  return callsDBClient.updateById(id, updates);
+}
+
 exports.makeCall = makeCall;
+exports.requestCall = requestCall;
+exports.finishCall = finishCall;
+exports.startCall = startCall;

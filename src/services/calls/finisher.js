@@ -1,4 +1,3 @@
-const moment = require('moment');
 const pendingCallsQueues = require('@/services/calls/pendingCallsQueue');
 const { activeCallsHeap } = require('@/services/calls/activeCallsHeap');
 const {
@@ -6,6 +5,7 @@ const {
 } = require('@/services/calls/pendingCallbacksHeap');
 const callsDBClient = require('@/services/calls/DBClient');
 const logger = require('@/services/logger')(module);
+const { formattedTimestamp } = require('@/services/time');
 
 function markCallAsMissed(callId, finishedBy, tenant) {
   return pendingCallsQueues
@@ -13,7 +13,7 @@ function markCallAsMissed(callId, finishedBy, tenant) {
     .remove(callId)
     .then(() => {
       logger.debug('call.missed.removed.from.queue', callId);
-      const updates = { missedAt: moment.utc().format(), finishedBy };
+      const updates = { missedAt: formattedTimestamp(), finishedBy };
       return callsDBClient.updateById(callId, updates);
     });
 }
@@ -21,7 +21,7 @@ function markCallAsMissed(callId, finishedBy, tenant) {
 function markCallAsFinished(callId, finishedBy) {
   const updates = {
     finishedBy,
-    finishedAt: moment.utc().format(),
+    finishedAt: formattedTimestamp(),
   };
   return activeCallsHeap
     .remove(callId)
@@ -33,7 +33,7 @@ function markLastCallbackAsMissed(callId) {
     const callbacks = [...call.callbacks];
     const lastCallback = callbacks[callbacks.length - 1];
 
-    lastCallback.missedAt = moment.utc().format();
+    lastCallback.missedAt = formattedTimestamp();
 
     const updates = { callbacks };
     return callsDBClient.updateById(callId, updates);
@@ -45,7 +45,7 @@ function markLastCallbackAsFinished(callId, finishedBy) {
     const callbacks = [...call.callbacks];
     const lastCallback = callbacks[callbacks.length - 1];
 
-    lastCallback.finishedAt = moment.utc().format();
+    lastCallback.finishedAt = formattedTimestamp();
     lastCallback.finishedBy = finishedBy;
 
     const updates = { callbacks };

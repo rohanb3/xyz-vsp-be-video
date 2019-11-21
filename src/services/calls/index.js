@@ -1,5 +1,4 @@
 /* eslint-disable no-use-before-define */
-const moment = require('moment');
 const pendingCallsQueues = require('@/services/calls/pendingCallsQueue');
 const { activeCallsHeap } = require('@/services/calls/activeCallsHeap');
 const {
@@ -25,8 +24,10 @@ const {
   CALLBACK_ACCEPTED,
   CALLBACK_DECLINED,
   statuses,
+  callTypes,
 } = require('@/constants/calls');
 const callsErrorHandler = require('@/services/calls/errorHandler');
+const { formattedTimestamp } = require('@/services/time');
 
 function requestCall({
   requestedBy,
@@ -37,11 +38,12 @@ function requestCall({
 }) {
   const call = {
     requestedBy,
-    requestedAt: moment.utc().format(),
+    requestedAt: formattedTimestamp(),
     deviceId,
     salesRepId,
     callbackEnabled,
     tenant,
+    callType: callTypes.VIDEO,
   };
 
   return callsDBClient
@@ -62,7 +64,7 @@ function takeCall(tenant) {
 function acceptCall(operator) {
   const updates = {
     acceptedBy: operator.identity,
-    acceptedAt: moment.utc().format(),
+    acceptedAt: formattedTimestamp(),
   };
   const call = {
     ...updates,
@@ -90,7 +92,7 @@ function requestCallback(callId) {
     .then(checkCallbackAvailability)
     .then(callFromDB => {
       const callback = {
-        requestedAt: moment.utc().format(),
+        requestedAt: formattedTimestamp(),
       };
 
       const callbacks = callFromDB.callbacks
@@ -115,7 +117,7 @@ function acceptCallback(callId) {
     .take(callId)
     .then(callFromHeap => {
       const callbacks = [...callFromHeap.callbacks];
-      callbacks[callbacks.length - 1].acceptedAt = moment.utc().format();
+      callbacks[callbacks.length - 1].acceptedAt = formattedTimestamp();
       Object.assign(call, callFromHeap, { callbacks });
       return activeCallsHeap.add(callId, call);
     })
@@ -132,7 +134,7 @@ function declineCallback(callId, reason = '') {
     .take(callId)
     .then(callFromHeap => {
       const callbacks = [...callFromHeap.callbacks];
-      callbacks[callbacks.length - 1].declinedAt = moment.utc().format();
+      callbacks[callbacks.length - 1].declinedAt = formattedTimestamp();
       Object.assign(call, callFromHeap, { callbacks });
     })
     .then(() => pubSubChannel.publish(CALLBACK_DECLINED, { ...call, reason }))

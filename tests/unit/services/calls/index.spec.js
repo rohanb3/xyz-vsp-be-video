@@ -52,6 +52,7 @@ describe('calls: ', () => {
         deviceId,
         salesRepId,
         callbackEnabled,
+        callType: 'call.video',
       };
       const expectedCall = {
         ...initialCall,
