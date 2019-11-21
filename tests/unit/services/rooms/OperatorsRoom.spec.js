@@ -49,7 +49,7 @@ let operator = null;
 let socketId;
 let operatorIdentity;
 let callId;
-let tenant;
+let tenantId;
 
 const mockedNamespace = {
   on: jest.fn(),
@@ -70,7 +70,7 @@ describe('OperatorsRoom: ', () => {
     jest.clearAllMocks();
     socketId = '/operators#42';
     operatorIdentity = 'operator42';
-    tenant = 'spectrum';
+    tenantId = 'spectrum';
     callId = 'call42';
     operatorsRoom = new OperatorsRoom(io, mediator);
     operator = {
@@ -80,7 +80,7 @@ describe('OperatorsRoom: ', () => {
       leave: jest.fn(),
       identity: operatorIdentity,
       id: socketId,
-      tenant: tenant,
+      tenantId: tenantId,
     };
   });
 
@@ -489,14 +489,14 @@ describe('OperatorsRoom: ', () => {
 
   describe('emitCallsInfo(): ', () => {
     it('should emit only to active operators', () => {
-      const info = { tenant: tenant };
+      const info = { tenantId: tenantId };
       const callsInfo = {
         data: info,
-        tenant: tenant,
+        tenantId: tenantId,
       };
 
       operatorsRoom.emitCallsInfo(callsInfo);
-      expect(operatorsRoom.operators.to).toHaveBeenCalledWith(tenant);
+      expect(operatorsRoom.operators.to).toHaveBeenCalledWith(tenantId);
       expect(operatorsRoom.operators.emit).toHaveBeenCalledWith(
         CALLS_CHANGED,
         info
@@ -513,7 +513,7 @@ describe('OperatorsRoom: ', () => {
       };
 
       return operatorsRoom.addOperatorToActive(operator).then(() => {
-        expect(operator.join).toHaveBeenCalledWith(tenant);
+        expect(operator.join).toHaveBeenCalledWith(tenantId);
         expect(operator.emit).toHaveBeenCalledWith(CALLS_CHANGED, {});
       });
     });
@@ -529,7 +529,7 @@ describe('OperatorsRoom: ', () => {
 
       operatorsRoom.removeOperatorFromActive(operator);
 
-      expect(operator.leave).toHaveBeenCalledWith(tenant);
+      expect(operator.leave).toHaveBeenCalledWith(tenantId);
     });
   });
 

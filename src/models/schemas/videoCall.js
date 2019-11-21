@@ -30,5 +30,5 @@ module.exports = {
   operatorFeedback,
   callbackEnabled: Boolean,
   callbacks: [callback],
-  tenant: String,
+  tenantId: String,
 };

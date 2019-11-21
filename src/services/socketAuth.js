@@ -20,7 +20,7 @@ async function authenticateOperator(
   }
 
   const companyId = await identityApi.getCompanyIdByUserId(identity);
-  const tenant = await publicApi.getTenantByCompanyId(companyId);
+  const tenantId = await publicApi.getTenantIdByCompanyId(companyId);
 
   const oldSocket = await connectionsHeap.get(identity);
   if (oldSocket) {
@@ -31,7 +31,7 @@ async function authenticateOperator(
   const token = twilio.getToken(identity);
 
   socket.identity = identity;
-  socket.tenant = tenant;
+  socket.tenantId = tenantId;
 
   callback(null, token);
 }
@@ -47,12 +47,12 @@ async function authenticateCustomer(socket, data, callback) {
   }
 
   const companyId = await identityApi.getCompanyIdByUserId(identity);
-  const tenant = await publicApi.getTenantByCompanyId(companyId);
+  const tenantId = await publicApi.getTenantIdByCompanyId(companyId);
 
   const token = twilio.getToken(identity);
   socket.identity = identity;
   socket.deviceId = deviceId;
-  socket.tenant = tenant;
+  socket.tenantId = tenantId;
 
   callback(null, token);
 }

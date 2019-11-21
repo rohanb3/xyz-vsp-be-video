@@ -7,9 +7,9 @@ const callsDBClient = require('@/services/calls/DBClient');
 const logger = require('@/services/logger')(module);
 const { formattedTimestamp } = require('@/services/time');
 
-function markCallAsMissed(callId, finishedBy, tenant) {
+function markCallAsMissed(callId, finishedBy, tenantId) {
   return pendingCallsQueues
-    .getPendingCallsQueue(tenant)
+    .getPendingCallsQueue(tenantId)
     .remove(callId)
     .then(() => {
       logger.debug('call.missed.removed.from.queue', callId);

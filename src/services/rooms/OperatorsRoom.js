@@ -256,21 +256,21 @@ class OperatorsRoom {
   }
 
   emitCallsInfo(info) {
-    const { data, tenant } = info;
-    return this.operators.to(tenant).emit(CALLS_CHANGED, data);
+    const { data, tenantId } = info;
+    return this.operators.to(tenantId).emit(CALLS_CHANGED, data);
   }
 
   addOperatorToActive(operator) {
     const operatorId = operator.id;
 
     const connectedOperator = this.getConnectedOperator(operatorId);
-    const tenant = connectedOperator.tenant;
+    const tenantId = connectedOperator.tenantId;
     if (connectedOperator) {
       logger.debug('Operator: added to active', operatorId);
-      connectedOperator.join(tenant);
+      connectedOperator.join(tenantId);
 
       return calls
-        .getCallsInfo(tenant)
+        .getCallsInfo(tenantId)
         .then(info => {
           connectedOperator.emit(CALLS_CHANGED, info);
           logger.debug('Operator: emitted calls info', operatorId);
@@ -284,11 +284,11 @@ class OperatorsRoom {
 
   removeOperatorFromActive(operator) {
     const operatorId = operator.id;
-    const tenant = operator.tenant;
+    const tenantId = operator.tenantId;
     const connectedOperator = this.getConnectedOperator(operatorId);
     if (connectedOperator) {
       logger.debug('Operator: removed from active', operatorId);
-      connectedOperator.leave(tenant);
+      connectedOperator.leave(tenantId);
     }
   }
 

@@ -35,7 +35,7 @@ const {
 const acceptedBy = 'user42';
 const operator = {
   identity: acceptedBy,
-  tenant: 'sad',
+  tenantId: 'sad',
 };
 
 describe('calls: ', () => {
@@ -528,8 +528,8 @@ describe('calls: ', () => {
 
   describe('finishCall(): ', () => {
     const callId = 'call42';
-    const tenant = 'spectrum';
-    const call = { id: callId, acceptedBy, tenant };
+    const tenantId = 'spectrum';
+    const call = { id: callId, acceptedBy, tenantId };
     beforeEach(() => {
       callFinisher.markCallAsMissed = jest.fn(() => Promise.resolve(call));
       callFinisher.markCallAsFinished = jest.fn(() => Promise.resolve(call));
@@ -553,7 +553,7 @@ describe('calls: ', () => {
         expect(callFinisher.markCallAsMissed).toHaveBeenCalledWith(
           callId,
           finishedBy,
-          tenant
+          tenantId
         );
         expect(callFinisher.markCallAsFinished).not.toHaveBeenCalled();
         expect(callFinisher.markLastCallbackAsMissed).not.toHaveBeenCalled();

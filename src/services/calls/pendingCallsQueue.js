@@ -5,23 +5,23 @@ const { reduceToKey } = require('@/services/redisUtils');
 
 const queuesChangesEmitter = new QueuesChangesEmitter();
 
-const queuesChangesEventEmit = tenant => data =>
+const queuesChangesEventEmit = tenantId => data =>
   queuesChangesEmitter.emit('pendingCallsQueuesChanged', {
     data,
-    tenant,
+    tenantId,
   });
 
 const errors = getErrors();
 
 const pendingCallsQueues = {};
 
-function getPendingCallsQueue(tenant) {
-  const queueName = reduceToKey(CALLS_PENDING, tenant);
+function getPendingCallsQueue(tenantId) {
+  const queueName = reduceToKey(CALLS_PENDING, tenantId);
 
   if (!pendingCallsQueues[queueName]) {
     pendingCallsQueues[queueName] = createQueue(queueName);
     pendingCallsQueues[queueName].subscribeToQueueChanging(
-      queuesChangesEventEmit(tenant)
+      queuesChangesEventEmit(tenantId)
     );
   }
 

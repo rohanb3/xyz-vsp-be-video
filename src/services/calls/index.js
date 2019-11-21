@@ -34,7 +34,7 @@ function requestCall({
   deviceId,
   salesRepId,
   callbackEnabled,
-  tenant,
+  tenantId,
 }) {
   const call = {
     requestedBy,
@@ -42,7 +42,7 @@ function requestCall({
     deviceId,
     salesRepId,
     callbackEnabled,
-    tenant,
+    tenantId,
     callType: callTypes.VIDEO,
   };
 
@@ -50,15 +50,17 @@ function requestCall({
     .create({ ...call })
     .then(({ id }) => {
       call.id = id;
-      return pendingCallsQueues.getPendingCallsQueue(tenant).enqueue(id, call);
+      return pendingCallsQueues
+        .getPendingCallsQueue(tenantId)
+        .enqueue(id, call);
     })
     .then(() => pubSubChannel.publish(CALL_REQUESTED, call))
     .then(() => call)
     .catch(err => callsErrorHandler.onRequestCallFailed(err, call.id));
 }
 
-function takeCall(tenant) {
-  return pendingCallsQueues.getPendingCallsQueue(tenant).dequeue();
+function takeCall(tenantId) {
+  return pendingCallsQueues.getPendingCallsQueue(tenantId).dequeue();
 }
 //TODO
 function acceptCall(operator) {
@@ -69,7 +71,7 @@ function acceptCall(operator) {
   const call = {
     ...updates,
   };
-  return takeCall(operator.tenant)
+  return takeCall(operator.tenantId)
     .then(callFromQueue => {
       Object.assign(call, callFromQueue);
       return activeCallsHeap.add(call.id, call);
@@ -149,14 +151,14 @@ function finishCall(callId, finishedBy) {
     .then(call => {
       let finishingPromise = null;
       const callStatus = callStatusHelper.getCallStatus(call);
-      const tenant = call.tenant;
+      const tenantId = call.tenantId;
 
       switch (callStatus) {
         case statuses.CALL_PENDING:
           finishingPromise = callFinisher.markCallAsMissed(
             callId,
             finishedBy,
-            tenant
+            tenantId
           );
           break;
         case statuses.CALL_ACTIVE:
@@ -192,16 +194,16 @@ function finishCall(callId, finishedBy) {
     .catch(err => callsErrorHandler.onFinishCallFailed(err, callId));
 }
 
-function getOldestCall(tenant) {
-  return pendingCallsQueues.getPendingCallsQueue(tenant).getPeak();
+function getOldestCall(tenantId) {
+  return pendingCallsQueues.getPendingCallsQueue(tenantId).getPeak();
 }
 
-function getPendingCallsLength(tenant) {
-  return pendingCallsQueues.getPendingCallsQueue(tenant).getSize();
+function getPendingCallsLength(tenantId) {
+  return pendingCallsQueues.getPendingCallsQueue(tenantId).getSize();
 }
 
-function getCallsInfo(tenant) {
-  return pendingCallsQueues.getPendingCallsQueue(tenant).getQueueInfo();
+function getCallsInfo(tenantId) {
+  return pendingCallsQueues.getPendingCallsQueue(tenantId).getQueueInfo();
 }
 
 function subscribeToCallsLengthChanging(listener) {

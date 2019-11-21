@@ -22,11 +22,13 @@ describe('socketAuth: ', () => {
       const callback = jest.fn();
       const data = { identity: '42' };
       const expectedToken = 'token';
-      const tenant = 'spectrum';
+      const tenantId = 'spectrum';
 
       connectionsHeap.get = jest.fn(() => Promise.resolve(false));
       identityApi.getCompanyIdByUserId = jest.fn(() => Promise.resolve());
-      publicApi.getTenantByCompanyId = jest.fn(() => Promise.resolve(tenant));
+      publicApi.getTenantIdByCompanyId = jest.fn(() =>
+        Promise.resolve(tenantId)
+      );
 
       return authenticateOperator(
         callbackOldDelete,
