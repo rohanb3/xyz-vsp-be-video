@@ -26,6 +26,9 @@ const {
   NEXMO_API_SECRET,
   NEXMO_APPLICATION_ID,
   NEXMO_PATH_TO_PRIVATE_KEY,
+  PUBLIC_API_URL,
+  SERVICES_API_TOKEN,
+  IDENTITY_API_URL,
 } = process.env;
 
 module.exports = {
@@ -52,7 +55,7 @@ module.exports = {
   },
   mongoose: {
     connectionString:
-    CALLS_DB_URI ||
+      CALLS_DB_URI ||
       'mongodb://customer:secret123@ds111765.mlab.com:11765/calls',
     dbName: CALLS_DB_NAME || 'calls',
     debug: true,
@@ -84,5 +87,10 @@ module.exports = {
     apiSecret: NEXMO_API_SECRET || 'eKLLBvDBA875kh20',
     applicationId: NEXMO_APPLICATION_ID,
     privateKey: NEXMO_PATH_TO_PRIVATE_KEY,
+  },
+  httpservicesapi: {
+    publicApiUrl: PUBLIC_API_URL,
+    idetityApiUrl: IDENTITY_API_URL,
+    staticToken: SERVICES_API_TOKEN,
   },
 };

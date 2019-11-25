@@ -1,4 +1,4 @@
-const { pendingCallsQueue } = require('@/services/calls/pendingCallsQueue');
+const pendingCallsQueues = require('@/services/calls/pendingCallsQueue');
 const { activeCallsHeap } = require('@/services/calls/activeCallsHeap');
 const {
   pendingCallbacksHeap,
@@ -7,12 +7,15 @@ const callsDBClient = require('@/services/calls/DBClient');
 const logger = require('@/services/logger')(module);
 const { formattedTimestamp } = require('@/services/time');
 
-function markCallAsMissed(callId, finishedBy) {
-  return pendingCallsQueue.remove(callId).then(() => {
-    logger.debug('call.missed.removed.from.queue', callId);
-    const updates = { missedAt: formattedTimestamp(), finishedBy };
-    return callsDBClient.updateById(callId, updates);
-  });
+function markCallAsMissed(callId, finishedBy, tenantId) {
+  return pendingCallsQueues
+    .getPendingCallsQueue(tenantId)
+    .remove(callId)
+    .then(() => {
+      logger.debug('call.missed.removed.from.queue', callId);
+      const updates = { missedAt: formattedTimestamp(), finishedBy };
+      return callsDBClient.updateById(callId, updates);
+    });
 }
 
 function markCallAsFinished(callId, finishedBy) {
