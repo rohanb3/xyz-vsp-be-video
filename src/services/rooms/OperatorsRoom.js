@@ -54,6 +54,7 @@ class OperatorsRoom {
         this.disconnectOldSocket.bind(this)
       ),
       postAuthenticate: this.onOperatorAuthenticated.bind(this),
+      timeout: 5000,
     });
 
     calls.subscribeToCallFinishing(this.onCallFinished.bind(this));
@@ -207,9 +208,9 @@ class OperatorsRoom {
       : Promise.resolve();
   }
 
-  onOperatorDisconnected(operator) {
+  onOperatorDisconnected(operator, reason) {
     this.checkAndUnmapSocketIdentityFromId(operator);
-    logger.debug('Operator disconnected:', operator.identity);
+    logger.debug('Operator disconnected:', operator.identity, reason);
   }
 
   checkOperatorAndEmitCallbackAccepting(call) {
