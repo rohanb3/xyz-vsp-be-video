@@ -50,7 +50,7 @@ class CustomersRoom {
     socketIOAuth(this.customers, {
       authenticate: authenticateCustomer,
       postAuthenticate: this.onCustomerAuthenticated.bind(this),
-      timeout: 5000,
+      timeout: 10000,
     });
     calls.subscribeToCallAccepting(this.onCallAccepted.bind(this));
     calls.subscribeToCallFinishing(this.onCallFinished.bind(this));
