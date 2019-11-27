@@ -20,6 +20,7 @@ const {
   CALL_ACCEPTING_FAILED,
   CALLBACK_REQUESTING_FAILED,
   CUSTOMER_DISCONNECTED,
+  UNAUTHORIZED,
 } = require('@/constants/calls');
 
 const {
@@ -33,6 +34,7 @@ const { authenticateOperator } = require('@/services/socketAuth');
 const { connectionsHeap } = require('@/services/connectionsHeap');
 const { getOperatorCallFailReason } = require('./utils');
 const logger = require('@/services/logger')(module);
+const identityApi = require('@/services/httpServices/identityApiRequests');
 
 const isMaster = !process.env.INSTANCE_ID || process.env.INSTANCE_ID === '0';
 
@@ -261,26 +263,31 @@ class OperatorsRoom {
     return this.operators.to(tenantId).emit(CALLS_CHANGED, data);
   }
 
-  addOperatorToActive(operator) {
+  async addOperatorToActive(operator, data = {}) {
+    const { token } = data;
     const operatorId = operator.id;
 
     const connectedOperator = this.getConnectedOperator(operatorId);
     const tenantId = connectedOperator.tenantId;
     if (connectedOperator) {
       logger.debug('Operator: added to active', operatorId);
+
+      const tokenValid = await identityApi.checkTokenValidity(token);
+
+      if (!tokenValid) {
+        return connectedOperator.emit(UNAUTHORIZED);
+      }
+
       connectedOperator.join(tenantId);
 
-      return calls
-        .getCallsInfo(tenantId)
-        .then(info => {
-          connectedOperator.emit(CALLS_CHANGED, info);
-          logger.debug('Operator: emitted calls info', operatorId);
-        })
-        .catch(err =>
-          logger.error('Calls info: emitting to active operator failed', err)
-        );
+      try {
+        const info = calls.getCallsInfo(tenantId);
+        connectedOperator.emit(CALLS_CHANGED, info);
+        logger.debug('Operator: emitted calls info', operatorId);
+      } catch (err) {
+        logger.error('Calls info: emitting to active operator failed', err);
+      }
     }
-    return Promise.resolve();
   }
 
   removeOperatorFromActive(operator) {

@@ -14,10 +14,16 @@ async function authenticateOperator(
   data,
   callback
 ) {
-  const { identity } = data;
+  const { identity, token } = data;
 
   if (!identity) {
-    return Promise.reject(new Error(NO_IDENTITY)).catch(callback);
+    return callback(new Error(NO_IDENTITY));
+  }
+
+  const tokenValid = await identityApi.checkTokenValidity(token);
+
+  if (!tokenValid) {
+    return callback(new Error(TOKEN_INVALID));
   }
 
   const companyId = await identityApi.getCompanyIdByUserId(identity);
@@ -29,12 +35,12 @@ async function authenticateOperator(
       !oldSocket.activeCallId ? oldSocket.socketId : socket.id
     );
   }
-  const token = twilio.getToken(identity);
+  const twilioToken = twilio.getToken(identity);
 
   socket.identity = identity;
   socket.tenantId = tenantId;
 
-  callback(null, token);
+  callback(null, twilioToken);
 }
 
 async function authenticateCustomer(socket, data, callback) {
@@ -47,7 +53,7 @@ async function authenticateCustomer(socket, data, callback) {
     return callback(new Error(NO_DEVICE_ID));
   }
 
-  const tokenValid = !token || (await identityApi.checkTokenValidity(token));
+  const tokenValid = await identityApi.checkTokenValidity(token);
 
   if (!tokenValid) {
     return callback(new Error(TOKEN_INVALID));

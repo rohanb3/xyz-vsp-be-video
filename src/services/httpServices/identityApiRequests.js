@@ -12,6 +12,10 @@ function getCompanyIdByUserId(identity) {
 }
 
 function checkTokenValidity(token) {
+  if (!token) {
+    return Promise.resolve(false);
+  }
+
   return api
     .get('users/profile', { headers: { Authorization: `Bearer ${token}` } })
     .then(() => true)
