@@ -281,7 +281,7 @@ class OperatorsRoom {
       connectedOperator.join(tenantId);
 
       try {
-        const info = calls.getCallsInfo(tenantId);
+        const info = await calls.getCallsInfo(tenantId);
         connectedOperator.emit(CALLS_CHANGED, info);
         logger.debug('Operator: emitted calls info', operatorId);
       } catch (err) {

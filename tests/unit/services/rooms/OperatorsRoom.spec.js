@@ -16,6 +16,7 @@ const calls = require('@/services/calls');
 const OperatorsRoom = require('@/services/rooms/OperatorsRoom');
 
 const { connectionsHeap } = require('@/services/connectionsHeap');
+const identityApi = require('@/services/httpServices/identityApiRequests');
 const {
   CONNECTION,
   DISCONNECT,
@@ -511,6 +512,8 @@ describe('OperatorsRoom: ', () => {
           [socketId]: operator,
         },
       };
+
+      identityApi.checkTokenValidity = jest.fn().mockResolvedValue(true);
 
       return operatorsRoom.addOperatorToActive(operator).then(() => {
         expect(operator.join).toHaveBeenCalledWith(tenantId);
