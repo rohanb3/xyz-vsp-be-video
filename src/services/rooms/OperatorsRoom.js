@@ -20,8 +20,9 @@ const {
   CALL_ACCEPTING_FAILED,
   CALLBACK_REQUESTING_FAILED,
   CUSTOMER_DISCONNECTED,
-  UNAUTHORIZED,
 } = require('@/constants/calls');
+
+const { TOKEN_INVALID, UNAUTHORIZED } = require('@/constants/connection');
 
 const {
   STATUS_CHANGED_ONLINE,
@@ -101,10 +102,10 @@ class OperatorsRoom {
     );
   }
 
-  onOperatorAuthenticated(operator) {
+  onOperatorAuthenticated(operator, data) {
     logger.debug('Operator authenticated', operator.id, operator.identity);
     this.mapSocketIdentityToId(operator);
-    this.addOperatorToActive(operator);
+    this.addOperatorToActive(operator, data);
   }
 
   onOperatorAcceptCall(operator) {
@@ -275,7 +276,7 @@ class OperatorsRoom {
       const tokenValid = await identityApi.checkTokenValidity(token);
 
       if (!tokenValid) {
-        return connectedOperator.emit(UNAUTHORIZED);
+        return connectedOperator.emit(UNAUTHORIZED, { message: TOKEN_INVALID });
       }
 
       connectedOperator.join(tenantId);

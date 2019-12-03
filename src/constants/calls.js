@@ -24,7 +24,6 @@ exports.VOICE_CALL_FAILED = 'call.voice.failed';
 exports.VOICE_CALL_ACCEPTED = 'call.voice.accepted';
 exports.VOICE_CALL_STARTED = 'call.voice.started';
 exports.VOICE_CALL_FINISHED = 'call.voice.finished';
-exports.UNAUTHORIZED = 'unauthorized';
 
 exports.statuses = {
   CALL_PENDING: 'call.pending',

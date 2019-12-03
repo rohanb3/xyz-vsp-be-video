@@ -51,6 +51,7 @@ let socketId;
 let operatorIdentity;
 let callId;
 let tenantId;
+let data;
 
 const mockedNamespace = {
   on: jest.fn(),
@@ -83,6 +84,7 @@ describe('OperatorsRoom: ', () => {
       id: socketId,
       tenantId: tenantId,
     };
+    data = {};
   });
 
   describe('constructor(): ', () => {
@@ -222,9 +224,9 @@ describe('OperatorsRoom: ', () => {
     });
 
     it('should add operator to active', () => {
-      operatorsRoom.onOperatorAuthenticated(operator);
+      operatorsRoom.onOperatorAuthenticated(operator, data);
 
-      expect(operatorsRoom.addOperatorToActive).toHaveBeenCalledWith(operator);
+      expect(operatorsRoom.addOperatorToActive).toHaveBeenCalledWith(operator, data);
     });
   });
 

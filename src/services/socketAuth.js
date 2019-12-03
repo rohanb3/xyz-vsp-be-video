@@ -3,10 +3,10 @@ const publicApi = require('@/services/httpServices/publicApiRequests');
 const identityApi = require('@/services/httpServices/identityApiRequests');
 
 const { connectionsHeap } = require('@/services/connectionsHeap');
+const { TOKEN_INVALID } = require('@/constants/connection');
 
 const NO_IDENTITY = 'identity.not.provided';
 const NO_DEVICE_ID = 'device.id.not.provided';
-const TOKEN_INVALID = 'token.invalid';
 
 async function authenticateOperator(
   disconnectCallBack,
