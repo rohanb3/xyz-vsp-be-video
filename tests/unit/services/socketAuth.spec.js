@@ -26,6 +26,7 @@ describe('socketAuth: ', () => {
 
       connectionsHeap.get = jest.fn(() => Promise.resolve(false));
       identityApi.getCompanyIdByUserId = jest.fn(() => Promise.resolve());
+      identityApi.checkTokenValidity = jest.fn().mockResolvedValue(true);
       publicApi.getTenantIdByCompanyId = jest.fn(() =>
         Promise.resolve(tenantId)
       );
