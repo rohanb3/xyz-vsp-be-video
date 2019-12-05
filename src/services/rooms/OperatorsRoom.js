@@ -57,7 +57,7 @@ class OperatorsRoom {
         this.disconnectOldSocket.bind(this)
       ),
       postAuthenticate: this.onOperatorAuthenticated.bind(this),
-      timeout: 10000,
+      timeout: 15000,
     });
 
     calls.subscribeToCallFinishing(this.onCallFinished.bind(this));
