@@ -29,10 +29,22 @@ router.post('/makeCall', makeCall);
 
 //////////// Nexmo calls
 const { getEvent, getAnswer, startCall, endCall } = require('./nexmo');
-router.get('/nexmo/testcall/:from-:to', startCall);
-router.get('/nexmo/answer', getAnswer);
-router.post('/nexmo/event', getEvent);
-router.get('/nexmo/endcall/:callid', endCall);
+router
+  .route('/nexmo/testcall/:from-:to')
+  .get(authenticateRequest())
+  .get(startCall);
+router
+  .route('/nexmo/answer')
+  .get(authenticateRequest())
+  .get(getAnswer);
+router
+  .route('/nexmo/event')
+  .get(authenticateRequest())
+  .post(getEvent);
+router
+  .route('/nexmo/endcall/:callid')
+  .get(authenticateRequest())
+  .get(endCall);
 ///////////
 
 module.exports = router;
