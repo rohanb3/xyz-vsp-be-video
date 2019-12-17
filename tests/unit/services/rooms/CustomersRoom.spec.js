@@ -160,14 +160,14 @@ describe('CustomersRoom: ', () => {
   describe('onCustomerFinishedCall(): ', () => {
     it('should do nothing if no call was provided', () => {
       calls.finishCall = jest.fn(() => Promise.resolve());
-      customersRoom.onCustomerFinishedCall(customer).then(() => {
+      return customersRoom.onCustomerFinishedCall(customer).then(() => {
         expect(calls.finishCall).not.toHaveBeenCalled();
       });
     });
 
     it('should do nothing if no call id was provided', () => {
       calls.finishCall = jest.fn(() => Promise.resolve());
-      customersRoom.onCustomerFinishedCall(customer, {}).then(() => {
+      return customersRoom.onCustomerFinishedCall(customer, {}).then(() => {
         expect(calls.finishCall).not.toHaveBeenCalled();
       });
     });
@@ -234,10 +234,11 @@ describe('CustomersRoom: ', () => {
         expect(customersRoom.getSocketIdByDeviceId).toHaveBeenCalledWith(
           deviceId
         );
-        expect(
-          customersRoom.getCustomer
-        ).toHaveBeenCalledWith(socketId, callId, acceptedBy);
-
+        expect(customersRoom.getCustomer).toHaveBeenCalledWith(
+          socketId,
+          callId,
+          acceptedBy
+        );
       });
     });
   });
@@ -249,11 +250,7 @@ describe('CustomersRoom: ', () => {
       customersRoom.emitCallAccepting = jest.fn();
       customersRoom.customers.connected = {};
 
-      customersRoom.getCustomer(
-        socketId,
-        callId,
-        acceptedBy
-      );
+      customersRoom.getCustomer(socketId, callId, acceptedBy);
 
       expect(twilio.getToken).not.toHaveBeenCalled();
       expect(customersRoom.emitCallAccepting).not.toHaveBeenCalled();
@@ -269,14 +266,9 @@ describe('CustomersRoom: ', () => {
         [socketId]: customer,
       };
 
-      customersRoom.getCustomer(
-        socketId,
-        callId,
-        acceptedBy
-      );
+      customersRoom.getCustomer(socketId, callId, acceptedBy);
 
       expect(twilio.getToken).toHaveBeenCalledWith(deviceId, callId);
-
     });
   });
 
