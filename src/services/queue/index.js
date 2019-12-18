@@ -1,5 +1,8 @@
 const {
-  ITEM_ENQUEUED, ITEM_DEQUEUED, ITEM_REMOVED, QUEUE_CHANGED,
+  ITEM_ENQUEUED,
+  ITEM_DEQUEUED,
+  ITEM_REMOVED,
+  QUEUE_CHANGED,
 } = require('./constants');
 const { createConnector } = require('./connector');
 const errors = require('./errors');
@@ -30,7 +33,7 @@ class Queue {
   }
 
   dequeue() {
-    return this.connector.dequeue().then((item) => {
+    return this.connector.dequeue().then(item => {
       this.publishItemDequeueing(item);
       this.publishQueueChanging();
       return item;
@@ -38,7 +41,7 @@ class Queue {
   }
 
   remove(id) {
-    return this.connector.remove(id).then((removedItem) => {
+    return this.connector.remove(id).then(removedItem => {
       if (removedItem) {
         this.publishItemRemoving(removedItem);
         this.publishQueueChanging();
@@ -60,7 +63,9 @@ class Queue {
   }
 
   getQueueInfo() {
-    return Promise.all([this.getPeak(), this.getSize()]).then(([peak, size]) => ({ peak, size }));
+    return Promise.all([this.getPeak(), this.getSize()]).then(
+      ([peak, size]) => ({ peak, size })
+    );
   }
 
   subscribeToItemEnqueueing(listener) {
@@ -108,7 +113,9 @@ class Queue {
   }
 
   publishQueueChanging() {
-    return this.getQueueInfo().then(info => pubSub.publish(this.events.QUEUE_CHANGED, info));
+    return this.getQueueInfo().then(info =>
+      pubSub.publish(this.events.QUEUE_CHANGED, info)
+    );
   }
 }
 

@@ -1,5 +1,5 @@
 /* eslint-disable no-use-before-define */
-const { pendingCallsQueue } = require('@/services/calls/pendingCallsQueue');
+const pendingCallsQueues = require('@/services/calls/pendingCallsQueue');
 const { activeCallsHeap } = require('@/services/calls/activeCallsHeap');
 const {
   pendingCallbacksHeap,
@@ -29,13 +29,20 @@ const {
 const callsErrorHandler = require('@/services/calls/errorHandler');
 const { formattedTimestamp } = require('@/services/time');
 
-function requestCall({ requestedBy, deviceId, salesRepId, callbackEnabled }) {
+function requestCall({
+  requestedBy,
+  deviceId,
+  salesRepId,
+  callbackEnabled,
+  tenantId,
+}) {
   const call = {
     requestedBy,
     requestedAt: formattedTimestamp(),
     deviceId,
     salesRepId,
     callbackEnabled,
+    tenantId,
     callType: callTypes.VIDEO,
   };
 
@@ -43,26 +50,28 @@ function requestCall({ requestedBy, deviceId, salesRepId, callbackEnabled }) {
     .create({ ...call })
     .then(({ id }) => {
       call.id = id;
-      return pendingCallsQueue.enqueue(id, call);
+      return pendingCallsQueues
+        .getPendingCallsQueue(tenantId)
+        .enqueue(id, call);
     })
     .then(() => pubSubChannel.publish(CALL_REQUESTED, call))
     .then(() => call)
     .catch(err => callsErrorHandler.onRequestCallFailed(err, call.id));
 }
 
-function takeCall() {
-  return pendingCallsQueue.dequeue();
+function takeCall(tenantId) {
+  return pendingCallsQueues.getPendingCallsQueue(tenantId).dequeue();
 }
 //TODO
-function acceptCall(acceptedBy) {
+function acceptCall(operator) {
   const updates = {
-    acceptedBy,
+    acceptedBy: operator.identity,
     acceptedAt: formattedTimestamp(),
   };
   const call = {
     ...updates,
   };
-  return takeCall()
+  return takeCall(operator.tenantId)
     .then(callFromQueue => {
       Object.assign(call, callFromQueue);
       return activeCallsHeap.add(call.id, call);
@@ -142,10 +151,15 @@ function finishCall(callId, finishedBy) {
     .then(call => {
       let finishingPromise = null;
       const callStatus = callStatusHelper.getCallStatus(call);
+      const tenantId = call.tenantId;
 
       switch (callStatus) {
         case statuses.CALL_PENDING:
-          finishingPromise = callFinisher.markCallAsMissed(callId, finishedBy);
+          finishingPromise = callFinisher.markCallAsMissed(
+            callId,
+            finishedBy,
+            tenantId
+          );
           break;
         case statuses.CALL_ACTIVE:
           finishingPromise = callFinisher.markCallAsFinished(
@@ -180,24 +194,24 @@ function finishCall(callId, finishedBy) {
     .catch(err => callsErrorHandler.onFinishCallFailed(err, callId));
 }
 
-function getOldestCall() {
-  return pendingCallsQueue.getPeak();
+function getOldestCall(tenantId) {
+  return pendingCallsQueues.getPendingCallsQueue(tenantId).getPeak();
 }
 
-function getPendingCallsLength() {
-  return pendingCallsQueue.getSize();
+function getPendingCallsLength(tenantId) {
+  return pendingCallsQueues.getPendingCallsQueue(tenantId).getSize();
 }
 
-function getCallsInfo() {
-  return pendingCallsQueue.getQueueInfo();
+function getCallsInfo(tenantId) {
+  return pendingCallsQueues.getPendingCallsQueue(tenantId).getQueueInfo();
 }
 
 function subscribeToCallsLengthChanging(listener) {
-  return pendingCallsQueue.subscribeToQueueChanging(listener);
+  return pendingCallsQueues.subscribeOnQueuesChanges(listener);
 }
 
 function unsubscribeFromCallsLengthChanging(listener) {
-  return pendingCallsQueue.unsubscribeFromQueueChanging(listener);
+  return pendingCallsQueues.unsubscribeFromQueueChanging(listener);
 }
 
 function checkPeerConnection(callFromDB, call) {

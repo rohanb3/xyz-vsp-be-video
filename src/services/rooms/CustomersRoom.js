@@ -50,6 +50,7 @@ class CustomersRoom {
     socketIOAuth(this.customers, {
       authenticate: authenticateCustomer,
       postAuthenticate: this.onCustomerAuthenticated.bind(this),
+      timeout: 15000,
     });
     calls.subscribeToCallAccepting(this.onCallAccepted.bind(this));
     calls.subscribeToCallFinishing(this.onCallFinished.bind(this));
@@ -117,13 +118,15 @@ class CustomersRoom {
   }
 
   onCustomerRequestedCall(customer, data) {
-    const { identity: requestedBy, deviceId } = customer;
+    const { identity: requestedBy, deviceId, tenantId } = customer;
     const { salesRepId, callbackEnabled } = data;
+
     const payload = {
       requestedBy,
       deviceId,
       salesRepId,
       callbackEnabled,
+      tenantId,
     };
     return calls
       .requestCall(payload)
@@ -148,11 +151,12 @@ class CustomersRoom {
       : Promise.resolve();
   }
 
-  onCustomerDisconnected(customer) {
+  onCustomerDisconnected(customer, reason) {
     logger.debug(
       'Customer disconnected',
       customer.identity,
-      customer.pendingCallId
+      customer.pendingCallId,
+      reason
     );
     const finishingCallPromise = customer.pendingCallId
       ? calls.finishCall(customer.pendingCallId, customer.identity)

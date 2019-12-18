@@ -3,9 +3,11 @@ jest.mock('@/services/calls/activeCallsHeap');
 jest.mock('@/services/calls/pendingCallbacksHeap');
 jest.mock('@/services/calls/DBClient');
 
-const { pendingCallsQueue } = require('@/services/calls/pendingCallsQueue');
+const pendingCallsQueue = require('@/services/calls/pendingCallsQueue');
 const { activeCallsHeap } = require('@/services/calls/activeCallsHeap');
-const { pendingCallbacksHeap } = require('@/services/calls/pendingCallbacksHeap');
+const {
+  pendingCallbacksHeap,
+} = require('@/services/calls/pendingCallbacksHeap');
 const callsDBClient = require('@/services/calls/DBClient');
 const callFinisher = require('@/services/calls/finisher');
 
@@ -17,12 +19,19 @@ describe('callFinisher: ', () => {
         missedAt: expect.any(String),
       };
 
-      pendingCallsQueue.remove = jest.fn(() => Promise.resolve());
+      const mockedRemove = jest.fn(() => Promise.resolve());
+      pendingCallsQueue.getPendingCallsQueue = jest.fn().mockReturnValueOnce({
+        remove: mockedRemove,
+      });
+
       callsDBClient.updateById = jest.fn(() => Promise.resolve());
 
       return callFinisher.markCallAsMissed(callId).then(() => {
-        expect(pendingCallsQueue.remove).toHaveBeenCalledWith(callId);
-        expect(callsDBClient.updateById).toHaveBeenCalledWith(callId, expectedUpdates);
+        expect(mockedRemove).toHaveBeenCalledWith(callId);
+        expect(callsDBClient.updateById).toHaveBeenCalledWith(
+          callId,
+          expectedUpdates
+        );
       });
     });
   });
@@ -41,7 +50,10 @@ describe('callFinisher: ', () => {
 
       return callFinisher.markCallAsFinished(callId, finishedBy).then(() => {
         expect(activeCallsHeap.remove).toHaveBeenCalledWith(callId);
-        expect(callsDBClient.updateById).toHaveBeenCalledWith(callId, expectedUpdates);
+        expect(callsDBClient.updateById).toHaveBeenCalledWith(
+          callId,
+          expectedUpdates
+        );
       });
     });
   });
@@ -82,7 +94,10 @@ describe('callFinisher: ', () => {
 
       return callFinisher.markLastCallbackAsMissed(callId).then(() => {
         expect(pendingCallbacksHeap.remove).toHaveBeenCalledWith(callId);
-        expect(callsDBClient.updateById).toHaveBeenCalledWith(callId, expectedUpdates);
+        expect(callsDBClient.updateById).toHaveBeenCalledWith(
+          callId,
+          expectedUpdates
+        );
       });
     });
   });
@@ -125,10 +140,15 @@ describe('callFinisher: ', () => {
       activeCallsHeap.remove = jest.fn(() => Promise.resolve(call));
       callsDBClient.updateById = jest.fn(() => Promise.resolve());
 
-      return callFinisher.markLastCallbackAsFinished(callId, finishedBy).then(() => {
-        expect(activeCallsHeap.remove).toHaveBeenCalledWith(callId);
-        expect(callsDBClient.updateById).toHaveBeenCalledWith(callId, expectedUpdates);
-      });
+      return callFinisher
+        .markLastCallbackAsFinished(callId, finishedBy)
+        .then(() => {
+          expect(activeCallsHeap.remove).toHaveBeenCalledWith(callId);
+          expect(callsDBClient.updateById).toHaveBeenCalledWith(
+            callId,
+            expectedUpdates
+          );
+        });
     });
   });
 });

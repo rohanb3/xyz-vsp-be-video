@@ -10,4 +10,5 @@ module.exports = {
     validator: callTypeValidator,
     lowercase: true,
   },
+  tenantId: String,
 };
