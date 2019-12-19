@@ -13,8 +13,14 @@ const { makeCall } = require('@/services/voiceCalls');
 
 setupSwagger(router);
 
-router.post('/call-feedback-customer', callFeedbackCustomer);
-router.post('/call-feedback-operator', callFeedbackOperator);
+router
+  .route('/call-feedback-customer')
+  .post(authenticateRequest())
+  .post(callFeedbackCustomer);
+router
+  .route('/call-feedback-operator')
+  .post(authenticateRequest())
+  .post(callFeedbackOperator);
 
 router
   .route('/calls')
@@ -29,10 +35,22 @@ router.post('/makeCall', makeCall);
 
 //////////// Nexmo calls
 const { getEvent, getAnswer, startCall, endCall } = require('./nexmo');
-router.get('/nexmo/testcall/:from-:to', startCall);
-router.get('/nexmo/answer', getAnswer);
-router.post('/nexmo/event', getEvent);
-router.get('/nexmo/endcall/:callid', endCall);
+router
+  .route('/nexmo/testcall/:from-:to')
+  .get(authenticateRequest())
+  .get(startCall);
+router
+  .route('/nexmo/answer')
+  .get(authenticateRequest())
+  .get(getAnswer);
+router
+  .route('/nexmo/event')
+  .post(authenticateRequest())
+  .post(getEvent);
+router
+  .route('/nexmo/endcall/:callid')
+  .get(authenticateRequest())
+  .get(endCall);
 ///////////
 
 module.exports = router;

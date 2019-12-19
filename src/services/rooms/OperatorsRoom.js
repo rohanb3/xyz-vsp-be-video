@@ -6,7 +6,6 @@ const {
   CONNECTION,
   DISCONNECT,
   ROOM_CREATED,
-  ACTIVE_OPERATORS,
   OPERATORS,
   CONNECTION_DROPPED,
 } = require('@/constants/rooms');
@@ -23,6 +22,8 @@ const {
   CUSTOMER_DISCONNECTED,
 } = require('@/constants/calls');
 
+const { TOKEN_INVALID, UNAUTHORIZED } = require('@/constants/connection');
+
 const {
   STATUS_CHANGED_ONLINE,
   STATUS_CHANGED_OFFLINE,
@@ -34,6 +35,7 @@ const { authenticateOperator } = require('@/services/socketAuth');
 const { connectionsHeap } = require('@/services/connectionsHeap');
 const { getOperatorCallFailReason } = require('./utils');
 const logger = require('@/services/logger')(module);
+const identityApi = require('@/services/httpServices/identityApiRequests');
 
 const isMaster = !process.env.INSTANCE_ID || process.env.INSTANCE_ID === '0';
 
@@ -55,14 +57,18 @@ class OperatorsRoom {
         this.disconnectOldSocket.bind(this)
       ),
       postAuthenticate: this.onOperatorAuthenticated.bind(this),
+      timeout: 15000,
     });
+
     calls.subscribeToCallFinishing(this.onCallFinished.bind(this));
+
     calls.subscribeToCallbackAccepting(
       this.checkOperatorAndEmitCallbackAccepting.bind(this)
     );
     calls.subscribeToCallbackDeclining(
       this.checkOperatorAndEmitCallbackDeclining.bind(this)
     );
+
     if (isMaster) {
       calls.subscribeToCallsLengthChanging(this.emitCallsInfo.bind(this));
     }
@@ -96,10 +102,10 @@ class OperatorsRoom {
     );
   }
 
-  onOperatorAuthenticated(operator) {
+  onOperatorAuthenticated(operator, data) {
     logger.debug('Operator authenticated', operator.id, operator.identity);
     this.mapSocketIdentityToId(operator);
-    this.addOperatorToActive(operator);
+    this.addOperatorToActive(operator, data);
   }
 
   onOperatorAcceptCall(operator) {
@@ -108,7 +114,7 @@ class OperatorsRoom {
       operator && operator.identity
     );
     return calls
-      .acceptCall(operator.identity)
+      .acceptCall(operator)
       .then(call => {
         const {
           id,
@@ -205,9 +211,9 @@ class OperatorsRoom {
       : Promise.resolve();
   }
 
-  onOperatorDisconnected(operator) {
+  onOperatorDisconnected(operator, reason) {
     this.checkAndUnmapSocketIdentityFromId(operator);
-    logger.debug('Operator disconnected:', operator.identity);
+    logger.debug('Operator disconnected:', operator.identity, reason);
   }
 
   checkOperatorAndEmitCallbackAccepting(call) {
@@ -254,34 +260,44 @@ class OperatorsRoom {
   }
 
   emitCallsInfo(info) {
-    return this.operators.to(ACTIVE_OPERATORS).emit(CALLS_CHANGED, info);
+    const { data, tenantId } = info;
+    return this.operators.to(tenantId).emit(CALLS_CHANGED, data);
   }
 
-  addOperatorToActive(operator) {
+  async addOperatorToActive(operator, data = {}) {
+    const { token } = data;
     const operatorId = operator.id;
+
     const connectedOperator = this.getConnectedOperator(operatorId);
+    const tenantId = connectedOperator.tenantId;
     if (connectedOperator) {
       logger.debug('Operator: added to active', operatorId);
-      connectedOperator.join(ACTIVE_OPERATORS);
-      return calls
-        .getCallsInfo()
-        .then(info => {
-          connectedOperator.emit(CALLS_CHANGED, info);
-          logger.debug('Operator: emitted calls info', operatorId);
-        })
-        .catch(err =>
-          logger.error('Calls info: emitting to active operator failed', err)
-        );
+
+      const tokenValid = await identityApi.checkTokenValidity(token);
+
+      if (!tokenValid) {
+        return connectedOperator.emit(UNAUTHORIZED, { message: TOKEN_INVALID });
+      }
+
+      connectedOperator.join(tenantId);
+
+      try {
+        const info = await calls.getCallsInfo(tenantId);
+        connectedOperator.emit(CALLS_CHANGED, info);
+        logger.debug('Operator: emitted calls info', operatorId);
+      } catch (err) {
+        logger.error('Calls info: emitting to active operator failed', err);
+      }
     }
-    return Promise.resolve();
   }
 
   removeOperatorFromActive(operator) {
     const operatorId = operator.id;
+    const tenantId = operator.tenantId;
     const connectedOperator = this.getConnectedOperator(operatorId);
     if (connectedOperator) {
       logger.debug('Operator: removed from active', operatorId);
-      connectedOperator.leave(ACTIVE_OPERATORS);
+      connectedOperator.leave(tenantId);
     }
   }
 
