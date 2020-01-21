@@ -383,7 +383,10 @@ class CustomersRoom {
 
     logger.debug('Customers voice call was finished', id);
 
-    voiceCalls.finishCall(id, identity);
+    voiceCalls.finishCall(id, identity).catch(ex => {
+      logger.debug('Customers voice call insert in db failed', ex);
+      throw ex;
+    });
   }
 
   onCustomerVoiceCallStarted(customer, data) {
@@ -397,7 +400,10 @@ class CustomersRoom {
 
     logger.debug('Customers voice call was started', id);
 
-    voiceCalls.startCall(id, call);
+    voiceCalls.startCall(id, call).catch(ex => {
+      logger.debug('Customers voice call insert in db failed', ex);
+      throw ex;
+    });
   }
 }
 
