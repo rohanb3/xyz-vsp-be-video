@@ -11,7 +11,23 @@ const getCountFilteredBy = (filter, range) =>
 
 const create = entity => Call.create(entity);
 
-const updateById = (id, updates = {}) =>
+/**
+ *  ==================Important=========================
+ *  async/await is needed here because of lazy behaviour
+ *  of Mongoose Query object. If we don't provide callback
+ *  or don't use await for getting result, then query will
+ *  not be executed. If you need lazy version of this method,
+ *  look at **updateByIdLazy**
+ */
+const updateById = async (id, updates = {}) => {
+  return await Call.findOneAndUpdate(
+    { _id: id },
+    { $set: updates },
+    { runValidators: true, new: true }
+  );
+};
+
+const updateByIdLazy = (id, updates = {}) =>
   Call.findOneAndUpdate(
     { _id: id },
     { $set: updates },
@@ -61,3 +77,4 @@ exports.getCountFilteredBy = getCountFilteredBy;
 exports.create = create;
 exports.updateById = updateById;
 exports.validateSync = validateSync;
+exports.updateByIdLazy = updateByIdLazy;
