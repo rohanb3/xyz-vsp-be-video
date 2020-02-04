@@ -1,3 +1,4 @@
+const { CALL_MISSED, CALL_ANSWERED } = require('@/constants/calls');
 const pendingCallsQueues = require('@/services/calls/pendingCallsQueue');
 const { activeCallsHeap } = require('@/services/calls/activeCallsHeap');
 const {
@@ -5,27 +6,39 @@ const {
 } = require('@/services/calls/pendingCallbacksHeap');
 const callsDBClient = require('@/services/calls/DBClient');
 const logger = require('@/services/logger')(module);
-const { formattedTimestamp } = require('@/services/time');
+const { formattedTimestamp, getDifferenceFromTo } = require('@/services/time');
 
-function markCallAsMissed(callId, finishedBy, tenantId) {
-  return pendingCallsQueues
-    .getPendingCallsQueue(tenantId)
-    .remove(callId)
-    .then(() => {
-      logger.debug('call.missed.removed.from.queue', callId);
-      const updates = { missedAt: formattedTimestamp(), finishedBy };
-      return callsDBClient.updateById(callId, updates);
-    });
+async function markCallAsMissed(callId, finishedBy, tenantId) {
+  await pendingCallsQueues.getPendingCallsQueue(tenantId).remove(callId);
+  logger.debug('call.missed.removed.from.queue', callId);
+
+  const call = await callsDBClient.getById(callId);
+  const { requestedAt } = call || {};
+  const missedAt = formattedTimestamp();
+  const updates = {
+    finishedBy,
+    waitingDuration: getDifferenceFromTo(requestedAt, missedAt),
+    callStatus: CALL_MISSED,
+    missedAt,
+  };
+
+  return await callsDBClient.updateById(callId, updates);
 }
 
-function markCallAsFinished(callId, finishedBy) {
+async function markCallAsFinished(callId, finishedBy) {
+  await activeCallsHeap.remove(callId);
+
+  const call = await callsDBClient.getById(callId);
+  const { finishedAt, acceptedAt } = call || {};
+
   const updates = {
     finishedBy,
     finishedAt: formattedTimestamp(),
+    callDuration: getDifferenceFromTo(finishedAt, acceptedAt),
+    callStatus: CALL_ANSWERED,
   };
-  return activeCallsHeap
-    .remove(callId)
-    .then(() => callsDBClient.updateById(callId, updates));
+
+  return await callsDBClient.updateById(callId, updates);
 }
 
 function markLastCallbackAsMissed(callId) {

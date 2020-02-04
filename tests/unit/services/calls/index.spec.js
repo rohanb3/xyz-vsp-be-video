@@ -24,11 +24,12 @@ const {
   CallbackDisabledError,
 } = require('@/services/calls/errors');
 const {
-  CALL_REQUESTED,
   CALL_ACCEPTED,
-  CALLBACK_REQUESTED,
+  CALL_ANSWERED,
+  CALL_REQUESTED,
   CALLBACK_ACCEPTED,
   CALLBACK_DECLINED,
+  CALLBACK_REQUESTED,
   statuses,
 } = require('@/constants/calls');
 
@@ -98,6 +99,8 @@ describe('calls: ', () => {
       const updates = {
         acceptedBy,
         acceptedAt: expect.any(String),
+        callStatus: CALL_ANSWERED,
+        waitingDuration: expect.any(Number),
       };
       const callFromQueue = {
         requestedBy,
@@ -135,6 +138,8 @@ describe('calls: ', () => {
       const updates = {
         acceptedBy,
         acceptedAt: expect.any(String),
+        callStatus: CALL_ANSWERED,
+        waitingDuration: expect.any(Number),
       };
       const callFromQueue = {
         requestedBy: 'user24',
@@ -175,6 +180,8 @@ describe('calls: ', () => {
       const updates = {
         acceptedBy,
         acceptedAt: expect.any(String),
+        callStatus: CALL_ANSWERED,
+        waitingDuration: expect.any(Number),
       };
       const callFromQueue = {
         requestedBy: 'user24',
@@ -215,6 +222,8 @@ describe('calls: ', () => {
       const updates = {
         acceptedBy,
         acceptedAt: expect.any(String),
+        callStatus: CALL_ANSWERED,
+        waitingDuration: expect.any(Number),
       };
       const callFromQueue = {
         requestedBy: 'user24',

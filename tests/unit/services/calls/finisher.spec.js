@@ -11,12 +11,16 @@ const {
 const callsDBClient = require('@/services/calls/DBClient');
 const callFinisher = require('@/services/calls/finisher');
 
+const { CALL_MISSED, CALL_ANSWERED } = require('@/constants/calls');
+
 describe('callFinisher: ', () => {
   describe('markCallAsMissed(): ', () => {
     it('should remove call from pending calls queue and mark it as missed', () => {
       const callId = 'call42';
       const expectedUpdates = {
         missedAt: expect.any(String),
+        callStatus: CALL_MISSED,
+        waitingDuration: expect.any(Number),
       };
 
       const mockedRemove = jest.fn(() => Promise.resolve());
@@ -43,6 +47,8 @@ describe('callFinisher: ', () => {
       const expectedUpdates = {
         finishedAt: expect.any(String),
         finishedBy,
+        callStatus: CALL_ANSWERED,
+        callDuration: expect.any(Number),
       };
 
       activeCallsHeap.remove = jest.fn(() => Promise.resolve());

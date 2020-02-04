@@ -23,11 +23,12 @@ const {
   CALLBACK_REQUESTED,
   CALLBACK_ACCEPTED,
   CALLBACK_DECLINED,
+  CALL_ANSWERED,
   statuses,
   callTypes,
 } = require('@/constants/calls');
 const callsErrorHandler = require('@/services/calls/errorHandler');
-const { formattedTimestamp } = require('@/services/time');
+const { formattedTimestamp, getDifferenceFromTo } = require('@/services/time');
 
 function requestCall({
   requestedBy,
@@ -63,7 +64,7 @@ function takeCall(tenantId) {
   return pendingCallsQueues.getPendingCallsQueue(tenantId).dequeue();
 }
 //TODO
-function acceptCall(operator) {
+async function acceptCall(operator) {
   const updates = {
     acceptedBy: operator.identity,
     acceptedAt: formattedTimestamp(),
@@ -71,19 +72,31 @@ function acceptCall(operator) {
   const call = {
     ...updates,
   };
-  return takeCall(operator.tenantId)
-    .then(callFromQueue => {
-      Object.assign(call, callFromQueue);
-      return activeCallsHeap.add(call.id, call);
-    })
-    .then(() => checkIsCallStillActive(call.id))
-    .then(() => twilio.ensureRoom(call.id))
-    .then(() => checkIsCallStillActive(call.id))
-    .then(() => callsDBClient.updateById(call.id, updates))
-    .then(() => checkIsCallStillActive(call.id))
-    .then(() => pubSubChannel.publish(CALL_ACCEPTED, call))
-    .then(() => addActiveCallIdToConnections(call))
-    .catch(err => callsErrorHandler.onAcceptCallFailed(err, call.id));
+
+  const callFromQueue = await takeCall(operator.tenantId);
+  const callFromDB = await callsDBClient.getById(callFromQueue.id);
+  const { acceptedAt, requestedAt } = callFromDB || {};
+  const updateMixin = {
+    callStatus: CALL_ANSWERED,
+    waitingDuration: getDifferenceFromTo(acceptedAt, requestedAt),
+  };
+
+  Object.assign(call, callFromQueue, updateMixin);
+  Object.assign(updates, updateMixin);
+
+  try {
+    await activeCallsHeap.add(call.id, call);
+
+    await checkIsCallStillActive(call.id);
+    await twilio.ensureRoom(call.id);
+    await checkIsCallStillActive(call.id);
+    await callsDBClient.updateById(call.id, updates);
+    await checkIsCallStillActive(call.id);
+    await pubSubChannel.publish(CALL_ACCEPTED, call);
+    return await addActiveCallIdToConnections(call);
+  } catch (err) {
+    callsErrorHandler.onAcceptCallFailed(err, call.id);
+  }
 }
 
 function requestCallback(callId) {

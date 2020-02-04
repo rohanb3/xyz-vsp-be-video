@@ -1,11 +1,8 @@
 'use strict';
-const moment = require('moment');
 const Call = require('../src/models/call');
-
+const { getDifferenceFromTo } = require('../src/services/time');
 const { CALL_ANSWERED, CALL_MISSED } = require('../src/constants/calls');
 
-const calculateDuration = (end, start) =>
-  end && start && moment.duration(moment(end).diff(moment(start))).asSeconds();
 const getCallResultStatus = (requestedAt, finishedAt) =>
   requestedAt && (finishedAt ? CALL_ANSWERED : CALL_MISSED);
 
@@ -14,7 +11,7 @@ module.exports.up = function() {
     $or: [
       { waitingDuration: { $exists: false } },
       { callDuration: { $exists: false } },
-      { callResultType: { $exists: false } },
+      { callStatus: { $exists: false } },
     ],
   }).then(
     calls =>
@@ -25,12 +22,12 @@ module.exports.up = function() {
             filter: { _id },
             update: {
               $set: {
-                waitingDuration: calculateDuration(
+                waitingDuration: getDifferenceFromTo(
                   acceptedAt || missedAt,
                   requestedAt
                 ),
-                callResultType: getCallResultStatus(requestedAt, finishedAt),
-                callDuration: calculateDuration(finishedAt, acceptedAt),
+                callStatus: getCallResultStatus(requestedAt, finishedAt),
+                callDuration: getDifferenceFromTo(finishedAt, acceptedAt),
               },
             },
           },
@@ -50,7 +47,7 @@ module.exports.down = function() {
             update: {
               $unset: {
                 callDuration: '',
-                callResultType: '',
+                callStatus: '',
                 waitingDuration: '',
               },
             },
