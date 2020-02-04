@@ -1,6 +1,7 @@
 const router = require('express').Router();
 
 const callFeedbackCustomer = require('@/routes/callFeedbackCustomer');
+const { getVersion } = require('@/routes/version');
 const callFeedbackOperator = require('@/routes/callFeedbackOperator');
 const { getCalls, getCallsValidationArray } = require('@/routes/calls');
 const { getActiveCallSalesRep } = require('@/routes/activeCallSalesRep');
@@ -12,6 +13,8 @@ const {
 const { makeCall } = require('@/services/voiceCalls');
 
 setupSwagger(router);
+
+router.route('/version').get(getVersion);
 
 router
   .route('/call-feedback-customer')
