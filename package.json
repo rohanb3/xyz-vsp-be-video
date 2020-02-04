@@ -4,6 +4,7 @@
   "description": "SimpleBE",
   "main": "index.js",
   "scripts": {
+    "migrate": "migrate",
     "start": "npm run copyEnv && node index.js",
     "start:dev": "nodemon index.js",
     "start:LT": "npm run clean-LT && npm run build-LT && nodemon index.js",
