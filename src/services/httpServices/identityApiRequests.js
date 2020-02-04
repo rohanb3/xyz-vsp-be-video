@@ -1,5 +1,6 @@
 const axios = require('axios');
 const { IDENTITY_API_URL, STATIC_TOKEN } = require('@/constants/identityApi');
+const { TOKEN_INVALID, UNAUTHORIZED } = require('@/constants/connection');
 
 const api = axios.create({
   baseURL: IDENTITY_API_URL,
@@ -11,16 +12,44 @@ function getCompanyIdByUserId(identity) {
     .then(response => response.data.companyId);
 }
 
+async function getUserProfile(token) {
+  if (!token) {
+    throw new Error('Token is required');
+  }
+
+  const response = await api.get('users/profile', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+}
+
 function checkTokenValidity(token) {
   if (!token) {
     return Promise.resolve(false);
   }
 
-  return api
-    .get('users/profile', { headers: { Authorization: `Bearer ${token}` } })
+  return getUserProfile(token)
     .then(() => true)
     .catch(() => false);
 }
 
+// async function checkUserScope(token, role, scope) {
+//   try {
+//     await api.head('role', {
+//       headers: { Authorization: `Bearer ${token}` },
+//       params: { role, scope },
+//     });
+//     return true;
+//   } catch(e) {
+//     if (e.response.status === 403) {
+//       throw UNAUTHORIZED;
+//     } else {
+//       throw TOKEN_INVALID;
+//     }
+//   }
+// }
+
 exports.getCompanyIdByUserId = getCompanyIdByUserId;
+exports.getUserProfile = getUserProfile;
 exports.checkTokenValidity = checkTokenValidity;
+// exports.checkUserScope = checkUserScope;

@@ -22,6 +22,11 @@ const {
   CUSTOMER_DISCONNECTED,
 } = require('@/constants/calls');
 
+const {
+  CALL_ANSWER_PERMISSION,
+  REALTIME_DASHBOARD_SUBSCRIBTION_PERMISSION,
+} = require('@/constants/permissions');
+
 const { TOKEN_INVALID, UNAUTHORIZED } = require('@/constants/connection');
 
 const {
@@ -29,9 +34,22 @@ const {
   STATUS_CHANGED_OFFLINE,
 } = require('@/constants/operatorStatuses');
 
+const {
+  REALTIME_DASHBOARD_SUBSCRIBE,
+  REALTIME_DASHBOARD_UNSUBSCRIBE,
+  REALTIME_DASHBOARD_SUBSCRIBED,
+  REALTIME_DASHBOARD_SUBSCRIBTION_ERROR,
+  REALTIME_DASHBOARD_WAITING_CALLS_CHANGED,
+} = require('@/constants/realtimeDashboard');
+
 const calls = require('@/services/calls');
 const twilio = require('@/services/twilio');
-const { authenticateOperator } = require('@/services/socketAuth');
+
+const socketAuth = require('@/services/socketAuth');
+const {
+  authenticateOperator,
+} = socketAuth;
+
 const { connectionsHeap } = require('@/services/connectionsHeap');
 const { getOperatorCallFailReason } = require('./utils');
 const logger = require('@/services/logger')(module);
@@ -45,7 +63,6 @@ class OperatorsRoom {
     this.operators.on(CONNECTION, this.onOperatorConnected.bind(this));
 
     this.mediator = mediator;
-
     this.mediator.on(
       CUSTOMER_DISCONNECTED,
       this.notifyAboutCustomerDisconnected.bind(this)
@@ -100,43 +117,97 @@ class OperatorsRoom {
       STATUS_CHANGED_OFFLINE,
       this.removeOperatorFromActive.bind(this, operator)
     );
+
+    operator.on(
+      REALTIME_DASHBOARD_SUBSCRIBE,
+      this.subscribeToRealtimeDashboardUpdates.bind(this, operator)
+    );
+    operator.on(
+      REALTIME_DASHBOARD_UNSUBSCRIBE,
+      this.unsubscibeFromRealtimeDashboardUpdates.bind(this, operator)
+    );
   }
 
   onOperatorAuthenticated(operator, data) {
-    logger.debug('Operator authenticated', operator.id, operator.identity);
+    logger.debug(
+      'Operator authenticated',
+      operator.id,
+      operator.identity,
+      operator.tenantId
+    );
     this.mapSocketIdentityToId(operator);
     this.addOperatorToActive(operator, data);
   }
 
-  onOperatorAcceptCall(operator) {
-    logger.debug(
-      'Customer call: attempt to accept by operator',
-      operator && operator.identity
-    );
-    return calls
-      .acceptCall(operator)
-      .then(call => {
-        const {
-          id,
-          requestedAt,
-          requestedBy,
-          salesRepId,
-          callbackEnabled,
-        } = call;
-        const token = twilio.getToken(operator.identity, id);
-        operator.emit(ROOM_CREATED, {
-          id,
-          requestedAt,
-          token,
-          requestedBy,
-          salesRepId,
-          callbackEnabled,
-        });
-      })
-      .then(() =>
-        logger.debug('Customer call: accepted by operator', operator.identity)
-      )
-      .catch(err => this.onCallAcceptingFailed(err, operator));
+  async onOperatorAcceptCall({ id }) {
+    const connectedOperator = this.getConnectedOperator(id);
+    if (
+      connectedOperator &&
+      socketAuth.checkConnectionPermission(connectedOperator, CALL_ANSWER_PERMISSION)
+    ) {
+      logger.debug(
+        'Customer call: attempt to accept by operator',
+        connectedOperator.identity
+      );
+
+      return calls
+        .acceptCall(connectedOperator)
+        .then(call => {
+          const {
+            id,
+            requestedAt,
+            requestedBy,
+            salesRepId,
+            callbackEnabled,
+          } = call;
+          const token = twilio.getToken(connectedOperator.identity, id);
+          connectedOperator.emit(ROOM_CREATED, {
+            id,
+            requestedAt,
+            token,
+            requestedBy,
+            salesRepId,
+            callbackEnabled,
+          });
+        })
+        .then(() =>
+          logger.debug(
+            'Customer call: accepted by operator',
+            connectedOperator.identity
+          )
+        )
+        .catch(err => this.onCallAcceptingFailed(err, connectedOperator));
+    } else {
+      this.onCallAcceptingFailed('Permission Denied', connectedOperator);
+    }
+
+    //   // return calls
+    //   //   .acceptCall(operator)
+    //   //   .then(call => {
+    //   //     const {
+    //   //       id,
+    //   //       requestedAt,
+    //   //       requestedBy,
+    //   //       salesRepId,
+    //   //       callbackEnabled,
+    //   //     } = call;
+    //   //     const token = twilio.getToken(operator.identity, id);
+    //   //     operator.emit(ROOM_CREATED, {
+    //   //       id,
+    //   //       requestedAt,
+    //   //       token,
+    //   //       requestedBy,
+    //   //       salesRepId,
+    //   //       callbackEnabled,
+    //   //     });
+    //   //   })
+    //   //   .then(() =>
+    //   //     logger.debug('Customer call: accepted by operator', operator.identity)
+    //   //   )
+    //   //   .catch(err => this.onCallAcceptingFailed(err, operator));
+    // } catch (err) {
+    //   this.onCallAcceptingFailed(err, operator);
+    // }
   }
 
   onCallAcceptingFailed(err, operator) {
@@ -168,6 +239,13 @@ class OperatorsRoom {
     );
     if (!callId) {
       logger.error('Operator callback requested: no callId', operator.identity);
+      return Promise.resolve();
+    }
+    if (!socketAuth.checkConnectionPermission(operator, CALL_ANSWER_PERMISSION)) {
+      logger.error(
+        "Operator dosn't have permission for callback",
+        operator.identity
+      );
       return Promise.resolve();
     }
     return calls
@@ -212,6 +290,8 @@ class OperatorsRoom {
   }
 
   onOperatorDisconnected(operator, reason) {
+    this.unsubscibeFromRealtimeDashboardUpdates(operator);
+    this.removeOperatorFromActive(operator);
     this.checkAndUnmapSocketIdentityFromId(operator);
     logger.debug('Operator disconnected:', operator.identity, reason);
   }
@@ -261,43 +341,122 @@ class OperatorsRoom {
 
   emitCallsInfo(info) {
     const { data, tenantId } = info;
-    return this.operators.to(tenantId).emit(CALLS_CHANGED, data);
+    const groupName = this.getActiveOperatorsGroupName(tenantId);
+    this.operators.to(groupName).emit(CALLS_CHANGED, data);
+    logger.debug('Operator: calls info emitted to group', groupName);
+
+    this.emitRealtimeDashboardWaitingCallsInfo(tenantId);
   }
 
-  async addOperatorToActive(operator, data = {}) {
-    const { token } = data;
-    const operatorId = operator.id;
-
-    const connectedOperator = this.getConnectedOperator(operatorId);
-    const tenantId = connectedOperator.tenantId;
+  async addOperatorToActive({ id }, data = {}) {
+    const connectedOperator = this.getConnectedOperator(id);
     if (connectedOperator) {
-      logger.debug('Operator: added to active', operatorId);
+      logger.debug('Operator: add to active operators group', id);
 
-      const tokenValid = await identityApi.checkTokenValidity(token);
-
-      if (!tokenValid) {
-        return connectedOperator.emit(UNAUTHORIZED, { message: TOKEN_INVALID });
+      if (await !this.verifyToken(connectedOperator)) {
+        return false;
       }
 
-      connectedOperator.join(tenantId);
+      if (
+        socketAuth.checkConnectionPermission(connectedOperator, CALL_ANSWER_PERMISSION)
+      ) {
+        const tenantId = connectedOperator.tenantId;
+        const groupName = this.getActiveOperatorsGroupName(tenantId);
 
-      try {
+        connectedOperator.join(groupName);
+        logger.debug('Operator: joined group', id, groupName);
+
         const info = await calls.getCallsInfo(tenantId);
         connectedOperator.emit(CALLS_CHANGED, info);
-        logger.debug('Operator: emitted calls info', operatorId);
-      } catch (err) {
-        logger.error('Calls info: emitting to active operator failed', err);
+        logger.debug('Operator: calls info emited dirrectly', id);
+      } else {
+        logger.debug(
+          `Operator: wasn't added to active operators group because of missed answring call permission`
+        );
       }
     }
   }
 
-  removeOperatorFromActive(operator) {
-    const operatorId = operator.id;
-    const tenantId = operator.tenantId;
-    const connectedOperator = this.getConnectedOperator(operatorId);
+  removeOperatorFromActive({ id }) {
+    const connectedOperator = this.getConnectedOperator(id);
     if (connectedOperator) {
-      logger.debug('Operator: removed from active', operatorId);
-      connectedOperator.leave(tenantId);
+      const tenantId = connectedOperator.tenantId;
+      const groupName = this.getActiveOperatorsGroupName(tenantId);
+
+      connectedOperator.leave(groupName);
+
+      logger.debug('Operator: remove from group', id, groupName);
+    }
+  }
+
+  async subscribeToRealtimeDashboardUpdates({ id }) {
+    logger.debug('Operator: subscribe to realtime dashboard', id);
+
+    const connectedOperator = this.getConnectedOperator(id);
+    if (connectedOperator) {
+      const tenantId = connectedOperator.tenantId;
+
+      if (await !this.verifyToken(connectedOperator)) {
+        return false;
+      }
+
+      if (
+        socketAuth.checkConnectionPermission(
+          connectedOperator,
+          REALTIME_DASHBOARD_SUBSCRIBTION_PERMISSION
+        )
+      ) {
+        connectedOperator.join(this.getRealtimeDashboardGroupName(tenantId));
+        connectedOperator.emit(REALTIME_DASHBOARD_SUBSCRIBED);
+        logger.debug('Operator: subscribed to realtime dashboard', id);
+
+        this.emitRealtimeDashboardWaitingCallsInfo(tenantId, connectedOperator);
+      } else {
+        connectedOperator.emit(REALTIME_DASHBOARD_SUBSCRIBTION_ERROR);
+        logger.debug('Operator: not subscribed to realtime dashboard', id);
+      }
+    }
+  }
+
+  unsubscibeFromRealtimeDashboardUpdates({ id }) {
+    const connectedOperator = this.getConnectedOperator(id);
+    if (connectedOperator) {
+      logger.debug('Operator: unsubscribe from realtime dashboard', operatorId);
+
+      const tenantId = connectedOperator.tenantId;
+      connectedOperator.leave(this.getRealtimeDashboardGroupName(tenantId));
+    }
+  }
+
+  async emitRealtimeDashboardWaitingCallsInfo(tenantId, recipient = null) {
+    let target;
+
+    if (recipient) {
+      target = recipient;
+      logger.debug(
+        'Operator: realtime dashboard waiting calls info emited directly',
+        recipient.id
+      );
+    } else {
+      const groupName = this.getRealtimeDashboardGroupName(tenantId);
+      const group = this.operators.to(groupName);
+
+      if (Object.keys(group.connected).length) {
+        target = group;
+        logger.debug(
+          'Operator: realtime dashboard waiting calls info emited to non empty group',
+          groupName
+        );
+      }
+    }
+
+    if (target) {
+      const items = await calls.getPendingCalls(tenantId);
+
+      target.emit(REALTIME_DASHBOARD_WAITING_CALLS_CHANGED, {
+        count: items.length,
+        items,
+      });
     }
   }
 
@@ -356,6 +515,31 @@ class OperatorsRoom {
 
   getConnectedOperator(id) {
     return this.operators.connected[id];
+  }
+
+  getRealtimeDashboardGroupName(tenantId) {
+    return `tenant.${tenantId}.realtimeDashboard`;
+  }
+
+  getActiveOperatorsGroupName(tenantId) {
+    return `tenant.${tenantId}.activeOperators`;
+  }
+
+  async verifyToken(connection) {
+    const tokenStatus = await socketAuth.verifyConnectionToken(connection);
+    if (!tokenStatus) {
+      connection.emit(UNAUTHORIZED, {
+        message: TOKEN_INVALID,
+      });
+      logger.error(
+        'Operator: invalid token message emited to',
+        connection.id,
+        connection.identity
+      );
+      return false;
+    }
+
+    return true;
   }
 }
 

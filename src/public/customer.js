@@ -9,17 +9,33 @@ const {
 const io = require('socket.io-client');
 
 const isLocal = typeof prompt('Is local?') === 'string';
+console.log('isLocal', isLocal);
+
 const isDev = !isLocal && typeof prompt('Is dev?') === 'string';
+console.log('isDev', isDev);
+
 const isStage = !isLocal && !isDev && typeof prompt('Is stage?') === 'string';
+console.log('isStage', isStage);
+
 const isProd =
   !isLocal &&
   !isDev &&
   !isStage &&
   typeof prompt('Is production?') === 'string';
+console.log('isProd', isProd);
+
 const deviceId = prompt('Tell me device id') || 'new-device-id';
+console.log('deviceId', deviceId);
+
 const identity = prompt('Tell me your identity') || 'Joey';
+console.log('identity', identity);
+
+const securityToken = prompt('Security Token') || 'empty';
+console.log('securityToken', securityToken);
+
 const shouldConnectToDeviceManagement =
   typeof prompt('Conect to device management?') === 'string';
+console.log('shouldConnectToDeviceManagement', shouldConnectToDeviceManagement);
 
 let deviceManagementHost = 'https://dev-portal.xyzvsp.com';
 let socketUrl = 'wss://dev-portal.xyzvsp.com/customers';
@@ -71,7 +87,7 @@ let globalToken = null;
 let roomId = null;
 
 socket.on('connect', () => {
-  socket.emit('authentication', { identity, deviceId });
+  socket.emit('authentication', { identity, deviceId, token: securityToken });
   socket.on('authenticated', token => {
     console.log('authenticated');
     onTokenReceived({ token });
@@ -133,6 +149,7 @@ function onTokenReceived(data) {
 }
 
 function requestConnection() {
+  console.log('requestConnection');
   const salesRepId = 'd4b10474-a026-4487-87f8-96f3cdd749cb';
   const callbackEnabled = typeof prompt('Allow callback?') === 'string';
   const service = 'spectrum';

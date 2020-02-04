@@ -58,6 +58,10 @@ class Queue {
     return this.connector.getPeak();
   }
 
+  getItems() {
+    return this.connector.getItems();
+  }
+
   getSize() {
     return this.connector.getSize();
   }
