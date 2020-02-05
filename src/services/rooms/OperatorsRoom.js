@@ -368,7 +368,7 @@ class OperatorsRoom {
     if (connectedOperator) {
       logger.debug('Operator: add to active operators group', id);
 
-      if (await !this.verifyToken(connectedOperator)) {
+      if (!(await this.verifyToken(connectedOperator))) {
         return false;
       }
 
@@ -414,7 +414,7 @@ class OperatorsRoom {
     if (connectedOperator) {
       const tenantId = connectedOperator.tenantId;
 
-      if (await !this.verifyToken(connectedOperator)) {
+      if (!(await this.verifyToken(connectedOperator))) {
         return false;
       }
 
