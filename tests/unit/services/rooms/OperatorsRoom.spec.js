@@ -13,10 +13,10 @@ jest.mock('@/services/twilio');
 
 const twilio = require('@/services/twilio');
 const calls = require('@/services/calls');
+const socketAuth = require('@/services/socketAuth');
 const OperatorsRoom = require('@/services/rooms/OperatorsRoom');
 
 const { connectionsHeap } = require('@/services/connectionsHeap');
-const identityApi = require('@/services/httpServices/identityApiRequests');
 const {
   CONNECTION,
   DISCONNECT,
@@ -34,7 +34,18 @@ const {
   CALL_ACCEPTING_FAILED,
   CALL_FINISHED_BY_CUSTOMER,
   CUSTOMER_DISCONNECTED,
+  CALLBACK_REQUESTING_FAILED,
 } = require('@/constants/calls');
+
+const {
+  REALTIME_DASHBOARD_SUBSCRIBE,
+  REALTIME_DASHBOARD_UNSUBSCRIBE,
+} = require('@/constants/realtimeDashboard');
+
+const {
+  CALL_ANSWER_PERMISSION,
+  REALTIME_DASHBOARD_SUBSCRIBTION_PERMISSION,
+} = require('@/constants/permissions');
 
 const {
   STATUS_CHANGED_ONLINE,
@@ -44,6 +55,8 @@ const {
   CallsPendingEmptyError,
   CallNotFoundError,
 } = require('@/services/calls/errors');
+
+const { TOKEN_INVALID, UNAUTHORIZED } = require('@/constants/connection');
 
 let operatorsRoom = null;
 let operator = null;
@@ -83,6 +96,7 @@ describe('OperatorsRoom: ', () => {
       identity: operatorIdentity,
       id: socketId,
       tenantId: tenantId,
+      securityToken: 'security-token',
     };
     data = {};
   });
@@ -131,78 +145,16 @@ describe('OperatorsRoom: ', () => {
   });
 
   describe('onOperatorConnected(): ', () => {
-    it('should subscribe to call accepting', () => {
-      jest.spyOn(operatorsRoom.onOperatorAcceptCall, 'bind');
-      operatorsRoom.onOperatorConnected(operator);
-      expect(operator.on).toHaveBeenCalledWith(
-        CALL_ACCEPTED,
-        expect.any(Function)
-      );
-      expect(operatorsRoom.onOperatorAcceptCall.bind).toHaveBeenCalledWith(
-        operatorsRoom,
-        operator
-      );
-    });
-
-    it('should subscribe to callback requesting', () => {
-      jest.spyOn(operatorsRoom.onOperatorRequestedCallback, 'bind');
-      operatorsRoom.onOperatorConnected(operator);
-      expect(operator.on).toHaveBeenCalledWith(
-        CALLBACK_REQUESTED,
-        expect.any(Function)
-      );
-      expect(
-        operatorsRoom.onOperatorRequestedCallback.bind
-      ).toHaveBeenCalledWith(operatorsRoom, operator);
-    });
-
-    it('should subscribe to call finishig', () => {
-      jest.spyOn(operatorsRoom.onOperatorFinishedCall, 'bind');
-      operatorsRoom.onOperatorConnected(operator);
-      expect(operator.on).toHaveBeenCalledWith(
-        CALL_FINISHED,
-        expect.any(Function)
-      );
-      expect(operatorsRoom.onOperatorFinishedCall.bind).toHaveBeenCalledWith(
-        operatorsRoom,
-        operator
-      );
-    });
-
-    it('should subscribe to disconnection', () => {
+    it('should subscribe to DISCONNECT event', () => {
       jest.spyOn(operatorsRoom.onOperatorDisconnected, 'bind');
+
       operatorsRoom.onOperatorConnected(operator);
+
       expect(operator.on).toHaveBeenCalledWith(
         DISCONNECT,
         expect.any(Function)
       );
       expect(operatorsRoom.onOperatorDisconnected.bind).toHaveBeenCalledWith(
-        operatorsRoom,
-        operator
-      );
-    });
-
-    it('should subscribe to status changing to online', () => {
-      jest.spyOn(operatorsRoom.addOperatorToActive, 'bind');
-      operatorsRoom.onOperatorConnected(operator);
-      expect(operator.on).toHaveBeenCalledWith(
-        STATUS_CHANGED_ONLINE,
-        expect.any(Function)
-      );
-      expect(operatorsRoom.addOperatorToActive.bind).toHaveBeenCalledWith(
-        operatorsRoom,
-        operator
-      );
-    });
-
-    it('should subscribe to status changing to offline', () => {
-      jest.spyOn(operatorsRoom.removeOperatorFromActive, 'bind');
-      operatorsRoom.onOperatorConnected(operator);
-      expect(operator.on).toHaveBeenCalledWith(
-        STATUS_CHANGED_OFFLINE,
-        expect.any(Function)
-      );
-      expect(operatorsRoom.removeOperatorFromActive.bind).toHaveBeenCalledWith(
         operatorsRoom,
         operator
       );
@@ -226,12 +178,36 @@ describe('OperatorsRoom: ', () => {
     it('should add operator to active', () => {
       operatorsRoom.onOperatorAuthenticated(operator, data);
 
-      expect(operatorsRoom.addOperatorToActive).toHaveBeenCalledWith(operator, data);
+      expect(operatorsRoom.addOperatorToActive).toHaveBeenCalledWith(
+        operator,
+        data
+      );
     });
   });
 
   describe('onOperatorAcceptCall(): ', () => {
+    let checkConnectionPermissionSpy;
+
+    afterEach(() => {
+      if (checkConnectionPermissionSpy) {
+        checkConnectionPermissionSpy.mockRestore();
+      }
+    });
+
     it('should accept call and emit room creation on success', () => {
+      operator.permissions = [CALL_ANSWER_PERMISSION];
+
+      operatorsRoom.operators = {
+        connected: {
+          [socketId]: operator,
+        },
+      };
+
+      checkConnectionPermissionSpy = jest.spyOn(
+        socketAuth,
+        'checkConnectionPermission'
+      );
+
       const token = '777';
       const requestedAt = '123';
       const roomData = {
@@ -249,10 +225,46 @@ describe('OperatorsRoom: ', () => {
         expect(calls.acceptCall).toHaveBeenCalledWith(operator);
         expect(twilio.getToken).toHaveBeenCalledWith(operatorIdentity, callId);
         expect(operator.emit).toHaveBeenCalledWith(ROOM_CREATED, roomData);
+        expect(checkConnectionPermissionSpy).toHaveBeenCalledWith(
+          operator,
+          CALL_ANSWER_PERMISSION
+        );
       });
     });
 
+    it("should do nothing if operator doesn't have answer call permission", async () => {
+      operator.permissions = [];
+
+      operatorsRoom.operators = {
+        connected: {
+          [socketId]: operator,
+        },
+      };
+
+      const token = '777';
+      const requestedAt = '123';
+
+      operatorsRoom.onCallAcceptingFailed = jest.fn();
+      twilio.getToken = jest.fn(() => token);
+      calls.acceptCall = jest.fn(() =>
+        Promise.resolve({ id: callId, requestedAt })
+      );
+
+      const promise = operatorsRoom.onOperatorAcceptCall(operator);
+
+      await expect(promise).resolves.toBe(undefined);
+      expect(calls.acceptCall).not.toHaveBeenCalled();
+    });
+
     it('should emit correct error if calls were empty', () => {
+      operator.permissions = [CALL_ANSWER_PERMISSION];
+
+      operatorsRoom.operators = {
+        connected: {
+          [socketId]: operator,
+        },
+      };
+
       const token = '777';
       const error = new CallsPendingEmptyError();
       const expectedDataToEmit = {
@@ -277,6 +289,14 @@ describe('OperatorsRoom: ', () => {
     });
 
     it('should emit correct error if calls was finished', () => {
+      operator.permissions = [CALL_ANSWER_PERMISSION];
+
+      operatorsRoom.operators = {
+        connected: {
+          [socketId]: operator,
+        },
+      };
+
       const token = '777';
       const error = new CallNotFoundError();
       const expectedDataToEmit = {
@@ -301,10 +321,18 @@ describe('OperatorsRoom: ', () => {
     });
 
     it('should emit correct error if other error happened', () => {
+      operator.permissions = [CALL_ANSWER_PERMISSION];
+
       const token = '777';
       const error = new Error();
       const expectedDataToEmit = {
         reason: null,
+      };
+
+      operatorsRoom.operators = {
+        connected: {
+          [socketId]: operator,
+        },
       };
 
       twilio.getToken = jest.fn(() => token);
@@ -326,13 +354,33 @@ describe('OperatorsRoom: ', () => {
   });
 
   describe('onOperatorRequestedCallback(): ', () => {
-    it('should request callback', () =>
-      operatorsRoom.onOperatorRequestedCallback(operator, callId).then(() => {
-        expect(calls.requestCallback).toHaveBeenCalledWith(
-          callId,
-          operatorIdentity
-        );
-      }));
+    it('should request callback', async () => {
+      operator.permissions = [CALL_ANSWER_PERMISSION];
+
+      const promise = operatorsRoom.onOperatorRequestedCallback(
+        operator,
+        callId
+      );
+      await expect(promise).resolves.toBe(undefined);
+      expect(calls.requestCallback).toHaveBeenCalledWith(
+        callId,
+        operatorIdentity
+      );
+    });
+
+    it('should send error message if request callback will fails', async () => {
+      operator.permissions = [CALL_ANSWER_PERMISSION];
+
+      const err = {};
+      calls.requestCallback = jest.fn().mockRejectedValue(err);
+
+      const promise = operatorsRoom.onOperatorRequestedCallback(
+        operator,
+        callId
+      );
+      await expect(promise).resolves.toBe(undefined);
+      expect(operator.emit).toHaveBeenCalledWith(CALLBACK_REQUESTING_FAILED);
+    });
 
     it('should do nothing if no call id was provided', () =>
       operatorsRoom.onOperatorRequestedCallback(operator).then(() => {
@@ -354,10 +402,21 @@ describe('OperatorsRoom: ', () => {
 
   describe('onOperatorDisconnected(): ', () => {
     it('should delete operator identity from connectionsHeap', () => {
+      operatorsRoom.operators = {
+        connected: {
+          [socketId]: operator,
+        },
+      };
+
       operatorsRoom.checkAndUnmapSocketIdentityFromId = jest.fn();
+      operatorsRoom.unsubscibeFromRealtimeDashboardUpdates = jest.fn();
+
       operatorsRoom.onOperatorDisconnected(operator);
       expect(
         operatorsRoom.checkAndUnmapSocketIdentityFromId
+      ).toHaveBeenCalledWith(operator);
+      expect(
+        operatorsRoom.unsubscibeFromRealtimeDashboardUpdates
       ).toHaveBeenCalledWith(operator);
     });
   });
@@ -498,29 +557,109 @@ describe('OperatorsRoom: ', () => {
         tenantId: tenantId,
       };
 
+      const groupName = 'group-name';
+      operatorsRoom.getActiveOperatorsGroupName = jest.fn(() => groupName);
+      operatorsRoom.emitRealtimeDashboardWaitingCallsInfo = jest.fn();
+
       operatorsRoom.emitCallsInfo(callsInfo);
-      expect(operatorsRoom.operators.to).toHaveBeenCalledWith(tenantId);
+      expect(operatorsRoom.operators.to).toHaveBeenCalledWith(groupName);
       expect(operatorsRoom.operators.emit).toHaveBeenCalledWith(
         CALLS_CHANGED,
         info
       );
+
+      expect(
+        operatorsRoom.emitRealtimeDashboardWaitingCallsInfo
+      ).toHaveBeenCalledWith(tenantId);
     });
   });
 
   describe('addOperatorToActive(): ', () => {
-    it('should add operator to active and emit calls info to him', () => {
+    let checkConnectionPermissionSpy;
+
+    afterEach(() => {
+      if (checkConnectionPermissionSpy) {
+        checkConnectionPermissionSpy.mockRestore();
+      }
+    });
+
+    it('should add operator to active and emit calls info to him', async () => {
+      operator.permissions = [CALL_ANSWER_PERMISSION];
+
       operatorsRoom.operators = {
         connected: {
           [socketId]: operator,
         },
       };
 
-      identityApi.checkTokenValidity = jest.fn().mockResolvedValue(true);
+      const groupName = 'group-name';
+      const callsInfo = { count: 2, peak: {} };
 
-      return operatorsRoom.addOperatorToActive(operator).then(() => {
-        expect(operator.join).toHaveBeenCalledWith(tenantId);
-        expect(operator.emit).toHaveBeenCalledWith(CALLS_CHANGED, {});
-      });
+      operatorsRoom.verifyToken = jest.fn(() => true);
+      operatorsRoom.getActiveOperatorsGroupName = jest.fn(() => groupName);
+      calls.getCallsInfo = jest.fn().mockResolvedValue(callsInfo);
+      checkConnectionPermissionSpy = jest.spyOn(
+        socketAuth,
+        'checkConnectionPermission'
+      );
+
+      const promise = operatorsRoom.addOperatorToActive(operator);
+
+      await expect(promise).resolves.toBe(undefined);
+      expect(operatorsRoom.verifyToken).toHaveBeenCalledWith(operator);
+      expect(operatorsRoom.getActiveOperatorsGroupName).toHaveBeenCalledWith(
+        tenantId
+      );
+      expect(operator.join).toHaveBeenCalledWith(groupName);
+      expect(calls.getCallsInfo).toHaveBeenCalledWith(tenantId);
+      expect(operator.emit).toHaveBeenCalledWith(CALLS_CHANGED, callsInfo);
+      expect(checkConnectionPermissionSpy).toHaveBeenCalledWith(
+        operator,
+        CALL_ANSWER_PERMISSION
+      );
+    });
+
+    it("shouldn't add operator to active it his token is invalid", async () => {
+      operator.permissions = [CALL_ANSWER_PERMISSION];
+
+      operatorsRoom.operators = {
+        connected: {
+          [socketId]: operator,
+        },
+      };
+
+      operatorsRoom.verifyToken = jest.fn(() => false);
+
+      const promise = operatorsRoom.addOperatorToActive(operator);
+
+      await expect(promise).resolves.toBe(false);
+
+      expect(operator.join).not.toHaveBeenCalled();
+      expect(calls.getCallsInfo).not.toHaveBeenCalled();
+      expect(operator.emit).not.toHaveBeenCalled();
+    });
+
+    it("shouldn't add operator to active if it doesn't have such permission", async () => {
+      operator.permissions = [];
+
+      operatorsRoom.operators = {
+        connected: {
+          [socketId]: operator,
+        },
+      };
+
+      operatorsRoom.verifyToken = jest.fn(() => true);
+      calls.getCallsInfo = jest.fn();
+
+      const promise = operatorsRoom.addOperatorToActive(operator);
+
+      await expect(promise).resolves.toBe(undefined);
+
+      expect(operatorsRoom.verifyToken).toHaveBeenCalledWith(operator);
+
+      expect(operator.join).not.toHaveBeenCalled();
+      expect(calls.getCallsInfo).not.toHaveBeenCalled();
+      expect(operator.emit).not.toHaveBeenCalled();
     });
   });
 
@@ -532,9 +671,11 @@ describe('OperatorsRoom: ', () => {
         },
       };
 
-      operatorsRoom.removeOperatorFromActive(operator);
+      const groupName = `group-name`;
+      operatorsRoom.getActiveOperatorsGroupName = jest.fn(() => groupName);
 
-      expect(operator.leave).toHaveBeenCalledWith(tenantId);
+      operatorsRoom.removeOperatorFromActive(operator);
+      expect(operator.leave).toHaveBeenCalledWith(groupName);
     });
   });
 
@@ -589,6 +730,298 @@ describe('OperatorsRoom: ', () => {
       connectionsHeap.get = jest.fn(() => Promise.resolve());
       return operatorsRoom.getSocketIdByIdentity(operatorIdentity).then(() => {
         expect(connectionsHeap.get).toHaveBeenCalledWith(operatorIdentity);
+      });
+    });
+  });
+
+  describe('getActiveOperatorsGroupName(): ', () => {
+    it('should return tenant active operators group name', () => {
+      const expectedGroupName = 'tenant.spectrum.activeOperators';
+      expect(operatorsRoom.getActiveOperatorsGroupName(tenantId)).toBe(
+        expectedGroupName
+      );
+    });
+  });
+
+  describe('verifyToken(): ', () => {
+    it('should return true if token still valid', async () => {
+      socketAuth.verifyConnectionToken = jest.fn().mockResolvedValue(true);
+
+      const promise = operatorsRoom.verifyToken(operator);
+
+      await expect(promise).resolves.toBe(true);
+      expect(socketAuth.verifyConnectionToken).toHaveBeenCalledWith(operator);
+    });
+
+    it('should return false and notify operator if token is invalid', async () => {
+      const errorMessage = {
+        message: TOKEN_INVALID,
+      };
+      socketAuth.verifyConnectionToken = jest.fn().mockResolvedValue(false);
+
+      const promise = operatorsRoom.verifyToken(operator);
+
+      await expect(promise).resolves.toBe(false);
+      expect(operator.emit).toHaveBeenCalledWith(UNAUTHORIZED, errorMessage);
+    });
+  });
+
+  describe('subscribeToSocketEvents(): ', () => {
+    describe('CALL_ACCEPTED event', () => {
+      it('should subscribe onOperatorAcceptCall() if operator has call answer permission', () => {
+        operator.permissions = [CALL_ANSWER_PERMISSION];
+
+        jest.spyOn(operatorsRoom.onOperatorAcceptCall, 'bind');
+
+        operatorsRoom.subscribeToSocketEvents(operator);
+
+        expect(operator.on).toHaveBeenCalledWith(
+          CALL_ACCEPTED,
+          expect.any(Function)
+        );
+        expect(operatorsRoom.onOperatorAcceptCall.bind).toHaveBeenCalledWith(
+          operatorsRoom,
+          operator
+        );
+      });
+
+      it("should subscribe emitOperationNotAllowed() if operator doesn't have call answer permission", () => {
+        operator.permissions = [];
+
+        jest.spyOn(operatorsRoom.emitOperationNotAllowed, 'bind');
+
+        operatorsRoom.subscribeToSocketEvents(operator);
+
+        expect(operator.on).toHaveBeenCalledWith(
+          CALL_ACCEPTED,
+          expect.any(Function)
+        );
+        expect(operatorsRoom.emitOperationNotAllowed.bind).toHaveBeenCalledWith(
+          operatorsRoom,
+          operator,
+          CALL_ACCEPTED
+        );
+      });
+    });
+
+    describe('CALLBACK_REQUESTED event', () => {
+      it('should subscribe onOperatorRequestedCallback() if operator has call answer permission', () => {
+        operator.permissions = [CALL_ANSWER_PERMISSION];
+
+        jest.spyOn(operatorsRoom.onOperatorRequestedCallback, 'bind');
+
+        operatorsRoom.subscribeToSocketEvents(operator);
+
+        expect(operator.on).toHaveBeenCalledWith(
+          CALLBACK_REQUESTED,
+          expect.any(Function)
+        );
+        expect(
+          operatorsRoom.onOperatorRequestedCallback.bind
+        ).toHaveBeenCalledWith(operatorsRoom, operator);
+      });
+
+      it("should subscribe emitOperationNotAllowed() if operator doesn't have call answer permission", () => {
+        operator.permissions = [];
+
+        jest.spyOn(operatorsRoom.emitOperationNotAllowed, 'bind');
+
+        operatorsRoom.subscribeToSocketEvents(operator);
+
+        expect(operator.on).toHaveBeenCalledWith(
+          CALLBACK_REQUESTED,
+          expect.any(Function)
+        );
+        expect(operatorsRoom.emitOperationNotAllowed.bind).toHaveBeenCalledWith(
+          operatorsRoom,
+          operator,
+          CALLBACK_REQUESTED
+        );
+      });
+    });
+
+    describe('CALL_FINISHED event', () => {
+      it('should subscribe onOperatorFinishedCall() if operator has call answer permission', () => {
+        operator.permissions = [CALL_ANSWER_PERMISSION];
+
+        jest.spyOn(operatorsRoom.onOperatorFinishedCall, 'bind');
+
+        operatorsRoom.subscribeToSocketEvents(operator);
+
+        expect(operator.on).toHaveBeenCalledWith(
+          CALL_FINISHED,
+          expect.any(Function)
+        );
+        expect(operatorsRoom.onOperatorFinishedCall.bind).toHaveBeenCalledWith(
+          operatorsRoom,
+          operator
+        );
+      });
+
+      it("should subscribe emitOperationNotAllowed() if operator doesn't have call answer permission", () => {
+        operator.permissions = [];
+
+        jest.spyOn(operatorsRoom.emitOperationNotAllowed, 'bind');
+
+        operatorsRoom.subscribeToSocketEvents(operator);
+
+        expect(operator.on).toHaveBeenCalledWith(
+          CALL_FINISHED,
+          expect.any(Function)
+        );
+        expect(operatorsRoom.emitOperationNotAllowed.bind).toHaveBeenCalledWith(
+          operatorsRoom,
+          operator,
+          CALL_FINISHED
+        );
+      });
+    });
+
+    describe('STATUS_CHANGED_ONLINE event', () => {
+      it('should subscribe addOperatorToActive() if operator has call answer permission', () => {
+        operator.permissions = [CALL_ANSWER_PERMISSION];
+
+        jest.spyOn(operatorsRoom.addOperatorToActive, 'bind');
+
+        operatorsRoom.subscribeToSocketEvents(operator);
+
+        expect(operator.on).toHaveBeenCalledWith(
+          STATUS_CHANGED_ONLINE,
+          expect.any(Function)
+        );
+        expect(operatorsRoom.addOperatorToActive.bind).toHaveBeenCalledWith(
+          operatorsRoom,
+          operator
+        );
+      });
+
+      it("should subscribe emitOperationNotAllowed() if operator doesn't have call answer permission", () => {
+        operator.permissions = [];
+
+        jest.spyOn(operatorsRoom.emitOperationNotAllowed, 'bind');
+
+        operatorsRoom.subscribeToSocketEvents(operator);
+
+        expect(operator.on).toHaveBeenCalledWith(
+          STATUS_CHANGED_ONLINE,
+          expect.any(Function)
+        );
+        expect(operatorsRoom.emitOperationNotAllowed.bind).toHaveBeenCalledWith(
+          operatorsRoom,
+          operator,
+          STATUS_CHANGED_ONLINE
+        );
+      });
+    });
+
+    describe('STATUS_CHANGED_OFFLINE event', () => {
+      it('should subscribe removeOperatorFromActive() if operator has call answer permission', () => {
+        operator.permissions = [CALL_ANSWER_PERMISSION];
+
+        jest.spyOn(operatorsRoom.removeOperatorFromActive, 'bind');
+
+        operatorsRoom.subscribeToSocketEvents(operator);
+
+        expect(operator.on).toHaveBeenCalledWith(
+          STATUS_CHANGED_OFFLINE,
+          expect.any(Function)
+        );
+        expect(
+          operatorsRoom.removeOperatorFromActive.bind
+        ).toHaveBeenCalledWith(operatorsRoom, operator);
+      });
+
+      it("should subscribe emitOperationNotAllowed() if operator doesn't have call answer permission", () => {
+        operator.permissions = [];
+
+        jest.spyOn(operatorsRoom.emitOperationNotAllowed, 'bind');
+
+        operatorsRoom.subscribeToSocketEvents(operator);
+
+        expect(operator.on).toHaveBeenCalledWith(
+          STATUS_CHANGED_OFFLINE,
+          expect.any(Function)
+        );
+        expect(operatorsRoom.emitOperationNotAllowed.bind).toHaveBeenCalledWith(
+          operatorsRoom,
+          operator,
+          STATUS_CHANGED_OFFLINE
+        );
+      });
+    });
+
+    describe('REALTIME_DASHBOARD_SUBSCRIBE event', () => {
+      it('should subscribe subscribeToRealtimeDashboardUpdates() if operator has realtime dashboard permission', () => {
+        operator.permissions = [REALTIME_DASHBOARD_SUBSCRIBTION_PERMISSION];
+
+        jest.spyOn(operatorsRoom.subscribeToRealtimeDashboardUpdates, 'bind');
+
+        operatorsRoom.subscribeToSocketEvents(operator);
+
+        expect(operator.on).toHaveBeenCalledWith(
+          REALTIME_DASHBOARD_SUBSCRIBE,
+          expect.any(Function)
+        );
+        expect(
+          operatorsRoom.subscribeToRealtimeDashboardUpdates.bind
+        ).toHaveBeenCalledWith(operatorsRoom, operator);
+      });
+
+      it("should subscribe emitOperationNotAllowed() if operator doesn't have realtime dashboard permission", () => {
+        operator.permissions = [];
+
+        jest.spyOn(operatorsRoom.emitOperationNotAllowed, 'bind');
+
+        operatorsRoom.subscribeToSocketEvents(operator);
+
+        expect(operator.on).toHaveBeenCalledWith(
+          REALTIME_DASHBOARD_SUBSCRIBE,
+          expect.any(Function)
+        );
+        expect(operatorsRoom.emitOperationNotAllowed.bind).toHaveBeenCalledWith(
+          operatorsRoom,
+          operator,
+          REALTIME_DASHBOARD_SUBSCRIBE
+        );
+      });
+    });
+
+    describe('REALTIME_DASHBOARD_UNSUBSCRIBE event', () => {
+      it('should subscribe unsubscibeFromRealtimeDashboardUpdates() if operator has realtime dashboard permission', () => {
+        operator.permissions = [REALTIME_DASHBOARD_SUBSCRIBTION_PERMISSION];
+
+        jest.spyOn(
+          operatorsRoom.unsubscibeFromRealtimeDashboardUpdates,
+          'bind'
+        );
+
+        operatorsRoom.subscribeToSocketEvents(operator);
+
+        expect(operator.on).toHaveBeenCalledWith(
+          REALTIME_DASHBOARD_UNSUBSCRIBE,
+          expect.any(Function)
+        );
+        expect(
+          operatorsRoom.unsubscibeFromRealtimeDashboardUpdates.bind
+        ).toHaveBeenCalledWith(operatorsRoom, operator);
+      });
+
+      it("should subscribe emitOperationNotAllowed() if operator doesn't have realtime dashboard permission", () => {
+        operator.permissions = [];
+
+        jest.spyOn(operatorsRoom.emitOperationNotAllowed, 'bind');
+
+        operatorsRoom.subscribeToSocketEvents(operator);
+
+        expect(operator.on).toHaveBeenCalledWith(
+          REALTIME_DASHBOARD_UNSUBSCRIBE,
+          expect.any(Function)
+        );
+        expect(operatorsRoom.emitOperationNotAllowed.bind).toHaveBeenCalledWith(
+          operatorsRoom,
+          operator,
+          REALTIME_DASHBOARD_UNSUBSCRIBE
+        );
       });
     });
   });

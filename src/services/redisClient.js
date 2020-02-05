@@ -86,6 +86,10 @@ const get = (...args) => new Promise((resolve, reject) => (
   client.get(...args, promiser(resolve, reject))
 ));
 
+const mget = (...args) => new Promise((resolve, reject) => (
+  client.mget(...args, promiser(resolve, reject))
+));
+
 const set = (...args) => new Promise((resolve, reject) => (
   client.set(...args, promiser(resolve, reject))
 ));
@@ -118,6 +122,7 @@ exports.hgetall = hgetall;
 exports.hmset = hmset;
 
 exports.get = get;
+exports.mget = mget;
 exports.set = set;
 exports.del = del;
 exports.exists = exists;
