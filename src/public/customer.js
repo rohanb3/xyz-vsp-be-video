@@ -149,7 +149,6 @@ function onTokenReceived(data) {
 }
 
 function requestConnection() {
-  console.log('requestConnection');
   const salesRepId = 'd4b10474-a026-4487-87f8-96f3cdd749cb';
   const callbackEnabled = typeof prompt('Allow callback?') === 'string';
   const service = 'spectrum';
