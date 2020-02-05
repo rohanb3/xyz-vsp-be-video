@@ -23,11 +23,11 @@ module.exports.up = function() {
             update: {
               $set: {
                 waitingDuration: getDifferenceFromTo(
-                  acceptedAt || missedAt,
-                  requestedAt
+                  requestedAt,
+                  acceptedAt || missedAt
                 ),
                 callStatus: getCallResultStatus(requestedAt, finishedAt),
-                callDuration: getDifferenceFromTo(finishedAt, acceptedAt),
+                callDuration: getDifferenceFromTo(acceptedAt, finishedAt),
               },
             },
           },
