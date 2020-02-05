@@ -44,9 +44,6 @@ async function authenticateOperator(
       profile.role,
       profile.scopes
     );
-
-    // TODO: should be removed after Identity support of new permissions
-    _mockPermissions(socket.permissions);
   } catch (e) {
     logger.debug('Operator: authentification error', JSON.stringify(e));
     return callback(new Error(TOKEN_INVALID));
@@ -96,8 +93,6 @@ async function verifyConnectionToken(connection) {
 
       connection.securityTokenLastChecked = new Date().getTime();
       connection.permissions = profile.scopes || [];
-      // TODO: should be removed after Identity support of new permissions
-      _mockPermissions(connection.permissions);
 
       logger.debug('Connection: token is correct', connection.identity);
     } catch (e) {
@@ -130,12 +125,6 @@ function checkConnectionPermission(connection, permission) {
     permission
   );
   return true;
-}
-
-function _mockPermissions(permissions) {
-  // permissions.push('xyzies.vsp.call.answer');
-  // permissions.push('xyzies.vsp.realtimedashboard.subscribe');
-  permissions.push('xyzies.vsp.realtimedashboard.choosetenant');
 }
 
 exports.authenticateOperator = authenticateOperator;
