@@ -46,14 +46,11 @@ const calls = require('@/services/calls');
 const twilio = require('@/services/twilio');
 
 const socketAuth = require('@/services/socketAuth');
-const {
-  authenticateOperator,
-} = socketAuth;
+const { authenticateOperator } = socketAuth;
 
 const { connectionsHeap } = require('@/services/connectionsHeap');
 const { getOperatorCallFailReason } = require('./utils');
 const logger = require('@/services/logger')(module);
-const identityApi = require('@/services/httpServices/identityApiRequests');
 
 const isMaster = !process.env.INSTANCE_ID || process.env.INSTANCE_ID === '0';
 
@@ -99,32 +96,80 @@ class OperatorsRoom {
   }
 
   onOperatorConnected(operator) {
-    operator.on(CALL_ACCEPTED, this.onOperatorAcceptCall.bind(this, operator));
+    operator.on(DISCONNECT, this.onOperatorDisconnected.bind(this, operator));
+  }
+
+  subscribeToSocketEvents(operator) {
+    // Calls
+    const callsAllowed = socketAuth.checkConnectionPermission(
+      operator,
+      CALL_ANSWER_PERMISSION
+    );
+
+    operator.on(
+      CALL_ACCEPTED,
+      callsAllowed
+        ? this.onOperatorAcceptCall.bind(this, operator)
+        : this.emitOperationNotAllowed.bind(this, operator, CALL_ACCEPTED)
+    );
     operator.on(
       CALLBACK_REQUESTED,
-      this.onOperatorRequestedCallback.bind(this, operator)
+      callsAllowed
+        ? this.onOperatorRequestedCallback.bind(this, operator)
+        : this.emitOperationNotAllowed.bind(this, operator, CALLBACK_REQUESTED)
     );
     operator.on(
       CALL_FINISHED,
-      this.onOperatorFinishedCall.bind(this, operator)
+      callsAllowed
+        ? this.onOperatorFinishedCall.bind(this, operator)
+        : this.emitOperationNotAllowed.bind(this, operator, CALL_FINISHED)
     );
-    operator.on(DISCONNECT, this.onOperatorDisconnected.bind(this, operator));
     operator.on(
       STATUS_CHANGED_ONLINE,
-      this.addOperatorToActive.bind(this, operator)
+      callsAllowed
+        ? this.addOperatorToActive.bind(this, operator)
+        : this.emitOperationNotAllowed.bind(
+            this,
+            operator,
+            STATUS_CHANGED_ONLINE
+          )
     );
     operator.on(
       STATUS_CHANGED_OFFLINE,
-      this.removeOperatorFromActive.bind(this, operator)
+      callsAllowed
+        ? this.removeOperatorFromActive.bind(this, operator)
+        : this.emitOperationNotAllowed.bind(
+            this,
+            operator,
+            STATUS_CHANGED_OFFLINE
+          )
+    );
+
+    // Realtime Dashboards
+    const realtimeDashboardsAllowed = socketAuth.checkConnectionPermission(
+      operator,
+      REALTIME_DASHBOARD_SUBSCRIBTION_PERMISSION
     );
 
     operator.on(
       REALTIME_DASHBOARD_SUBSCRIBE,
-      this.subscribeToRealtimeDashboardUpdates.bind(this, operator)
+      realtimeDashboardsAllowed
+        ? this.subscribeToRealtimeDashboardUpdates.bind(this, operator)
+        : this.emitOperationNotAllowed.bind(
+            this,
+            operator,
+            REALTIME_DASHBOARD_SUBSCRIBE
+          )
     );
     operator.on(
       REALTIME_DASHBOARD_UNSUBSCRIBE,
-      this.unsubscibeFromRealtimeDashboardUpdates.bind(this, operator)
+      realtimeDashboardsAllowed
+        ? this.unsubscibeFromRealtimeDashboardUpdates.bind(this, operator)
+        : this.emitOperationNotAllowed.bind(
+            this,
+            operator,
+            REALTIME_DASHBOARD_UNSUBSCRIBE
+          )
     );
   }
 
@@ -135,6 +180,8 @@ class OperatorsRoom {
       operator.identity,
       operator.tenantId
     );
+
+    this.subscribeToSocketEvents(operator);
     this.mapSocketIdentityToId(operator);
     this.addOperatorToActive(operator, data);
   }
@@ -143,7 +190,10 @@ class OperatorsRoom {
     const connectedOperator = this.getConnectedOperator(id);
     if (
       connectedOperator &&
-      socketAuth.checkConnectionPermission(connectedOperator, CALL_ANSWER_PERMISSION)
+      socketAuth.checkConnectionPermission(
+        connectedOperator,
+        CALL_ANSWER_PERMISSION
+      )
     ) {
       logger.debug(
         'Customer call: attempt to accept by operator',
@@ -180,34 +230,6 @@ class OperatorsRoom {
     } else {
       this.onCallAcceptingFailed('Permission Denied', connectedOperator);
     }
-
-    //   // return calls
-    //   //   .acceptCall(operator)
-    //   //   .then(call => {
-    //   //     const {
-    //   //       id,
-    //   //       requestedAt,
-    //   //       requestedBy,
-    //   //       salesRepId,
-    //   //       callbackEnabled,
-    //   //     } = call;
-    //   //     const token = twilio.getToken(operator.identity, id);
-    //   //     operator.emit(ROOM_CREATED, {
-    //   //       id,
-    //   //       requestedAt,
-    //   //       token,
-    //   //       requestedBy,
-    //   //       salesRepId,
-    //   //       callbackEnabled,
-    //   //     });
-    //   //   })
-    //   //   .then(() =>
-    //   //     logger.debug('Customer call: accepted by operator', operator.identity)
-    //   //   )
-    //   //   .catch(err => this.onCallAcceptingFailed(err, operator));
-    // } catch (err) {
-    //   this.onCallAcceptingFailed(err, operator);
-    // }
   }
 
   onCallAcceptingFailed(err, operator) {
@@ -239,13 +261,6 @@ class OperatorsRoom {
     );
     if (!callId) {
       logger.error('Operator callback requested: no callId', operator.identity);
-      return Promise.resolve();
-    }
-    if (!socketAuth.checkConnectionPermission(operator, CALL_ANSWER_PERMISSION)) {
-      logger.error(
-        "Operator dosn't have permission for callback",
-        operator.identity
-      );
       return Promise.resolve();
     }
     return calls
@@ -358,7 +373,10 @@ class OperatorsRoom {
       }
 
       if (
-        socketAuth.checkConnectionPermission(connectedOperator, CALL_ANSWER_PERMISSION)
+        socketAuth.checkConnectionPermission(
+          connectedOperator,
+          CALL_ANSWER_PERMISSION
+        )
       ) {
         const tenantId = connectedOperator.tenantId;
         const groupName = this.getActiveOperatorsGroupName(tenantId);
@@ -540,6 +558,17 @@ class OperatorsRoom {
     }
 
     return true;
+  }
+
+  emitOperationNotAllowed({ id }, operationName) {
+    const connectedOperator = this.getConnectedOperator(id);
+
+    if (connectedOperator) {
+      connectedOperator.emit(
+        UNAUTHORIZED,
+        `Operation "${operationName}" is not allowed.`
+      );
+    }
   }
 }
 

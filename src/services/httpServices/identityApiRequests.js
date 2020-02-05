@@ -33,23 +33,11 @@ function checkTokenValidity(token) {
     .catch(() => false);
 }
 
-// async function checkUserScope(token, role, scope) {
-//   try {
-//     await api.head('role', {
-//       headers: { Authorization: `Bearer ${token}` },
-//       params: { role, scope },
-//     });
-//     return true;
-//   } catch(e) {
-//     if (e.response.status === 403) {
-//       throw UNAUTHORIZED;
-//     } else {
-//       throw TOKEN_INVALID;
-//     }
-//   }
-// }
-
 exports.getCompanyIdByUserId = getCompanyIdByUserId;
 exports.getUserProfile = getUserProfile;
 exports.checkTokenValidity = checkTokenValidity;
-// exports.checkUserScope = checkUserScope;
+
+
+
+// export for unit-tests puproses
+exports._api = api;

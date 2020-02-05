@@ -4,7 +4,7 @@ const publicApi = require('@/services/httpServices/publicApiRequests');
 const identityApi = require('@/services/httpServices/identityApiRequests');
 
 const { connectionsHeap } = require('@/services/connectionsHeap');
-const { TOKEN_INVALID, UNAUTHORIZED } = require('@/constants/connection');
+const { TOKEN_INVALID } = require('@/constants/connection');
 
 const NO_IDENTITY = 'identity.not.provided';
 const NO_DEVICE_ID = 'device.id.not.provided';
@@ -39,10 +39,16 @@ async function authenticateOperator(
     socket.tenantId = tenantId;
     socket.role = profile.role;
     socket.permissions = profile.scopes || [];
+    logger.debug(
+      'Operator: authentification data',
+      profile.role,
+      profile.scopes
+    );
+
     // TODO: should be removed after Identity support of new permissions
     _mockPermissions(socket.permissions);
   } catch (e) {
-    logger.debug('Operator: authentification error', e);
+    logger.debug('Operator: authentification error', JSON.stringify(e));
     return callback(new Error(TOKEN_INVALID));
   }
 
@@ -99,15 +105,16 @@ async function verifyConnectionToken(connection) {
       return false;
     }
   } else {
-    logger.debug('Connection: token was verified less than 1 minute ago', connection.identity);
+    logger.debug(
+      'Connection: token was verified less than 1 minute ago',
+      connection.identity
+    );
   }
 
   return true;
 }
 
 function checkConnectionPermission(connection, permission) {
-  logger.debug('Connection: check permission', connection.identity, permission);
-
   if (!(connection.permissions || []).includes(permission)) {
     logger.debug(
       'Connection: permission denied',
