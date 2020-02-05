@@ -1,5 +1,22 @@
 const _ = require('lodash');
 const Call = require('@/models/call');
+const UndefinedDuration = require('@/models/aggregations/durations');
+
+const prepareMatchForAggregationDurations = ({
+  tenantId,
+  callType,
+  callStatus,
+  from,
+}) => {
+  const match = {
+    tenantId,
+    callType,
+    callStatus,
+    requestedAt: from && { $gte: from },
+  };
+
+  return removeUndefined(match);
+};
 
 const getById = id => Call.findById(id).then(doc => doc.toObject());
 
@@ -71,6 +88,35 @@ const getRangeFilter = (range = {}) => {
 
 const removeUndefined = filter => _.pickBy(filter, _.identity);
 
+const aggregateDurations = filter =>
+  new Promise((resolve, reject) =>
+    Call.aggregate([
+      {
+        $match: prepareMatchForAggregationDurations(filter),
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          maxCallDuration: { $max: '$callDuration' },
+          averageCallDuration: { $avg: '$callDuration' },
+          maxWaitingDuration: { $max: '$waitingDuration' },
+          averageWaitingDuration: { $avg: '$waitingDuration' },
+        },
+      },
+    ]).exec((err, [data = UndefinedDuration] = []) => {
+      if (err) {
+        reject(err);
+      }
+
+      // eslint-disable-next-line no-unused-vars
+      const { _id, ...payload } = data;
+
+      resolve(payload);
+    })
+  );
+
+exports.aggregateDurations = aggregateDurations;
 exports.getById = getById;
 exports.getFilteredBy = getFilteredBy;
 exports.getCountFilteredBy = getCountFilteredBy;
