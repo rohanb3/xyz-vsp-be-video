@@ -1,10 +1,16 @@
 'use strict';
 const Call = require('../src/models/call');
 const { getDifferenceFromTo } = require('../src/services/time');
-const { CALL_ANSWERED, CALL_MISSED } = require('../src/constants/calls');
+const {
+  CALL_ANSWERED,
+  CALL_MISSED,
+  callTypes,
+} = require('../src/constants/calls');
 
-const getCallResultStatus = (requestedAt, finishedAt) =>
-  requestedAt && (finishedAt ? CALL_ANSWERED : CALL_MISSED);
+const getCallResultStatus = (requestedAt, acceptedAt, callType) =>
+  callType !== callTypes.VIDEO
+    ? CALL_ANSWERED
+    : requestedAt && (acceptedAt ? CALL_ANSWERED : CALL_MISSED);
 
 module.exports.up = function() {
   return Call.find({
@@ -17,21 +23,34 @@ module.exports.up = function() {
     calls =>
       calls.length &&
       Call.collection.bulkWrite(
-        calls.map(({ _id, acceptedAt, requestedAt, missedAt, finishedAt }) => ({
-          updateOne: {
-            filter: { _id },
-            update: {
-              $set: {
-                waitingDuration: getDifferenceFromTo(
-                  requestedAt,
-                  acceptedAt || missedAt
-                ),
-                callStatus: getCallResultStatus(requestedAt, finishedAt),
-                callDuration: getDifferenceFromTo(acceptedAt, finishedAt),
+        calls.map(
+          ({
+            _id,
+            acceptedAt,
+            requestedAt,
+            missedAt,
+            finishedAt,
+            callType,
+          }) => ({
+            updateOne: {
+              filter: { _id },
+              update: {
+                $set: {
+                  waitingDuration: getDifferenceFromTo(
+                    requestedAt,
+                    acceptedAt || missedAt
+                  ),
+                  callStatus: getCallResultStatus(
+                    requestedAt,
+                    acceptedAt,
+                    callType
+                  ),
+                  callDuration: getDifferenceFromTo(acceptedAt, finishedAt),
+                },
               },
             },
-          },
-        }))
+          })
+        )
       )
   );
 };
