@@ -88,7 +88,8 @@ class CustomersRoom {
       'Customer authenticated',
       customer.id,
       customer.identity,
-      customer.deviceId
+      customer.deviceId,
+      customer.tenantId
     );
     return this.getSocketIdByDeviceId(customer.deviceId)
       .then(socketId => {

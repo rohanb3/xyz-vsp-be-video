@@ -248,4 +248,14 @@ describe('Queue: ', () => {
         });
     });
   });
+
+  describe('getItems(): ', () => {
+    it('should call connector.getItems', () => {
+      queue.connector.getItems = jest.fn(() => Promise.resolve(null));
+
+      queue.getItems();
+
+      expect(queue.connector.getItems).toHaveBeenCalled();
+    });
+  });
 });

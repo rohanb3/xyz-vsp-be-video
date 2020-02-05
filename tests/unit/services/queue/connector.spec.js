@@ -25,7 +25,7 @@ describe('queue connector: ', () => {
 
     it('should return true if key exists', () => {
       const id = 'item42';
-      return connector.isExist(id).then((exist) => {
+      return connector.isExist(id).then(exist => {
         expect(exist).toBeTruthy();
         expect(client.lrange).toHaveBeenCalledWith(QUEUE_NAME, 0, -1);
       });
@@ -33,7 +33,7 @@ describe('queue connector: ', () => {
 
     it('should return false if no key exists', () => {
       const id = 'item12';
-      return connector.isExist(id).then((exist) => {
+      return connector.isExist(id).then(exist => {
         expect(exist).toBeFalsy();
         expect(client.lrange).toHaveBeenCalledWith(QUEUE_NAME, 0, -1);
       });
@@ -43,7 +43,7 @@ describe('queue connector: ', () => {
   describe('getSize(): ', () => {
     it('should return size', () => {
       client.llen = jest.fn(() => Promise.resolve(42));
-      return connector.getSize().then((size) => {
+      return connector.getSize().then(size => {
         expect(size).toBe(42);
         expect(client.llen).toHaveBeenCalledWith(QUEUE_NAME);
       });
@@ -57,7 +57,7 @@ describe('queue connector: ', () => {
       storage.set = jest.fn(() => Promise.resolve());
       connector.isExist = jest.fn(() => Promise.resolve(false));
 
-      return connector.enqueue().then((res) => {
+      return connector.enqueue().then(res => {
         expect(res).toBeFalsy();
         expect(client.lpush).not.toHaveBeenCalled();
         expect(client.lrem).not.toHaveBeenCalled();
@@ -95,7 +95,7 @@ describe('queue connector: ', () => {
       storage.set = jest.fn(() => Promise.resolve());
       connector.isExist = jest.fn(() => Promise.resolve(true));
 
-      return connector.enqueue(id, item).catch((err) => {
+      return connector.enqueue(id, item).catch(err => {
         expect(err).toBeInstanceOf(errors.OverrideItemError);
         expect(client.lpush).not.toHaveBeenCalled();
         expect(client.lrem).not.toHaveBeenCalled();
@@ -115,7 +115,7 @@ describe('queue connector: ', () => {
       storage.set = jest.fn(() => Promise.reject(error));
       connector.isExist = jest.fn(() => Promise.resolve(false));
 
-      return connector.enqueue(id, item).catch((err) => {
+      return connector.enqueue(id, item).catch(err => {
         expect(err).toBe(error);
         expect(err).not.toBeInstanceOf(errors.OverrideItemError);
         expect(client.lpush).toHaveBeenCalledWith(QUEUE_NAME, id);
@@ -135,7 +135,7 @@ describe('queue connector: ', () => {
       client.rpop = jest.fn(() => Promise.resolve(id));
       storage.take = jest.fn(() => Promise.resolve(storedCall));
 
-      return connector.dequeue().then((item) => {
+      return connector.dequeue().then(item => {
         expect(item).toEqual(storedCall);
         expect(client.rpop).toHaveBeenCalledWith(QUEUE_NAME);
         expect(storage.take).toHaveBeenCalledWith(id);
@@ -149,7 +149,7 @@ describe('queue connector: ', () => {
       client.rpop = jest.fn(() => Promise.resolve(id));
       storage.take = jest.fn(() => Promise.reject(error));
 
-      return connector.dequeue().catch((err) => {
+      return connector.dequeue().catch(err => {
         expect(err).toBeInstanceOf(errors.NotFoundItemError);
         expect(client.rpop).toHaveBeenCalledWith(QUEUE_NAME);
         expect(storage.take).toHaveBeenCalledWith(id);
@@ -160,7 +160,7 @@ describe('queue connector: ', () => {
       client.rpop = jest.fn(() => Promise.resolve(null));
       storage.take = jest.fn(() => Promise.resolve());
 
-      return connector.dequeue().catch((err) => {
+      return connector.dequeue().catch(err => {
         expect(err).toBeInstanceOf(errors.EmptyQueueError);
         expect(client.rpop).toHaveBeenCalledWith(QUEUE_NAME);
         expect(storage.take).not.toHaveBeenCalled();
@@ -174,7 +174,7 @@ describe('queue connector: ', () => {
       client.rpop = jest.fn(() => Promise.resolve(id));
       storage.take = jest.fn(() => Promise.reject(error));
 
-      return connector.dequeue().catch((err) => {
+      return connector.dequeue().catch(err => {
         expect(err).toBe(error);
         expect(err).not.toBeInstanceOf(errors.NotFoundItemError);
         expect(client.rpop).toHaveBeenCalledWith(QUEUE_NAME);
@@ -189,7 +189,7 @@ describe('queue connector: ', () => {
       storage.take = jest.fn(() => Promise.resolve());
       connector.isExist = jest.fn(() => Promise.resolve(false));
 
-      return connector.remove().then((res) => {
+      return connector.remove().then(res => {
         expect(res).toBeFalsy();
         expect(client.lrem).not.toHaveBeenCalled();
         expect(storage.take).not.toHaveBeenCalled();
@@ -217,7 +217,7 @@ describe('queue connector: ', () => {
       storage.take = jest.fn(() => Promise.resolve());
       connector.isExist = jest.fn(() => Promise.resolve(false));
 
-      return connector.remove(id).catch((err) => {
+      return connector.remove(id).catch(err => {
         expect(err).toBeInstanceOf(errors.NotFoundItemError);
         expect(client.lrem).not.toHaveBeenCalled();
         expect(storage.take).not.toHaveBeenCalled();
@@ -232,7 +232,7 @@ describe('queue connector: ', () => {
       storage.take = jest.fn(() => Promise.reject(error));
       connector.isExist = jest.fn(() => Promise.resolve(true));
 
-      return connector.remove(id).catch((err) => {
+      return connector.remove(id).catch(err => {
         expect(err).toBeInstanceOf(errors.NotFoundItemError);
         expect(storage.take).toHaveBeenCalledWith(id);
         expect(client.lrem).toHaveBeenCalledWith(QUEUE_NAME, 1, id);
@@ -247,7 +247,7 @@ describe('queue connector: ', () => {
       storage.take = jest.fn(() => Promise.reject(error));
       connector.isExist = jest.fn(() => Promise.resolve(true));
 
-      return connector.remove(id).catch((err) => {
+      return connector.remove(id).catch(err => {
         expect(err).toBe(error);
         expect(err).not.toBeInstanceOf(errors.OverrideItemError);
         expect(storage.take).toHaveBeenCalledWith(id);
@@ -261,7 +261,7 @@ describe('queue connector: ', () => {
       client.lrange = jest.fn(() => Promise.resolve([]));
       storage.get = jest.fn(() => Promise.resolve());
 
-      return connector.getPeak().then((peak) => {
+      return connector.getPeak().then(peak => {
         expect(peak).toBeNull();
         expect(client.lrange).toHaveBeenCalledWith(QUEUE_NAME, -1, -1);
         expect(storage.get).not.toHaveBeenCalled();
@@ -272,7 +272,7 @@ describe('queue connector: ', () => {
       client.lrange = jest.fn(() => Promise.resolve(null));
       storage.get = jest.fn(() => Promise.resolve());
 
-      return connector.getPeak().then((peak) => {
+      return connector.getPeak().then(peak => {
         expect(peak).toBeNull();
         expect(client.lrange).toHaveBeenCalledWith(QUEUE_NAME, -1, -1);
         expect(storage.get).not.toHaveBeenCalled();
@@ -287,7 +287,7 @@ describe('queue connector: ', () => {
       client.lrange = jest.fn(() => Promise.resolve([id]));
       storage.get = jest.fn(() => Promise.resolve(storedCall));
 
-      return connector.getPeak().then((peak) => {
+      return connector.getPeak().then(peak => {
         expect(peak).toEqual(storedCall);
         expect(client.lrange).toHaveBeenCalledWith(QUEUE_NAME, -1, -1);
         expect(storage.get).toHaveBeenCalledWith(id);
@@ -302,11 +302,74 @@ describe('queue connector: ', () => {
       client.lrange = jest.fn(() => Promise.resolve(id));
       storage.get = jest.fn(() => Promise.resolve(storedCall));
 
-      return connector.getPeak().then((peak) => {
+      return connector.getPeak().then(peak => {
         expect(peak).toEqual(storedCall);
         expect(client.lrange).toHaveBeenCalledWith(QUEUE_NAME, -1, -1);
         expect(storage.get).toHaveBeenCalledWith(id);
       });
+    });
+  });
+
+  describe('getItems():', () => {
+    it('should return array of queue objects', async () => {
+      const keys = ['333', '222', '111'];
+
+      // should be reversed because Redis stores FILO queue and we want LIFO
+      const reversedKeys = ['111', '222', '333'];
+
+      const item1 = { id: 111 };
+      const item2 = { id: 222 };
+      const item3 = { id: 333 };
+      const items = [item1, item2, item3];
+
+      client.lrange = jest.fn().mockResolvedValue(keys);
+      storage.getMultiple = jest.fn().mockResolvedValue(items);
+
+      const promise = connector.getItems();
+
+      await expect(promise).resolves.toBeDefined();
+      expect(client.lrange).toHaveBeenCalledWith(QUEUE_NAME, 0, -1);
+      expect(storage.getMultiple).toHaveBeenCalledWith(reversedKeys);
+
+      // check correct items order;
+      const result = await promise;
+      expect(result[0]).toBe(item1);
+      expect(result[1]).toBe(item2);
+      expect(result[2]).toBe(item3);
+    });
+
+    it('should return empty array if queue is empty', async () => {
+      const keys = [];
+      const items = [];
+
+      client.lrange = jest.fn().mockResolvedValue(keys);
+      storage.getMultiple = jest.fn().mockResolvedValue(items);
+
+      const promise = connector.getItems();
+
+      await expect(promise).resolves.toBeDefined();
+      const result = await promise;
+      expect(result.length).toBe(0);
+    });
+
+    it('should filter empty item from queue objects', async () => {
+      const keys = ['333', '222', '111'];
+
+      const item1 = { id: 111 };
+      const item3 = { id: 333 };
+      const items = [item1, null, item3];
+
+      client.lrange = jest.fn().mockResolvedValue(keys);
+      storage.getMultiple = jest.fn().mockResolvedValue(items);
+
+      const promise = connector.getItems();
+
+      await expect(promise).resolves.toBeDefined();
+      // check correct items order;
+      const result = await promise;
+      expect(result.length).toBe(2);
+      expect(result[0]).toBe(item1);
+      expect(result[1]).toBe(item3);
     });
   });
 });

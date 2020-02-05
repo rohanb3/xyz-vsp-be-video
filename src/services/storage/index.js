@@ -17,6 +17,16 @@ function get(key) {
     .then(deserialize);
 }
 
+function getMultiple(keys) {
+  console.log('getMultipple.keys', keys);
+  if (!Array.isArray(keys)) {
+    return Promise.resolve(null);
+  }
+
+  return client.mget(keys)
+    .then(items => items.map(deserialize))
+}
+
 function set(key, value) {
   return key ? client.set(key, serialize(value)) : Promise.resolve(null);
 }
@@ -54,6 +64,7 @@ function update(key, updates = {}) {
 
 exports.isExist = isExist;
 exports.get = get;
+exports.getMultiple = getMultiple;
 exports.set = set;
 exports.take = take;
 exports.remove = remove;
