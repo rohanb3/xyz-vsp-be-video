@@ -219,6 +219,10 @@ function getCallsInfo(tenantId) {
   return pendingCallsQueues.getPendingCallsQueue(tenantId).getQueueInfo();
 }
 
+function getPendingCalls(tenantId) {
+  return pendingCallsQueues.getPendingCallsQueue(tenantId).getItems();
+}
+
 function subscribeToCallsLengthChanging(listener) {
   return pendingCallsQueues.subscribeOnQueuesChanges(listener);
 }
@@ -276,6 +280,7 @@ exports.declineCallback = declineCallback;
 exports.getOldestCall = getOldestCall;
 exports.getPendingCallsLength = getPendingCallsLength;
 exports.getCallsInfo = getCallsInfo;
+exports.getPendingCalls = getPendingCalls;
 
 exports.subscribeToCallRequesting = pubSubChannel.subscribe.bind(
   null,

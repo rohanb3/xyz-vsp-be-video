@@ -690,4 +690,24 @@ describe('calls: ', () => {
       ).toHaveBeenCalledWith(listener);
     });
   });
+
+  describe('getPendingCalls(): ', () => {
+    const tenantId = 'spectrum';
+
+    it('should call getItems() of tenant queue', async () => {
+      const items = [{id: 111}, {id:222}];
+      const mockedGetItems = jest.fn().mockResolvedValue(items);
+
+      pendingCallsQueue.getPendingCallsQueue = jest.fn(() => ({
+        getItems: mockedGetItems,
+      }));
+
+      const promise = calls.getPendingCalls(tenantId);
+
+      await expect(promise).resolves.toBe(items);
+      expect(pendingCallsQueue.getPendingCallsQueue).toHaveBeenCalledWith(tenantId);
+      expect(mockedGetItems).toHaveBeenCalled();
+    });
+  });
+
 });
