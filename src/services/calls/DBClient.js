@@ -2,17 +2,27 @@ const _ = require('lodash');
 const Call = require('@/models/call');
 const UndefinedDuration = require('@/models/aggregations/durations');
 
+const prepareFromToFilter = (from, to) => {
+  const filterObj = removeUndefined({
+    $gte: from,
+    $lt: to,
+  });
+
+  return Object.getOwnPropertyNames(filterObj).length ? filterObj : undefined;
+};
+
 const prepareMatchForAggregationDurations = ({
   tenantId,
   callType,
   callStatus,
   from,
+  to,
 }) => {
   const match = {
     tenantId,
     callType,
     callStatus,
-    requestedAt: from && { $gte: from },
+    requestedAt: prepareFromToFilter(from, to),
   };
 
   return removeUndefined(match);
