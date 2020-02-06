@@ -45,13 +45,16 @@ async function checkUserScope(Authorization, role, scope) {
   } catch (e) {
     if (e.response.status === 403) {
       throw FORBIDDEN;
-    } else {
+    } else if (e.response.status === 401) {
       throw TOKEN_INVALID;
+    } else {
+      throw e;
     }
   }
 }
 
 exports.checkUserScope = checkUserScope;
+exports.getUserProfile = getUserProfile;
 exports.checkTokenValidity = checkTokenValidity;
 exports.getCompanyIdByUserId = getCompanyIdByUserId;
 

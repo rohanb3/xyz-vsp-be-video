@@ -1,10 +1,10 @@
-const { getAggregatedDurations } = require('@/services/calls/dashboard');
+const dashboard = require('@/services/calls/dashboard');
 
 exports.getDurations = async (request, response) => {
   const { tenantId, from, to, callType, callStatus } = request.query;
 
   try {
-    const calls = await getAggregatedDurations({
+    const calls = await dashboard.getAggregatedDurations({
       to,
       from,
       tenantId,

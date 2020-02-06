@@ -1,8 +1,6 @@
 const logger = require('@/services/logger')(module);
-const { isPermissionGranted } = require('@/services/permissionsHelper');
-const {
-  getTenantIdByCompanyId,
-} = require('@/services/httpServices/publicApiRequests');
+const permissionsHelper = require('@/services/permissionsHelper');
+const publicApiRequests = require('@/services/httpServices/publicApiRequests');
 
 const validateTenantFilter = permission => async (request, res, next) => {
   const { tenantId } = request.query;
@@ -19,9 +17,8 @@ const validateTenantFilter = permission => async (request, res, next) => {
   try {
     if (!tenantId) {
       logger.info('middleware.validateTenantFilter.noTenantId');
-      next();
     } else {
-      const allowed = await isPermissionGranted(
+      const allowed = await permissionsHelper.isPermissionGranted(
         authorization,
         role,
         permission
@@ -31,7 +28,9 @@ const validateTenantFilter = permission => async (request, res, next) => {
           `middleware.validateTenantFilter.tenantIdNotAllowed ${tenantId} for user ${oid}`
         );
         tenantId;
-        const allowedTenantId = await getTenantIdByCompanyId(companyId);
+        const allowedTenantId = await publicApiRequests.getTenantIdByCompanyId(
+          companyId
+        );
         if (allowedTenantId !== tenantId) {
           request.query.tenantId = allowedTenantId;
         }
@@ -40,9 +39,9 @@ const validateTenantFilter = permission => async (request, res, next) => {
           `middleware.validateTenantFilter.tenantIdAllowed ${tenantId} for user ${oid}`
         );
       }
-
-      next();
     }
+
+    next();
   } catch (err) {
     logger.error(
       `middleware.validateTenantFilter.unexpectedError ${tenantId} for user ${oid}`

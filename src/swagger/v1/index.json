@@ -414,8 +414,10 @@
         "total": { "type": "int" },
         "maxCallDuration": { "type": "int" },
         "averageCallDuration": { "type": "number" },
+        "totalCallDuration": { "type": "number" },
         "maxWaitingDuration": { "type": "int" },
-        "averageWaitingDuration": { "type": "number" }
+        "averageWaitingDuration": { "type": "number" },
+        "totalWaitingDuration": { "type": "number" }
       }
     }
   }

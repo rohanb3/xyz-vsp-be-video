@@ -110,8 +110,10 @@ const aggregateDurations = filter =>
           total: { $sum: 1 },
           maxCallDuration: { $max: '$callDuration' },
           averageCallDuration: { $avg: '$callDuration' },
+          totalCallDuration: { $sum: '$callDuration' },
           maxWaitingDuration: { $max: '$waitingDuration' },
           averageWaitingDuration: { $avg: '$waitingDuration' },
+          totalWaitingDuration: { $sum: '$waitingDuration' },
         },
       },
     ]).exec((err, [data = UndefinedDuration] = []) => {

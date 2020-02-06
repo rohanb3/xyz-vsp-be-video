@@ -1,4 +1,8 @@
-const authenticateRequest = () => (req, res, next) => next();
+const authenticateRequest = () => (req, res, next) => {
+  req.authInfo = {};
+  next();
+};
+
 const setupSwagger = () => {};
 const validateRequest = () => (req, res, next) => next();
 const protectWithPermission = () => (req, res, next) => next();
