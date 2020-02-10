@@ -3,10 +3,13 @@ jest.mock('@/services/twilio');
 const {
   _api: api,
   getUserProfile,
+  checkUserScope,
   checkTokenValidity,
 } = require('@/services/httpServices/identityApiRequests');
 
-describe('identityApiRequests: ', () => {
+const { TOKEN_INVALID, FORBIDDEN } = require('@/constants/connection');
+
+describe('identityApiRequests', () => {
   describe('getUserProfile(): ', () => {
     it('should load user profile with given security token', async () => {
       const token = 'security-token';
@@ -47,7 +50,9 @@ describe('identityApiRequests: ', () => {
 
       const promise = getUserProfile();
 
-      await expect(promise).rejects.toMatchObject({message: 'Token is required'});
+      await expect(promise).rejects.toMatchObject({
+        message: 'Token is required',
+      });
     });
   });
 
@@ -81,5 +86,69 @@ describe('identityApiRequests: ', () => {
       expect(api.get).not.toHaveBeenCalled();
     });
   });
+  describe('checkUserScope():', () => {
+    it('should return true if user have an access to scope ', async () => {
+      api.head = jest.fn().mockResolvedValue();
+      const role = 'role';
+      const scope = 'scope';
+      const token = 'token';
 
+      const promise = checkUserScope(token, role, scope);
+
+      await expect(promise).resolves.toBe(true);
+      expect(api.head).toHaveBeenCalledWith('role', {
+        headers: { Authorization: token },
+        params: { role: role, scope: scope },
+      });
+    });
+
+    it('should reject if user have no access to scope ', async () => {
+      api.head = jest.fn().mockRejectedValue({ response: { status: 403 } });
+      const role = 'role';
+      const scope = 'scope';
+      const token = 'token';
+
+      const promise = checkUserScope(token, role, scope);
+
+      await expect(promise).rejects.toStrictEqual(new Error(FORBIDDEN));
+      expect(api.head).toHaveBeenCalledWith('role', {
+        headers: { Authorization: token },
+        params: { role: role, scope: scope },
+      });
+    });
+
+    it('should reject if user have not valid token ', async () => {
+      api.head = jest.fn().mockRejectedValue({ response: { status: 401 } });
+      const role = 'role';
+      const scope = 'scope';
+      const token = 'token';
+
+      const promise = checkUserScope(token, role, scope);
+
+      await expect(promise).rejects.toStrictEqual(new Error(TOKEN_INVALID));
+      expect(api.head).toHaveBeenCalledWith('role', {
+        headers: { Authorization: token },
+        params: { role: role, scope: scope },
+      });
+    });
+
+    it('should rethrow any unexpected error ', async () => {
+      const unexpectedError = {
+        response: { status: 502, payload: 'unexpected error' },
+      };
+
+      api.head = jest.fn().mockRejectedValue(unexpectedError);
+      const role = 'role';
+      const scope = 'scope';
+      const token = 'token';
+
+      const promise = checkUserScope(token, role, scope);
+
+      await expect(promise).rejects.toBe(unexpectedError);
+      expect(api.head).toHaveBeenCalledWith('role', {
+        headers: { Authorization: token },
+        params: { role: role, scope: scope },
+      });
+    });
+  });
 });
