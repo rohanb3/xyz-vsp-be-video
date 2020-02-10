@@ -1,6 +1,12 @@
 const router = require('express').Router();
 
+const {
+  GET_DASHBOARD_PERMISSION,
+  DASHBOARD_CHOOSE_TENANT_PERMISSION,
+} = require('@/constants/permissions');
 const callFeedbackCustomer = require('@/routes/callFeedbackCustomer');
+const { getVersion } = require('@/routes/version');
+const { getDurations } = require('@/routes/dashboard');
 const callFeedbackOperator = require('@/routes/callFeedbackOperator');
 const { getCalls, getCallsValidationArray } = require('@/routes/calls');
 const { getActiveCallSalesRep } = require('@/routes/activeCallSalesRep');
@@ -8,10 +14,21 @@ const {
   setupSwagger,
   validateRequest,
   authenticateRequest,
+  protectWithPermission,
 } = require('@/routes/utils');
 const { makeCall } = require('@/services/voiceCalls');
+const { validateTenantFilter } = require('@/services/filtersValidator');
 
 setupSwagger(router);
+
+router.route('/version').get(getVersion);
+
+router
+  .route('/dashboard/durations')
+  .get(authenticateRequest())
+  .get(protectWithPermission(GET_DASHBOARD_PERMISSION))
+  .get(validateTenantFilter(DASHBOARD_CHOOSE_TENANT_PERMISSION))
+  .get(getDurations);
 
 router
   .route('/call-feedback-customer')
