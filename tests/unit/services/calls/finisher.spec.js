@@ -3,6 +3,7 @@ jest.mock('@/services/calls/activeCallsHeap');
 jest.mock('@/services/calls/pendingCallbacksHeap');
 jest.mock('@/services/calls/DBClient');
 
+const time = require('@/services/time');
 const pendingCallsQueue = require('@/services/calls/pendingCallsQueue');
 const { activeCallsHeap } = require('@/services/calls/activeCallsHeap');
 const {
@@ -17,16 +18,19 @@ describe('callFinisher: ', () => {
   describe('markCallAsMissed(): ', () => {
     it('should remove call from pending calls queue and mark it as missed', () => {
       const callId = 'call42';
+
       const expectedUpdates = {
         missedAt: expect.any(String),
         callStatus: CALL_MISSED,
-        waitingDuration: expect.any(Number),
+        waitingDuration: 3,
       };
 
       const mockedRemove = jest.fn(() => Promise.resolve());
       pendingCallsQueue.getPendingCallsQueue = jest.fn().mockReturnValueOnce({
         remove: mockedRemove,
       });
+
+      time.getDifferenceFromTo = jest.fn(() => 3);
 
       callsDBClient.updateById = jest.fn(() => Promise.resolve());
 
@@ -48,11 +52,12 @@ describe('callFinisher: ', () => {
         finishedAt: expect.any(String),
         finishedBy,
         callStatus: CALL_ANSWERED,
-        callDuration: expect.any(Number),
+        callDuration: 54,
       };
 
       activeCallsHeap.remove = jest.fn(() => Promise.resolve());
       callsDBClient.updateById = jest.fn(() => Promise.resolve());
+      time.getDifferenceFromTo = jest.fn(() => 54);
 
       return callFinisher.markCallAsFinished(callId, finishedBy).then(() => {
         expect(activeCallsHeap.remove).toHaveBeenCalledWith(callId);

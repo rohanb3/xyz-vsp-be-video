@@ -44,9 +44,9 @@ async function checkUserScope(Authorization, role, scope) {
     return true;
   } catch (e) {
     if (e.response.status === 403) {
-      throw FORBIDDEN;
+      throw new Error(FORBIDDEN);
     } else if (e.response.status === 401) {
-      throw TOKEN_INVALID;
+      throw new Error(TOKEN_INVALID);
     } else {
       throw e;
     }

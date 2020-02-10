@@ -27,12 +27,14 @@ const validateTenantFilter = permission => async (request, res, next) => {
         logger.info(
           `middleware.validateTenantFilter.tenantIdNotAllowed ${tenantId} for user ${oid}`
         );
-        tenantId;
         const allowedTenantId = await publicApiRequests.getTenantIdByCompanyId(
           companyId
         );
         if (allowedTenantId !== tenantId) {
           request.query.tenantId = allowedTenantId;
+          logger.info(
+            `middleware.validateTenantFilter.tenantWasReplaced from ${tenantId} to ${allowedTenantId} for user ${oid}`
+          );
         }
       } else {
         logger.info(

@@ -6,64 +6,95 @@ const {
 } = require('@/services/calls/pendingCallbacksHeap');
 const callsDBClient = require('@/services/calls/DBClient');
 const logger = require('@/services/logger')(module);
-const { formattedTimestamp, getDifferenceFromTo } = require('@/services/time');
+const time = require('@/services/time');
 
 async function markCallAsMissed(callId, finishedBy, tenantId) {
   await pendingCallsQueues.getPendingCallsQueue(tenantId).remove(callId);
-  logger.debug('call.missed.removed.from.queue', callId);
+  logger.debug(
+    'call.missed.removed.from.queue markCallAsMissed',
+    callId,
+    finishedBy
+  );
 
   const call = await callsDBClient.getById(callId);
   const { requestedAt } = call || {};
-  const missedAt = formattedTimestamp();
+  const missedAt = time.formattedTimestamp();
   const updates = {
     finishedBy,
-    waitingDuration: getDifferenceFromTo(requestedAt, missedAt),
+    waitingDuration: time.getDifferenceFromTo(requestedAt, missedAt),
     callStatus: CALL_MISSED,
     missedAt,
   };
 
-  return await callsDBClient.updateById(callId, updates);
+  const res = await callsDBClient.updateById(callId, updates);
+  logger.debug('call.missed.updated.in.db markCallAsMissed', res);
+
+  return res;
 }
 
 async function markCallAsFinished(callId, finishedBy) {
   await activeCallsHeap.remove(callId);
+  logger.debug(
+    'call.finished.removed.from.queue markCallAsFinished',
+    callId,
+    finishedBy
+  );
 
   const call = await callsDBClient.getById(callId);
+  logger.debug('call.finished.got.from.db markCallAsFinished', call);
   const { finishedAt, acceptedAt } = call || {};
 
   const updates = {
     finishedBy,
-    finishedAt: formattedTimestamp(),
-    callDuration: getDifferenceFromTo(finishedAt, acceptedAt),
+    finishedAt: time.formattedTimestamp(),
+    callDuration: time.getDifferenceFromTo(finishedAt, acceptedAt),
     callStatus: CALL_ANSWERED,
   };
 
-  return await callsDBClient.updateById(callId, updates);
+  const res = await callsDBClient.updateById(callId, updates);
+  logger.debug('call.finished.updated.in.db markCallAsFinished', res);
+
+  return res;
 }
 
-function markLastCallbackAsMissed(callId) {
-  return pendingCallbacksHeap.remove(callId).then(call => {
-    const callbacks = [...call.callbacks];
-    const lastCallback = callbacks[callbacks.length - 1];
+async function markLastCallbackAsMissed(callId) {
+  const call = await pendingCallbacksHeap.remove(callId);
+  logger.debug(
+    'callback.missed.removed.from.queue markLastCallbackAsMissed',
+    callId
+  );
+  const callbacks = [...call.callbacks];
+  const lastCallback = callbacks[callbacks.length - 1];
 
-    lastCallback.missedAt = formattedTimestamp();
+  lastCallback.missedAt = time.formattedTimestamp();
 
-    const updates = { callbacks };
-    return callsDBClient.updateById(callId, updates);
-  });
+  const updates = { callbacks };
+  const res = await callsDBClient.updateById(callId, updates);
+  logger.debug('callback.missed.updated.in.db markLastCallbackAsMissed', res);
+
+  return res;
 }
 
-function markLastCallbackAsFinished(callId, finishedBy) {
-  return activeCallsHeap.remove(callId).then(call => {
-    const callbacks = [...call.callbacks];
-    const lastCallback = callbacks[callbacks.length - 1];
+async function markLastCallbackAsFinished(callId, finishedBy) {
+  const call = await activeCallsHeap.remove(callId);
+  logger.debug(
+    'callback.finished.removed.from.queue markLastCallbackAsFinished',
+    callId
+  );
+  const callbacks = [...call.callbacks];
+  const lastCallback = callbacks[callbacks.length - 1];
 
-    lastCallback.finishedAt = formattedTimestamp();
-    lastCallback.finishedBy = finishedBy;
+  lastCallback.finishedAt = time.formattedTimestamp();
+  lastCallback.finishedBy = finishedBy;
 
-    const updates = { callbacks };
-    return callsDBClient.updateById(callId, updates);
-  });
+  const updates = { callbacks };
+  const res = await callsDBClient.updateById(callId, updates);
+  logger.debug(
+    'callback.finished.updated.in.db markLastCallbackAsFinished',
+    res
+  );
+
+  return res;
 }
 
 exports.markCallAsMissed = markCallAsMissed;

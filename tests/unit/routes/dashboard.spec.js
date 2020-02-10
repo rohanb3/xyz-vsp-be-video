@@ -43,7 +43,7 @@ describe('GET /api/video/dashboard/durations', () => {
       .get('/api/video/dashboard/durations')
       .expect(500)
       .then(res => {
-        expect(res.body).toEqual(error);
+        expect(res.body).toStrictEqual(error);
       });
   });
 });

@@ -9,6 +9,7 @@ const { activeCallsHeap } = require('@/services/calls/activeCallsHeap');
 const {
   pendingCallbacksHeap,
 } = require('@/services/calls/pendingCallbacksHeap');
+const time = require('@/services/time');
 const callsDBClient = require('@/services/calls/DBClient');
 const { connectionsHeap } = require('@/services/connectionsHeap');
 const storage = require('@/services/storage');
@@ -100,7 +101,7 @@ describe('calls: ', () => {
         acceptedBy,
         acceptedAt: expect.any(String),
         callStatus: CALL_ANSWERED,
-        waitingDuration: expect.any(Number),
+        waitingDuration: 3,
       };
       const callFromQueue = {
         requestedBy,
@@ -117,6 +118,7 @@ describe('calls: ', () => {
         dequeue: mockedDEnqueue,
       });
 
+      time.getDifferenceFromTo = jest.fn(() => 3);
       activeCallsHeap.isExist = jest.fn(() => Promise.resolve(true));
       connectionsHeap.update = jest.fn(() => Promise.resolve());
 
@@ -139,7 +141,7 @@ describe('calls: ', () => {
         acceptedBy,
         acceptedAt: expect.any(String),
         callStatus: CALL_ANSWERED,
-        waitingDuration: expect.any(Number),
+        waitingDuration: 3,
       };
       const callFromQueue = {
         requestedBy: 'user24',
@@ -156,6 +158,7 @@ describe('calls: ', () => {
         dequeue: mockedDEnqueue,
       });
 
+      time.getDifferenceFromTo = jest.fn(() => 3);
       callsErrorHandler.onAcceptCallFailed = jest.fn(() => Promise.resolve());
       activeCallsHeap.isExist = jest
         .fn()
@@ -181,7 +184,7 @@ describe('calls: ', () => {
         acceptedBy,
         acceptedAt: expect.any(String),
         callStatus: CALL_ANSWERED,
-        waitingDuration: expect.any(Number),
+        waitingDuration: 3,
       };
       const callFromQueue = {
         requestedBy: 'user24',
@@ -198,6 +201,7 @@ describe('calls: ', () => {
         dequeue: mockedDEnqueue,
       });
 
+      time.getDifferenceFromTo = jest.fn(() => 3);
       callsErrorHandler.onAcceptCallFailed = jest.fn(() => Promise.resolve());
       activeCallsHeap.isExist = jest
         .fn()
@@ -223,7 +227,7 @@ describe('calls: ', () => {
         acceptedBy,
         acceptedAt: expect.any(String),
         callStatus: CALL_ANSWERED,
-        waitingDuration: expect.any(Number),
+        waitingDuration: 3,
       };
       const callFromQueue = {
         requestedBy: 'user24',
@@ -240,6 +244,7 @@ describe('calls: ', () => {
         dequeue: mockedDEnqueue,
       });
 
+      time.getDifferenceFromTo = jest.fn(() => 3);
       callsErrorHandler.onAcceptCallFailed = jest.fn(() => Promise.resolve());
       activeCallsHeap.isExist = jest
         .fn()
@@ -695,7 +700,7 @@ describe('calls: ', () => {
     const tenantId = 'spectrum';
 
     it('should call getItems() of tenant queue', async () => {
-      const items = [{id: 111}, {id:222}];
+      const items = [{ id: 111 }, { id: 222 }];
       const mockedGetItems = jest.fn().mockResolvedValue(items);
 
       pendingCallsQueue.getPendingCallsQueue = jest.fn(() => ({
@@ -705,9 +710,10 @@ describe('calls: ', () => {
       const promise = calls.getPendingCalls(tenantId);
 
       await expect(promise).resolves.toBe(items);
-      expect(pendingCallsQueue.getPendingCallsQueue).toHaveBeenCalledWith(tenantId);
+      expect(pendingCallsQueue.getPendingCallsQueue).toHaveBeenCalledWith(
+        tenantId
+      );
       expect(mockedGetItems).toHaveBeenCalled();
     });
   });
-
 });

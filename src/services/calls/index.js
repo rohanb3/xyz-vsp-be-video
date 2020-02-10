@@ -1,4 +1,5 @@
 /* eslint-disable no-use-before-define */
+const logger = require('@/services/logger')(module);
 const pendingCallsQueues = require('@/services/calls/pendingCallsQueue');
 const { activeCallsHeap } = require('@/services/calls/activeCallsHeap');
 const {
@@ -28,7 +29,7 @@ const {
   callTypes,
 } = require('@/constants/calls');
 const callsErrorHandler = require('@/services/calls/errorHandler');
-const { formattedTimestamp, getDifferenceFromTo } = require('@/services/time');
+const time = require('@/services/time');
 
 function requestCall({
   requestedBy,
@@ -39,7 +40,7 @@ function requestCall({
 }) {
   const call = {
     requestedBy,
-    requestedAt: formattedTimestamp(),
+    requestedAt: time.formattedTimestamp(),
     deviceId,
     salesRepId,
     callbackEnabled,
@@ -67,18 +68,20 @@ function takeCall(tenantId) {
 async function acceptCall(operator) {
   const updates = {
     acceptedBy: operator.identity,
-    acceptedAt: formattedTimestamp(),
+    acceptedAt: time.formattedTimestamp(),
   };
   const call = {
     ...updates,
   };
 
   const callFromQueue = await takeCall(operator.tenantId);
+  logger.debug('call.accept.call.from.pending.queue.taken', callFromQueue);
   const callFromDB = await callsDBClient.getById(callFromQueue.id);
+  logger.debug('call.accept.call.from.db.taken', callFromDB);
   const { acceptedAt, requestedAt } = callFromDB || {};
   const updateMixin = {
     callStatus: CALL_ANSWERED,
-    waitingDuration: getDifferenceFromTo(acceptedAt, requestedAt),
+    waitingDuration: time.getDifferenceFromTo(acceptedAt, requestedAt),
   };
 
   Object.assign(call, callFromQueue, updateMixin);
@@ -86,16 +89,21 @@ async function acceptCall(operator) {
 
   try {
     await activeCallsHeap.add(call.id, call);
-
+    logger.debug('call.accept.added.to.active.calls.heap', call.id, call);
     await checkIsCallStillActive(call.id);
     await twilio.ensureRoom(call.id);
     await checkIsCallStillActive(call.id);
     await callsDBClient.updateById(call.id, updates);
+    logger.debug('call.accept.updated.in.db', call.id, updates);
     await checkIsCallStillActive(call.id);
     await pubSubChannel.publish(CALL_ACCEPTED, call);
-    return await addActiveCallIdToConnections(call);
+    logger.debug('call.accept.publish.event.in.redis', CALL_ACCEPTED, call);
+    const res = await addActiveCallIdToConnections(call);
+    logger.debug('call.accept.added.id.to.connections', call);
+    return res;
   } catch (err) {
-    callsErrorHandler.onAcceptCallFailed(err, call.id);
+    logger.debug('call.accept.failed', err);
+    return callsErrorHandler.onAcceptCallFailed(err, call.id);
   }
 }
 
@@ -107,7 +115,7 @@ function requestCallback(callId) {
     .then(checkCallbackAvailability)
     .then(callFromDB => {
       const callback = {
-        requestedAt: formattedTimestamp(),
+        requestedAt: time.formattedTimestamp(),
       };
 
       const callbacks = callFromDB.callbacks
@@ -132,7 +140,7 @@ function acceptCallback(callId) {
     .take(callId)
     .then(callFromHeap => {
       const callbacks = [...callFromHeap.callbacks];
-      callbacks[callbacks.length - 1].acceptedAt = formattedTimestamp();
+      callbacks[callbacks.length - 1].acceptedAt = time.formattedTimestamp();
       Object.assign(call, callFromHeap, { callbacks });
       return activeCallsHeap.add(callId, call);
     })
@@ -149,7 +157,7 @@ function declineCallback(callId, reason = '') {
     .take(callId)
     .then(callFromHeap => {
       const callbacks = [...callFromHeap.callbacks];
-      callbacks[callbacks.length - 1].declinedAt = formattedTimestamp();
+      callbacks[callbacks.length - 1].declinedAt = time.formattedTimestamp();
       Object.assign(call, callFromHeap, { callbacks });
     })
     .then(() => pubSubChannel.publish(CALLBACK_DECLINED, { ...call, reason }))

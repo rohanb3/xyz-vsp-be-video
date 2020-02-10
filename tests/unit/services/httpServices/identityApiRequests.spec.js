@@ -110,7 +110,7 @@ describe('identityApiRequests', () => {
 
       const promise = checkUserScope(token, role, scope);
 
-      await expect(promise).rejects.toBe(FORBIDDEN);
+      await expect(promise).rejects.toStrictEqual(new Error(FORBIDDEN));
       expect(api.head).toHaveBeenCalledWith('role', {
         headers: { Authorization: token },
         params: { role: role, scope: scope },
@@ -125,7 +125,7 @@ describe('identityApiRequests', () => {
 
       const promise = checkUserScope(token, role, scope);
 
-      await expect(promise).rejects.toBe(TOKEN_INVALID);
+      await expect(promise).rejects.toStrictEqual(new Error(TOKEN_INVALID));
       expect(api.head).toHaveBeenCalledWith('role', {
         headers: { Authorization: token },
         params: { role: role, scope: scope },
