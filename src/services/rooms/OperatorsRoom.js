@@ -45,6 +45,7 @@ const {
   REALTIME_DASHBOARD_CALL_FINISHED,
   REALTIME_DASHBOARD_CALL_ACCEPTED,
   REALTIME_DASHBOARD_SUBSCRIBTION_ERROR,
+  REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED,
   REALTIME_DASHBOARD_WAITING_CALLS_CHANGED,
 } = require('@/constants/realtimeDashboard');
 
@@ -91,15 +92,11 @@ class OperatorsRoom {
     calls.subscribeToCallbackDeclining(
       this.checkOperatorAndEmitCallbackDeclining.bind(this)
     );
-    activeCallsHeap.subscribeToItemAdding((...res) =>
-      activeCallsHeap
-        .getAll()
-        .then(all => console.log('subscribeToItemAdding', res, all))
+    activeCallsHeap.subscribeToItemAdding(
+      this.onActiveCallsHeapChanged.bind(this)
     );
-    activeCallsHeap.subscribeToItemTaking((...res) =>
-      activeCallsHeap
-        .getAll()
-        .then(all => console.log('subscribeToItemTaking', res, all))
+    activeCallsHeap.subscribeToItemTaking(
+      this.onActiveCallsHeapChanged.bind(this)
     );
 
     if (isMaster) {
@@ -264,6 +261,11 @@ class OperatorsRoom {
       data
     );
     operator.emit(CALL_ACCEPTING_FAILED, data);
+  }
+
+  async onActiveCallsHeapChanged(changedCall = {}) {
+    const calls = await activeCallsHeap.getAll();
+    this.emitRealtimeDashboardLiveCallsChanged(changedCall, calls);
   }
 
   onCallFinished(call) {
@@ -627,6 +629,13 @@ class OperatorsRoom {
   emitRealtimeDashboardCallAccepted(call) {
     const groupName = this.getRealtimeDashboardGroupName(call.tenantId);
     this.operators.to(groupName).emit(REALTIME_DASHBOARD_CALL_ACCEPTED, call);
+  }
+
+  emitRealtimeDashboardLiveCallsChanged(changedCall, calls) {
+    const groupName = this.getRealtimeDashboardGroupName(changedCall.tenantId);
+    this.operators
+      .to(groupName)
+      .emit(REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED, calls);
   }
 }
 
