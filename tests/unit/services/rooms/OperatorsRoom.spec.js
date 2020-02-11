@@ -4,6 +4,7 @@ jest.mock('@/services/calls', () => ({
   subscribeToCallbackDeclining: jest.fn(() => {}),
   subscribeToCallsLengthChanging: jest.fn(() => {}),
   subscribeToCallFinishing: jest.fn(() => {}),
+  subscribeToCallAccepting: jest.fn(() => {}),
   getCallsInfo: jest.fn(() => Promise.resolve({})),
   finishCall: jest.fn(() => Promise.resolve()),
   requestCallback: jest.fn(() => Promise.resolve()),
@@ -125,6 +126,12 @@ describe('OperatorsRoom: ', () => {
       );
     });
 
+    it('should subscribe to call accepting', () => {
+      expect(calls.subscribeToCallAccepting).toHaveBeenCalledWith(
+        expect.any(Function)
+      );
+    });
+
     it('should subscribe to callback accepting', () => {
       expect(calls.subscribeToCallbackAccepting).toHaveBeenCalledWith(
         expect.any(Function)
@@ -167,7 +174,7 @@ describe('OperatorsRoom: ', () => {
       operatorsRoom.addOperatorToActive = jest.fn();
     });
 
-    it('should map idaentity to socket id', () => {
+    it('should map identity to socket id', () => {
       operatorsRoom.onOperatorAuthenticated(operator);
 
       expect(operatorsRoom.mapSocketIdentityToId).toHaveBeenCalledWith(

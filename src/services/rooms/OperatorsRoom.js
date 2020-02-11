@@ -36,9 +36,10 @@ const {
 
 const {
   REALTIME_DASHBOARD_SUBSCRIBE,
-  REALTIME_DASHBOARD_UNSUBSCRIBE,
   REALTIME_DASHBOARD_SUBSCRIBED,
+  REALTIME_DASHBOARD_UNSUBSCRIBE,
   REALTIME_DASHBOARD_CALL_FINISHED,
+  REALTIME_DASHBOARD_CALL_ACCEPTED,
   REALTIME_DASHBOARD_SUBSCRIBTION_ERROR,
   REALTIME_DASHBOARD_WAITING_CALLS_CHANGED,
 } = require('@/constants/realtimeDashboard');
@@ -76,6 +77,7 @@ class OperatorsRoom {
     });
 
     calls.subscribeToCallFinishing(this.onCallFinished.bind(this));
+    calls.subscribeToCallAccepting(this.onCallAccepted.bind(this));
 
     calls.subscribeToCallbackAccepting(
       this.checkOperatorAndEmitCallbackAccepting.bind(this)
@@ -254,6 +256,10 @@ class OperatorsRoom {
     }
 
     this.notifyRealtimeDashboardCallFinished(call);
+  }
+
+  onCallAccepted(call) {
+    this.notifyRealtimeDashboardCallAccepted(call);
   }
 
   onOperatorRequestedCallback(operator, callId) {
@@ -579,6 +585,11 @@ class OperatorsRoom {
   notifyRealtimeDashboardCallFinished(call) {
     const groupName = this.getRealtimeDashboardGroupName(call.tenantId);
     this.operators.to(groupName).emit(REALTIME_DASHBOARD_CALL_FINISHED, call);
+  }
+
+  notifyRealtimeDashboardCallAccepted(call) {
+    const groupName = this.getRealtimeDashboardGroupName(call.tenantId);
+    this.operators.to(groupName).emit(REALTIME_DASHBOARD_CALL_ACCEPTED, call);
   }
 }
 
