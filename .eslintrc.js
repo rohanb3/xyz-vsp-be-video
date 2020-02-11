@@ -7,6 +7,8 @@ module.exports = {
     es6: true,
   },
   rules: {
+    'no-unused-vars': 'error',
+    'no-undef': 'error',
     'no-underscore-dangle': 'off',
     'no-param-reassign': 'off',
   },

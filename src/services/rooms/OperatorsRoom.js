@@ -38,6 +38,7 @@ const {
   REALTIME_DASHBOARD_SUBSCRIBE,
   REALTIME_DASHBOARD_UNSUBSCRIBE,
   REALTIME_DASHBOARD_SUBSCRIBED,
+  REALTIME_DASHBOARD_CALL_FINISHED,
   REALTIME_DASHBOARD_SUBSCRIBTION_ERROR,
   REALTIME_DASHBOARD_WAITING_CALLS_CHANGED,
 } = require('@/constants/realtimeDashboard');
@@ -251,6 +252,8 @@ class OperatorsRoom {
     if (callFinishedNotByByOperator) {
       this.checkOperatorAndEmitCallFinishing(call);
     }
+
+    this.notifyRealtimeDashboardCallFinished(call);
   }
 
   onOperatorRequestedCallback(operator, callId) {
@@ -363,6 +366,8 @@ class OperatorsRoom {
     this.emitRealtimeDashboardWaitingCallsInfo(tenantId);
   }
 
+  // TODO: check
+  // Data is not in use, maybe BUG of missing data?
   async addOperatorToActive({ id }, data = {}) {
     const connectedOperator = this.getConnectedOperator(id);
     if (connectedOperator) {
@@ -439,7 +444,7 @@ class OperatorsRoom {
   unsubscibeFromRealtimeDashboardUpdates({ id }) {
     const connectedOperator = this.getConnectedOperator(id);
     if (connectedOperator) {
-      logger.debug('Operator: unsubscribe from realtime dashboard', operatorId);
+      logger.debug('Operator: unsubscribe from realtime dashboard', id);
 
       const tenantId = connectedOperator.tenantId;
       connectedOperator.leave(this.getRealtimeDashboardGroupName(tenantId));
@@ -569,6 +574,11 @@ class OperatorsRoom {
         `Operation "${operationName}" is not allowed.`
       );
     }
+  }
+
+  notifyRealtimeDashboardCallFinished(call) {
+    const groupName = this.getRealtimeDashboardGroupName(call.tenantId);
+    this.operators.to(groupName).emit(REALTIME_DASHBOARD_CALL_FINISHED, call);
   }
 }
 
