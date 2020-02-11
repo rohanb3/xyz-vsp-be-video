@@ -24,7 +24,7 @@ const {
 
 const {
   CALL_ANSWER_PERMISSION,
-  REALTIME_DASHBOARD_SUBSCRIBTION_PERMISSION,
+  REALTIME_DASHBOARD_SUBSCRIPTION_PERMISSION,
 } = require('@/constants/permissions');
 
 const { TOKEN_INVALID, UNAUTHORIZED } = require('@/constants/connection');
@@ -151,7 +151,7 @@ class OperatorsRoom {
     // Realtime Dashboards
     const realtimeDashboardsAllowed = socketAuth.checkConnectionPermission(
       operator,
-      REALTIME_DASHBOARD_SUBSCRIBTION_PERMISSION
+      REALTIME_DASHBOARD_SUBSCRIPTION_PERMISSION
     );
 
     operator.on(
@@ -255,11 +255,11 @@ class OperatorsRoom {
       this.checkOperatorAndEmitCallFinishing(call);
     }
 
-    this.notifyRealtimeDashboardCallFinished(call);
+    this.emitRealtimeDashboardCallFinished(call);
   }
 
   onCallAccepted(call) {
-    this.notifyRealtimeDashboardCallAccepted(call);
+    this.emitRealtimeDashboardCallAccepted(call);
   }
 
   onOperatorRequestedCallback(operator, callId) {
@@ -432,7 +432,7 @@ class OperatorsRoom {
       if (
         socketAuth.checkConnectionPermission(
           connectedOperator,
-          REALTIME_DASHBOARD_SUBSCRIBTION_PERMISSION
+          REALTIME_DASHBOARD_SUBSCRIPTION_PERMISSION
         )
       ) {
         connectedOperator.join(this.getRealtimeDashboardGroupName(tenantId));
@@ -582,12 +582,12 @@ class OperatorsRoom {
     }
   }
 
-  notifyRealtimeDashboardCallFinished(call) {
+  emitRealtimeDashboardCallFinished(call) {
     const groupName = this.getRealtimeDashboardGroupName(call.tenantId);
     this.operators.to(groupName).emit(REALTIME_DASHBOARD_CALL_FINISHED, call);
   }
 
-  notifyRealtimeDashboardCallAccepted(call) {
+  emitRealtimeDashboardCallAccepted(call) {
     const groupName = this.getRealtimeDashboardGroupName(call.tenantId);
     this.operators.to(groupName).emit(REALTIME_DASHBOARD_CALL_ACCEPTED, call);
   }

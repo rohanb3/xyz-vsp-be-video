@@ -41,11 +41,13 @@ const {
 const {
   REALTIME_DASHBOARD_SUBSCRIBE,
   REALTIME_DASHBOARD_UNSUBSCRIBE,
+  REALTIME_DASHBOARD_CALL_FINISHED,
+  REALTIME_DASHBOARD_CALL_ACCEPTED,
 } = require('@/constants/realtimeDashboard');
 
 const {
   CALL_ANSWER_PERMISSION,
-  REALTIME_DASHBOARD_SUBSCRIBTION_PERMISSION,
+  REALTIME_DASHBOARD_SUBSCRIPTION_PERMISSION,
 } = require('@/constants/permissions');
 
 const {
@@ -63,6 +65,7 @@ let operatorsRoom = null;
 let operator = null;
 let socketId;
 let operatorIdentity;
+let customerIdentity;
 let callId;
 let tenantId;
 let data;
@@ -86,6 +89,7 @@ describe('OperatorsRoom: ', () => {
     jest.clearAllMocks();
     socketId = '/operators#42';
     operatorIdentity = 'operator42';
+    customerIdentity = 'customer91';
     tenantId = 'spectrum';
     callId = 'call42';
     operatorsRoom = new OperatorsRoom(io, mediator);
@@ -959,7 +963,7 @@ describe('OperatorsRoom: ', () => {
 
     describe('REALTIME_DASHBOARD_SUBSCRIBE event', () => {
       it('should subscribe subscribeToRealtimeDashboardUpdates() if operator has realtime dashboard permission', () => {
-        operator.permissions = [REALTIME_DASHBOARD_SUBSCRIBTION_PERMISSION];
+        operator.permissions = [REALTIME_DASHBOARD_SUBSCRIPTION_PERMISSION];
 
         jest.spyOn(operatorsRoom.subscribeToRealtimeDashboardUpdates, 'bind');
 
@@ -995,7 +999,7 @@ describe('OperatorsRoom: ', () => {
 
     describe('REALTIME_DASHBOARD_UNSUBSCRIBE event', () => {
       it('should subscribe unsubscibeFromRealtimeDashboardUpdates() if operator has realtime dashboard permission', () => {
-        operator.permissions = [REALTIME_DASHBOARD_SUBSCRIBTION_PERMISSION];
+        operator.permissions = [REALTIME_DASHBOARD_SUBSCRIPTION_PERMISSION];
 
         jest.spyOn(
           operatorsRoom.unsubscibeFromRealtimeDashboardUpdates,
@@ -1030,6 +1034,95 @@ describe('OperatorsRoom: ', () => {
           REALTIME_DASHBOARD_UNSUBSCRIBE
         );
       });
+    });
+  });
+  describe('onCallFinished()', () => {
+    it('should call emitRealtimeDashboardCallFinished', () => {
+      operatorsRoom.emitRealtimeDashboardCallFinished = jest.fn();
+      const call = {
+        finishedBy: operatorIdentity,
+        acceptedBy: operatorIdentity,
+        id: callId,
+      };
+
+      operatorsRoom.onCallFinished(call);
+
+      expect(
+        operatorsRoom.emitRealtimeDashboardCallFinished
+      ).toHaveBeenCalledWith(call);
+    });
+    it('should call checkOperatorAndEmitCallFinishing if call finished not by operator', () => {
+      operatorsRoom.checkOperatorAndEmitCallFinishing = jest.fn();
+      operatorsRoom.emitRealtimeDashboardCallFinished = jest.fn();
+      const call = {
+        finishedBy: customerIdentity,
+        acceptedBy: operatorIdentity,
+        id: callId,
+      };
+
+      operatorsRoom.onCallFinished(call);
+
+      expect(
+        operatorsRoom.checkOperatorAndEmitCallFinishing
+      ).toHaveBeenCalledWith(call);
+      expect(
+        operatorsRoom.emitRealtimeDashboardCallFinished
+      ).toHaveBeenCalledWith(call);
+    });
+  });
+  describe('onCallAccepted()', () => {
+    it('should call emitRealtimeDashboardCallAccepted', () => {
+      operatorsRoom.emitRealtimeDashboardCallAccepted = jest.fn();
+      const call = {
+        finishedBy: operatorIdentity,
+        acceptedBy: operatorIdentity,
+        id: callId,
+      };
+
+      operatorsRoom.onCallAccepted(call);
+
+      expect(
+        operatorsRoom.emitRealtimeDashboardCallAccepted
+      ).toHaveBeenCalledWith(call);
+    });
+  });
+  describe('emitRealtimeDashboardCallFinished()', () => {
+    it('should emit event to operators in group', () => {
+      const call = {
+        finishedBy: operatorIdentity,
+        acceptedBy: operatorIdentity,
+        id: callId,
+        tenantId: tenantId,
+      };
+
+      const groupName = `tenant.${tenantId}.realtimeDashboard`;
+
+      operatorsRoom.emitRealtimeDashboardCallFinished(call);
+
+      expect(operatorsRoom.operators.to).toHaveBeenCalledWith(groupName);
+      expect(operatorsRoom.operators.emit).toHaveBeenCalledWith(
+        REALTIME_DASHBOARD_CALL_FINISHED,
+        call
+      );
+    });
+  });
+  describe('emitRealtimeDashboardCallAccepted()', () => {
+    it('should emit event to operators in group', () => {
+      const call = {
+        acceptedBy: operatorIdentity,
+        id: callId,
+        tenantId: tenantId,
+      };
+
+      const groupName = `tenant.${tenantId}.realtimeDashboard`;
+
+      operatorsRoom.emitRealtimeDashboardCallAccepted(call);
+
+      expect(operatorsRoom.operators.to).toHaveBeenCalledWith(groupName);
+      expect(operatorsRoom.operators.emit).toHaveBeenCalledWith(
+        REALTIME_DASHBOARD_CALL_ACCEPTED,
+        call
+      );
     });
   });
 });
