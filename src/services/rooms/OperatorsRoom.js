@@ -24,7 +24,7 @@ const {
 
 const {
   CALL_ANSWER_PERMISSION,
-  REALTIME_DASHBOARD_SUBSCRIBTION_PERMISSION,
+  REALTIME_DASHBOARD_SUBSCRIPTION_PERMISSION,
 } = require('@/constants/permissions');
 
 const {
@@ -40,8 +40,10 @@ const {
 
 const {
   REALTIME_DASHBOARD_SUBSCRIBE,
-  REALTIME_DASHBOARD_UNSUBSCRIBE,
   REALTIME_DASHBOARD_SUBSCRIBED,
+  REALTIME_DASHBOARD_UNSUBSCRIBE,
+  REALTIME_DASHBOARD_CALL_FINISHED,
+  REALTIME_DASHBOARD_CALL_ACCEPTED,
   REALTIME_DASHBOARD_SUBSCRIBTION_ERROR,
   REALTIME_DASHBOARD_WAITING_CALLS_CHANGED,
 } = require('@/constants/realtimeDashboard');
@@ -81,6 +83,7 @@ class OperatorsRoom {
     });
 
     calls.subscribeToCallFinishing(this.onCallFinished.bind(this));
+    calls.subscribeToCallAccepting(this.onCallAccepted.bind(this));
 
     calls.subscribeToCallbackAccepting(
       this.checkOperatorAndEmitCallbackAccepting.bind(this)
@@ -164,7 +167,7 @@ class OperatorsRoom {
     // Realtime Dashboards
     const realtimeDashboardsAllowed = socketAuth.checkConnectionPermission(
       operator,
-      REALTIME_DASHBOARD_SUBSCRIBTION_PERMISSION
+      REALTIME_DASHBOARD_SUBSCRIPTION_PERMISSION
     );
 
     operator.on(
@@ -268,6 +271,12 @@ class OperatorsRoom {
     if (callFinishedNotByByOperator) {
       this.checkOperatorAndEmitCallFinishing(call);
     }
+
+    this.emitRealtimeDashboardCallFinished(call);
+  }
+
+  onCallAccepted(call) {
+    this.emitRealtimeDashboardCallAccepted(call);
   }
 
   onOperatorRequestedCallback(operator, callId) {
@@ -384,6 +393,8 @@ class OperatorsRoom {
     this.emitRealtimeDashboardWaitingCallsInfo(tenantId);
   }
 
+  // TODO: check
+  // Data is not in use, maybe BUG of missing data?
   async addOperatorToActive({ id }, data = {}) {
     const connectedOperator = this.getConnectedOperator(id);
     if (connectedOperator) {
@@ -445,7 +456,7 @@ class OperatorsRoom {
       if (
         socketAuth.checkConnectionPermission(
           connectedOperator,
-          REALTIME_DASHBOARD_SUBSCRIBTION_PERMISSION
+          REALTIME_DASHBOARD_SUBSCRIPTION_PERMISSION
         )
       ) {
         const groupName = this.getRealtimeDashboardGroupName(tenantId);
@@ -606,6 +617,16 @@ class OperatorsRoom {
         operation: operationName,
       });
     }
+  }
+
+  emitRealtimeDashboardCallFinished(call) {
+    const groupName = this.getRealtimeDashboardGroupName(call.tenantId);
+    this.operators.to(groupName).emit(REALTIME_DASHBOARD_CALL_FINISHED, call);
+  }
+
+  emitRealtimeDashboardCallAccepted(call) {
+    const groupName = this.getRealtimeDashboardGroupName(call.tenantId);
+    this.operators.to(groupName).emit(REALTIME_DASHBOARD_CALL_ACCEPTED, call);
   }
 }
 
