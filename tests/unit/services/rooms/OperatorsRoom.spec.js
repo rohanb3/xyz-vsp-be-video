@@ -556,6 +556,10 @@ describe('OperatorsRoom: ', () => {
         data: info,
         tenantId: tenantId,
       };
+      const expectedInfo = {
+        ...info,
+        serverTime: expect.any(String),
+      };
 
       const groupName = 'group-name';
       operatorsRoom.getActiveOperatorsGroupName = jest.fn(() => groupName);
@@ -565,7 +569,7 @@ describe('OperatorsRoom: ', () => {
       expect(operatorsRoom.operators.to).toHaveBeenCalledWith(groupName);
       expect(operatorsRoom.operators.emit).toHaveBeenCalledWith(
         CALLS_CHANGED,
-        info
+        expectedInfo
       );
 
       expect(
@@ -594,6 +598,10 @@ describe('OperatorsRoom: ', () => {
 
       const groupName = 'group-name';
       const callsInfo = { count: 2, peak: {} };
+      const expectedCallsInfo = {
+        ...callsInfo,
+        serverTime: expect.any(String),
+      };
 
       operatorsRoom.verifyToken = jest.fn(() => true);
       operatorsRoom.getActiveOperatorsGroupName = jest.fn(() => groupName);
@@ -612,7 +620,10 @@ describe('OperatorsRoom: ', () => {
       );
       expect(operator.join).toHaveBeenCalledWith(groupName);
       expect(calls.getCallsInfo).toHaveBeenCalledWith(tenantId);
-      expect(operator.emit).toHaveBeenCalledWith(CALLS_CHANGED, callsInfo);
+      expect(operator.emit).toHaveBeenCalledWith(
+        CALLS_CHANGED,
+        expectedCallsInfo
+      );
       expect(checkConnectionPermissionSpy).toHaveBeenCalledWith(
         operator,
         CALL_ANSWER_PERMISSION

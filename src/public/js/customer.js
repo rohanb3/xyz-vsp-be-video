@@ -48203,13 +48203,16 @@ const isProd =
   typeof prompt('Is production?') === 'string';
 console.log('isProd', isProd);
 
-const deviceId = prompt('Tell me device id') || 'new-device-id';
+const deviceId =
+  prompt('Tell me device id ("new-device-id" by default)') || 'new-device-id';
 console.log('deviceId', deviceId);
 
-const identity = prompt('Tell me your identity') || 'Joey';
+const identity = prompt('Tell me your identity ("Joey" by default)') || 'Joey';
 console.log('identity', identity);
 
-const securityToken = prompt('Security Token') || 'empty';
+const securityToken =
+  prompt('Security Token ("mocked-device-user-token" by default)') ||
+  'mocked-device-user-token';
 console.log('securityToken', securityToken);
 
 const shouldConnectToDeviceManagement =
@@ -48328,7 +48331,6 @@ function onTokenReceived(data) {
 }
 
 function requestConnection() {
-  console.log('requestConnection');
   const salesRepId = 'd4b10474-a026-4487-87f8-96f3cdd749cb';
   const callbackEnabled = typeof prompt('Allow callback?') === 'string';
   const service = 'spectrum';
@@ -48338,9 +48340,10 @@ function requestConnection() {
     document.getElementById('button-join').style.display = 'none';
     document.getElementById('button-leave').style.display = 'inline';
   });
-  socket.once('call.accepted', ({ roomId, token }) =>
-    connectToRoom(roomId, token)
-  );
+  socket.once('call.accepted', ({ roomId, token }) => {
+    socket.emit('customer.connected');
+    return connectToRoom(roomId, token);
+  });
 }
 
 function onCallbackRequested() {
@@ -48376,10 +48379,7 @@ function connectToRoom(name, token) {
     connectOptions.tracks = previewTracks;
   }
 
-  return Video.connect(
-    token,
-    connectOptions
-  )
+  return Video.connect(token, connectOptions)
     .then(roomJoined)
     .catch(error => console.error('Could not connect: ', error.message));
 }

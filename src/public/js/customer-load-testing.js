@@ -1,7 +1,7 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 /* eslint-disable no-console */
 const { getNowSeconds, getUserNumber, toCamelCase } = require('./src/utils');
-const { SOCKET_EVENTS, CALL_STATUSES, COLORS_MAP, APP_MODES } = require('./src/constants');
+const { SOCKET_EVENTS, CALL_STATUSES, COLORS_MAP } = require('./src/constants');
 
 const socketUrl = '/customers';
 
@@ -20,7 +20,6 @@ const { statisticsCallbacks } = window.parent;
 const deviceId = `device-${identity}`;
 
 window.disconnectFromSocket = disconnectFromSocket;
-window.byStepModeStartCalls = byStepModeStartCalls;
 
 let globalToken = null;
 let callId = undefined;
@@ -52,7 +51,7 @@ function connectToSocket() {
       connectedAt = now;
       startAuthorizingAt = now;
 
-      socket.emit(SOCKET_EVENTS.AUTHENTICATION, { identity, deviceId });
+      socket.emit(SOCKET_EVENTS.AUTHENTICATION, { identity, deviceId, token: 'mocked-device-user-token' });
       socket.once(SOCKET_EVENTS.AUTHENTICATED, onAuthenticated);
       socket.once(SOCKET_EVENTS.UNAUTHORIZED, onUnauthorized);
 
@@ -80,13 +79,8 @@ function onAuthenticated(token) {
   statisticsCallbacks.onUserAuthorized(
     userType,
     startAuthorizingAt,
-    authorizedAt,
+    authorizedAt
   );
-    
-  window.promisesResolver();
-}
-
-function byStepModeStartCalls(){
   setTimeout(startCall, startFirstCallAfter);
 }
 

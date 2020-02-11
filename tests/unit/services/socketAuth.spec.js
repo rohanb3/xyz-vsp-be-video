@@ -169,9 +169,15 @@ describe('socketAuth: ', () => {
       const securityToken = 'security-token';
       const data = { identity, deviceId, token: securityToken };
       const expectedToken = 'token';
+      const role = 'user-role';
+      const scopes = ['first-scope'];
+      const profile = {
+        role,
+        scopes,
+        companyId,
+      };
 
-      identityApi.checkTokenValidity = jest.fn().mockResolvedValue(true);
-      identityApi.getCompanyIdByUserId = jest.fn().mockResolvedValue(companyId);
+      identityApi.getUserProfile = jest.fn().mockResolvedValue(profile);
       publicApi.getTenantIdByCompanyId = jest.fn().mockResolvedValue(tenantId);
 
       return authenticateCustomer(socket, data, callback).then(() => {
@@ -180,10 +186,9 @@ describe('socketAuth: ', () => {
         expect(callback).toHaveBeenCalledWith(null, expectedToken);
         expect(token).toBe(expectedToken);
 
-        expect(identityApi.checkTokenValidity).toHaveBeenCalledWith(
+        expect(identityApi.getUserProfile).toHaveBeenCalledWith(
           securityToken
         );
-        expect(identityApi.getCompanyIdByUserId).toHaveBeenCalledWith(identity);
         expect(publicApi.getTenantIdByCompanyId).toHaveBeenCalledWith(
           companyId
         );

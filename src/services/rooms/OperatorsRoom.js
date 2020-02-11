@@ -27,7 +27,11 @@ const {
   REALTIME_DASHBOARD_SUBSCRIBTION_PERMISSION,
 } = require('@/constants/permissions');
 
-const { TOKEN_INVALID, UNAUTHORIZED } = require('@/constants/connection');
+const {
+  TOKEN_INVALID,
+  UNAUTHORIZED,
+  FORBIDDEN,
+} = require('@/constants/connection');
 
 const {
   STATUS_CHANGED_ONLINE,
@@ -44,6 +48,7 @@ const {
 
 const calls = require('@/services/calls');
 const twilio = require('@/services/twilio');
+const timeHelper = require('@/services/time');
 
 const socketAuth = require('@/services/socketAuth');
 const { authenticateOperator } = socketAuth;
@@ -53,6 +58,8 @@ const { getOperatorCallFailReason } = require('./utils');
 const logger = require('@/services/logger')(module);
 
 const isMaster = !process.env.INSTANCE_ID || process.env.INSTANCE_ID === '0';
+
+const operatorsGroups = {};
 
 class OperatorsRoom {
   constructor(io, mediator) {
@@ -210,6 +217,7 @@ class OperatorsRoom {
             salesRepId,
             callbackEnabled,
           } = call;
+
           const token = twilio.getToken(connectedOperator.identity, id);
           connectedOperator.emit(ROOM_CREATED, {
             id,
@@ -305,6 +313,7 @@ class OperatorsRoom {
   }
 
   onOperatorDisconnected(operator, reason) {
+    console.log('onOperatorDisconnected', operatorsGroups[operator.id]);
     this.unsubscibeFromRealtimeDashboardUpdates(operator);
     this.removeOperatorFromActive(operator);
     this.checkAndUnmapSocketIdentityFromId(operator);
@@ -357,7 +366,16 @@ class OperatorsRoom {
   emitCallsInfo(info) {
     const { data, tenantId } = info;
     const groupName = this.getActiveOperatorsGroupName(tenantId);
-    this.operators.to(groupName).emit(CALLS_CHANGED, data);
+    this.operators.to(groupName).emit(CALLS_CHANGED, {
+      ...data,
+      serverTime: timeHelper.formattedTimestamp(),
+    });
+    // this.emitToGroup(groupName, CALLS_CHANGED, {
+    //   ...data,
+    //   serverTime: timeHelper.formattedTimestamp(),
+    // });
+
+    console.log('emitCallsInfo', groupName, this.operators.to(groupName).connected);
     logger.debug('Operator: calls info emitted to group', groupName);
 
     this.emitRealtimeDashboardWaitingCallsInfo(tenantId);
@@ -382,10 +400,14 @@ class OperatorsRoom {
         const groupName = this.getActiveOperatorsGroupName(tenantId);
 
         connectedOperator.join(groupName);
+        // this.joinGroup(connectedOperator, groupName);
         logger.debug('Operator: joined group', id, groupName);
 
         const info = await calls.getCallsInfo(tenantId);
-        connectedOperator.emit(CALLS_CHANGED, info);
+        connectedOperator.emit(CALLS_CHANGED, {
+          ...info,
+          serverTime: timeHelper.formattedTimestamp(),
+        });
         logger.debug('Operator: calls info emited dirrectly', id);
       } else {
         logger.debug(
@@ -402,6 +424,7 @@ class OperatorsRoom {
       const groupName = this.getActiveOperatorsGroupName(tenantId);
 
       connectedOperator.leave(groupName);
+      // this.leaveGroup(connectedOperator, groupName);
 
       logger.debug('Operator: remove from group', id, groupName);
     }
@@ -424,9 +447,15 @@ class OperatorsRoom {
           REALTIME_DASHBOARD_SUBSCRIBTION_PERMISSION
         )
       ) {
-        connectedOperator.join(this.getRealtimeDashboardGroupName(tenantId));
+        const groupName = this.getRealtimeDashboardGroupName(tenantId);
+        connectedOperator.join(groupName);
+        // this.joinGroup(connectedOperator, groupName);
         connectedOperator.emit(REALTIME_DASHBOARD_SUBSCRIBED);
-        logger.debug('Operator: subscribed to realtime dashboard', id);
+        logger.debug(
+          'Operator: subscribed to realtime dashboard',
+          id,
+          groupName
+        );
 
         this.emitRealtimeDashboardWaitingCallsInfo(tenantId, connectedOperator);
       } else {
@@ -439,10 +468,15 @@ class OperatorsRoom {
   unsubscibeFromRealtimeDashboardUpdates({ id }) {
     const connectedOperator = this.getConnectedOperator(id);
     if (connectedOperator) {
-      logger.debug('Operator: unsubscribe from realtime dashboard', operatorId);
-
       const tenantId = connectedOperator.tenantId;
-      connectedOperator.leave(this.getRealtimeDashboardGroupName(tenantId));
+      const groupName = this.getRealtimeDashboardGroupName(tenantId);
+      connectedOperator.leave(groupName);
+      // this.leaveGroup(connectedOperator, groupName);
+      logger.debug(
+        'Operator: unsubscribed from realtime dashboard',
+        id,
+        groupName
+      );
     }
   }
 
@@ -455,16 +489,41 @@ class OperatorsRoom {
         'Operator: realtime dashboard waiting calls info emited directly',
         recipient.id
       );
+
+      // const items = await calls.getPendingCalls(tenantId);
+      //
+      // target.emit(REALTIME_DASHBOARD_WAITING_CALLS_CHANGED, {
+      //   count: items.length,
+      //   items,
+      //   serverTime: timeHelper.formattedTimestamp(),
+      // });
     } else {
       const groupName = this.getRealtimeDashboardGroupName(tenantId);
       const group = this.operators.to(groupName);
 
+      console.log('emitRealtimeDashboardWaitingCallsInfo', groupName, group.connected);
+      group.clients(console.log.bind(null, 'groupClients', groupName));
+
       if (Object.keys(group.connected).length) {
+      // if(this.isGroupNonEmpty(groupName)) {
         target = group;
         logger.debug(
           'Operator: realtime dashboard waiting calls info emited to non empty group',
           groupName
         );
+
+        const items = await calls.getPendingCalls(tenantId);
+
+        // target.emit(REALTIME_DASHBOARD_WAITING_CALLS_CHANGED, {
+        //   count: items.length,
+        //   items,
+        //   serverTime: timeHelper.formattedTimestamp(),
+        // });
+        // this.emitToGroup(groupName, REALTIME_DASHBOARD_WAITING_CALLS_CHANGED, {
+        //   count: items.length,
+        //   items,
+        //   serverTime: timeHelper.formattedTimestamp(),
+        // });
       }
     }
 
@@ -474,6 +533,7 @@ class OperatorsRoom {
       target.emit(REALTIME_DASHBOARD_WAITING_CALLS_CHANGED, {
         count: items.length,
         items,
+        serverTime: timeHelper.formattedTimestamp(),
       });
     }
   }
@@ -564,12 +624,51 @@ class OperatorsRoom {
     const connectedOperator = this.getConnectedOperator(id);
 
     if (connectedOperator) {
-      connectedOperator.emit(
-        UNAUTHORIZED,
-        `Operation "${operationName}" is not allowed.`
-      );
+      connectedOperator.emit(FORBIDDEN, {
+        message: `Operation "${operationName}" is not allowed.`,
+        operation: operationName,
+      });
     }
   }
+
+  // joinGroup(operator, groupName) {
+  //   console.log('joinGroup', groupName, operator.id);
+  //   operator.join(groupName);
+  //
+  //   operatorsGroups[operator.id] = operatorsGroups[operator.id] || [];
+  //   operatorsGroups[operator.id][groupName] = true;
+  // }
+
+  // leaveGroup(operator, groupName) {
+  //   console.log('leaveGroup', groupName, operator.id);
+  //   operator.leave(groupName);
+  //
+  //   if (operatorsGroups[operator.id]) {
+  //     delete operatorsGroups[operator.id][groupName];
+  //   }
+  // }
+
+  // emitToGroup(groupName, message, data) {
+  //   console.log('emitToGroup', groupName, message, data);
+  //   Object.values(this.operators.connected).forEach(connection => {
+  //     if (Object.keys(connection.rooms).includes(groupName)) {
+  //       connection.emit(message, data);
+  //       console.log('emitToGroup.emit', groupName, message, connection.id);
+  //     } else {
+  //       console.log('emitToGroup.ignored', groupName, message, connection.id);
+  //     }
+  //   });
+  // }
+
+  // isGroupNonEmpty(groupName) {
+  //   const groupMembers = Object.values(this.operators.connected)
+  //   .filter(connection => Object.keys(connection.rooms).includes(groupName))
+  //   .map(connection => connection.id);
+  //
+  //   console.log('isGroupEmpty', groupName, groupMembers);
+  //
+  //   return groupMembers.length > 0;
+  // }
 }
 
 module.exports = OperatorsRoom;
