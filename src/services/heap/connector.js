@@ -5,7 +5,8 @@ const errors = require('./errors');
 const setKey = (heapName, key) => client.sadd(heapName, key);
 const removeKey = (heapName, key) => client.srem(heapName, key);
 
-const rejectWithNotFound = key => Promise.reject(new errors.NotFoundItemError(key));
+const rejectWithNotFound = key =>
+  Promise.reject(new errors.NotFoundItemError(key));
 
 class HeapConnector {
   constructor(heapName) {
@@ -16,13 +17,21 @@ class HeapConnector {
     if (!key) {
       return Promise.resolve(false);
     }
-    return setKey(this.heapName, key).then(() => storage
-      .set(key, value)
-      .catch(err => removeKey(this.heapName, key).then(() => Promise.reject(err))));
+    return setKey(this.heapName, key).then(() =>
+      storage
+        .set(key, value)
+        .catch(err =>
+          removeKey(this.heapName, key).then(() => Promise.reject(err))
+        )
+    );
   }
 
   get(key) {
     return this.isExist(key).then(exists => (exists ? storage.get(key) : null));
+  }
+
+  getAll() {
+    return client.smembers(this.heapName);
   }
 
   take(key) {
@@ -30,20 +39,27 @@ class HeapConnector {
       return Promise.resolve(null);
     }
     return this.isExist(key)
-      .then(exist => (exist ? removeKey(this.heapName, key) : rejectWithNotFound(key)))
-      .then(() => storage.take(key).catch((err) => {
-        const error = err instanceof storage.errors.NotFoundItemError
-          ? new errors.NotFoundItemError(key)
-          : err;
-        return Promise.reject(error);
-      }));
+      .then(exist =>
+        exist ? removeKey(this.heapName, key) : rejectWithNotFound(key)
+      )
+      .then(() =>
+        storage.take(key).catch(err => {
+          const error =
+            err instanceof storage.errors.NotFoundItemError
+              ? new errors.NotFoundItemError(key)
+              : err;
+          return Promise.reject(error);
+        })
+      );
   }
 
   update(key, updates = {}) {
     if (!key) {
       return Promise.resolve(false);
     }
-    return this.isExist(key).then(exists => (exists ? storage.update(key, updates) : rejectWithNotFound(key)));
+    return this.isExist(key).then(exists =>
+      exists ? storage.update(key, updates) : rejectWithNotFound(key)
+    );
   }
 
   isExist(key) {
@@ -62,7 +78,9 @@ class HeapConnector {
         keysToRemove = keys;
         return client.del(this.heapName);
       })
-      .then(() => (keysToRemove.length ? client.del(...keysToRemove) : Promise.resolve()));
+      .then(() =>
+        keysToRemove.length ? client.del(...keysToRemove) : Promise.resolve()
+      );
   }
 }
 

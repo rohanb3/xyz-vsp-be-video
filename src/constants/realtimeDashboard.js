@@ -6,3 +6,5 @@ exports.REALTIME_DASHBOARD_SUBSCRIBTION_ERROR =
 
 exports.REALTIME_DASHBOARD_WAITING_CALLS_CHANGED =
   'realtimeDashboard.waitingCalls.changed';
+exports.REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED =
+  'realtimeDashboard.activeCalls.changed';

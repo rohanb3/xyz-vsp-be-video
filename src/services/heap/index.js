@@ -32,7 +32,7 @@ class Heap {
   }
 
   take(id) {
-    return this.connector.take(id).then((item) => {
+    return this.connector.take(id).then(item => {
       pubSub.publish(this.events.ITEM_TAKEN, item);
       return item;
     });

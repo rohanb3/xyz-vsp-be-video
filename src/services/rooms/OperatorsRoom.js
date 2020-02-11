@@ -439,7 +439,7 @@ class OperatorsRoom {
   unsubscibeFromRealtimeDashboardUpdates({ id }) {
     const connectedOperator = this.getConnectedOperator(id);
     if (connectedOperator) {
-      logger.debug('Operator: unsubscribe from realtime dashboard', operatorId);
+      logger.debug('Operator: unsubscribe from realtime dashboard', id);
 
       const tenantId = connectedOperator.tenantId;
       connectedOperator.leave(this.getRealtimeDashboardGroupName(tenantId));
