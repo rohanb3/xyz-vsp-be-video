@@ -171,7 +171,7 @@ class OperatorsRoom {
     operator.on(
       REALTIME_DASHBOARD_UNSUBSCRIBE,
       realtimeDashboardsAllowed
-        ? this.unsubscibeFromRealtimeDashboardUpdates.bind(this, operator)
+        ? this.unsubscribeFromRealtimeDashboardUpdates.bind(this, operator)
         : this.emitOperationNotAllowed.bind(
             this,
             operator,
@@ -313,8 +313,7 @@ class OperatorsRoom {
   }
 
   onOperatorDisconnected(operator, reason) {
-    console.log('onOperatorDisconnected', operatorsGroups[operator.id]);
-    this.unsubscibeFromRealtimeDashboardUpdates(operator);
+    this.unsubscribeFromRealtimeDashboardUpdates(operator);
     this.removeOperatorFromActive(operator);
     this.checkAndUnmapSocketIdentityFromId(operator);
     logger.debug('Operator disconnected:', operator.identity, reason);
@@ -375,7 +374,7 @@ class OperatorsRoom {
     //   serverTime: timeHelper.formattedTimestamp(),
     // });
 
-    console.log('emitCallsInfo', groupName, this.operators.to(groupName).connected);
+    // console.log('emitCallsInfo', groupName, this.operators.to(groupName).connected);
     logger.debug('Operator: calls info emitted to group', groupName);
 
     this.emitRealtimeDashboardWaitingCallsInfo(tenantId);
@@ -465,7 +464,7 @@ class OperatorsRoom {
     }
   }
 
-  unsubscibeFromRealtimeDashboardUpdates({ id }) {
+  unsubscribeFromRealtimeDashboardUpdates({ id }) {
     const connectedOperator = this.getConnectedOperator(id);
     if (connectedOperator) {
       const tenantId = connectedOperator.tenantId;
@@ -501,7 +500,7 @@ class OperatorsRoom {
       const groupName = this.getRealtimeDashboardGroupName(tenantId);
       const group = this.operators.to(groupName);
 
-      console.log('emitRealtimeDashboardWaitingCallsInfo', groupName, group.connected);
+      // console.log('emitRealtimeDashboardWaitingCallsInfo', groupName, group.connected);
       group.clients(console.log.bind(null, 'groupClients', groupName));
 
       if (Object.keys(group.connected).length) {
