@@ -47,7 +47,10 @@ function connectToSocket() {
       connectedAt = now;
       startAuthorizingAt = now;
 
-      socket.emit(SOCKET_EVENTS.AUTHENTICATION, { identity });
+      socket.emit(SOCKET_EVENTS.AUTHENTICATION, {
+        identity,
+        token: 'mocked-operator-user-token',
+      });
       socket.once(SOCKET_EVENTS.AUTHENTICATED, onAuthenticated);
       socket.once(SOCKET_EVENTS.UNAUTHORIZED, onUnauthorized);
 
@@ -412,6 +415,11 @@ module.exports.CALL_STATUSES = {
   CALL_ACCEPTING_FAILED: 'Call accepting failed',
   ON_CALL: 'On call',
   UNAUTHORIZED: 'Unauthorized',
+};
+
+module.exports.APP_MODES = {
+  FULL: '1',
+  STEPS_BY_STEP: '2',
 };
 
 module.exports.COLORS_MAP = {

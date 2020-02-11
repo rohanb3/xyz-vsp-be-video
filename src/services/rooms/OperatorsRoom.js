@@ -27,7 +27,11 @@ const {
   REALTIME_DASHBOARD_SUBSCRIBTION_PERMISSION,
 } = require('@/constants/permissions');
 
-const { TOKEN_INVALID, UNAUTHORIZED } = require('@/constants/connection');
+const {
+  TOKEN_INVALID,
+  UNAUTHORIZED,
+  FORBIDDEN,
+} = require('@/constants/connection');
 
 const {
   STATUS_CHANGED_ONLINE,
@@ -44,11 +48,13 @@ const {
 
 const calls = require('@/services/calls');
 const twilio = require('@/services/twilio');
+const timeHelper = require('@/services/time');
 
 const socketAuth = require('@/services/socketAuth');
 const { authenticateOperator } = socketAuth;
 
 const { connectionsHeap } = require('@/services/connectionsHeap');
+const { activeCallsHeap } = require('@/services/calls/activeCallsHeap');
 const { getOperatorCallFailReason } = require('./utils');
 const logger = require('@/services/logger')(module);
 
@@ -81,6 +87,16 @@ class OperatorsRoom {
     );
     calls.subscribeToCallbackDeclining(
       this.checkOperatorAndEmitCallbackDeclining.bind(this)
+    );
+    activeCallsHeap.subscribeToItemAdding((...res) =>
+      activeCallsHeap
+        .getAll()
+        .then(all => console.log('subscribeToItemAdding', res, all))
+    );
+    activeCallsHeap.subscribeToItemTaking((...res) =>
+      activeCallsHeap
+        .getAll()
+        .then(all => console.log('subscribeToItemTaking', res, all))
     );
 
     if (isMaster) {
@@ -210,6 +226,7 @@ class OperatorsRoom {
             salesRepId,
             callbackEnabled,
           } = call;
+
           const token = twilio.getToken(connectedOperator.identity, id);
           connectedOperator.emit(ROOM_CREATED, {
             id,
@@ -357,7 +374,11 @@ class OperatorsRoom {
   emitCallsInfo(info) {
     const { data, tenantId } = info;
     const groupName = this.getActiveOperatorsGroupName(tenantId);
-    this.operators.to(groupName).emit(CALLS_CHANGED, data);
+    this.operators.to(groupName).emit(CALLS_CHANGED, {
+      ...data,
+      serverTime: timeHelper.formattedTimestamp(),
+    });
+
     logger.debug('Operator: calls info emitted to group', groupName);
 
     this.emitRealtimeDashboardWaitingCallsInfo(tenantId);
@@ -385,7 +406,10 @@ class OperatorsRoom {
         logger.debug('Operator: joined group', id, groupName);
 
         const info = await calls.getCallsInfo(tenantId);
-        connectedOperator.emit(CALLS_CHANGED, info);
+        connectedOperator.emit(CALLS_CHANGED, {
+          ...info,
+          serverTime: timeHelper.formattedTimestamp(),
+        });
         logger.debug('Operator: calls info emited dirrectly', id);
       } else {
         logger.debug(
@@ -424,9 +448,14 @@ class OperatorsRoom {
           REALTIME_DASHBOARD_SUBSCRIBTION_PERMISSION
         )
       ) {
-        connectedOperator.join(this.getRealtimeDashboardGroupName(tenantId));
+        const groupName = this.getRealtimeDashboardGroupName(tenantId);
+        connectedOperator.join(groupName);
         connectedOperator.emit(REALTIME_DASHBOARD_SUBSCRIBED);
-        logger.debug('Operator: subscribed to realtime dashboard', id);
+        logger.debug(
+          'Operator: subscribed to realtime dashboard',
+          id,
+          groupName
+        );
 
         this.emitRealtimeDashboardWaitingCallsInfo(tenantId, connectedOperator);
       } else {
@@ -442,7 +471,14 @@ class OperatorsRoom {
       logger.debug('Operator: unsubscribe from realtime dashboard', id);
 
       const tenantId = connectedOperator.tenantId;
-      connectedOperator.leave(this.getRealtimeDashboardGroupName(tenantId));
+      const groupName = this.getRealtimeDashboardGroupName(tenantId);
+      connectedOperator.leave(groupName);
+
+      logger.debug(
+        'Operator: unsubscribed from realtime dashboard',
+        id,
+        groupName
+      );
     }
   }
 
@@ -474,6 +510,7 @@ class OperatorsRoom {
       target.emit(REALTIME_DASHBOARD_WAITING_CALLS_CHANGED, {
         count: items.length,
         items,
+        serverTime: timeHelper.formattedTimestamp(),
       });
     }
   }
@@ -564,10 +601,10 @@ class OperatorsRoom {
     const connectedOperator = this.getConnectedOperator(id);
 
     if (connectedOperator) {
-      connectedOperator.emit(
-        UNAUTHORIZED,
-        `Operation "${operationName}" is not allowed.`
-      );
+      connectedOperator.emit(FORBIDDEN, {
+        message: `Operation "${operationName}" is not allowed.`,
+        operation: operationName,
+      });
     }
   }
 }
