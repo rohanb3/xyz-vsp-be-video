@@ -50,7 +50,7 @@ function connectToSocket() {
       connectedAt = now;
       startAuthorizingAt = now;
 
-      socket.emit(SOCKET_EVENTS.AUTHENTICATION, { identity, deviceId });
+      socket.emit(SOCKET_EVENTS.AUTHENTICATION, { identity, deviceId, token: 'mocked-device-user-token' });
       socket.once(SOCKET_EVENTS.AUTHENTICATED, onAuthenticated);
       socket.once(SOCKET_EVENTS.UNAUTHORIZED, onUnauthorized);
 

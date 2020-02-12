@@ -25,6 +25,10 @@ class Heap {
     return id ? this.connector.get(id) : Promise.resolve(null);
   }
 
+  getAll() {
+    return this.connector.getAll();
+  }
+
   add(id, item) {
     return this.connector.add(id, item).then(() => {
       pubSub.publish(this.events.ITEM_ADDED, item);

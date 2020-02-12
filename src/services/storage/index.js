@@ -18,7 +18,6 @@ function get(key) {
 }
 
 function getMultiple(keys) {
-  console.log('getMultipple.keys', keys);
   if (!Array.isArray(keys)) {
     return Promise.resolve(null);
   }
