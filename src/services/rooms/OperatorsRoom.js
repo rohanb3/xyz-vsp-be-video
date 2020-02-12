@@ -48,6 +48,8 @@ const twilio = require('@/services/twilio');
 const socketAuth = require('@/services/socketAuth');
 const { authenticateOperator } = socketAuth;
 
+const operatorsHeaps = require('@/services/operators');
+
 const { connectionsHeap } = require('@/services/connectionsHeap');
 const { getOperatorCallFailReason } = require('./utils');
 const logger = require('@/services/logger')(module);
@@ -81,6 +83,10 @@ class OperatorsRoom {
     );
     calls.subscribeToCallbackDeclining(
       this.checkOperatorAndEmitCallbackDeclining.bind(this)
+    );
+
+    operatorsHeaps.subscribeOnHeapChanges((...args) =>
+      console.log('subscribeOnHeapChanges', args)
     );
 
     if (isMaster) {
@@ -380,6 +386,9 @@ class OperatorsRoom {
       ) {
         const tenantId = connectedOperator.tenantId;
         const groupName = this.getActiveOperatorsGroupName(tenantId);
+        operatorsHeaps
+          .getOperatorsHeap(tenantId)
+          .add(connectedOperator.identity);
 
         connectedOperator.join(groupName);
         logger.debug('Operator: joined group', id, groupName);
@@ -400,6 +409,9 @@ class OperatorsRoom {
     if (connectedOperator) {
       const tenantId = connectedOperator.tenantId;
       const groupName = this.getActiveOperatorsGroupName(tenantId);
+      operatorsHeaps
+        .getOperatorsHeap(tenantId)
+        .remove(connectedOperator.identity);
 
       connectedOperator.leave(groupName);
 
@@ -439,7 +451,7 @@ class OperatorsRoom {
   unsubscibeFromRealtimeDashboardUpdates({ id }) {
     const connectedOperator = this.getConnectedOperator(id);
     if (connectedOperator) {
-      logger.debug('Operator: unsubscribe from realtime dashboard', operatorId);
+      logger.debug('Operator: unsubscribe from realtime dashboard', id);
 
       const tenantId = connectedOperator.tenantId;
       connectedOperator.leave(this.getRealtimeDashboardGroupName(tenantId));
