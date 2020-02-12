@@ -213,6 +213,7 @@ class OperatorsRoom {
             salesRepId,
             callbackEnabled,
           } = call;
+
           const token = twilio.getToken(connectedOperator.identity, id);
           connectedOperator.emit(ROOM_CREATED, {
             id,
@@ -561,7 +562,7 @@ class OperatorsRoom {
         message: TOKEN_INVALID,
       });
       logger.error(
-        'Operator: invalid token message emited to',
+        'Operator: invalid token message emitted to',
         connection.id,
         connection.identity
       );
@@ -585,11 +586,19 @@ class OperatorsRoom {
   emitRealtimeDashboardCallFinished(call) {
     const groupName = this.getRealtimeDashboardGroupName(call.tenantId);
     this.operators.to(groupName).emit(REALTIME_DASHBOARD_CALL_FINISHED, call);
+    logger.debug(
+      `${REALTIME_DASHBOARD_CALL_FINISHED} emitted to tenant group ${call.tenantId} with call:`,
+      call
+    );
   }
 
   emitRealtimeDashboardCallAccepted(call) {
     const groupName = this.getRealtimeDashboardGroupName(call.tenantId);
     this.operators.to(groupName).emit(REALTIME_DASHBOARD_CALL_ACCEPTED, call);
+    logger.debug(
+      `${REALTIME_DASHBOARD_CALL_ACCEPTED} emitted to tenant group ${call.tenantId} with call:`,
+      call
+    );
   }
 }
 
