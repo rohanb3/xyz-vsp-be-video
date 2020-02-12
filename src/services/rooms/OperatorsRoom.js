@@ -527,10 +527,9 @@ class OperatorsRoom {
       );
     } else {
       const groupName = this.getRealtimeDashboardGroupName(tenantId);
-      const group = this.operators.to(groupName);
 
-      if (Object.keys(group.connected).length) {
-        target = group;
+      if (!this.isEmptyGroup(groupName)) {
+        target = this.operators.to(groupName);
         logger.debug(
           'Operator: realtime dashboard waiting calls info emited to non empty group',
           groupName
@@ -667,6 +666,12 @@ class OperatorsRoom {
 
     const message = `${REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED} emitted to tenant group ${changedCall.tenantId} with calls:`;
     logger.debug(message, tenantCalls);
+  }
+
+  isEmptyGroup(groupName) {
+    const group = this.operators.to(groupName);
+
+    return !!Object.keys(group.connected).length;
   }
 }
 
