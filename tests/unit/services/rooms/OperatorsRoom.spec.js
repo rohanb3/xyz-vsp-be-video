@@ -18,6 +18,7 @@ const socketAuth = require('@/services/socketAuth');
 const OperatorsRoom = require('@/services/rooms/OperatorsRoom');
 
 const { connectionsHeap } = require('@/services/connectionsHeap');
+const { activeCallsHeap } = require('@/services/calls/activeCallsHeap');
 const {
   CONNECTION,
   DISCONNECT,
@@ -43,6 +44,7 @@ const {
   REALTIME_DASHBOARD_UNSUBSCRIBE,
   REALTIME_DASHBOARD_CALL_FINISHED,
   REALTIME_DASHBOARD_CALL_ACCEPTED,
+  REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED,
 } = require('@/constants/realtimeDashboard');
 
 const {
@@ -562,10 +564,10 @@ describe('OperatorsRoom: ', () => {
 
   describe('emitCallsInfo(): ', () => {
     it('should emit only to active operators', () => {
-      const info = { tenantId: tenantId };
+      const info = { tenantId };
       const callsInfo = {
         data: info,
-        tenantId: tenantId,
+        tenantId,
       };
       const expectedInfo = {
         ...info,
@@ -1097,6 +1099,41 @@ describe('OperatorsRoom: ', () => {
       ).toHaveBeenCalledWith(call);
     });
   });
+  describe('onActiveCallsHeapChanged()', () => {
+    it('should call emitRealtimeDashboardActiveCallsInfo', () => {
+      operatorsRoom.emitRealtimeDashboardActiveCallsInfo = jest.fn();
+      const call = {
+        finishedBy: operatorIdentity,
+        acceptedBy: operatorIdentity,
+        id: callId,
+        tenantId: tenantId,
+      };
+
+      operatorsRoom.onActiveCallsHeapChanged(call);
+
+      expect(
+        operatorsRoom.emitRealtimeDashboardActiveCallsInfo
+      ).toHaveBeenCalledWith(call);
+    });
+  });
+  describe('emitRealtimeDashboardActiveCallsInfo()', () => {
+    it('should emit event to operators in group', async () => {
+      const call = {
+        acceptedBy: operatorIdentity,
+        id: callId,
+        tenantId,
+      };
+
+      const groupName = `tenant.${tenantId}.realtimeDashboard`;
+      activeCallsHeap.getAll = jest.fn().mockResolvedValue([call]);
+      await operatorsRoom.emitRealtimeDashboardActiveCallsInfo(call);
+
+      expect(operatorsRoom.operators.to).toHaveBeenCalledWith(groupName);
+      expect(
+        operatorsRoom.operators.emit
+      ).toHaveBeenCalledWith(REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED, [call]);
+    });
+  });
   describe('emitRealtimeDashboardCallFinished()', () => {
     it('should emit event to operators in group', () => {
       const call = {
@@ -1122,7 +1159,7 @@ describe('OperatorsRoom: ', () => {
       const call = {
         acceptedBy: operatorIdentity,
         id: callId,
-        tenantId: tenantId,
+        tenantId,
       };
 
       const groupName = `tenant.${tenantId}.realtimeDashboard`;

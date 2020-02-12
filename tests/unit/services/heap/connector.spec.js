@@ -20,7 +20,7 @@ describe('HeapConnector: ', () => {
       const id = '123';
       client.sismember = jest.fn(() => Promise.resolve(1));
 
-      return connector.isExist(id).then((res) => {
+      return connector.isExist(id).then(res => {
         expect(res).toBeTruthy();
         expect(client.sismember).toHaveBeenCalledWith(HEAP_NAME, id);
       });
@@ -30,7 +30,7 @@ describe('HeapConnector: ', () => {
       const id = '123';
       client.sismember = jest.fn(() => Promise.resolve(0));
 
-      return connector.isExist(id).then((res) => {
+      return connector.isExist(id).then(res => {
         expect(res).toBeFalsy();
         expect(client.sismember).toHaveBeenCalledWith(HEAP_NAME, id);
       });
@@ -42,7 +42,7 @@ describe('HeapConnector: ', () => {
       const size = 42;
       client.scard = jest.fn(() => Promise.resolve(size));
 
-      return connector.getSize().then((res) => {
+      return connector.getSize().then(res => {
         expect(res).toBe(size);
         expect(client.scard).toHaveBeenCalled();
       });
@@ -78,7 +78,7 @@ describe('HeapConnector: ', () => {
       storage.set = jest.fn(() => Promise.reject(error));
       connector.isExist = jest.fn(() => Promise.resolve(false));
 
-      return connector.add(id, call).catch((err) => {
+      return connector.add(id, call).catch(err => {
         expect(err).toBe(error);
         expect(err).not.toBeInstanceOf(errors.OverrideItemError);
         expect(client.sadd).toHaveBeenCalledWith(HEAP_NAME, id);
@@ -95,7 +95,7 @@ describe('HeapConnector: ', () => {
       client.sismember = jest.fn(() => Promise.resolve(false));
       storage.get = jest.fn(() => Promise.resolve());
 
-      return connector.get(id).then((res) => {
+      return connector.get(id).then(res => {
         expect(res).toBeNull();
         expect(storage.get).not.toHaveBeenCalled();
       });
@@ -110,9 +110,33 @@ describe('HeapConnector: ', () => {
       client.sismember = jest.fn(() => Promise.resolve(true));
       storage.get = jest.fn(() => Promise.resolve(call));
 
-      return connector.get(id).then((res) => {
+      return connector.get(id).then(res => {
         expect(res).toEqual(call);
         expect(storage.get).toHaveBeenCalledWith(id);
+      });
+    });
+  });
+
+  describe('getAll(): ', () => {
+    it('should return value for existed keys', () => {
+      const callIds = ['call32', 'call81'];
+      const calls = [
+        {
+          id: 'call32',
+          requestedBy: '124',
+          acceptedBy: '312',
+        },
+        {
+          id: 'call81',
+          requestedBy: '123',
+          acceptedBy: '314',
+        },
+      ];
+      client.smembers = jest.fn().mockResolvedValue(callIds);
+      storage.getMultiple = jest.fn().mockResolvedValue(calls);
+      return connector.getAll().then(res => {
+        expect(res).toBe(calls);
+        expect(storage.getMultiple).toHaveBeenCalledWith(callIds);
       });
     });
   });
@@ -137,7 +161,7 @@ describe('HeapConnector: ', () => {
       storage.take = jest.fn(() => Promise.resolve());
       connector.isExist = jest.fn(() => Promise.resolve(false));
 
-      return connector.take(id).catch((err) => {
+      return connector.take(id).catch(err => {
         expect(err).toBeInstanceOf(errors.NotFoundItemError);
         expect(client.srem).not.toHaveBeenCalled();
         expect(storage.take).not.toHaveBeenCalled();
@@ -152,7 +176,7 @@ describe('HeapConnector: ', () => {
       storage.take = jest.fn(() => Promise.reject(error));
       connector.isExist = jest.fn(() => Promise.resolve(true));
 
-      return connector.take(id).catch((err) => {
+      return connector.take(id).catch(err => {
         expect(err).toBeInstanceOf(errors.NotFoundItemError);
         expect(client.srem).toHaveBeenCalledWith(HEAP_NAME, id);
         expect(storage.take).toHaveBeenCalledWith(id);
@@ -167,7 +191,7 @@ describe('HeapConnector: ', () => {
       storage.take = jest.fn(() => Promise.reject(error));
       connector.isExist = jest.fn(() => Promise.resolve(true));
 
-      return connector.take(id).catch((err) => {
+      return connector.take(id).catch(err => {
         expect(err).not.toBeInstanceOf(errors.NotFoundItemError);
         expect(client.srem).toHaveBeenCalledWith(HEAP_NAME, id);
         expect(storage.take).toHaveBeenCalledWith(id);
@@ -180,7 +204,7 @@ describe('HeapConnector: ', () => {
       connector.isExist = jest.fn(() => Promise.resolve(false));
       storage.update = jest.fn(() => Promise.resolve());
 
-      return connector.update().then((res) => {
+      return connector.update().then(res => {
         expect(res).toBeFalsy();
         expect(connector.isExist).not.toHaveBeenCalled();
         expect(storage.update).not.toHaveBeenCalled();
@@ -192,7 +216,7 @@ describe('HeapConnector: ', () => {
       connector.isExist = jest.fn(() => Promise.resolve(false));
       storage.update = jest.fn(() => Promise.resolve());
 
-      return connector.update(id).catch((err) => {
+      return connector.update(id).catch(err => {
         expect(err).toBeInstanceOf(errors.NotFoundItemError);
         expect(storage.update).not.toHaveBeenCalled();
       });
@@ -206,7 +230,7 @@ describe('HeapConnector: ', () => {
       connector.isExist = jest.fn(() => Promise.resolve(true));
       storage.update = jest.fn(() => Promise.resolve());
 
-      return connector.update(id, updates).catch((err) => {
+      return connector.update(id, updates).catch(err => {
         expect(err).toBeInstanceOf(errors.NotFoundItemError);
         expect(storage.update).toHaveBeenCalledWith(id, updates);
       });
