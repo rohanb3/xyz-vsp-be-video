@@ -1117,21 +1117,31 @@ describe('OperatorsRoom: ', () => {
     });
   });
   describe('emitRealtimeDashboardActiveCallsInfo()', () => {
-    it('should emit event to operators in group', async () => {
-      const call = {
+    it("should emit event to operators in group with only operator's tenant calls", async () => {
+      const ownTenantCall = {
         acceptedBy: operatorIdentity,
         id: callId,
         tenantId,
       };
 
+      const anotherTenantCall = {
+        acceptedBy: 'anyOtherOperator',
+        id: '123',
+        tenantId: 'notSpectrum',
+      };
+
       const groupName = `tenant.${tenantId}.realtimeDashboard`;
-      activeCallsHeap.getAll = jest.fn().mockResolvedValue([call]);
-      await operatorsRoom.emitRealtimeDashboardActiveCallsInfo(call);
+      activeCallsHeap.getAll = jest
+        .fn()
+        .mockResolvedValue([ownTenantCall, anotherTenantCall]);
+      await operatorsRoom.emitRealtimeDashboardActiveCallsInfo(ownTenantCall);
 
       expect(operatorsRoom.operators.to).toHaveBeenCalledWith(groupName);
       expect(
         operatorsRoom.operators.emit
-      ).toHaveBeenCalledWith(REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED, [call]);
+      ).toHaveBeenCalledWith(REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED, [
+        ownTenantCall,
+      ]);
     });
   });
   describe('emitRealtimeDashboardCallFinished()', () => {
