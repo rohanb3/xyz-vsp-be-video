@@ -5,6 +5,10 @@ jest.mock('@/services/calls', () => ({
   subscribeToCallsLengthChanging: jest.fn(() => {}),
   subscribeToCallFinishing: jest.fn(() => {}),
   subscribeToCallAccepting: jest.fn(() => {}),
+  subscribeToActiveCallsHeapAdding: jest.fn(() => {}),
+  subscribeToActiveCallsHeapTaking: jest.fn(() => {}),
+  unsubscribeFromActiveCallsHeapAdding: jest.fn(() => {}),
+  unsubscribeFromActiveCallsHeapTaking: jest.fn(() => {}),
   getCallsInfo: jest.fn(() => Promise.resolve({})),
   finishCall: jest.fn(() => Promise.resolve()),
   requestCallback: jest.fn(() => Promise.resolve()),
@@ -18,7 +22,6 @@ const socketAuth = require('@/services/socketAuth');
 const OperatorsRoom = require('@/services/rooms/OperatorsRoom');
 
 const { connectionsHeap } = require('@/services/connectionsHeap');
-const { activeCallsHeap } = require('@/services/calls/activeCallsHeap');
 const {
   CONNECTION,
   DISCONNECT,
@@ -1124,16 +1127,10 @@ describe('OperatorsRoom: ', () => {
         tenantId,
       };
 
-      const anotherTenantCall = {
-        acceptedBy: 'anyOtherOperator',
-        id: '123',
-        tenantId: 'notSpectrum',
-      };
-
       const groupName = `tenant.${tenantId}.realtimeDashboard`;
-      activeCallsHeap.getAll = jest
+      calls.getActiveCallsByTenantId = jest
         .fn()
-        .mockResolvedValue([ownTenantCall, anotherTenantCall]);
+        .mockResolvedValue([ownTenantCall]);
       await operatorsRoom.emitRealtimeDashboardActiveCallsInfo(ownTenantCall);
 
       expect(operatorsRoom.operators.to).toHaveBeenCalledWith(groupName);

@@ -57,7 +57,6 @@ const socketAuth = require('@/services/socketAuth');
 const { authenticateOperator } = socketAuth;
 
 const { connectionsHeap } = require('@/services/connectionsHeap');
-const { activeCallsHeap } = require('@/services/calls/activeCallsHeap');
 const { getOperatorCallFailReason } = require('./utils');
 const logger = require('@/services/logger')(module);
 
@@ -92,10 +91,11 @@ class OperatorsRoom {
     calls.subscribeToCallbackDeclining(
       this.checkOperatorAndEmitCallbackDeclining.bind(this)
     );
-    activeCallsHeap.subscribeToItemAdding(
+
+    calls.subscribeToActiveCallsHeapAdding(
       this.onActiveCallsHeapChanged.bind(this)
     );
-    activeCallsHeap.subscribeToItemTaking(
+    calls.subscribeToActiveCallsHeapTaking(
       this.onActiveCallsHeapChanged.bind(this)
     );
 
@@ -657,9 +657,8 @@ class OperatorsRoom {
   }
 
   async emitRealtimeDashboardActiveCallsInfo(changedCall) {
-    const calls = await activeCallsHeap.getAll();
-    const tenantCalls = calls.filter(
-      (call = {}) => call.tenantId === changedCall.tenantId
+    const tenantCalls = await calls.getActiveCallsByTenantId(
+      changedCall.tenantId
     );
     const groupName = this.getRealtimeDashboardGroupName(changedCall.tenantId);
     this.operators
