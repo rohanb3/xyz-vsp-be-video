@@ -263,9 +263,8 @@ class OperatorsRoom {
     operator.emit(CALL_ACCEPTING_FAILED, data);
   }
 
-  async onActiveCallsHeapChanged(changedCall = {}) {
-    const calls = await activeCallsHeap.getAll();
-    this.emitRealtimeDashboardActiveCallsChanged(changedCall, calls);
+  onActiveCallsHeapChanged(changedCall = {}) {
+    this.emitRealtimeDashboardActiveCallsInfo(changedCall);
   }
 
   onCallFinished(call) {
@@ -423,10 +422,10 @@ class OperatorsRoom {
           ...info,
           serverTime: timeHelper.formattedTimestamp(),
         });
-        logger.debug('Operator: calls info emited dirrectly', id);
+        logger.debug('Operator: calls info emitted directly', id);
       } else {
         logger.debug(
-          `Operator: wasn't added to active operators group because of missed answring call permission`
+          `Operator: wasn't added to active operators group because of missed answering call permission`
         );
       }
     }
@@ -470,7 +469,29 @@ class OperatorsRoom {
           groupName
         );
 
-        this.emitRealtimeDashboardWaitingCallsInfo(tenantId, connectedOperator);
+        this.emitRealtimeDashboardWaitingCallsInfo(tenantId, connectedOperator)
+          .then(() =>
+            logger.debug('Operator: waiting calls info emitted directly', id)
+          )
+          .catch(error =>
+            logger.error(
+              'Operator: ERROR waiting calls info emitted directly',
+              id,
+              error
+            )
+          );
+
+        this.emitRealtimeDashboardActiveCallsInfo({ tenantId })
+          .then(() =>
+            logger.debug('Operator: active calls info emitted directly', id)
+          )
+          .catch(error =>
+            logger.error(
+              'Operator: ERROR active calls info emitted directly',
+              id,
+              error
+            )
+          );
       } else {
         connectedOperator.emit(REALTIME_DASHBOARD_SUBSCRIBTION_ERROR);
         logger.debug('Operator: not subscribed to realtime dashboard', id);
@@ -624,31 +645,29 @@ class OperatorsRoom {
   emitRealtimeDashboardCallFinished(call) {
     const groupName = this.getRealtimeDashboardGroupName(call.tenantId);
     this.operators.to(groupName).emit(REALTIME_DASHBOARD_CALL_FINISHED, call);
-    logger.debug(
-      `${REALTIME_DASHBOARD_CALL_FINISHED} emitted to tenant group ${call.tenantId} with call:`,
-      call
-    );
+    const message = `${REALTIME_DASHBOARD_CALL_FINISHED} emitted to tenant group ${call.tenantId} with call:`;
+    logger.debug(message, call);
   }
 
   emitRealtimeDashboardCallAccepted(call) {
     const groupName = this.getRealtimeDashboardGroupName(call.tenantId);
     this.operators.to(groupName).emit(REALTIME_DASHBOARD_CALL_ACCEPTED, call);
-    logger.debug(
-      `${REALTIME_DASHBOARD_CALL_ACCEPTED} emitted to tenant group ${call.tenantId} with call:`,
-      call
-    );
+    const message = `${REALTIME_DASHBOARD_CALL_ACCEPTED} emitted to tenant group ${call.tenantId} with call:`;
+    logger.debug(message, call);
   }
 
-  emitRealtimeDashboardActiveCallsChanged(changedCall, calls) {
-    const groupName = this.getActiveOperatorsGroupName(changedCall.tenantId);
-    this.operators.to(groupName).emit(
-      REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED,
-      calls.filter((call = {}) => call.tenantId === changedCall.tenantId)
+  async emitRealtimeDashboardActiveCallsInfo(changedCall) {
+    const calls = await activeCallsHeap.getAll();
+    const tenantCalls = calls.filter(
+      (call = {}) => call.tenantId === changedCall.tenantId
     );
-    logger.debug(
-      `${REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED} emitted to tenant group ${changedCall.tenantId} with calls:`,
-      calls
-    );
+    const groupName = this.getRealtimeDashboardGroupName(changedCall.tenantId);
+    this.operators
+      .to(groupName)
+      .emit(REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED, tenantCalls);
+
+    const message = `${REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED} emitted to tenant group ${changedCall.tenantId} with calls:`;
+    logger.debug(message, tenantCalls);
   }
 }
 
