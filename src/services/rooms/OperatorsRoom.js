@@ -265,7 +265,7 @@ class OperatorsRoom {
 
   async onActiveCallsHeapChanged(changedCall = {}) {
     const calls = await activeCallsHeap.getAll();
-    this.emitRealtimeDashboardLiveCallsChanged(changedCall, calls);
+    this.emitRealtimeDashboardActiveCallsChanged(changedCall, calls);
   }
 
   onCallFinished(call) {
@@ -600,7 +600,7 @@ class OperatorsRoom {
         message: TOKEN_INVALID,
       });
       logger.error(
-        'Operator: invalid token message emited to',
+        'Operator: invalid token message emitted to',
         connection.id,
         connection.identity
       );
@@ -624,18 +624,31 @@ class OperatorsRoom {
   emitRealtimeDashboardCallFinished(call) {
     const groupName = this.getRealtimeDashboardGroupName(call.tenantId);
     this.operators.to(groupName).emit(REALTIME_DASHBOARD_CALL_FINISHED, call);
+    logger.debug(
+      `${REALTIME_DASHBOARD_CALL_FINISHED} emitted to tenant group ${call.tenantId} with call:`,
+      call
+    );
   }
 
   emitRealtimeDashboardCallAccepted(call) {
     const groupName = this.getRealtimeDashboardGroupName(call.tenantId);
     this.operators.to(groupName).emit(REALTIME_DASHBOARD_CALL_ACCEPTED, call);
+    logger.debug(
+      `${REALTIME_DASHBOARD_CALL_ACCEPTED} emitted to tenant group ${call.tenantId} with call:`,
+      call
+    );
   }
 
-  emitRealtimeDashboardLiveCallsChanged(changedCall, calls) {
-    const groupName = this.getRealtimeDashboardGroupName(changedCall.tenantId);
-    this.operators
-      .to(groupName)
-      .emit(REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED, calls);
+  emitRealtimeDashboardActiveCallsChanged(changedCall, calls) {
+    const groupName = this.getActiveOperatorsGroupName(changedCall.tenantId);
+    this.operators.to(groupName).emit(
+      REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED,
+      calls.filter((call = {}) => call.tenantId === changedCall.tenantId)
+    );
+    logger.debug(
+      `${REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED} emitted to tenant group ${changedCall.tenantId} with calls:`,
+      calls
+    );
   }
 }
 
