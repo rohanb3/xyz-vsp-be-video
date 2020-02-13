@@ -656,14 +656,14 @@ class OperatorsRoom {
   emitRealtimeDashboardCallFinished(call) {
     const groupName = this.getRealtimeDashboardGroupName(call.tenantId);
     this.operators.to(groupName).emit(REALTIME_DASHBOARD_CALL_FINISHED, call);
-    const message = `${REALTIME_DASHBOARD_CALL_FINISHED} emitted to tenant group ${call.tenantId} with call:`;
+    const message = `Operator: ${REALTIME_DASHBOARD_CALL_FINISHED} emitted to tenant group ${call.tenantId} with call:`;
     logger.debug(message, call);
   }
 
   emitRealtimeDashboardCallAccepted(call) {
     const groupName = this.getRealtimeDashboardGroupName(call.tenantId);
     this.operators.to(groupName).emit(REALTIME_DASHBOARD_CALL_ACCEPTED, call);
-    const message = `${REALTIME_DASHBOARD_CALL_ACCEPTED} emitted to tenant group ${call.tenantId} with call:`;
+    const message = `Operator: ${REALTIME_DASHBOARD_CALL_ACCEPTED} emitted to tenant group ${call.tenantId} with call:`;
     logger.debug(message, call);
   }
 
