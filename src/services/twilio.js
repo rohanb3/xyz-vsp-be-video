@@ -16,12 +16,16 @@ const { AccessToken } = twilio.jwt;
 const { VideoGrant } = AccessToken;
 
 function getToken(identity, roomName = '') {
+  logger.debug('twilio.getToken: ', identity, roomName);
   const videoGrantOptions = roomName ? { room: roomName } : {};
   const tokenOptions = {
     ttl: TOKEN_TIME_LIFE,
     identity,
   };
+  logger.debug('twilio.getToken: videoGrantOptions', videoGrantOptions);
   const grant = new VideoGrant(videoGrantOptions);
+
+  logger.debug('twilio.getToken: tokenOptions', TWILIO_ACCOUNT_SID, TWILIO_API_KEY, TWILIO_API_SECRET, tokenOptions);
   const token = new AccessToken(
     TWILIO_ACCOUNT_SID,
     TWILIO_API_KEY,
@@ -35,7 +39,7 @@ function getToken(identity, roomName = '') {
 }
 
 function createRoom(identity) {
-  logger.debug('createRoom', identity);
+  logger.debug('twilio.createRoom', identity);
   return client.video.rooms.create({
     recordParticipantsOnConnect: true,
     enableTurn: true,
@@ -46,7 +50,7 @@ function createRoom(identity) {
 }
 
 function getRoom(identity) {
-  logger.debug('getRoom', identity);
+  logger.debug('twilio.getRoom', identity);
   // return new Promise((resolve) => {
   //   client.video.rooms.each({ uniqueName: identity }, resolve);
   // });
@@ -57,6 +61,7 @@ function getRoom(identity) {
 }
 
 function ensureRoom(identity) {
+  logger.debug('twilio.ensureRoom', identity);
   return getRoom(identity).then(room => room || createRoom(identity));
 }
 

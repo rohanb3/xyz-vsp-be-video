@@ -46,7 +46,10 @@ function connectToSocket() {
       connectedAt = now;
       startAuthorizingAt = now;
 
-      socket.emit(SOCKET_EVENTS.AUTHENTICATION, { identity });
+      socket.emit(SOCKET_EVENTS.AUTHENTICATION, {
+        identity,
+        token: 'mocked-operator-user-token',
+      });
       socket.once(SOCKET_EVENTS.AUTHENTICATED, onAuthenticated);
       socket.once(SOCKET_EVENTS.UNAUTHORIZED, onUnauthorized);
 
