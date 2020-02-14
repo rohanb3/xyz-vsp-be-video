@@ -736,23 +736,11 @@ class OperatorsRoom {
 
     const activeOperatorsCount = await this.getGroupInfo(
       activeOperatorsGroup
-    ).catch((...err) => {
-      logger.error(
-        `Operators: emitOperatorsActivityChanged failed for ${realtimeDashboardGroup}`,
-        err
-      );
-      return 0;
-    });
+    ).catch(err => this.handleGetGroupInfoError(err, activeOperatorsGroup));
 
     const inactiveOperatorsCount = await this.getGroupInfo(
       inactiveOperatorsGroup
-    ).catch((...err) => {
-      logger.error(
-        `Operators: emitOperatorsActivityChanged failed for ${realtimeDashboardGroup}`,
-        err
-      );
-      return 0;
-    });
+    ).catch(err => this.handleGetGroupInfoError(err, inactiveOperatorsCount));
 
     const data = {
       activeOperators: {
@@ -787,6 +775,14 @@ class OperatorsRoom {
         .to(groupName)
         .clients((err, data) => (err ? reject(err) : resolve(data.length)))
     );
+  }
+
+  handleGetGroupInfoError(err, group) {
+    logger.error(
+      `Operators: emitOperatorsActivityChanged failed for ${group}`,
+      err
+    );
+    return 0;
   }
 
   // joinGroup(operator, groupName) {
