@@ -627,6 +627,8 @@ class OperatorsRoom {
         message: `Operation "${operationName}" is not allowed.`,
         operation: operationName,
       });
+
+      logger.error('Operator: operation is fobridden', id, operationName);
     }
   }
 
