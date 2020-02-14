@@ -671,16 +671,21 @@ class OperatorsRoom {
   }
 
   async emitRealtimeDashboardActiveCallsInfo(changedCall) {
-    const tenantCalls = await calls.getActiveCallsByTenantId(
-      changedCall.tenantId
-    );
     const groupName = this.getRealtimeDashboardGroupName(changedCall.tenantId);
-    this.operators
-      .to(groupName)
-      .emit(REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED, tenantCalls);
+    if (!(await this.isEmptyGroup(groupName))) {
+      const tenantCalls = await calls.getActiveCallsByTenantId(
+        changedCall.tenantId
+      );
+      this.operators
+        .to(groupName)
+        .emit(REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED, tenantCalls);
 
-    const message = `${REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED} emitted to tenant group ${changedCall.tenantId} with calls:`;
-    logger.debug(message, tenantCalls);
+      const message = `${REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED} emitted to tenant group ${changedCall.tenantId} with calls:`;
+      logger.debug(message, tenantCalls);
+    } else {
+      const message = `${REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED} emit discarded to tenant group ${changedCall.tenantId} because group was empty:`;
+      logger.debug(message);
+    }
   }
 
   async emitOperatorsStatusesChanged(tenantId) {
@@ -688,10 +693,26 @@ class OperatorsRoom {
     const activeOperatorsGroup = this.getActiveOperatorsGroupName(tenantId);
     const inactiveOperatorsGroup = this.getInactiveOperatorsGroupName(tenantId);
 
-    const [activeOperatorsCount, inactiveOperatorsCount] = await Promise.all([
-      this.getGroupInfo(activeOperatorsGroup),
-      this.getGroupInfo(inactiveOperatorsGroup),
-    ]);
+    const activeOperatorsCount = await this.getGroupInfo(
+      activeOperatorsGroup
+    ).catch((...err) => {
+      logger.error(
+        `Operators: emitOperatorsActivityChanged failed for ${realtimeDashboardGroup}`,
+        err
+      );
+      return 0;
+    });
+
+    const inactiveOperatorsCount = await this.getGroupInfo(
+      inactiveOperatorsGroup
+    ).catch((...err) => {
+      logger.error(
+        `Operators: emitOperatorsActivityChanged failed for ${realtimeDashboardGroup}`,
+        err
+      );
+      return 0;
+    });
+
     const data = {
       activeOperators: {
         count: activeOperatorsCount,
@@ -715,7 +736,7 @@ class OperatorsRoom {
     const group = this.operators.to(groupName);
 
     return new Promise((resolve, reject) =>
-      group.clients((err, data) => (err ? reject(err) : resolve(!!data.length)))
+      group.clients((err, data) => (err ? reject(err) : resolve(!data.length)))
     );
   }
 
