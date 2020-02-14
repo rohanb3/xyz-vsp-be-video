@@ -29,6 +29,10 @@ const {
   PUBLIC_API_URL,
   SERVICES_API_TOKEN,
   IDENTITY_API_URL,
+  MOCKED_DEVICE_USER_TOKEN,
+  MOCKED_DEVICE_USER_COMPANY_ID,
+  MOCKED_OPERATOR_USER_TOKEN,
+  MOCKED_OPERATOR_USER_COMPANY_ID,
 } = process.env;
 
 module.exports = {
@@ -92,5 +96,15 @@ module.exports = {
     publicApiUrl: PUBLIC_API_URL,
     idetityApiUrl: IDENTITY_API_URL,
     staticToken: SERVICES_API_TOKEN,
+  },
+  mockedUsers: {
+    device: {
+      token: MOCKED_DEVICE_USER_TOKEN || null,
+      companyId: MOCKED_DEVICE_USER_COMPANY_ID,
+    },
+    operator: {
+      token: MOCKED_OPERATOR_USER_TOKEN || null,
+      companyId: MOCKED_OPERATOR_USER_COMPANY_ID,
+    }
   },
 };

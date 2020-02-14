@@ -9141,7 +9141,7 @@ module.exports = Array.isArray || function (arr) {
             } else {
                 duration.milliseconds = input;
             }
-        } else if (match = aspNetRegex.exec(input)) {
+        } else if (!!(match = aspNetRegex.exec(input))) {
             sign = (match[1] === '-') ? -1 : 1;
             duration = {
                 y  : 0,
@@ -9151,7 +9151,7 @@ module.exports = Array.isArray || function (arr) {
                 s  : toInt(match[SECOND])                       * sign,
                 ms : toInt(absRound(match[MILLISECOND] * 1000)) * sign // the millisecond decimal point is included in the match
             };
-        } else if (match = isoRegex.exec(input)) {
+        } else if (!!(match = isoRegex.exec(input))) {
             sign = (match[1] === '-') ? -1 : (match[1] === '+') ? 1 : 1;
             duration = {
                 y : parseIso(match[2], sign),
@@ -12943,7 +12943,7 @@ module.exports = yeast;
 /* eslint-disable no-console */
 const io = require('socket.io-client');
 
-const { SOCKET_EVENTS, TYPES, FIELDS, APP_MODES } = require('./src/constants');
+const { SOCKET_EVENTS, TYPES, FIELDS } = require('./src/constants');
 const { getDefaultStatistics, getField, setField } = require('./src/utils');
 const {
   drawCustomersFrames,
@@ -12970,7 +12970,6 @@ if (!isLocal) {
 const identity = `${now}-operator-0`;
 const socket = io(socketUrl, socketOptions);
 
-let workmode = APP_MODES.FULL;
 let isStarted = false;
 let callsStatisticsOpened = false;
 let legendOpened = false;
@@ -13035,7 +13034,7 @@ window.statisticsCallbacks = statisticsCallbacks;
 subscribeToControls();
 
 socket.on(SOCKET_EVENTS.CONNECT, () => {
-  socket.emit(SOCKET_EVENTS.AUTHENTICATION, { identity });
+  socket.emit(SOCKET_EVENTS.AUTHENTICATION, { identity, token: 'mocked-operator-user-token' });
   socket.on(SOCKET_EVENTS.AUTHENTICATED, onAuthenticated);
   socket.on(SOCKET_EVENTS.UNAUTHORIZED, onUnauthorized);
 });
@@ -13071,18 +13070,6 @@ function subscribeToControls() {
   document
     .querySelector('.legend-toggler')
     .addEventListener('click', toggleLegend);
-  document
-    .querySelectorAll('.check-mode')
-    .forEach(item => item.addEventListener('click', setWorkMode));
-}
-
-function setWorkMode() { 
-  clearTest();
-  workmode = this.value;
-}
-
-function checkWorkMode(appMode){
-  return workmode === appMode
 }
 
 function startTest() {
@@ -13092,14 +13079,8 @@ function startTest() {
     preparePage();
     initUserStatistics(totalCallsForTest, enableActionButtons);
   } else {
-      if(checkWorkMode(APP_MODES.STEPS_BY_STEP)){
-        disableActionButtons();
-        stepByStepStartCalls();
-      }
-      else{
-        window.alert('Test is running! Please, stop it before');
-      }
-    }
+    window.alert('Test is running! Please, stop it before');
+  }
 }
 
 function clearTest() {
@@ -13108,13 +13089,6 @@ function clearTest() {
   resetStatistics();
   removeCalls();
   enableActionButtons();
-}
-
-function stepByStepStartCalls() {
-  const iframes = document.querySelectorAll(`.customers-section iframe`);
-  for (var i = 0; i < iframes.length; i++) {
-    iframes[i].contentWindow.byStepModeStartCalls();
-  }
 }
 
 function toggleCalls() {
@@ -13143,8 +13117,8 @@ function enableActionButtons() {
 }
 
 function disableActionButtons() {
-    document.querySelector('.start-button').disabled = true;
-    document.querySelector('.clear-button').disabled = true;
+  document.querySelector('.start-button').disabled = true;
+  document.querySelector('.clear-button').disabled = true;
 }
 
 function resetStatistics() {
@@ -13209,15 +13183,9 @@ function prepareCustomers(
     maxFirstCallDelay,
     socketOptions,
     now,
-    checkWorkMode,
   };
 
-  drawCustomersFrames(options).then(()=> {
-    if(checkWorkMode(APP_MODES.STEPS_BY_STEP)){
-       enableActionButtons();
-      }
-      else { stepByStepStartCalls();}
-  });
+  drawCustomersFrames(options);
 }
 
 function prepareOperators(
@@ -13610,7 +13578,7 @@ module.exports = {
 };
 
 },{"./constants":51}],53:[function(require,module,exports){
-const { TYPES, APP_MODES } = require('./constants');
+const { TYPES } = require('./constants');
 
 const START_FIRST_CALL_ADDITIONAL_DELAY = 5000;
 
@@ -13629,7 +13597,7 @@ function drawCustomersFrames({
   const parent = document.querySelector('.customers-section');
   const fragment = document.createDocumentFragment();
 
-  const promises = new Array(customersNumber).fill(1).map((_, i) => {
+  new Array(customersNumber).fill(1).forEach((_, i) => {
     const iframe = document.createElement('iframe');
     const num = i + 1;
     const frameContent = `
@@ -13652,8 +13620,8 @@ function drawCustomersFrames({
     iframe.id = `customer-${num}`;
     iframe.classList.add('user-frame', 'customer-frame');
     iframe.srcdoc = frameContent;
-    fragment.appendChild(iframe);
-    return new Promise((resolve) => {setTimeout(() => {
+
+    setTimeout(() => {
       const firstCallDelay = Math.ceil(Math.random() * maxFirstCallDelay);
       const startFirstCallAfter =
         (Math.max(customersNumber, operatorsNumber) - i) * connectionDelay +
@@ -13669,12 +13637,12 @@ function drawCustomersFrames({
       iframe.contentWindow.callsPerCustomer = callsPerCustomer;
       iframe.contentWindow.minCallDuration = minCallDuration;
       iframe.contentWindow.maxCallDuration = maxCallDuration;
-      iframe.contentWindow.promisesResolver = resolve; 
-    })});
-  });
-  parent.appendChild(fragment);
+    });
 
-  return Promise.all(promises);
+    fragment.appendChild(iframe);
+  });
+
+  parent.appendChild(fragment);
 }
 
 function drawOperatorsFrames({
@@ -13707,7 +13675,7 @@ function drawOperatorsFrames({
 
     iframe.id = `operator-${num}`;
     iframe.classList.add('user-frame', 'operator-frame');
-    iframe.srcdoc = frameContent;  
+    iframe.srcdoc = frameContent;
     setTimeout(() => {
       iframe.contentWindow.io = io;
       iframe.contentWindow.socketOptions = socketOptions;
@@ -13716,7 +13684,7 @@ function drawOperatorsFrames({
       iframe.contentWindow.userType = TYPES.OPERATORS;
       iframe.contentWindow.minCallDuration = minCallDuration;
       iframe.contentWindow.maxCallDuration = maxCallDuration;
-      iframe.contentWindow.acceptingLikelihood = acceptingLikelihood;     
+      iframe.contentWindow.acceptingLikelihood = acceptingLikelihood;
     });
     fragment.appendChild(iframe);
   });
@@ -13995,7 +13963,7 @@ function onUserAuthorized(userType, requestTime, responseTime, statistics) {
   getStatisticsFieldDrawer(userType)(
     FIELDS.AVERAGE_AUTHORIZING_TIME,
     statistics
-  );  
+  );
 }
 
 function onCallEnqueued(id, requestTime, responseTime, statistics) {

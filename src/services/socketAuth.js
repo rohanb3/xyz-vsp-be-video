@@ -39,6 +39,7 @@ async function authenticateOperator(
     socket.tenantId = tenantId;
     socket.role = profile.role;
     socket.permissions = profile.scopes || [];
+
     logger.debug(
       'Operator: authentification data',
       profile.role,
@@ -63,20 +64,28 @@ async function authenticateCustomer(socket, data, callback) {
     return callback(new Error(NO_DEVICE_ID));
   }
 
-  const tokenValid = await identityApi.checkTokenValidity(token);
+  try {
+    const profile = await identityApi.getUserProfile(token);
+    const tenantId = await publicApi.getTenantIdByCompanyId(profile.companyId);
 
-  if (!tokenValid) {
+    socket.identity = identity;
+    socket.deviceId = deviceId;
+    socket.tenantId = tenantId;
+    socket.securityToken = token;
+    socket.securityTokenLastChecked = new Date().getTime();
+    socket.permissions = profile.scopes || [];
+
+    logger.debug(
+      'Customer: authentification data',
+      profile.role,
+      profile.scopes
+    );
+  } catch (e) {
+    logger.debug('Customer: authentification error', JSON.stringify(e));
     return callback(new Error(TOKEN_INVALID));
   }
 
-  const companyId = await identityApi.getCompanyIdByUserId(identity);
-  const tenantId = await publicApi.getTenantIdByCompanyId(companyId);
-
   const twilioToken = twilio.getToken(identity);
-  socket.identity = identity;
-  socket.deviceId = deviceId;
-  socket.tenantId = tenantId;
-
   callback(null, twilioToken);
 }
 

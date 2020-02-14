@@ -1,7 +1,9 @@
 const axios = require('axios');
 const { IDENTITY_API_URL, STATIC_TOKEN } = require('@/constants/identityApi');
+const { TOKEN_INVALID, UNAUTHORIZED, FORBIDDEN } = require('@/constants/connection');
+const logger = require('@/services/logger')(module);
 
-const { TOKEN_INVALID, FORBIDDEN } = require('@/constants/connection');
+const { getMockedUserProfile } = require('./mockUsers');
 
 const api = axios.create({
   baseURL: IDENTITY_API_URL,
@@ -18,6 +20,15 @@ async function getUserProfile(token) {
     throw new Error('Token is required');
   }
 
+  const mockedProfile = await getMockedUserProfile(token);
+  if (mockedProfile) {
+    logger.debug(
+      'Return mocked Profile w\\o request to Identity API',
+      mockedProfile
+    );
+    return mockedProfile;
+  }
+
   const response = await api.get('users/profile', {
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -25,10 +36,6 @@ async function getUserProfile(token) {
 }
 
 function checkTokenValidity(token) {
-  if (!token) {
-    return Promise.resolve(false);
-  }
-
   return getUserProfile(token)
     .then(() => true)
     .catch(() => false);
@@ -58,4 +65,5 @@ exports.getUserProfile = getUserProfile;
 exports.checkTokenValidity = checkTokenValidity;
 exports.getCompanyIdByUserId = getCompanyIdByUserId;
 
+// export for unit-tests purposes
 exports._api = api;

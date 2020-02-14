@@ -420,14 +420,14 @@ describe('OperatorsRoom: ', () => {
       };
 
       operatorsRoom.checkAndUnmapSocketIdentityFromId = jest.fn();
-      operatorsRoom.unsubscibeFromRealtimeDashboardUpdates = jest.fn();
+      operatorsRoom.unsubscribeFromRealtimeDashboardUpdates = jest.fn();
 
       operatorsRoom.onOperatorDisconnected(operator);
       expect(
         operatorsRoom.checkAndUnmapSocketIdentityFromId
       ).toHaveBeenCalledWith(operator);
       expect(
-        operatorsRoom.unsubscibeFromRealtimeDashboardUpdates
+        operatorsRoom.unsubscribeFromRealtimeDashboardUpdates
       ).toHaveBeenCalledWith(operator);
     });
   });
@@ -567,6 +567,10 @@ describe('OperatorsRoom: ', () => {
         data: info,
         tenantId: tenantId,
       };
+      const expectedInfo = {
+        ...info,
+        serverTime: expect.any(String),
+      };
 
       const groupName = 'group-name';
       operatorsRoom.getActiveOperatorsGroupName = jest.fn(() => groupName);
@@ -576,7 +580,7 @@ describe('OperatorsRoom: ', () => {
       expect(operatorsRoom.operators.to).toHaveBeenCalledWith(groupName);
       expect(operatorsRoom.operators.emit).toHaveBeenCalledWith(
         CALLS_CHANGED,
-        info
+        expectedInfo
       );
 
       expect(
@@ -605,6 +609,10 @@ describe('OperatorsRoom: ', () => {
 
       const groupName = 'group-name';
       const callsInfo = { count: 2, peak: {} };
+      const expectedCallsInfo = {
+        ...callsInfo,
+        serverTime: expect.any(String),
+      };
 
       operatorsRoom.verifyToken = jest.fn(() => true);
       operatorsRoom.getActiveOperatorsGroupName = jest.fn(() => groupName);
@@ -623,7 +631,10 @@ describe('OperatorsRoom: ', () => {
       );
       expect(operator.join).toHaveBeenCalledWith(groupName);
       expect(calls.getCallsInfo).toHaveBeenCalledWith(tenantId);
-      expect(operator.emit).toHaveBeenCalledWith(CALLS_CHANGED, callsInfo);
+      expect(operator.emit).toHaveBeenCalledWith(
+        CALLS_CHANGED,
+        expectedCallsInfo
+      );
       expect(checkConnectionPermissionSpy).toHaveBeenCalledWith(
         operator,
         CALL_ANSWER_PERMISSION
@@ -998,11 +1009,11 @@ describe('OperatorsRoom: ', () => {
     });
 
     describe('REALTIME_DASHBOARD_UNSUBSCRIBE event', () => {
-      it('should subscribe unsubscibeFromRealtimeDashboardUpdates() if operator has realtime dashboard permission', () => {
+      it('should subscribe unsubscribeFromRealtimeDashboardUpdates() if operator has realtime dashboard permission', () => {
         operator.permissions = [REALTIME_DASHBOARD_SUBSCRIPTION_PERMISSION];
 
         jest.spyOn(
-          operatorsRoom.unsubscibeFromRealtimeDashboardUpdates,
+          operatorsRoom.unsubscribeFromRealtimeDashboardUpdates,
           'bind'
         );
 
@@ -1013,7 +1024,7 @@ describe('OperatorsRoom: ', () => {
           expect.any(Function)
         );
         expect(
-          operatorsRoom.unsubscibeFromRealtimeDashboardUpdates.bind
+          operatorsRoom.unsubscribeFromRealtimeDashboardUpdates.bind
         ).toHaveBeenCalledWith(operatorsRoom, operator);
       });
 
