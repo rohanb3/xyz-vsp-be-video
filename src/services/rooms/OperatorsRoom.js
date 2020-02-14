@@ -62,6 +62,8 @@ const logger = require('@/services/logger')(module);
 
 const isMaster = !process.env.INSTANCE_ID || process.env.INSTANCE_ID === '0';
 
+// const operatorsGroups = {};
+
 class OperatorsRoom {
   constructor(io, mediator) {
     this.operators = io.of(OPERATORS);
@@ -180,7 +182,7 @@ class OperatorsRoom {
     operator.on(
       REALTIME_DASHBOARD_UNSUBSCRIBE,
       realtimeDashboardsAllowed
-        ? this.unsubscibeFromRealtimeDashboardUpdates.bind(this, operator)
+        ? this.unsubscribeFromRealtimeDashboardUpdates.bind(this, operator)
         : this.emitOperationNotAllowed.bind(
             this,
             operator,
@@ -332,7 +334,7 @@ class OperatorsRoom {
   }
 
   onOperatorDisconnected(operator, reason) {
-    this.unsubscibeFromRealtimeDashboardUpdates(operator);
+    this.unsubscribeFromRealtimeDashboardUpdates(operator);
     this.removeOperatorFromActive(operator);
     this.checkAndUnmapSocketIdentityFromId(operator);
     logger.debug('Operator disconnected:', operator.identity, reason);
@@ -388,6 +390,12 @@ class OperatorsRoom {
       ...data,
       serverTime: timeHelper.formattedTimestamp(),
     });
+    // this.emitToGroup(groupName, CALLS_CHANGED, {
+    //   ...data,
+    //   serverTime: timeHelper.formattedTimestamp(),
+    // });
+
+    // console.log('emitCallsInfo', groupName, this.operators.to(groupName).connected);
 
     logger.debug('Operator: calls info emitted to group', groupName);
 
@@ -415,6 +423,7 @@ class OperatorsRoom {
         const groupName = this.getActiveOperatorsGroupName(tenantId);
 
         connectedOperator.join(groupName);
+        // this.joinGroup(connectedOperator, groupName);
         logger.debug('Operator: joined group', id, groupName);
 
         const info = await calls.getCallsInfo(tenantId);
@@ -438,6 +447,7 @@ class OperatorsRoom {
       const groupName = this.getActiveOperatorsGroupName(tenantId);
 
       connectedOperator.leave(groupName);
+      // this.leaveGroup(connectedOperator, groupName);
 
       logger.debug('Operator: remove from group', id, groupName);
     }
@@ -462,6 +472,7 @@ class OperatorsRoom {
       ) {
         const groupName = this.getRealtimeDashboardGroupName(tenantId);
         connectedOperator.join(groupName);
+        // this.joinGroup(connectedOperator, groupName);
         connectedOperator.emit(REALTIME_DASHBOARD_SUBSCRIBED);
         logger.debug(
           'Operator: subscribed to realtime dashboard',
@@ -499,7 +510,7 @@ class OperatorsRoom {
     }
   }
 
-  unsubscibeFromRealtimeDashboardUpdates({ id }) {
+  unsubscribeFromRealtimeDashboardUpdates({ id }) {
     const connectedOperator = this.getConnectedOperator(id);
     if (connectedOperator) {
       logger.debug('Operator: unsubscribe from realtime dashboard', id);
@@ -507,7 +518,7 @@ class OperatorsRoom {
       const tenantId = connectedOperator.tenantId;
       const groupName = this.getRealtimeDashboardGroupName(tenantId);
       connectedOperator.leave(groupName);
-
+      // this.leaveGroup(connectedOperator, groupName);
       logger.debug(
         'Operator: unsubscribed from realtime dashboard',
         id,
@@ -525,15 +536,40 @@ class OperatorsRoom {
         'Operator: realtime dashboard waiting calls info emited directly',
         recipient.id
       );
+
+      const items = await calls.getPendingCalls(tenantId);
+
+      target.emit(REALTIME_DASHBOARD_WAITING_CALLS_CHANGED, {
+        count: items.length,
+        items,
+        serverTime: timeHelper.formattedTimestamp(),
+      });
     } else {
       const groupName = this.getRealtimeDashboardGroupName(tenantId);
 
+      // console.log('emitRealtimeDashboardWaitingCallsInfo', groupName, group.connected);
+      // group.clients(console.log.bind(null, 'groupClients', groupName));
+
       if (!this.isEmptyGroup(groupName)) {
         target = this.operators.to(groupName);
+        // if(this.isGroupNonEmpty(groupName)) {
         logger.debug(
           'Operator: realtime dashboard waiting calls info emited to non empty group',
           groupName
         );
+
+        const items = await calls.getPendingCalls(tenantId);
+
+        target.emit(REALTIME_DASHBOARD_WAITING_CALLS_CHANGED, {
+          count: items.length,
+          items,
+          serverTime: timeHelper.formattedTimestamp(),
+        });
+        // this.emitToGroup(groupName, REALTIME_DASHBOARD_WAITING_CALLS_CHANGED, {
+        //   count: items.length,
+        //   items,
+        //   serverTime: timeHelper.formattedTimestamp(),
+        // });
       }
     }
 
@@ -638,6 +674,8 @@ class OperatorsRoom {
         message: `Operation "${operationName}" is not allowed.`,
         operation: operationName,
       });
+
+      logger.error('Operator: operation is fobridden', id, operationName);
     }
   }
 
@@ -675,6 +713,45 @@ class OperatorsRoom {
 
     return !!Object.keys(group.connected).length;
   }
+
+  // joinGroup(operator, groupName) {
+  //   console.log('joinGroup', groupName, operator.id);
+  //   operator.join(groupName);
+  //
+  //   operatorsGroups[operator.id] = operatorsGroups[operator.id] || [];
+  //   operatorsGroups[operator.id][groupName] = true;
+  // }
+
+  // leaveGroup(operator, groupName) {
+  //   console.log('leaveGroup', groupName, operator.id);
+  //   operator.leave(groupName);
+  //
+  //   if (operatorsGroups[operator.id]) {
+  //     delete operatorsGroups[operator.id][groupName];
+  //   }
+  // }
+
+  // emitToGroup(groupName, message, data) {
+  //   console.log('emitToGroup', groupName, message, data);
+  //   Object.values(this.operators.connected).forEach(connection => {
+  //     if (Object.keys(connection.rooms).includes(groupName)) {
+  //       connection.emit(message, data);
+  //       console.log('emitToGroup.emit', groupName, message, connection.id);
+  //     } else {
+  //       console.log('emitToGroup.ignored', groupName, message, connection.id);
+  //     }
+  //   });
+  // }
+
+  // isGroupNonEmpty(groupName) {
+  //   const groupMembers = Object.values(this.operators.connected)
+  //   .filter(connection => Object.keys(connection.rooms).includes(groupName))
+  //   .map(connection => connection.id);
+  //
+  //   console.log('isGroupEmpty', groupName, groupMembers);
+  //
+  //   return groupMembers.length > 0;
+  // }
 }
 
 module.exports = OperatorsRoom;

@@ -1,6 +1,6 @@
-exports.REALTIME_DASHBOARD_SUBSCRIBE = 'realtimeDashboard.subscibe';
-exports.REALTIME_DASHBOARD_UNSUBSCRIBE = 'realtimeDashboard.unsubscibe';
-exports.REALTIME_DASHBOARD_SUBSCRIBED = 'realtimeDashboard.subscibed';
+exports.REALTIME_DASHBOARD_SUBSCRIBE = 'realtimeDashboard.subscribe';
+exports.REALTIME_DASHBOARD_UNSUBSCRIBE = 'realtimeDashboard.unsubscribe';
+exports.REALTIME_DASHBOARD_SUBSCRIBED = 'realtimeDashboard.subscribed';
 exports.REALTIME_DASHBOARD_SUBSCRIBTION_ERROR =
   'realtimeDashboard.subscibtionError';
 
