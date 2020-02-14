@@ -1,6 +1,6 @@
 const axios = require('axios');
 const { IDENTITY_API_URL, STATIC_TOKEN } = require('@/constants/identityApi');
-const { TOKEN_INVALID, UNAUTHORIZED } = require('@/constants/connection');
+const { TOKEN_INVALID, UNAUTHORIZED, FORBIDDEN } = require('@/constants/connection');
 const logger = require('@/services/logger')(module);
 
 const { getMockedUserProfile } = require('./mockUsers');
@@ -41,9 +41,29 @@ function checkTokenValidity(token) {
     .catch(() => false);
 }
 
-exports.getCompanyIdByUserId = getCompanyIdByUserId;
+async function checkUserScope(Authorization, role, scope) {
+  try {
+    await api.head('role', {
+      headers: { Authorization },
+      params: { role, scope },
+    });
+
+    return true;
+  } catch (e) {
+    if (e.response.status === 403) {
+      throw new Error(FORBIDDEN);
+    } else if (e.response.status === 401) {
+      throw new Error(TOKEN_INVALID);
+    } else {
+      throw e;
+    }
+  }
+}
+
+exports.checkUserScope = checkUserScope;
 exports.getUserProfile = getUserProfile;
 exports.checkTokenValidity = checkTokenValidity;
+exports.getCompanyIdByUserId = getCompanyIdByUserId;
 
 // export for unit-tests purposes
 exports._api = api;

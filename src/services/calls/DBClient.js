@@ -1,4 +1,4 @@
-const _ = require('lodash');
+const utils = require('@/services/utils');
 const Call = require('@/models/call');
 
 const getById = id => Call.findById(id).then(doc => doc.toObject());
@@ -27,6 +27,16 @@ const updateById = async (id, updates = {}) => {
   );
 };
 
+const aggregate = async pipeline => await Call.aggregate(pipeline);
+//  .exec((err, data) => {
+//       if (err) {
+//         reject(err);
+//       }
+
+//       resolve(data);
+//     })
+//   );
+
 const updateByIdLazy = (id, updates = {}) =>
   Call.findOneAndUpdate(
     { _id: id },
@@ -48,7 +58,7 @@ const lazyLoadQuery = (query, lazyLoad) => {
 const getQuery = (query = {}, range) => {
   const { search, type, rate, ...filter } = query;
 
-  const findQuery = removeUndefined({
+  const findQuery = utils.removeUndefined({
     ...filter,
     acceptedAt: getRangeFilter(range),
     'operatorFeedback.callType': type,
@@ -66,11 +76,10 @@ const getRangeFilter = (range = {}) => {
   if (!range.from && !range.to) {
     return null;
   }
-  return removeUndefined({ $gte: range.from, $lte: range.to });
+  return utils.removeUndefined({ $gte: range.from, $lte: range.to });
 };
 
-const removeUndefined = filter => _.pickBy(filter, _.identity);
-
+exports.aggregate = aggregate;
 exports.getById = getById;
 exports.getFilteredBy = getFilteredBy;
 exports.getCountFilteredBy = getCountFilteredBy;
