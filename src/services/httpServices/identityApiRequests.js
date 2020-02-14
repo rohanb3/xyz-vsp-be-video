@@ -1,6 +1,5 @@
 const axios = require('axios');
 const { IDENTITY_API_URL, STATIC_TOKEN } = require('@/constants/identityApi');
-
 const { TOKEN_INVALID, FORBIDDEN } = require('@/constants/connection');
 const logger = require('@/services/logger')(module);
 
