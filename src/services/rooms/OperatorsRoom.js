@@ -47,6 +47,7 @@ const {
   REALTIME_DASHBOARD_SUBSCRIBTION_ERROR,
   REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED,
   REALTIME_DASHBOARD_WAITING_CALLS_CHANGED,
+  REALTIME_DASHBOARD_OPERATORS_STATUSES_CHANGED,
 } = require('@/constants/realtimeDashboard');
 
 const calls = require('@/services/calls');
@@ -55,8 +56,6 @@ const timeHelper = require('@/services/time');
 
 const socketAuth = require('@/services/socketAuth');
 const { authenticateOperator } = socketAuth;
-
-const operatorsHeaps = require('@/services/operators');
 
 const { connectionsHeap } = require('@/services/connectionsHeap');
 const { getOperatorCallFailReason } = require('./utils');
@@ -92,10 +91,6 @@ class OperatorsRoom {
     );
     calls.subscribeToCallbackDeclining(
       this.checkOperatorAndEmitCallbackDeclining.bind(this)
-    );
-
-    operatorsHeaps.subscribeOnHeapChanges((...args) =>
-      console.log('subscribeOnHeapChanges', args)
     );
 
     calls.subscribeToActiveCallsHeapAdding(
@@ -342,6 +337,7 @@ class OperatorsRoom {
     this.removeOperatorFromActive(operator);
     this.checkAndUnmapSocketIdentityFromId(operator);
     logger.debug('Operator disconnected:', operator.identity, reason);
+    this.emitOperatorsStatusesChanged(operator.tenantId);
   }
 
   checkOperatorAndEmitCallbackAccepting(call) {
@@ -418,13 +414,15 @@ class OperatorsRoom {
         )
       ) {
         const tenantId = connectedOperator.tenantId;
-        const groupName = this.getActiveOperatorsGroupName(tenantId);
-        operatorsHeaps
-          .getOperatorsHeap(tenantId)
-          .add(connectedOperator.identity);
+        const activeGroupName = this.getActiveOperatorsGroupName(tenantId);
+        const inactiveGroupName = this.getInactiveOperatorsGroupName(tenantId);
 
-        connectedOperator.join(groupName);
-        logger.debug('Operator: joined group', id, groupName);
+        connectedOperator.join(activeGroupName);
+        logger.debug('Operator: add to group', id, activeGroupName);
+        connectedOperator.leave(inactiveGroupName);
+        logger.debug('Operator: remove from group', id, inactiveGroupName);
+
+        this.emitOperatorsStatusesChanged(tenantId);
 
         const info = await calls.getCallsInfo(tenantId);
         connectedOperator.emit(CALLS_CHANGED, {
@@ -444,14 +442,15 @@ class OperatorsRoom {
     const connectedOperator = this.getConnectedOperator(id);
     if (connectedOperator) {
       const tenantId = connectedOperator.tenantId;
-      const groupName = this.getActiveOperatorsGroupName(tenantId);
-      operatorsHeaps
-        .getOperatorsHeap(tenantId)
-        .remove(connectedOperator.identity);
+      const activeGroupName = this.getActiveOperatorsGroupName(tenantId);
+      const inactiveGroupName = this.getInactiveOperatorsGroupName(tenantId);
 
-      connectedOperator.leave(groupName);
+      connectedOperator.join(inactiveGroupName);
+      logger.debug('Operator: add to group', id, inactiveGroupName);
+      connectedOperator.leave(activeGroupName);
+      logger.debug('Operator: remove from group', id, activeGroupName);
 
-      logger.debug('Operator: remove from group', id, groupName);
+      this.emitOperatorsStatusesChanged(tenantId);
     }
   }
 
@@ -625,6 +624,10 @@ class OperatorsRoom {
     return `tenant.${tenantId}.activeOperators`;
   }
 
+  getInactiveOperatorsGroupName(tenantId) {
+    return `tenant.${tenantId}.inactiveOperators`;
+  }
+
   async verifyToken(connection) {
     const tokenStatus = await socketAuth.verifyConnectionToken(connection);
     if (!tokenStatus) {
@@ -680,10 +683,48 @@ class OperatorsRoom {
     logger.debug(message, tenantCalls);
   }
 
+  async emitOperatorsStatusesChanged(tenantId) {
+    const realtimeDashboardGroup = this.getRealtimeDashboardGroupName(tenantId);
+    const activeOperatorsGroup = this.getActiveOperatorsGroupName(tenantId);
+    const inactiveOperatorsGroup = this.getInactiveOperatorsGroupName(tenantId);
+
+    const [activeOperatorsCount, inactiveOperatorsCount] = await Promise.all([
+      this.getGroupInfo(activeOperatorsGroup),
+      this.getGroupInfo(inactiveOperatorsGroup),
+    ]);
+    const data = {
+      activeOperators: {
+        count: activeOperatorsCount,
+      },
+      inactiveOperators: {
+        count: inactiveOperatorsCount,
+      },
+    };
+
+    this.operators
+      .to(realtimeDashboardGroup)
+      .emit(REALTIME_DASHBOARD_OPERATORS_STATUSES_CHANGED, data);
+
+    logger.debug(
+      `Operators: emitOperatorsActivityChanged to ${realtimeDashboardGroup}`,
+      data
+    );
+  }
+
   isEmptyGroup(groupName) {
     const group = this.operators.to(groupName);
 
-    return !!Object.keys(group.connected).length;
+    return new Promise((resolve, reject) =>
+      group.clients((err, data) => (err ? reject(err) : resolve(!!data.length)))
+    );
+  }
+
+  getGroupInfo(groupName) {
+    return new Promise((resolve, reject) =>
+      this.operators
+        .to(groupName)
+        .clients((err, data) => (err ? reject(err) : resolve(data.length)))
+    );
   }
 }
 

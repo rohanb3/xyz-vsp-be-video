@@ -101,12 +101,6 @@ class Heap {
   publishItemRemoving(item) {
     return pubSub.publish(this.events.ITEM_REMOVED, item);
   }
-
-  publishQueueChanging() {
-    return this.getHeapInfo().then(info =>
-      pubSub.publish(this.events.HEAP_CHANGED, info)
-    );
-  }
 }
 
 exports.createHeap = name => new Heap(name);
