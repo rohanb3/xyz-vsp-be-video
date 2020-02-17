@@ -31,7 +31,10 @@ class HeapConnector {
   }
 
   getAll() {
-    return client.smembers(this.heapName).then(storage.getMultiple);
+    return client
+      .smembers(this.heapName)
+      .then(storage.getMultiple)
+      .then(items => items.filter(Boolean));
   }
 
   take(key) {

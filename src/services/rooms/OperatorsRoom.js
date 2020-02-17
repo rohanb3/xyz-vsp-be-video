@@ -44,7 +44,7 @@ const {
   REALTIME_DASHBOARD_UNSUBSCRIBE,
   REALTIME_DASHBOARD_CALL_FINISHED,
   REALTIME_DASHBOARD_CALL_ACCEPTED,
-  REALTIME_DASHBOARD_SUBSCRIBTION_ERROR,
+  REALTIME_DASHBOARD_SUBSCRIPTION_ERROR,
   REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED,
   REALTIME_DASHBOARD_WAITING_CALLS_CHANGED,
 } = require('@/constants/realtimeDashboard');
@@ -473,32 +473,13 @@ class OperatorsRoom {
           groupName
         );
 
-        this.emitRealtimeDashboardWaitingCallsInfo(tenantId, connectedOperator)
-          .then(() =>
-            logger.debug('Operator: waiting calls info emitted directly', id)
-          )
-          .catch(error =>
-            logger.error(
-              'Operator: ERROR waiting calls info emitted directly',
-              id,
-              error
-            )
-          );
+        this.emitRealtimeDashboardWaitingCallsInfo(tenantId, connectedOperator);
 
-        this.emitRealtimeDashboardActiveCallsInfo({ tenantId })
-          .then(() =>
-            logger.debug('Operator: active calls info emitted directly', id)
-          )
-          .catch(error =>
-            logger.error(
-              'Operator: ERROR active calls info emitted directly',
-              id,
-              error
-            )
-          );
+        this.emitRealtimeDashboardActiveCallsInfo({ tenantId });
+
         this.emitRealtimeDashboardWaitingCallsInfoDirectly(connectedOperator);
       } else {
-        connectedOperator.emit(REALTIME_DASHBOARD_SUBSCRIBTION_ERROR);
+        connectedOperator.emit(REALTIME_DASHBOARD_SUBSCRIPTION_ERROR);
         logger.debug('Operator: not subscribed to realtime dashboard', id);
       }
     }
@@ -541,7 +522,7 @@ class OperatorsRoom {
   async emitRealtimeDashboardWaitingCallsInfo(tenantId) {
     const groupName = this.getRealtimeDashboardGroupName(tenantId);
 
-    if (this.isLocalGropuNonEmpty(groupName)) {
+    if (this.isLocalGroupNonEmpty(groupName)) {
       const items = await calls.getPendingCalls(tenantId);
 
       this.emitToLocalGroup(
@@ -682,16 +663,26 @@ class OperatorsRoom {
   }
 
   async emitRealtimeDashboardActiveCallsInfo(changedCall) {
-    const tenantCalls = await calls.getActiveCallsByTenantId(
-      changedCall.tenantId
-    );
     const groupName = this.getRealtimeDashboardGroupName(changedCall.tenantId);
-    this.operators
-      .to(groupName)
-      .emit(REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED, tenantCalls);
 
-    const message = `${REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED} emitted to tenant group ${changedCall.tenantId} with calls:`;
-    logger.debug(message, tenantCalls);
+    try {
+      const tenantCalls = await calls.getActiveCallsByTenantId(
+        changedCall.tenantId
+      );
+      this.emitToLocalGroup(
+        groupName,
+        REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED,
+        tenantCalls
+      );
+
+      const message = `${REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED} emitted to tenant group ${changedCall.tenantId} with calls:`;
+      logger.debug(message, tenantCalls);
+    } catch {
+      logger.debug(
+        "Operator: realtime dashboard waiting calls info didn't emited because group is empty",
+        groupName
+      );
+    }
   }
 
   isEmptyGroup(groupName) {
@@ -715,7 +706,7 @@ class OperatorsRoom {
     return members;
   }
 
-  isLocalGropuNonEmpty(groupName) {
+  isLocalGroupNonEmpty(groupName) {
     return !!this.getLocalGroupMembers(groupName).length;
   }
 

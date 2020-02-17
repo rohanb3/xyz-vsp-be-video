@@ -135,7 +135,7 @@ describe('HeapConnector: ', () => {
       client.smembers = jest.fn().mockResolvedValue(callIds);
       storage.getMultiple = jest.fn().mockResolvedValue(calls);
       return connector.getAll().then(res => {
-        expect(res).toBe(calls);
+        expect(res).toStrictEqual(calls);
         expect(storage.getMultiple).toHaveBeenCalledWith(callIds);
       });
     });
