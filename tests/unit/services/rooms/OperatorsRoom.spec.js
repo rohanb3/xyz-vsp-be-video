@@ -48,7 +48,10 @@ const {
   REALTIME_DASHBOARD_CALL_FINISHED,
   REALTIME_DASHBOARD_CALL_ACCEPTED,
   REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED,
+  REALTIME_DASHBOARD_WAITING_CALLS_CHANGED,
   REALTIME_DASHBOARD_OPERATORS_STATUSES_CHANGED,
+  REALTIME_DASHBOARD_SUBSCRIBED,
+  REALTIME_DASHBOARD_SUBSCRIPTION_ERROR,
 } = require('@/constants/realtimeDashboard');
 
 const {
@@ -448,7 +451,7 @@ describe('OperatorsRoom: ', () => {
         operator
       );
       expect(operatorsRoom.emitOperatorsStatusesChanged).toHaveBeenCalledWith(
-        operator.tenantId
+        operator
       );
     });
   });
@@ -596,10 +599,12 @@ describe('OperatorsRoom: ', () => {
       const groupName = 'group-name';
       operatorsRoom.getActiveOperatorsGroupName = jest.fn(() => groupName);
       operatorsRoom.emitRealtimeDashboardWaitingCallsInfo = jest.fn();
+      operatorsRoom.emitToLocalGroup = jest.fn();
 
       operatorsRoom.emitCallsInfo(callsInfo);
-      expect(operatorsRoom.operators.to).toHaveBeenCalledWith(groupName);
-      expect(operatorsRoom.operators.emit).toHaveBeenCalledWith(
+
+      expect(operatorsRoom.emitToLocalGroup).toHaveBeenCalledWith(
+        groupName,
         CALLS_CHANGED,
         expectedInfo
       );
@@ -656,7 +661,7 @@ describe('OperatorsRoom: ', () => {
         tenantId
       );
       expect(operatorsRoom.emitOperatorsStatusesChanged).toHaveBeenCalledWith(
-        tenantId
+        operator
       );
       expect(operator.join).toHaveBeenCalledWith(activeOperatorsGroupName);
       expect(operator.leave).toHaveBeenCalledWith(inactiveOperatorsGroupName);
@@ -733,7 +738,7 @@ describe('OperatorsRoom: ', () => {
 
       operatorsRoom.removeOperatorFromActive(operator);
       expect(operatorsRoom.emitOperatorsStatusesChanged).toHaveBeenCalledWith(
-        operator.tenantId
+        operator
       );
       expect(operator.join).toHaveBeenCalledWith(inactiveOperatorsGroupName);
       expect(operator.leave).toHaveBeenCalledWith(activeOperatorsGroupName);
@@ -1160,22 +1165,21 @@ describe('OperatorsRoom: ', () => {
         id: callId,
         tenantId,
       };
+      operatorsRoom.emitToLocalGroup = jest.fn();
+      operatorsRoom.isLocalGroupNonEmpty = jest.fn(() => true);
+      const groupName = `tenant.${tenantId}.realtimeDashboard`;
 
       calls.getActiveCallsByTenantId = jest
         .fn()
         .mockResolvedValue([ownTenantCall]);
-      operatorsRoom.isEmptyGroup = jest.fn().mockResolvedValue(false);
 
       await operatorsRoom.emitRealtimeDashboardActiveCallsInfo(ownTenantCall);
 
-      expect(operatorsRoom.operators.to).toHaveBeenCalledWith(
-        realtimeDashboardGroupName
+      expect(operatorsRoom.emitToLocalGroup).toHaveBeenCalledWith(
+        groupName,
+        REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED,
+        [ownTenantCall]
       );
-      expect(
-        operatorsRoom.operators.emit
-      ).toHaveBeenCalledWith(REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED, [
-        ownTenantCall,
-      ]);
     });
     it('should not emit event to empty group', async () => {
       const ownTenantCall = {
@@ -1183,16 +1187,15 @@ describe('OperatorsRoom: ', () => {
         id: callId,
         tenantId,
       };
+      operatorsRoom.emitToLocalGroup = jest.fn();
+      operatorsRoom.isLocalGroupNonEmpty = jest.fn(() => false);
 
       calls.getActiveCallsByTenantId = jest
         .fn()
         .mockResolvedValue([ownTenantCall]);
-      operatorsRoom.isEmptyGroup = jest.fn().mockResolvedValue(true);
-
       await operatorsRoom.emitRealtimeDashboardActiveCallsInfo(ownTenantCall);
 
-      expect(operatorsRoom.operators.to).not.toHaveBeenCalled();
-      expect(operatorsRoom.operators.emit).not.toHaveBeenCalledWith();
+      expect(operatorsRoom.emitToLocalGroup).not.toHaveBeenCalled();
     });
   });
   describe('emitRealtimeDashboardCallFinished()', () => {
@@ -1203,13 +1206,14 @@ describe('OperatorsRoom: ', () => {
         id: callId,
         tenantId: tenantId,
       };
+      const groupName = `tenant.${tenantId}.realtimeDashboard`;
+
+      operatorsRoom.emitToLocalGroup = jest.fn();
 
       operatorsRoom.emitRealtimeDashboardCallFinished(call);
 
-      expect(operatorsRoom.operators.to).toHaveBeenCalledWith(
-        realtimeDashboardGroupName
-      );
-      expect(operatorsRoom.operators.emit).toHaveBeenCalledWith(
+      expect(operatorsRoom.emitToLocalGroup).toHaveBeenCalledWith(
+        groupName,
         REALTIME_DASHBOARD_CALL_FINISHED,
         call
       );
@@ -1223,80 +1227,17 @@ describe('OperatorsRoom: ', () => {
         tenantId,
       };
 
+      const groupName = `tenant.${tenantId}.realtimeDashboard`;
+
+      operatorsRoom.emitToLocalGroup = jest.fn();
+
       operatorsRoom.emitRealtimeDashboardCallAccepted(call);
 
-      expect(operatorsRoom.operators.to).toHaveBeenCalledWith(
-        realtimeDashboardGroupName
-      );
-      expect(operatorsRoom.operators.emit).toHaveBeenCalledWith(
+      expect(operatorsRoom.emitToLocalGroup).toHaveBeenCalledWith(
+        groupName,
         REALTIME_DASHBOARD_CALL_ACCEPTED,
         call
       );
-    });
-  });
-  describe('isEmptyGroup():', () => {
-    it('should return true if there are users in group and count is available', async () => {
-      const err = null;
-      const groupName = 'group';
-      const group = ['1', '2', '3'];
-
-      mockedNamespace.clients = jest.fn(callback => callback(err, group));
-
-      const res = await operatorsRoom.isEmptyGroup(groupName);
-
-      expect(res).toBe(false);
-      expect(operatorsRoom.operators.to).toHaveBeenCalledWith(groupName);
-      expect(operatorsRoom.operators.clients).toHaveBeenCalled();
-    });
-    it('should return false if there are no users in group and count is available', async () => {
-      const err = null;
-      const groupName = 'group';
-      const group = [];
-
-      mockedNamespace.clients = jest.fn(callback => callback(err, group));
-
-      const res = await operatorsRoom.isEmptyGroup(groupName);
-
-      expect(res).toBe(true);
-      expect(operatorsRoom.operators.to).toHaveBeenCalledWith(groupName);
-      expect(operatorsRoom.operators.clients).toHaveBeenCalled();
-    });
-    it('should reject err if count of users is not available', async () => {
-      const err = { text: 'Some error' };
-      const groupName = 'group';
-      const group = null;
-
-      mockedNamespace.clients = jest.fn(callback => callback(err, group));
-
-      await expect(operatorsRoom.isEmptyGroup(groupName)).rejects.toEqual(err);
-      expect(operatorsRoom.operators.to).toHaveBeenCalledWith(groupName);
-      expect(operatorsRoom.operators.clients).toHaveBeenCalled();
-    });
-  });
-  describe('getGroupInfo():', () => {
-    it('should return users count if count is available', async () => {
-      const err = null;
-      const groupName = 'group';
-      const group = ['1', '2', '3'];
-
-      mockedNamespace.clients = jest.fn(callback => callback(err, group));
-
-      const res = await operatorsRoom.getGroupInfo(groupName);
-
-      expect(res).toBe(3);
-      expect(operatorsRoom.operators.to).toHaveBeenCalledWith(groupName);
-      expect(operatorsRoom.operators.clients).toHaveBeenCalled();
-    });
-    it('should reject err if count of users is not available', async () => {
-      const err = { text: 'Some error' };
-      const groupName = 'group';
-      const group = null;
-
-      mockedNamespace.clients = jest.fn(callback => callback(err, group));
-
-      await expect(operatorsRoom.getGroupInfo(groupName)).rejects.toEqual(err);
-      expect(operatorsRoom.operators.to).toHaveBeenCalledWith(groupName);
-      expect(operatorsRoom.operators.clients).toHaveBeenCalled();
     });
   });
 
@@ -1323,8 +1264,9 @@ describe('OperatorsRoom: ', () => {
       operatorsRoom.getRealtimeDashboardGroupName = jest.fn(
         () => realtimeDashboardGroupName
       );
+      operatorsRoom.emitToLocalGroup = jest.fn();
 
-      await operatorsRoom.emitOperatorsStatusesChanged(tenantId);
+      await operatorsRoom.emitOperatorsStatusesChanged(operator);
 
       expect(operatorsRoom.getGroupInfo).toHaveBeenCalledTimes(2);
       expect(operatorsRoom.getGroupInfo).toHaveBeenCalledWith(
@@ -1333,10 +1275,8 @@ describe('OperatorsRoom: ', () => {
       expect(operatorsRoom.getGroupInfo).toHaveBeenCalledWith(
         inactiveOperatorsGroupName
       );
-      expect(operatorsRoom.operators.to).toHaveBeenCalledWith(
-        realtimeDashboardGroupName
-      );
-      expect(operatorsRoom.operators.emit).toHaveBeenCalledWith(
+      expect(operatorsRoom.emitToLocalGroup).toHaveBeenCalledWith(
+        realtimeDashboardGroupName,
         REALTIME_DASHBOARD_OPERATORS_STATUSES_CHANGED,
         data
       );
@@ -1349,6 +1289,416 @@ describe('OperatorsRoom: ', () => {
       expect(operatorsRoom.getRealtimeDashboardGroupName).toHaveBeenCalledWith(
         tenantId
       );
+    });
+  });
+  describe('emitRealtimeDashboardActiveCallsInfoDirectly(): ', () => {
+    it('should emit active calls info directly to operator', async () => {
+      operatorsRoom.operators = {
+        connected: {
+          [socketId]: operator,
+        },
+      };
+
+      const activeCalls = [{ id: 'first-call' }, { id: 'second-call' }];
+      const expectedInfo = {
+        count: 2,
+        items: activeCalls,
+        serverTime: expect.any(String),
+      };
+
+      calls.getActiveCallsByTenantId = jest.fn().mockResolvedValue(activeCalls);
+
+      const promise = operatorsRoom.emitRealtimeDashboardActiveCallsInfoDirectly(
+        operator
+      );
+
+      await expect(promise).resolves.toBe(undefined);
+      expect(operator.emit).toHaveBeenCalledWith(
+        REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED,
+        expectedInfo
+      );
+    });
+    it('should do nothing if operator not found', async () => {
+      calls.getActiveCallsByTenantId = jest.fn().mockResolvedValue({});
+
+      const promise = operatorsRoom.emitRealtimeDashboardActiveCallsInfoDirectly(
+        operator
+      );
+
+      await expect(promise).resolves.toBe(undefined);
+      expect(calls.getActiveCallsByTenantId).not.toHaveBeenCalled();
+      expect(operator.emit).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('emitRealtimeDashboardWaitingCallsInfoDirectly(): ', () => {
+    it('should emit waiting calls info directly to operator', async () => {
+      operatorsRoom.operators = {
+        connected: {
+          [socketId]: operator,
+        },
+      };
+
+      const waitingCalls = [{ id: 'first-call' }, { id: 'second-call' }];
+      const expectedInfo = {
+        count: 2,
+        items: waitingCalls,
+        serverTime: expect.any(String),
+      };
+
+      calls.getPendingCalls = jest.fn().mockResolvedValue(waitingCalls);
+
+      const promise = operatorsRoom.emitRealtimeDashboardWaitingCallsInfoDirectly(
+        operator
+      );
+
+      await expect(promise).resolves.toBe(undefined);
+      expect(operator.emit).toHaveBeenCalledWith(
+        REALTIME_DASHBOARD_WAITING_CALLS_CHANGED,
+        expectedInfo
+      );
+    });
+    it('should do nothing if operator not found', async () => {
+      calls.getPendingCalls = jest.fn().mockResolvedValue({});
+
+      const promise = operatorsRoom.emitRealtimeDashboardWaitingCallsInfoDirectly(
+        operator
+      );
+
+      await expect(promise).resolves.toBe(undefined);
+      expect(calls.getPendingCalls).not.toHaveBeenCalled();
+      expect(operator.emit).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('emitRealtimeDashboardWaitingCallsInfo(): ', () => {
+    it('should emit waiting calls info if group is not empty', async () => {
+      const groupName = `tenant.${tenantId}.realtimeDashboard`;
+
+      const waitingCalls = [{ id: 'first-call' }, { id: 'second-call' }];
+      const expectedInfo = {
+        count: 2,
+        items: waitingCalls,
+        serverTime: expect.any(String),
+      };
+
+      calls.getPendingCalls = jest.fn().mockResolvedValue(waitingCalls);
+      operatorsRoom.isLocalGroupNonEmpty = jest.fn(() => true);
+      operatorsRoom.emitToLocalGroup = jest.fn();
+
+      const promise = operatorsRoom.emitRealtimeDashboardWaitingCallsInfo(
+        tenantId
+      );
+
+      await expect(promise).resolves.toBe(undefined);
+      expect(calls.getPendingCalls).toHaveBeenCalledWith(tenantId);
+      expect(operatorsRoom.isLocalGroupNonEmpty).toHaveBeenCalledWith(
+        groupName
+      );
+      expect(operatorsRoom.emitToLocalGroup).toHaveBeenCalledWith(
+        groupName,
+        REALTIME_DASHBOARD_WAITING_CALLS_CHANGED,
+        expectedInfo
+      );
+    });
+
+    it('should do nothing if group is empty', async () => {
+      const groupName = `tenant.${tenantId}.realtimeDashboard`;
+
+      calls.getPendingCalls = jest.fn().mockResolvedValue({});
+      operatorsRoom.isLocalGroupNonEmpty = jest.fn(() => false);
+      operatorsRoom.emitToLocalGroup = jest.fn();
+
+      const promise = operatorsRoom.emitRealtimeDashboardWaitingCallsInfo(
+        tenantId
+      );
+
+      await expect(promise).resolves.toBe(undefined);
+      expect(operatorsRoom.isLocalGroupNonEmpty).toHaveBeenCalledWith(
+        groupName
+      );
+
+      expect(calls.getPendingCalls).not.toHaveBeenCalled();
+      expect(operatorsRoom.emitToLocalGroup).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('subscribeToRealtimeDashboardUpdates(): ', () => {
+    it('should subscribe operator to realtime dashboard updates', async () => {
+      operatorsRoom.operators = {
+        connected: {
+          [socketId]: operator,
+        },
+      };
+
+      const groupName = `tenant.${tenantId}.realtimeDashboard`;
+
+      operatorsRoom.verifyToken = jest.fn().mockResolvedValue(true);
+      operatorsRoom.emitOperatorsStatusesChangedDirectly = jest.fn();
+      operatorsRoom.emitRealtimeDashboardActiveCallsInfoDirectly = jest.fn();
+      operatorsRoom.emitRealtimeDashboardWaitingCallsInfoDirectly = jest.fn();
+      socketAuth.checkConnectionPermission = jest.fn(() => true);
+      operator.join = jest.fn();
+      operator.emit = jest.fn();
+
+      const promise = operatorsRoom.subscribeToRealtimeDashboardUpdates(
+        operator
+      );
+
+      await expect(promise).resolves.toBe(undefined);
+
+      expect(operatorsRoom.verifyToken).toHaveBeenCalledWith(operator);
+      expect(socketAuth.checkConnectionPermission).toHaveBeenCalledWith(
+        operator,
+        REALTIME_DASHBOARD_SUBSCRIPTION_PERMISSION
+      );
+      expect(operator.join).toHaveBeenCalledWith(groupName);
+      expect(operator.emit).toHaveBeenCalledWith(REALTIME_DASHBOARD_SUBSCRIBED);
+      expect(
+        operatorsRoom.emitOperatorsStatusesChangedDirectly
+      ).toHaveBeenCalledWith(operator);
+      expect(
+        operatorsRoom.emitRealtimeDashboardActiveCallsInfoDirectly
+      ).toHaveBeenCalledWith(operator);
+      expect(
+        operatorsRoom.emitRealtimeDashboardWaitingCallsInfoDirectly
+      ).toHaveBeenCalledWith(operator);
+    });
+
+    it('should not subscribe operator if operator not found', async () => {
+      // const groupName = `tenant.${tenantId}.realtimeDashboard`;
+
+      operator.join = jest.fn();
+      operator.emit = jest.fn();
+      operatorsRoom.emitRealtimeDashboardWaitingCallsInfoDirectly = jest.fn();
+
+      const promise = operatorsRoom.subscribeToRealtimeDashboardUpdates(
+        operator
+      );
+
+      await expect(promise).resolves.toBe(undefined);
+
+      expect(operator.join).not.toHaveBeenCalled();
+      expect(operator.emit).not.toHaveBeenCalled();
+      expect(
+        operatorsRoom.emitRealtimeDashboardWaitingCallsInfoDirectly
+      ).not.toHaveBeenCalled();
+    });
+
+    it('should not subscribe operator if token is invalid', async () => {
+      operatorsRoom.operators = {
+        connected: {
+          [socketId]: operator,
+        },
+      };
+
+      operatorsRoom.verifyToken = jest.fn().mockResolvedValue(false);
+      operatorsRoom.emitRealtimeDashboardWaitingCallsInfoDirectly = jest.fn();
+      operator.join = jest.fn();
+      operator.emit = jest.fn();
+
+      const promise = operatorsRoom.subscribeToRealtimeDashboardUpdates(
+        operator
+      );
+
+      await expect(promise).resolves.toBe(false);
+
+      expect(operator.join).not.toHaveBeenCalled();
+      expect(operator.emit).not.toHaveBeenCalled();
+      expect(
+        operatorsRoom.emitRealtimeDashboardWaitingCallsInfoDirectly
+      ).not.toHaveBeenCalled();
+    });
+
+    it('should not subscribe operator if it does not have permission', async () => {
+      operatorsRoom.operators = {
+        connected: {
+          [socketId]: operator,
+        },
+      };
+
+      // const groupName = `tenant.${tenantId}.realtimeDashboard`;
+
+      operatorsRoom.verifyToken = jest.fn().mockResolvedValue(true);
+      operatorsRoom.emitRealtimeDashboardWaitingCallsInfoDirectly = jest.fn();
+      socketAuth.checkConnectionPermission = jest.fn(() => false);
+      operator.join = jest.fn();
+      operator.emit = jest.fn();
+
+      const promise = operatorsRoom.subscribeToRealtimeDashboardUpdates(
+        operator
+      );
+
+      await expect(promise).resolves.toBe(undefined);
+
+      expect(operator.join).not.toHaveBeenCalled();
+      expect(operator.emit).toHaveBeenCalledWith(
+        REALTIME_DASHBOARD_SUBSCRIPTION_ERROR
+      );
+      expect(
+        operatorsRoom.emitRealtimeDashboardWaitingCallsInfoDirectly
+      ).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('unsubscribeFromRealtimeDashboardUpdates(): ', () => {
+    it('should unsubscribe operator from realtime dashboard updates', () => {
+      operatorsRoom.operators = {
+        connected: {
+          [socketId]: operator,
+        },
+      };
+      const groupName = `tenant.${tenantId}.realtimeDashboard`;
+
+      operator.leave = jest.fn();
+
+      operatorsRoom.unsubscribeFromRealtimeDashboardUpdates(operator);
+
+      expect(operator.leave).toHaveBeenCalledWith(groupName);
+    });
+
+    it('should do nothing if operator not found', () => {
+      operator.leave = jest.fn();
+
+      operatorsRoom.unsubscribeFromRealtimeDashboardUpdates(operator);
+
+      expect(operator.leave).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getLocalGroupMembers(): ', () => {
+    it('should return local connected operators who belong to group', () => {
+      const firstOperator = {
+        ...operator,
+        rooms: {
+          room1: 'room1',
+          room2: 'room2',
+        },
+      };
+      const secondOperator = {
+        identity: 'Bruce',
+        id: '/operators#49',
+        tenantId: tenantId,
+        securityToken: 'security-token-2',
+        rooms: {
+          room1: 'room1',
+          room3: 'room3',
+        },
+      };
+
+      operatorsRoom.operators = {
+        connected: {
+          [socketId]: firstOperator,
+          [secondOperator.id]: secondOperator,
+        },
+      };
+
+      const members1 = operatorsRoom.getLocalGroupMembers('room1');
+      expect(members1[0]).toBe(firstOperator);
+      expect(members1[1]).toBe(secondOperator);
+      expect(members1.length).toBe(2);
+
+      const members2 = operatorsRoom.getLocalGroupMembers('room2');
+      expect(members2[0]).toBe(firstOperator);
+      expect(members2.length).toBe(1);
+
+      const members3 = operatorsRoom.getLocalGroupMembers('room3');
+      expect(members3[0]).toBe(secondOperator);
+      expect(members3.length).toBe(1);
+    });
+
+    it('should return empty array if there are no locally connected operators', () => {
+      const members = operatorsRoom.getLocalGroupMembers('room55');
+      expect(members.length).toBe(0);
+    });
+  });
+
+  describe('isLocalGroupNonEmpty(): ', () => {
+    let firstOperator;
+    let secondOperator;
+
+    beforeEach(() => {
+      firstOperator = {
+        ...operator,
+        rooms: {
+          room1: 'room1',
+          room2: 'room2',
+        },
+      };
+      secondOperator = {
+        identity: 'Bruce',
+        id: '/operators#49',
+        tenantId: tenantId,
+        securityToken: 'security-token-2',
+        rooms: {
+          room1: 'room1',
+          room3: 'room3',
+        },
+      };
+
+      operatorsRoom.operators = {
+        connected: {
+          [socketId]: firstOperator,
+          [secondOperator.id]: secondOperator,
+        },
+      };
+    });
+
+    it('should return true if group is not empty', () => {
+      expect(operatorsRoom.isLocalGroupNonEmpty('room1')).toBe(true);
+      expect(operatorsRoom.isLocalGroupNonEmpty('room2')).toBe(true);
+      expect(operatorsRoom.isLocalGroupNonEmpty('room3')).toBe(true);
+    });
+
+    it('should return false if group is not empty', () => {
+      expect(operatorsRoom.isLocalGroupNonEmpty('room55')).toBe(false);
+    });
+  });
+
+  describe('emitToLocalGroup(): ', () => {
+    let firstOperator;
+    let secondOperator;
+
+    beforeEach(() => {
+      firstOperator = {
+        ...operator,
+        rooms: {
+          room1: 'room1',
+          room2: 'room2',
+        },
+      };
+      secondOperator = {
+        identity: 'Bruce',
+        id: '/operators#49',
+        tenantId: tenantId,
+        securityToken: 'security-token-2',
+        rooms: {
+          room1: 'room1',
+          room3: 'room3',
+        },
+        emit: jest.fn(),
+      };
+
+      operatorsRoom.operators = {
+        connected: {
+          [socketId]: firstOperator,
+          [secondOperator.id]: secondOperator,
+        },
+      };
+    });
+
+    it('should send information to local group members', () => {
+      const groupName = 'room2';
+      const message = 'message-to-send';
+      const payload = {
+        first: 'param',
+        second: 5,
+      };
+
+      operatorsRoom.emitToLocalGroup(groupName, message, payload);
+
+      expect(firstOperator.emit).toHaveBeenCalledWith(message, payload);
+      expect(secondOperator.emit).not.toHaveBeenCalled();
     });
   });
 });
