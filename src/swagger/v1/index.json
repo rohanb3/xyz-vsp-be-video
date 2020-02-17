@@ -159,31 +159,31 @@
         "tags": ["DashboardDurations"],
         "parameters": [
           {
-            "tenantId": "tenantId",
+            "name": "tenantId",
             "description": "Operator Id",
             "required": false,
             "type": "string"
           },
           {
-            "from": "from",
+            "name": "from",
             "description": "Date and time to start from",
             "required": false,
             "type": "string"
           },
           {
-            "to": "to",
+            "name": "to",
             "description": "Date and time to finish at",
             "required": false,
             "type": "string"
           },
           {
-            "callType": "callType",
+            "name": "callType",
             "description": "Type of call, one of: [call.video, call.audio]",
             "required": false,
             "type": "string"
           },
           {
-            "callStatus": "callStatus",
+            "name": "callStatus",
             "description": "Status of call, one of: [call.missed, call.answered]",
             "required": false,
             "type": "string"
