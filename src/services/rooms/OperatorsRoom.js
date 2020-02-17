@@ -717,10 +717,11 @@ class OperatorsRoom {
         const message = `${REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED} didn't emitted to ${groupName} because group is empty`;
         logger.debug(message, groupName);
       }
-    } catch {
-      logger.debug(
-        "Operator: realtime dashboard active calls info didn't emited because group is empty",
-        groupName
+    } catch (error) {
+      logger.error(
+        'Operator: realtime dashboard active calls error',
+        groupName,
+        error
       );
     }
   }
