@@ -25,6 +25,7 @@ const {
 const {
   CALL_ANSWER_PERMISSION,
   REALTIME_DASHBOARD_SUBSCRIPTION_PERMISSION,
+  REALTIME_DASHBOARD_CHOOSE_TENANT_PERMISSION,
 } = require('@/constants/permissions');
 
 const {
@@ -460,7 +461,7 @@ class OperatorsRoom {
     }
   }
 
-  async subscribeToRealtimeDashboardUpdates({ id }) {
+  async subscribeToRealtimeDashboardUpdates({ id }, requestedTenantId) {
     logger.debug('Operator: subscribe to realtime dashboard', id);
 
     const connectedOperator = this.getConnectedOperator(id);
@@ -477,7 +478,35 @@ class OperatorsRoom {
           REALTIME_DASHBOARD_SUBSCRIPTION_PERMISSION
         )
       ) {
-        const groupName = this.getRealtimeDashboardGroupName(tenantId);
+        let tenantForFilter = null;
+
+        if (requestedTenantId) {
+          logger.debug(
+            `Operator: subscribeToRealtimeDashboardUpdates subscription by tenant id ${requestedTenantId} requested by ${id}`
+          );
+          const chooseTenantAllowed = socketAuth.checkConnectionPermission(
+            connectedOperator,
+            REALTIME_DASHBOARD_CHOOSE_TENANT_PERMISSION
+          );
+          logger.debug(
+            `Operator: subscribeToRealtimeDashboardUpdates chooseTenantAllowed is "${chooseTenantAllowed}" for ${id}`
+          );
+          tenantForFilter =
+            requestedTenantId !== tenantId && chooseTenantAllowed
+              ? requestedTenantId
+              : tenantId;
+
+          connectedOperator.tenantId = tenantForFilter;
+        } else {
+          tenantForFilter = tenantId;
+        }
+
+        logger.debug(
+          `Operator: subscribeToRealtimeDashboardUpdates tenant is "${tenantForFilter}" for ${id}`
+        );
+
+        const groupName = this.getRealtimeDashboardGroupName(tenantForFilter);
+
         connectedOperator.join(groupName);
         connectedOperator.emit(REALTIME_DASHBOARD_SUBSCRIBED);
         logger.debug(

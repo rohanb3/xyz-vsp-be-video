@@ -57,6 +57,7 @@ const {
 const {
   CALL_ANSWER_PERMISSION,
   REALTIME_DASHBOARD_SUBSCRIPTION_PERMISSION,
+  REALTIME_DASHBOARD_CHOOSE_TENANT_PERMISSION,
 } = require('@/constants/permissions');
 
 const {
@@ -1544,6 +1545,57 @@ describe('OperatorsRoom: ', () => {
       expect(
         operatorsRoom.emitRealtimeDashboardWaitingCallsInfoDirectly
       ).not.toHaveBeenCalled();
+    });
+
+    it('should subscribe operator to requested tenant if he has permission', async () => {
+      operatorsRoom.operators = {
+        connected: {
+          [socketId]: operator,
+        },
+      };
+      const anotherTenantId = 'secretTenant';
+      const groupName = `tenant.${anotherTenantId}.realtimeDashboard`;
+
+      operatorsRoom.verifyToken = jest.fn().mockResolvedValue(true);
+      operatorsRoom.emitOperatorsStatusesChangedDirectly = jest.fn();
+      operatorsRoom.emitRealtimeDashboardActiveCallsInfoDirectly = jest.fn();
+      operatorsRoom.emitRealtimeDashboardWaitingCallsInfoDirectly = jest.fn();
+      operatorsRoom.getRealtimeDashboardGroupName = jest.fn(() => groupName);
+      socketAuth.checkConnectionPermission = jest.fn(() => true);
+      operator.join = jest.fn();
+      operator.emit = jest.fn();
+
+      const promise = operatorsRoom.subscribeToRealtimeDashboardUpdates(
+        operator,
+        anotherTenantId
+      );
+
+      await expect(promise).resolves.toBe(undefined);
+
+      expect(operatorsRoom.getRealtimeDashboardGroupName).toHaveBeenCalledWith(
+        anotherTenantId
+      );
+      expect(operatorsRoom.verifyToken).toHaveBeenCalledWith(operator);
+      expect(socketAuth.checkConnectionPermission).toHaveBeenCalledTimes(2);
+      expect(socketAuth.checkConnectionPermission).toHaveBeenCalledWith(
+        operator,
+        REALTIME_DASHBOARD_SUBSCRIPTION_PERMISSION
+      );
+      expect(socketAuth.checkConnectionPermission).toHaveBeenCalledWith(
+        operator,
+        REALTIME_DASHBOARD_CHOOSE_TENANT_PERMISSION
+      );
+      expect(operator.join).toHaveBeenCalledWith(groupName);
+      expect(operator.emit).toHaveBeenCalledWith(REALTIME_DASHBOARD_SUBSCRIBED);
+      expect(
+        operatorsRoom.emitOperatorsStatusesChangedDirectly
+      ).toHaveBeenCalledWith({ ...operator, tenantId: anotherTenantId });
+      expect(
+        operatorsRoom.emitRealtimeDashboardActiveCallsInfoDirectly
+      ).toHaveBeenCalledWith({ ...operator, tenantId: anotherTenantId });
+      expect(
+        operatorsRoom.emitRealtimeDashboardWaitingCallsInfoDirectly
+      ).toHaveBeenCalledWith({ ...operator, tenantId: anotherTenantId });
     });
   });
 
