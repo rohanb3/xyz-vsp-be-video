@@ -666,17 +666,21 @@ class OperatorsRoom {
     const groupName = this.getRealtimeDashboardGroupName(changedCall.tenantId);
 
     try {
-      const tenantCalls = await calls.getActiveCallsByTenantId(
-        changedCall.tenantId
-      );
-      this.emitToLocalGroup(
-        groupName,
-        REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED,
-        tenantCalls
-      );
-
-      const message = `${REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED} emitted to tenant group ${changedCall.tenantId} with calls:`;
-      logger.debug(message, tenantCalls);
+      if (this.isLocalGroupNonEmpty(groupName)) {
+        const tenantCalls = await calls.getActiveCallsByTenantId(
+          changedCall.tenantId
+        );
+        this.emitToLocalGroup(
+          groupName,
+          REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED,
+          tenantCalls
+        );
+        const message = `${REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED} emitted to ${groupName} with calls:`;
+        logger.debug(message, tenantCalls);
+      } else {
+        const message = `${REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED} didn't emitted to ${groupName} because group is empty`;
+        logger.debug(message, groupName);
+      }
     } catch {
       logger.debug(
         "Operator: realtime dashboard waiting calls info didn't emited because group is empty",

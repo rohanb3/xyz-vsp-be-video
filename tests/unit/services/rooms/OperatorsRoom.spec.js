@@ -1125,13 +1125,14 @@ describe('OperatorsRoom: ', () => {
     });
   });
   describe('emitRealtimeDashboardActiveCallsInfo()', () => {
-    it("should emit event to operators in group with only operator's tenant calls", async () => {
+    it("should emit event to operators in non-empty group with only operator's tenant calls", async () => {
       const ownTenantCall = {
         acceptedBy: operatorIdentity,
         id: callId,
         tenantId,
       };
       operatorsRoom.emitToLocalGroup = jest.fn();
+      operatorsRoom.isLocalGroupNonEmpty = jest.fn(() => true);
 
       const groupName = `tenant.${tenantId}.realtimeDashboard`;
       calls.getActiveCallsByTenantId = jest
@@ -1144,6 +1145,22 @@ describe('OperatorsRoom: ', () => {
         REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED,
         [ownTenantCall]
       );
+    });
+    it('should not emit event to empty group', async () => {
+      const ownTenantCall = {
+        acceptedBy: operatorIdentity,
+        id: callId,
+        tenantId,
+      };
+      operatorsRoom.emitToLocalGroup = jest.fn();
+      operatorsRoom.isLocalGroupNonEmpty = jest.fn(() => false);
+
+      calls.getActiveCallsByTenantId = jest
+        .fn()
+        .mockResolvedValue([ownTenantCall]);
+      await operatorsRoom.emitRealtimeDashboardActiveCallsInfo(ownTenantCall);
+
+      expect(operatorsRoom.emitToLocalGroup).not.toHaveBeenCalled();
     });
   });
   describe('emitRealtimeDashboardCallFinished()', () => {
