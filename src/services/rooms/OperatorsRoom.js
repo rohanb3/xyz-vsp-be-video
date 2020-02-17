@@ -699,16 +699,20 @@ class OperatorsRoom {
 
     try {
       if (this.isLocalGroupNonEmpty(groupName)) {
-        const tenantCalls = await calls.getActiveCallsByTenantId(
+        const items = await calls.getActiveCallsByTenantId(
           changedCall.tenantId
         );
         this.emitToLocalGroup(
           groupName,
           REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED,
-          tenantCalls
+          {
+            count: items.length,
+            items,
+            serverTime: timeHelper.formattedTimestamp(),
+          }
         );
         const message = `${REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED} emitted to ${groupName} with calls:`;
-        logger.debug(message, tenantCalls);
+        logger.debug(message, items);
       } else {
         const message = `${REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED} didn't emitted to ${groupName} because group is empty`;
         logger.debug(message, groupName);

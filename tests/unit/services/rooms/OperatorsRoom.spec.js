@@ -1165,6 +1165,12 @@ describe('OperatorsRoom: ', () => {
         id: callId,
         tenantId,
       };
+      const expectedValue = {
+        count: 1,
+        items: [ownTenantCall],
+        serverTime: expect.any(String),
+      };
+
       operatorsRoom.emitToLocalGroup = jest.fn();
       operatorsRoom.isLocalGroupNonEmpty = jest.fn(() => true);
       const groupName = `tenant.${tenantId}.realtimeDashboard`;
@@ -1178,7 +1184,7 @@ describe('OperatorsRoom: ', () => {
       expect(operatorsRoom.emitToLocalGroup).toHaveBeenCalledWith(
         groupName,
         REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED,
-        [ownTenantCall]
+        expectedValue
       );
     });
     it('should not emit event to empty group', async () => {
