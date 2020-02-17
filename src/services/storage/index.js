@@ -2,7 +2,8 @@ const client = require('@/services/redisClient');
 const { serialize, deserialize } = require('@/services/serializer');
 const errors = require('./errors');
 
-const rejectWithNotFound = key => Promise.reject(new errors.NotFoundItemError(key));
+const rejectWithNotFound = key =>
+  Promise.reject(new errors.NotFoundItemError(key));
 
 function isExist(key) {
   return key ? client.exists(key) : Promise.resolve(false);
@@ -22,8 +23,7 @@ function getMultiple(keys) {
     return Promise.resolve(null);
   }
 
-  return client.mget(keys)
-    .then(items => items.map(deserialize))
+  return client.mget(keys).then(items => items.map(deserialize));
 }
 
 function set(key, value) {
@@ -35,7 +35,9 @@ function remove(key) {
     return Promise.resolve(false);
   }
 
-  return isExist(key).then(exist => (exist ? client.del(key) : rejectWithNotFound(key)));
+  return isExist(key).then(exist =>
+    exist ? client.del(key) : rejectWithNotFound(key)
+  );
 }
 
 function take(key) {
@@ -47,7 +49,7 @@ function take(key) {
 
   return isExist(key)
     .then(exist => (exist ? get(key) : rejectWithNotFound(key)))
-    .then((value) => {
+    .then(value => {
       result = value;
       return remove(key);
     })

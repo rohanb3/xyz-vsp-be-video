@@ -22,7 +22,8 @@
     "lint": "npx eslint --fix src/**/*.js tests/**/*.js",
     "unit": "jest",
     "coverage": "jest --collectCoverageFrom=src/**/*.js --coverage",
-    "copyEnv": "cp .env.template .env"
+    "copyEnv": "cp .env.template .env",
+    "test": "npm run unit"
   },
   "author": "Ketler",
   "license": "ISC",
