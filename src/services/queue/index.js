@@ -67,9 +67,10 @@ class Queue {
   }
 
   getQueueInfo() {
-    return Promise.all([this.getPeak(), this.getSize()]).then(
-      ([peak, size]) => ({ peak, size })
-    );
+    return Promise.all([
+      this.getPeak(),
+      this.getSize(),
+    ]).then(([peak, size]) => ({ peak, size }));
   }
 
   subscribeToItemEnqueueing(listener) {
