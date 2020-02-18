@@ -5,6 +5,10 @@ jest.mock('@/services/calls', () => ({
   subscribeToCallsLengthChanging: jest.fn(() => {}),
   subscribeToCallFinishing: jest.fn(() => {}),
   subscribeToCallAccepting: jest.fn(() => {}),
+  subscribeToActiveCallsHeapAdding: jest.fn(() => {}),
+  subscribeToActiveCallsHeapTaking: jest.fn(() => {}),
+  unsubscribeFromActiveCallsHeapAdding: jest.fn(() => {}),
+  unsubscribeFromActiveCallsHeapTaking: jest.fn(() => {}),
   getCallsInfo: jest.fn(() => Promise.resolve({})),
   finishCall: jest.fn(() => Promise.resolve()),
   requestCallback: jest.fn(() => Promise.resolve()),
@@ -43,9 +47,10 @@ const {
   REALTIME_DASHBOARD_UNSUBSCRIBE,
   REALTIME_DASHBOARD_CALL_FINISHED,
   REALTIME_DASHBOARD_CALL_ACCEPTED,
+  REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED,
   REALTIME_DASHBOARD_WAITING_CALLS_CHANGED,
   REALTIME_DASHBOARD_SUBSCRIBED,
-  REALTIME_DASHBOARD_SUBSCRIBTION_ERROR,
+  REALTIME_DASHBOARD_SUBSCRIPTION_ERROR,
 } = require('@/constants/realtimeDashboard');
 
 const {
@@ -565,10 +570,10 @@ describe('OperatorsRoom: ', () => {
 
   describe('emitCallsInfo(): ', () => {
     it('should emit only to active operators', () => {
-      const info = { tenantId: tenantId };
+      const info = { tenantId };
       const callsInfo = {
         data: info,
-        tenantId: tenantId,
+        tenantId,
       };
       const expectedInfo = {
         ...info,
@@ -1102,6 +1107,62 @@ describe('OperatorsRoom: ', () => {
       ).toHaveBeenCalledWith(call);
     });
   });
+  describe('onActiveCallsHeapChanged()', () => {
+    it('should call emitRealtimeDashboardActiveCallsInfo', () => {
+      operatorsRoom.emitRealtimeDashboardActiveCallsInfo = jest.fn();
+      const call = {
+        finishedBy: operatorIdentity,
+        acceptedBy: operatorIdentity,
+        id: callId,
+        tenantId: tenantId,
+      };
+
+      operatorsRoom.onActiveCallsHeapChanged(call);
+
+      expect(
+        operatorsRoom.emitRealtimeDashboardActiveCallsInfo
+      ).toHaveBeenCalledWith(call);
+    });
+  });
+  describe('emitRealtimeDashboardActiveCallsInfo()', () => {
+    it("should emit event to operators in non-empty group with only operator's tenant calls", async () => {
+      const ownTenantCall = {
+        acceptedBy: operatorIdentity,
+        id: callId,
+        tenantId,
+      };
+      operatorsRoom.emitToLocalGroup = jest.fn();
+      operatorsRoom.isLocalGroupNonEmpty = jest.fn(() => true);
+
+      const groupName = `tenant.${tenantId}.realtimeDashboard`;
+      calls.getActiveCallsByTenantId = jest
+        .fn()
+        .mockResolvedValue([ownTenantCall]);
+      await operatorsRoom.emitRealtimeDashboardActiveCallsInfo(ownTenantCall);
+
+      expect(operatorsRoom.emitToLocalGroup).toHaveBeenCalledWith(
+        groupName,
+        REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED,
+        [ownTenantCall]
+      );
+    });
+    it('should not emit event to empty group', async () => {
+      const ownTenantCall = {
+        acceptedBy: operatorIdentity,
+        id: callId,
+        tenantId,
+      };
+      operatorsRoom.emitToLocalGroup = jest.fn();
+      operatorsRoom.isLocalGroupNonEmpty = jest.fn(() => false);
+
+      calls.getActiveCallsByTenantId = jest
+        .fn()
+        .mockResolvedValue([ownTenantCall]);
+      await operatorsRoom.emitRealtimeDashboardActiveCallsInfo(ownTenantCall);
+
+      expect(operatorsRoom.emitToLocalGroup).not.toHaveBeenCalled();
+    });
+  });
   describe('emitRealtimeDashboardCallFinished()', () => {
     it('should emit event to operators in group', () => {
       const call = {
@@ -1128,7 +1189,7 @@ describe('OperatorsRoom: ', () => {
       const call = {
         acceptedBy: operatorIdentity,
         id: callId,
-        tenantId: tenantId,
+        tenantId,
       };
 
       const groupName = `tenant.${tenantId}.realtimeDashboard`;
@@ -1197,7 +1258,7 @@ describe('OperatorsRoom: ', () => {
       };
 
       calls.getPendingCalls = jest.fn().mockResolvedValue(waitingCalls);
-      operatorsRoom.isLocalGropuNonEmpty = jest.fn(() => true);
+      operatorsRoom.isLocalGroupNonEmpty = jest.fn(() => true);
       operatorsRoom.emitToLocalGroup = jest.fn();
 
       const promise = operatorsRoom.emitRealtimeDashboardWaitingCallsInfo(
@@ -1206,7 +1267,7 @@ describe('OperatorsRoom: ', () => {
 
       await expect(promise).resolves.toBe(undefined);
       expect(calls.getPendingCalls).toHaveBeenCalledWith(tenantId);
-      expect(operatorsRoom.isLocalGropuNonEmpty).toHaveBeenCalledWith(
+      expect(operatorsRoom.isLocalGroupNonEmpty).toHaveBeenCalledWith(
         groupName
       );
       expect(operatorsRoom.emitToLocalGroup).toHaveBeenCalledWith(
@@ -1220,7 +1281,7 @@ describe('OperatorsRoom: ', () => {
       const groupName = `tenant.${tenantId}.realtimeDashboard`;
 
       calls.getPendingCalls = jest.fn().mockResolvedValue({});
-      operatorsRoom.isLocalGropuNonEmpty = jest.fn(() => false);
+      operatorsRoom.isLocalGroupNonEmpty = jest.fn(() => false);
       operatorsRoom.emitToLocalGroup = jest.fn();
 
       const promise = operatorsRoom.emitRealtimeDashboardWaitingCallsInfo(
@@ -1228,7 +1289,7 @@ describe('OperatorsRoom: ', () => {
       );
 
       await expect(promise).resolves.toBe(undefined);
-      expect(operatorsRoom.isLocalGropuNonEmpty).toHaveBeenCalledWith(
+      expect(operatorsRoom.isLocalGroupNonEmpty).toHaveBeenCalledWith(
         groupName
       );
 
@@ -1339,7 +1400,7 @@ describe('OperatorsRoom: ', () => {
 
       expect(operator.join).not.toHaveBeenCalled();
       expect(operator.emit).toHaveBeenCalledWith(
-        REALTIME_DASHBOARD_SUBSCRIBTION_ERROR
+        REALTIME_DASHBOARD_SUBSCRIPTION_ERROR
       );
       expect(
         operatorsRoom.emitRealtimeDashboardWaitingCallsInfoDirectly
@@ -1419,7 +1480,7 @@ describe('OperatorsRoom: ', () => {
     });
   });
 
-  describe('isLocalGropuNonEmpty(): ', () => {
+  describe('isLocalGroupNonEmpty(): ', () => {
     let firstOperator;
     let secondOperator;
 
@@ -1451,13 +1512,13 @@ describe('OperatorsRoom: ', () => {
     });
 
     it('should return true if group is not empty', () => {
-      expect(operatorsRoom.isLocalGropuNonEmpty('room1')).toBe(true);
-      expect(operatorsRoom.isLocalGropuNonEmpty('room2')).toBe(true);
-      expect(operatorsRoom.isLocalGropuNonEmpty('room3')).toBe(true);
+      expect(operatorsRoom.isLocalGroupNonEmpty('room1')).toBe(true);
+      expect(operatorsRoom.isLocalGroupNonEmpty('room2')).toBe(true);
+      expect(operatorsRoom.isLocalGroupNonEmpty('room3')).toBe(true);
     });
 
     it('should return false if group is not empty', () => {
-      expect(operatorsRoom.isLocalGropuNonEmpty('room55')).toBe(false);
+      expect(operatorsRoom.isLocalGroupNonEmpty('room55')).toBe(false);
     });
   });
 

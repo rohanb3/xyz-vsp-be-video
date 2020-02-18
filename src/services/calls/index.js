@@ -235,6 +235,22 @@ function subscribeToCallsLengthChanging(listener) {
   return pendingCallsQueues.subscribeOnQueuesChanges(listener);
 }
 
+function subscribeToActiveCallsHeapAdding(listener) {
+  return activeCallsHeap.subscribeToItemAdding(listener);
+}
+
+function subscribeToActiveCallsHeapTaking(listener) {
+  return activeCallsHeap.subscribeToItemTaking(listener);
+}
+
+function unsubscribeFromActiveCallsHeapAdding(listener) {
+  return activeCallsHeap.unsubscribeFromItemAdding(listener);
+}
+
+function unsubscribeFromActiveCallsHeapTaking(listener) {
+  return activeCallsHeap.unsubscribeFromItemTaking(listener);
+}
+
 function unsubscribeFromCallsLengthChanging(listener) {
   return pendingCallsQueues.unsubscribeFromQueueChanging(listener);
 }
@@ -279,6 +295,12 @@ function removeActiveCallIdFromConnections(call) {
     .then(() => call);
 }
 
+async function getActiveCallsByTenantId(tenantId) {
+  const calls = await activeCallsHeap.getAll();
+  const tenantCalls = calls.filter((call = {}) => call.tenantId === tenantId);
+  return tenantCalls;
+}
+
 exports.requestCall = requestCall;
 exports.acceptCall = acceptCall;
 exports.finishCall = finishCall;
@@ -289,6 +311,7 @@ exports.getOldestCall = getOldestCall;
 exports.getPendingCallsLength = getPendingCallsLength;
 exports.getCallsInfo = getCallsInfo;
 exports.getPendingCalls = getPendingCalls;
+exports.getActiveCallsByTenantId = getActiveCallsByTenantId;
 
 exports.subscribeToCallRequesting = pubSubChannel.subscribe.bind(
   null,
@@ -340,4 +363,10 @@ exports.unsubscribeFromCallbackDeclining = pubSubChannel.unsubscribe.bind(
   null,
   CALLBACK_DECLINED
 );
+
+exports.subscribeToActiveCallsHeapAdding = subscribeToActiveCallsHeapAdding;
+exports.subscribeToActiveCallsHeapTaking = subscribeToActiveCallsHeapTaking;
+exports.unsubscribeFromActiveCallsHeapAdding = unsubscribeFromActiveCallsHeapAdding;
+exports.unsubscribeFromActiveCallsHeapTaking = unsubscribeFromActiveCallsHeapTaking;
+
 exports.unsubscribeFromCallsLengthChanging = unsubscribeFromCallsLengthChanging;

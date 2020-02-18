@@ -669,6 +669,56 @@ describe('calls: ', () => {
       });
     });
   });
+  describe('subscribeToActiveCallsHeapAdding(): ', () => {
+    it('should subscribe to queue event', () => {
+      const listener = () => {};
+      activeCallsHeap.subscribeToItemAdding = jest.fn();
+
+      calls.subscribeToActiveCallsHeapAdding(listener);
+
+      expect(activeCallsHeap.subscribeToItemAdding).toHaveBeenCalledWith(
+        listener
+      );
+    });
+  });
+
+  describe('unsubscribeFromActiveCallsHeapAdding(): ', () => {
+    it('should unsubscribe from queue event', () => {
+      const listener = () => {};
+      activeCallsHeap.unsubscribeFromItemAdding = jest.fn();
+
+      calls.unsubscribeFromActiveCallsHeapAdding(listener);
+
+      expect(activeCallsHeap.unsubscribeFromItemAdding).toHaveBeenCalledWith(
+        listener
+      );
+    });
+  });
+  describe('subscribeToActiveCallsHeapTaking(): ', () => {
+    it('should subscribe to queue event', () => {
+      const listener = () => {};
+      activeCallsHeap.subscribeToItemTaking = jest.fn();
+
+      calls.subscribeToActiveCallsHeapTaking(listener);
+
+      expect(activeCallsHeap.subscribeToItemTaking).toHaveBeenCalledWith(
+        listener
+      );
+    });
+  });
+
+  describe('unsubscribeFromActiveCallsHeapTaking(): ', () => {
+    it('should unsubscribe from queue event', () => {
+      const listener = () => {};
+      activeCallsHeap.unsubscribeFromItemTaking = jest.fn();
+
+      calls.unsubscribeFromActiveCallsHeapTaking(listener);
+
+      expect(activeCallsHeap.unsubscribeFromItemTaking).toHaveBeenCalledWith(
+        listener
+      );
+    });
+  });
 
   describe('subscribeToCallsLengthChanging(): ', () => {
     it('should subscribe to queue event', () => {
@@ -714,6 +764,67 @@ describe('calls: ', () => {
         tenantId
       );
       expect(mockedGetItems).toHaveBeenCalled();
+    });
+  });
+
+  describe('getActiveCallsByTenantId():', () => {
+    it('should return correct calls list for requested tenantId', async () => {
+      const firstTenantId = 'spectrum';
+      const secondTenantId = 'another';
+      const firstTenantCalls = [
+        {
+          id: 'call123',
+          tenantId: firstTenantId,
+        },
+        {
+          id: 'call67',
+          tenantId: firstTenantId,
+        },
+        {
+          id: 'call123',
+          tenantId: firstTenantId,
+        },
+      ];
+      const secondTenantCalls = [
+        {
+          id: 'call1123',
+          tenantId: secondTenantId,
+        },
+        {
+          id: 'call8912',
+          tenantId: secondTenantId,
+        },
+      ];
+      activeCallsHeap.getAll = jest
+        .fn()
+        .mockResolvedValue([...firstTenantCalls, ...secondTenantCalls]);
+      const res = await calls.getActiveCallsByTenantId(firstTenantId);
+
+      expect(res).toStrictEqual(firstTenantCalls);
+    });
+
+    it('should return empty array if there are no tenant calls', async () => {
+      const firstTenantId = 'spectrum';
+      const secondTenantId = 'another';
+
+      const firstTenantCalls = [
+        {
+          id: 'call123',
+          tenantId: firstTenantId,
+        },
+        {
+          id: 'call67',
+          tenantId: firstTenantId,
+        },
+        {
+          id: 'call123',
+          tenantId: firstTenantId,
+        },
+      ];
+      activeCallsHeap.getAll = jest.fn().mockResolvedValue(firstTenantCalls);
+      const res = await calls.getActiveCallsByTenantId(secondTenantId);
+
+      expect(res).toStrictEqual([]);
     });
   });
 });
