@@ -44,7 +44,8 @@ const {
   REALTIME_DASHBOARD_UNSUBSCRIBE,
   REALTIME_DASHBOARD_CALL_FINISHED,
   REALTIME_DASHBOARD_CALL_ACCEPTED,
-  REALTIME_DASHBOARD_SUBSCRIBTION_ERROR,
+  REALTIME_DASHBOARD_SUBSCRIPTION_ERROR,
+  REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED,
   REALTIME_DASHBOARD_WAITING_CALLS_CHANGED,
 } = require('@/constants/realtimeDashboard');
 
@@ -61,7 +62,7 @@ const logger = require('@/services/logger')(module);
 
 const isMaster = !process.env.INSTANCE_ID || process.env.INSTANCE_ID === '0';
 
-const operatorsGroups = {};
+// const operatorsGroups = {};
 
 class OperatorsRoom {
   constructor(io, mediator) {
@@ -91,6 +92,13 @@ class OperatorsRoom {
     );
     calls.subscribeToCallbackDeclining(
       this.checkOperatorAndEmitCallbackDeclining.bind(this)
+    );
+
+    calls.subscribeToActiveCallsHeapAdding(
+      this.onActiveCallsHeapChanged.bind(this)
+    );
+    calls.subscribeToActiveCallsHeapTaking(
+      this.onActiveCallsHeapChanged.bind(this)
     );
 
     if (isMaster) {
@@ -257,6 +265,10 @@ class OperatorsRoom {
     operator.emit(CALL_ACCEPTING_FAILED, data);
   }
 
+  onActiveCallsHeapChanged(changedCall = {}) {
+    this.emitRealtimeDashboardActiveCallsInfo(changedCall);
+  }
+
   onCallFinished(call) {
     const callFinishedNotByByOperator = call.finishedBy !== call.acceptedBy;
     if (callFinishedNotByByOperator) {
@@ -414,10 +426,10 @@ class OperatorsRoom {
           ...info,
           serverTime: timeHelper.formattedTimestamp(),
         });
-        logger.debug('Operator: calls info emited dirrectly', id);
+        logger.debug('Operator: calls info emitted directly', id);
       } else {
         logger.debug(
-          `Operator: wasn't added to active operators group because of missed answring call permission`
+          `Operator: wasn't added to active operators group because of missed answering call permission`
         );
       }
     }
@@ -461,9 +473,13 @@ class OperatorsRoom {
           groupName
         );
 
+        this.emitRealtimeDashboardWaitingCallsInfo(tenantId, connectedOperator);
+
+        this.emitRealtimeDashboardActiveCallsInfo({ tenantId });
+
         this.emitRealtimeDashboardWaitingCallsInfoDirectly(connectedOperator);
       } else {
-        connectedOperator.emit(REALTIME_DASHBOARD_SUBSCRIBTION_ERROR);
+        connectedOperator.emit(REALTIME_DASHBOARD_SUBSCRIPTION_ERROR);
         logger.debug('Operator: not subscribed to realtime dashboard', id);
       }
     }
@@ -506,7 +522,7 @@ class OperatorsRoom {
   async emitRealtimeDashboardWaitingCallsInfo(tenantId) {
     const groupName = this.getRealtimeDashboardGroupName(tenantId);
 
-    if (this.isLocalGropuNonEmpty(groupName)) {
+    if (this.isLocalGroupNonEmpty(groupName)) {
       const items = await calls.getPendingCalls(tenantId);
 
       this.emitToLocalGroup(
@@ -628,6 +644,7 @@ class OperatorsRoom {
 
   emitRealtimeDashboardCallFinished(call) {
     const groupName = this.getRealtimeDashboardGroupName(call.tenantId);
+
     this.emitToLocalGroup(groupName, REALTIME_DASHBOARD_CALL_FINISHED, call);
 
     logger.debug(
@@ -638,18 +655,50 @@ class OperatorsRoom {
 
   emitRealtimeDashboardCallAccepted(call) {
     const groupName = this.getRealtimeDashboardGroupName(call.tenantId);
+
     this.emitToLocalGroup(groupName, REALTIME_DASHBOARD_CALL_ACCEPTED, call);
 
-    logger.debug(
-      `${REALTIME_DASHBOARD_CALL_ACCEPTED} emitted to tenant group ${call.tenantId} with call:`,
-      call
-    );
+    const message = `Operator: ${REALTIME_DASHBOARD_CALL_ACCEPTED} emitted to tenant group ${call.tenantId} with call:`;
+    logger.debug(message, call);
+  }
+
+  async emitRealtimeDashboardActiveCallsInfo(changedCall) {
+    const groupName = this.getRealtimeDashboardGroupName(changedCall.tenantId);
+
+    try {
+      if (this.isLocalGroupNonEmpty(groupName)) {
+        const tenantCalls = await calls.getActiveCallsByTenantId(
+          changedCall.tenantId
+        );
+        this.emitToLocalGroup(
+          groupName,
+          REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED,
+          tenantCalls
+        );
+        const message = `${REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED} emitted to ${groupName} with calls:`;
+        logger.debug(message, tenantCalls);
+      } else {
+        const message = `${REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED} didn't emitted to ${groupName} because group is empty`;
+        logger.debug(message, groupName);
+      }
+    } catch {
+      logger.debug(
+        "Operator: realtime dashboard waiting calls info didn't emited because group is empty",
+        groupName
+      );
+    }
+  }
+
+  isEmptyGroup(groupName) {
+    const group = this.operators.to(groupName);
+
+    return !!Object.keys(group.connected).length;
   }
 
   getLocalGroupMembers(groupName) {
-    const members = Object.values(this.operators.connected || {}).filter(
-      connection => Object.keys(connection.rooms).includes(groupName)
-    );
+    const members = Object.values(
+      this.operators.connected || {}
+    ).filter(connection => Object.keys(connection.rooms).includes(groupName));
 
     logger.debug(
       'Operator: getLocalGroupMembers',
@@ -661,7 +710,7 @@ class OperatorsRoom {
     return members;
   }
 
-  isLocalGropuNonEmpty(groupName) {
+  isLocalGroupNonEmpty(groupName) {
     return !!this.getLocalGroupMembers(groupName).length;
   }
 
