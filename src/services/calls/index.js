@@ -78,10 +78,10 @@ async function acceptCall(operator) {
   logger.debug('call.accept.call.from.pending.queue.taken', callFromQueue);
   const callFromDB = await callsDBClient.getById(callFromQueue.id);
   logger.debug('call.accept.call.from.db.taken', callFromDB);
-  const { acceptedAt, requestedAt } = callFromDB || {};
+  const { requestedAt } = callFromDB || {};
   const updateMixin = {
     callStatus: CALL_ANSWERED,
-    waitingDuration: time.getDifferenceFromTo(acceptedAt, requestedAt),
+    waitingDuration: time.getDifferenceFromTo(requestedAt, updates.acceptedAt),
   };
 
   Object.assign(call, callFromQueue, updateMixin);
