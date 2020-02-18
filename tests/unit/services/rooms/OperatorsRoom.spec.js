@@ -119,6 +119,7 @@ describe('OperatorsRoom: ', () => {
       id: socketId,
       tenantId: tenantId,
       securityToken: 'security-token',
+      realtimeDashboardTenantId: tenantId,
     };
     data = {};
   });
@@ -1553,8 +1554,8 @@ describe('OperatorsRoom: ', () => {
           [socketId]: operator,
         },
       };
-      const anotherTenantId = 'secretTenant';
-      const groupName = `tenant.${anotherTenantId}.realtimeDashboard`;
+      const realtimeDashboardTenantId = 'secretTenant';
+      const groupName = `tenant.${realtimeDashboardTenantId}.realtimeDashboard`;
 
       operatorsRoom.verifyToken = jest.fn().mockResolvedValue(true);
       operatorsRoom.emitOperatorsStatusesChangedDirectly = jest.fn();
@@ -1567,13 +1568,13 @@ describe('OperatorsRoom: ', () => {
 
       const promise = operatorsRoom.subscribeToRealtimeDashboardUpdates(
         operator,
-        anotherTenantId
+        realtimeDashboardTenantId
       );
 
       await expect(promise).resolves.toBe(undefined);
 
       expect(operatorsRoom.getRealtimeDashboardGroupName).toHaveBeenCalledWith(
-        anotherTenantId
+        realtimeDashboardTenantId
       );
       expect(operatorsRoom.verifyToken).toHaveBeenCalledWith(operator);
       expect(socketAuth.checkConnectionPermission).toHaveBeenCalledTimes(2);
@@ -1589,13 +1590,13 @@ describe('OperatorsRoom: ', () => {
       expect(operator.emit).toHaveBeenCalledWith(REALTIME_DASHBOARD_SUBSCRIBED);
       expect(
         operatorsRoom.emitOperatorsStatusesChangedDirectly
-      ).toHaveBeenCalledWith({ ...operator, tenantId: anotherTenantId });
+      ).toHaveBeenCalledWith({ ...operator, realtimeDashboardTenantId });
       expect(
         operatorsRoom.emitRealtimeDashboardActiveCallsInfoDirectly
-      ).toHaveBeenCalledWith({ ...operator, tenantId: anotherTenantId });
+      ).toHaveBeenCalledWith({ ...operator, realtimeDashboardTenantId });
       expect(
         operatorsRoom.emitRealtimeDashboardWaitingCallsInfoDirectly
-      ).toHaveBeenCalledWith({ ...operator, tenantId: anotherTenantId });
+      ).toHaveBeenCalledWith({ ...operator, realtimeDashboardTenantId });
     });
   });
 

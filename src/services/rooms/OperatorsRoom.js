@@ -496,7 +496,7 @@ class OperatorsRoom {
               ? requestedTenantId
               : tenantId;
 
-          connectedOperator.tenantId = tenantForFilter;
+          connectedOperator.realtimeDashboardTenantId = tenantForFilter;
         } else {
           tenantForFilter = tenantId;
         }
@@ -530,7 +530,7 @@ class OperatorsRoom {
     if (connectedOperator) {
       logger.debug('Operator: unsubscribe from realtime dashboard', id);
 
-      const tenantId = connectedOperator.tenantId;
+      const tenantId = connectedOperator.realtimeDashboardTenantId;
       const groupName = this.getRealtimeDashboardGroupName(tenantId);
       connectedOperator.leave(groupName);
       logger.debug(
@@ -544,7 +544,9 @@ class OperatorsRoom {
   async emitRealtimeDashboardWaitingCallsInfoDirectly({ id }) {
     const connectedOperator = this.getConnectedOperator(id);
     if (connectedOperator) {
-      const items = await calls.getPendingCalls(connectedOperator.tenantId);
+      const items = await calls.getPendingCalls(
+        connectedOperator.realtimeDashboardTenantId
+      );
 
       connectedOperator.emit(REALTIME_DASHBOARD_WAITING_CALLS_CHANGED, {
         count: items.length,
@@ -707,7 +709,7 @@ class OperatorsRoom {
     const connectedOperator = this.getConnectedOperator(id);
     if (connectedOperator) {
       const items = await calls.getActiveCallsByTenantId(
-        connectedOperator.tenantId
+        connectedOperator.realtimeDashboardTenantId
       );
 
       connectedOperator.emit(REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED, {
@@ -780,7 +782,7 @@ class OperatorsRoom {
 
   async emitOperatorsStatusesChangedDirectly(connectedOperator) {
     const data = await this.prepareOperatorStatusesInfo(
-      connectedOperator.tenantId
+      connectedOperator.realtimeDashboardTenantId
     );
 
     connectedOperator.emit(REALTIME_DASHBOARD_OPERATORS_STATUSES_CHANGED, data);
