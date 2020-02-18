@@ -1250,7 +1250,7 @@ describe('OperatorsRoom: ', () => {
   describe('emitOperatorsStatusesChanged():', () => {
     it('should emit data to realtime dashboard group', async () => {
       const operatorsCount = 5;
-      const data = {
+      const expectedInfo = {
         activeOperators: {
           count: operatorsCount,
         },
@@ -1259,14 +1259,12 @@ describe('OperatorsRoom: ', () => {
         },
       };
 
-      operatorsRoom.getGroupInfo = jest.fn().mockResolvedValue(operatorsCount);
+      operatorsRoom.isLocalGroupNonEmpty = jest.fn(() => true);
 
-      operatorsRoom.getActiveOperatorsGroupName = jest.fn(
-        () => activeOperatorsGroupName
-      );
-      operatorsRoom.getInactiveOperatorsGroupName = jest.fn(
-        () => inactiveOperatorsGroupName
-      );
+      operatorsRoom.prepareOperatorStatusesInfo = jest
+        .fn()
+        .mockResolvedValue(expectedInfo);
+
       operatorsRoom.getRealtimeDashboardGroupName = jest.fn(
         () => realtimeDashboardGroupName
       );
@@ -1274,27 +1272,83 @@ describe('OperatorsRoom: ', () => {
 
       await operatorsRoom.emitOperatorsStatusesChanged(operator);
 
-      expect(operatorsRoom.getGroupInfo).toHaveBeenCalledTimes(2);
-      expect(operatorsRoom.getGroupInfo).toHaveBeenCalledWith(
-        activeOperatorsGroupName
-      );
-      expect(operatorsRoom.getGroupInfo).toHaveBeenCalledWith(
-        inactiveOperatorsGroupName
-      );
       expect(operatorsRoom.emitToLocalGroup).toHaveBeenCalledWith(
         realtimeDashboardGroupName,
         REALTIME_DASHBOARD_OPERATORS_STATUSES_CHANGED,
-        data
-      );
-      expect(operatorsRoom.getActiveOperatorsGroupName).toHaveBeenCalledWith(
-        tenantId
-      );
-      expect(operatorsRoom.getInactiveOperatorsGroupName).toHaveBeenCalledWith(
-        tenantId
+        expectedInfo
       );
       expect(operatorsRoom.getRealtimeDashboardGroupName).toHaveBeenCalledWith(
         tenantId
       );
+    });
+    it('should do nothing if group is empty', async () => {
+      operatorsRoom.getGroupMembersCount = jest.fn();
+
+      operatorsRoom.isLocalGroupNonEmpty = jest.fn(() => false);
+      operatorsRoom.getActiveOperatorsGroupName = jest.fn();
+      operatorsRoom.getInactiveOperatorsGroupName = jest.fn();
+      operatorsRoom.emitToLocalGroup = jest.fn();
+      operatorsRoom.getRealtimeDashboardGroupName = jest.fn(
+        () => realtimeDashboardGroupName
+      );
+
+      await operatorsRoom.emitOperatorsStatusesChanged(operator);
+
+      expect(operatorsRoom.getRealtimeDashboardGroupName).toHaveBeenCalledWith(
+        tenantId
+      );
+      expect(operatorsRoom.isLocalGroupNonEmpty).toHaveBeenCalledWith(
+        realtimeDashboardGroupName
+      );
+      expect(operatorsRoom.getGroupMembersCount).not.toHaveBeenCalled();
+      expect(operatorsRoom.emitToLocalGroup).not.toHaveBeenCalled();
+      expect(operatorsRoom.getActiveOperatorsGroupName).not.toHaveBeenCalled();
+      expect(
+        operatorsRoom.getInactiveOperatorsGroupName
+      ).not.toHaveBeenCalled();
+    });
+  });
+  describe('emitOperatorsStatusesChangedDirectly():', () => {
+    it('should emit operators statuses changed info directly to operator', async () => {
+      operatorsRoom.operators = {
+        connected: {
+          [socketId]: operator,
+        },
+      };
+
+      const expectedInfo = {
+        activeOperators: { count: 1 },
+        inactiveOperators: { count: 1 },
+      };
+
+      operatorsRoom.prepareOperatorStatusesInfo = jest
+        .fn()
+        .mockResolvedValue(expectedInfo);
+
+      await operatorsRoom.emitOperatorsStatusesChangedDirectly(operator);
+
+      expect(operatorsRoom.prepareOperatorStatusesInfo).toHaveBeenCalledWith(
+        tenantId
+      );
+      expect(operator.emit).toHaveBeenCalledWith(
+        REALTIME_DASHBOARD_OPERATORS_STATUSES_CHANGED,
+        expectedInfo
+      );
+    });
+    it('should not do anything if there is no operator passed', async () => {
+      operatorsRoom.operators = {
+        connected: {
+          [socketId]: operator,
+        },
+      };
+
+      operatorsRoom.prepareOperatorStatusesInfo = jest.fn();
+      operatorsRoom.getGroupMembersCount = jest.fn();
+
+      await operatorsRoom.emitOperatorsStatusesChangedDirectly();
+      expect(operatorsRoom.getGroupMembersCount).not.toHaveBeenCalled();
+      expect(operatorsRoom.prepareOperatorStatusesInfo).not.toHaveBeenCalled();
+      expect(operator.emit).not.toHaveBeenCalled();
     });
   });
   describe('emitRealtimeDashboardActiveCallsInfoDirectly(): ', () => {
