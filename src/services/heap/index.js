@@ -1,6 +1,6 @@
 /* eslint-disable no-use-before-define */
 
-const { ITEM_ADDED, ITEM_TAKEN, HEAP_CHANGED } = require('./constants');
+const { ITEM_ADDED, ITEM_TAKEN } = require('./constants');
 const { createConnector } = require('./connector');
 const errors = require('./errors');
 const pubSub = require('@/services/pubSubChannel');
@@ -13,7 +13,6 @@ class Heap {
     this.events = {
       ITEM_ADDED: reduceToKey(name, ITEM_ADDED),
       ITEM_TAKEN: reduceToKey(name, ITEM_TAKEN),
-      HEAP_CHANGED: reduceToKey(name, HEAP_CHANGED),
     };
   }
 
@@ -63,13 +62,6 @@ class Heap {
     return this.connector.destroy();
   }
 
-  getHeapInfo() {
-    return Promise.all([this.getSize()]).then(([items, size]) => ({
-      items,
-      size,
-    }));
-  }
-
   subscribeToItemAdding(listener) {
     return pubSub.subscribe(this.events.ITEM_ADDED, listener);
   }
@@ -78,28 +70,12 @@ class Heap {
     return pubSub.subscribe(this.events.ITEM_TAKEN, listener);
   }
 
-  subscribeToHeapChanged(listener) {
-    return pubSub.subscribe(this.events.HEAP_CHANGED, listener);
-  }
-
-  unsubscribeFromHeapChanged(listener) {
-    return pubSub.unsubscribe(this.events.HEAP_CHANGED, listener);
-  }
-
   unsubscribeFromItemAdding(listener) {
     return pubSub.unsubscribe(this.events.ITEM_ADDED, listener);
   }
 
   unsubscribeFromItemTaking(listener) {
     return pubSub.unsubscribe(this.events.ITEM_TAKEN, listener);
-  }
-
-  publishItemDequeueing(item) {
-    return pubSub.publish(this.events.ITEM_DEQUEUED, item);
-  }
-
-  publishItemRemoving(item) {
-    return pubSub.publish(this.events.ITEM_REMOVED, item);
   }
 }
 

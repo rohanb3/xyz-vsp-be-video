@@ -427,9 +427,6 @@ class OperatorsRoom {
 
         this.emitOperatorsStatusesChanged(connectedOperator);
 
-        // this.joinGroup(connectedOperator, groupName);
-        logger.debug('Operator: joined group', id, activeGroupName);
-
         const info = await calls.getCallsInfo(tenantId);
         connectedOperator.emit(CALLS_CHANGED, {
           ...info,
@@ -455,8 +452,6 @@ class OperatorsRoom {
       logger.debug('Operator: add to group', id, inactiveGroupName);
       connectedOperator.leave(activeGroupName);
       logger.debug('Operator: remove from group', id, activeGroupName);
-      // this.leaveGroup(connectedOperator, groupName);
-
       this.emitOperatorsStatusesChanged(connectedOperator);
     }
   }
@@ -757,53 +752,70 @@ class OperatorsRoom {
     }
   }
 
-  async emitOperatorsStatusesChanged({ tenantId } = {}) {
-    const realtimeDashboardGroup = this.getRealtimeDashboardGroupName(tenantId);
-    if (this.isLocalGroupNonEmpty) {
-      const data = await this.prepareOperatorStatusesInfo(tenantId);
+  async emitOperatorsStatusesChanged({ realtimeDashboardTenantId }) {
+    const groupName = this.getRealtimeDashboardGroupName(
+      realtimeDashboardTenantId
+    );
+    if (this.isLocalGroupNonEmpty(groupName)) {
+      const data = await this.prepareOperatorStatusesInfo(
+        realtimeDashboardTenantId
+      );
 
       this.emitToLocalGroup(
-        realtimeDashboardGroup,
+        groupName,
         REALTIME_DASHBOARD_OPERATORS_STATUSES_CHANGED,
         data
       );
 
       logger.debug(
-        `Operators: emitOperatorsActivityChanged to ${realtimeDashboardGroup}`,
+        `Operators: emitOperatorsActivityChanged to ${groupName}`,
         data
       );
     } else {
       const message =
         "Operator: realtime dashboard waiting calls info didn't emited because group is empty";
 
-      logger.debug(message, realtimeDashboardGroup);
+      logger.debug(message, groupName);
     }
   }
 
   async emitOperatorsStatusesChangedDirectly(connectedOperator) {
-    const data = await this.prepareOperatorStatusesInfo(
-      connectedOperator.realtimeDashboardTenantId
-    );
+    if (connectedOperator) {
+      const data = await this.prepareOperatorStatusesInfo(
+        connectedOperator.realtimeDashboardTenantId
+      );
 
-    connectedOperator.emit(REALTIME_DASHBOARD_OPERATORS_STATUSES_CHANGED, data);
+      connectedOperator.emit(
+        REALTIME_DASHBOARD_OPERATORS_STATUSES_CHANGED,
+        data
+      );
 
-    logger.debug(
-      `Operators: emitOperatorsActivityChanged to ${connectedOperator.id} directly`,
-      data
-    );
+      logger.debug(
+        `Operators: emitOperatorsActivityChanged to ${connectedOperator.id} directly`,
+        data
+      );
+    } else {
+      logger.error(
+        `Operators: emitOperatorsActivityChanged called without operator`
+      );
+    }
   }
 
   async prepareOperatorStatusesInfo(tenantId) {
-    const activeOperatorsGroup = this.getActiveOperatorsGroupName(tenantId);
-    const inactiveOperatorsGroup = this.getInactiveOperatorsGroupName(tenantId);
+    const activeOperatorsGroupName = this.getActiveOperatorsGroupName(tenantId);
+    const inactiveOperatorsGroupName = this.getInactiveOperatorsGroupName(
+      tenantId
+    );
 
-    const activeOperatorsCount = await this.getGroupInfo(
-      activeOperatorsGroup
-    ).catch(err => this.handleGetGroupInfoError(err, activeOperatorsGroup));
+    const activeOperatorsCount = await this.getGroupMembersCount(
+      activeOperatorsGroupName
+    ).catch(err => this.handleGetGroupInfoError(err, activeOperatorsGroupName));
 
-    const inactiveOperatorsCount = await this.getGroupInfo(
-      inactiveOperatorsGroup
-    ).catch(err => this.handleGetGroupInfoError(err, inactiveOperatorsCount));
+    const inactiveOperatorsCount = await this.getGroupMembersCount(
+      inactiveOperatorsGroupName
+    ).catch(err =>
+      this.handleGetGroupInfoError(err, inactiveOperatorsGroupName)
+    );
 
     const data = {
       activeOperators: {
@@ -851,7 +863,7 @@ class OperatorsRoom {
     return members;
   }
 
-  getGroupInfo(groupName) {
+  getGroupMembersCount(groupName) {
     return new Promise((resolve, reject) =>
       this.operators
         .to(groupName)
