@@ -11,3 +11,5 @@ exports.REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED =
 
 exports.REALTIME_DASHBOARD_CALL_FINISHED = 'realtimeDashboards.call.finished';
 exports.REALTIME_DASHBOARD_CALL_ACCEPTED = 'realtimeDashboards.call.accepted';
+exports.REALTIME_DASHBOARD_OPERATORS_STATUSES_CHANGED =
+  'realtimeDashboards.operators.statusesChanged';

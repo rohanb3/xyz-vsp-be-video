@@ -47,6 +47,7 @@ const {
   REALTIME_DASHBOARD_SUBSCRIPTION_ERROR,
   REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED,
   REALTIME_DASHBOARD_WAITING_CALLS_CHANGED,
+  REALTIME_DASHBOARD_OPERATORS_STATUSES_CHANGED,
 } = require('@/constants/realtimeDashboard');
 
 const calls = require('@/services/calls');
@@ -338,6 +339,7 @@ class OperatorsRoom {
     this.removeOperatorFromActive(operator);
     this.checkAndUnmapSocketIdentityFromId(operator);
     logger.debug('Operator disconnected:', operator.identity, reason);
+    this.emitOperatorsStatusesChanged(operator);
   }
 
   checkOperatorAndEmitCallbackAccepting(call) {
@@ -391,7 +393,6 @@ class OperatorsRoom {
       ...data,
       serverTime: timeHelper.formattedTimestamp(),
     });
-
     logger.debug('Operator: calls info emitted to group', groupName);
 
     this.emitRealtimeDashboardWaitingCallsInfo(tenantId);
@@ -415,11 +416,15 @@ class OperatorsRoom {
         )
       ) {
         const tenantId = connectedOperator.tenantId;
-        const groupName = this.getActiveOperatorsGroupName(tenantId);
+        const activeGroupName = this.getActiveOperatorsGroupName(tenantId);
+        const inactiveGroupName = this.getInactiveOperatorsGroupName(tenantId);
 
-        connectedOperator.join(groupName);
-        // this.joinGroup(connectedOperator, groupName);
-        logger.debug('Operator: joined group', id, groupName);
+        connectedOperator.join(activeGroupName);
+        logger.debug('Operator: add to group', id, activeGroupName);
+        connectedOperator.leave(inactiveGroupName);
+        logger.debug('Operator: remove from group', id, inactiveGroupName);
+
+        this.emitOperatorsStatusesChanged(connectedOperator);
 
         const info = await calls.getCallsInfo(tenantId);
         connectedOperator.emit(CALLS_CHANGED, {
@@ -439,11 +444,14 @@ class OperatorsRoom {
     const connectedOperator = this.getConnectedOperator(id);
     if (connectedOperator) {
       const tenantId = connectedOperator.tenantId;
-      const groupName = this.getActiveOperatorsGroupName(tenantId);
+      const activeGroupName = this.getActiveOperatorsGroupName(tenantId);
+      const inactiveGroupName = this.getInactiveOperatorsGroupName(tenantId);
 
-      connectedOperator.leave(groupName);
-
-      logger.debug('Operator: remove from group', id, groupName);
+      connectedOperator.join(inactiveGroupName);
+      logger.debug('Operator: add to group', id, inactiveGroupName);
+      connectedOperator.leave(activeGroupName);
+      logger.debug('Operator: remove from group', id, activeGroupName);
+      this.emitOperatorsStatusesChanged(connectedOperator);
     }
   }
 
@@ -473,10 +481,8 @@ class OperatorsRoom {
           groupName
         );
 
-        this.emitRealtimeDashboardWaitingCallsInfo(tenantId, connectedOperator);
-
-        this.emitRealtimeDashboardActiveCallsInfo({ tenantId });
-
+        this.emitOperatorsStatusesChangedDirectly(connectedOperator);
+        this.emitRealtimeDashboardActiveCallsInfoDirectly(connectedOperator);
         this.emitRealtimeDashboardWaitingCallsInfoDirectly(connectedOperator);
       } else {
         connectedOperator.emit(REALTIME_DASHBOARD_SUBSCRIPTION_ERROR);
@@ -612,6 +618,10 @@ class OperatorsRoom {
     return `tenant.${tenantId}.activeOperators`;
   }
 
+  getInactiveOperatorsGroupName(tenantId) {
+    return `tenant.${tenantId}.inactiveOperators`;
+  }
+
   async verifyToken(connection) {
     const tokenStatus = await socketAuth.verifyConnectionToken(connection);
     if (!tokenStatus) {
@@ -638,7 +648,7 @@ class OperatorsRoom {
         operation: operationName,
       });
 
-      logger.error('Operator: operation is fobridden', id, operationName);
+      logger.error('Operator: operation is forbidden', id, operationName);
     }
   }
 
@@ -646,11 +656,8 @@ class OperatorsRoom {
     const groupName = this.getRealtimeDashboardGroupName(call.tenantId);
 
     this.emitToLocalGroup(groupName, REALTIME_DASHBOARD_CALL_FINISHED, call);
-
-    logger.debug(
-      `${REALTIME_DASHBOARD_CALL_FINISHED} emitted to tenant group ${call.tenantId} with call:`,
-      call
-    );
+    const message = `Operator: ${REALTIME_DASHBOARD_CALL_FINISHED} emitted to tenant group ${call.tenantId} with call:`;
+    logger.debug(message, call);
   }
 
   emitRealtimeDashboardCallAccepted(call) {
@@ -662,52 +669,128 @@ class OperatorsRoom {
     logger.debug(message, call);
   }
 
+  async emitRealtimeDashboardActiveCallsInfoDirectly({ id }) {
+    const connectedOperator = this.getConnectedOperator(id);
+    if (connectedOperator) {
+      const items = await calls.getActiveCallsByTenantId(
+        connectedOperator.tenantId
+      );
+
+      connectedOperator.emit(REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED, {
+        count: items.length,
+        items,
+        serverTime: timeHelper.formattedTimestamp(),
+      });
+
+      logger.debug(
+        'Operator: realtime dashboard active calls info emited directly',
+        id
+      );
+    }
+  }
+
   async emitRealtimeDashboardActiveCallsInfo(changedCall) {
     const groupName = this.getRealtimeDashboardGroupName(changedCall.tenantId);
 
     try {
       if (this.isLocalGroupNonEmpty(groupName)) {
-        const tenantCalls = await calls.getActiveCallsByTenantId(
+        const items = await calls.getActiveCallsByTenantId(
           changedCall.tenantId
         );
         this.emitToLocalGroup(
           groupName,
           REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED,
-          tenantCalls
+          {
+            count: items.length,
+            items,
+            serverTime: timeHelper.formattedTimestamp(),
+          }
         );
         const message = `${REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED} emitted to ${groupName} with calls:`;
-        logger.debug(message, tenantCalls);
+        logger.debug(message, items);
       } else {
         const message = `${REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED} didn't emitted to ${groupName} because group is empty`;
         logger.debug(message, groupName);
       }
-    } catch {
-      logger.debug(
-        "Operator: realtime dashboard waiting calls info didn't emited because group is empty",
-        groupName
+    } catch (error) {
+      logger.error(
+        'Operator: realtime dashboard active calls error',
+        groupName,
+        error
       );
     }
   }
 
-  isEmptyGroup(groupName) {
-    const group = this.operators.to(groupName);
+  async emitOperatorsStatusesChanged({ tenantId }) {
+    const groupName = this.getRealtimeDashboardGroupName(tenantId);
+    if (this.isLocalGroupNonEmpty(groupName)) {
+      const data = await this.prepareOperatorStatusesInfo(tenantId);
 
-    return !!Object.keys(group.connected).length;
+      this.emitToLocalGroup(
+        groupName,
+        REALTIME_DASHBOARD_OPERATORS_STATUSES_CHANGED,
+        data
+      );
+
+      logger.debug(
+        `Operators: emitOperatorsActivityChanged to ${groupName}`,
+        data
+      );
+    } else {
+      const message =
+        "Operator: realtime dashboard waiting calls info didn't emited because group is empty";
+
+      logger.debug(message, groupName);
+    }
   }
 
-  getLocalGroupMembers(groupName) {
-    const members = Object.values(
-      this.operators.connected || {}
-    ).filter(connection => Object.keys(connection.rooms).includes(groupName));
+  async emitOperatorsStatusesChangedDirectly(connectedOperator) {
+    if (connectedOperator) {
+      const data = await this.prepareOperatorStatusesInfo(
+        connectedOperator.tenantId
+      );
 
-    logger.debug(
-      'Operator: getLocalGroupMembers',
-      groupName,
-      'members:',
-      members.length
+      connectedOperator.emit(
+        REALTIME_DASHBOARD_OPERATORS_STATUSES_CHANGED,
+        data
+      );
+
+      logger.debug(
+        `Operators: emitOperatorsActivityChanged to ${connectedOperator.id} directly`,
+        data
+      );
+    } else {
+      logger.error(
+        `Operators: emitOperatorsActivityChanged called without operator`
+      );
+    }
+  }
+
+  async prepareOperatorStatusesInfo(tenantId) {
+    const activeOperatorsGroupName = this.getActiveOperatorsGroupName(tenantId);
+    const inactiveOperatorsGroupName = this.getInactiveOperatorsGroupName(
+      tenantId
     );
 
-    return members;
+    const activeOperatorsCount = await this.getGroupMembersCount(
+      activeOperatorsGroupName
+    ).catch(err => this.handleGetGroupInfoError(err, activeOperatorsGroupName));
+
+    const inactiveOperatorsCount = await this.getGroupMembersCount(
+      inactiveOperatorsGroupName
+    ).catch(err =>
+      this.handleGetGroupInfoError(err, inactiveOperatorsGroupName)
+    );
+
+    const data = {
+      activeOperators: {
+        count: activeOperatorsCount,
+      },
+      inactiveOperators: {
+        count: inactiveOperatorsCount,
+      },
+    };
+    return data;
   }
 
   isLocalGroupNonEmpty(groupName) {
@@ -728,6 +811,37 @@ class OperatorsRoom {
       message,
       data
     );
+  }
+
+  getLocalGroupMembers(groupName) {
+    const members = Object.values(
+      this.operators.connected || {}
+    ).filter(connection => Object.keys(connection.rooms).includes(groupName));
+
+    logger.debug(
+      'Operator: getLocalGroupMembers',
+      groupName,
+      'members:',
+      members.length
+    );
+
+    return members;
+  }
+
+  getGroupMembersCount(groupName) {
+    return new Promise((resolve, reject) =>
+      this.operators
+        .to(groupName)
+        .clients((err, data) => (err ? reject(err) : resolve(data.length)))
+    );
+  }
+
+  handleGetGroupInfoError(err, group) {
+    logger.error(
+      `Operators: emitOperatorsActivityChanged failed for ${group}`,
+      err
+    );
+    return 0;
   }
 }
 

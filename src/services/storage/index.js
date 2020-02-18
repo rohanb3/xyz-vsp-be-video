@@ -19,8 +19,8 @@ function get(key) {
 }
 
 function getMultiple(keys) {
-  if (!Array.isArray(keys)) {
-    return Promise.resolve(null);
+  if (!Array.isArray(keys) || keys.length < 1) {
+    return Promise.resolve([]);
   }
 
   return client.mget(keys).then(items => items.map(deserialize));
