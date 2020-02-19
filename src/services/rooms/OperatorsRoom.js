@@ -25,6 +25,7 @@ const {
 const {
   CALL_ANSWER_PERMISSION,
   REALTIME_DASHBOARD_SUBSCRIPTION_PERMISSION,
+  REALTIME_DASHBOARD_CHOOSE_TENANT_PERMISSION,
 } = require('@/constants/permissions');
 
 const {
@@ -455,7 +456,7 @@ class OperatorsRoom {
     }
   }
 
-  async subscribeToRealtimeDashboardUpdates({ id }) {
+  async subscribeToRealtimeDashboardUpdates({ id }, payload) {
     logger.debug('Operator: subscribe to realtime dashboard', id);
 
     const connectedOperator = this.getConnectedOperator(id);
@@ -472,7 +473,35 @@ class OperatorsRoom {
           REALTIME_DASHBOARD_SUBSCRIPTION_PERMISSION
         )
       ) {
-        const groupName = this.getRealtimeDashboardGroupName(tenantId);
+        let tenantForFilter = null;
+
+        if (payload && payload.tenantId) {
+          logger.debug(
+            `Operator: subscribeToRealtimeDashboardUpdates subscription by tenant id ${payload.tenantId} requested by ${id}`
+          );
+          const chooseTenantAllowed = socketAuth.checkConnectionPermission(
+            connectedOperator,
+            REALTIME_DASHBOARD_CHOOSE_TENANT_PERMISSION
+          );
+          logger.debug(
+            `Operator: subscribeToRealtimeDashboardUpdates chooseTenantAllowed is "${chooseTenantAllowed}" for ${id}`
+          );
+          tenantForFilter =
+            payload.tenantId !== tenantId && chooseTenantAllowed
+              ? payload.tenantId
+              : tenantId;
+        } else {
+          tenantForFilter = tenantId;
+        }
+
+        connectedOperator.realtimeDashboardTenantId = tenantForFilter;
+
+        logger.debug(
+          `Operator: subscribeToRealtimeDashboardUpdates tenant is "${tenantForFilter}" for ${id}`
+        );
+
+        const groupName = this.getRealtimeDashboardGroupName(tenantForFilter);
+
         connectedOperator.join(groupName);
         connectedOperator.emit(REALTIME_DASHBOARD_SUBSCRIBED);
         logger.debug(
@@ -496,7 +525,7 @@ class OperatorsRoom {
     if (connectedOperator) {
       logger.debug('Operator: unsubscribe from realtime dashboard', id);
 
-      const tenantId = connectedOperator.tenantId;
+      const tenantId = connectedOperator.realtimeDashboardTenantId;
       const groupName = this.getRealtimeDashboardGroupName(tenantId);
       connectedOperator.leave(groupName);
       logger.debug(
@@ -509,8 +538,10 @@ class OperatorsRoom {
 
   async emitRealtimeDashboardWaitingCallsInfoDirectly({ id }) {
     const connectedOperator = this.getConnectedOperator(id);
-    if (connectedOperator) {
-      const items = await calls.getPendingCalls(connectedOperator.tenantId);
+    if (connectedOperator && connectedOperator.realtimeDashboardTenantId) {
+      const items = await calls.getPendingCalls(
+        connectedOperator.realtimeDashboardTenantId
+      );
 
       connectedOperator.emit(REALTIME_DASHBOARD_WAITING_CALLS_CHANGED, {
         count: items.length,
@@ -521,6 +552,11 @@ class OperatorsRoom {
       logger.debug(
         'Operator: realtime dashboard waiting calls info emited directly',
         id
+      );
+    } else {
+      logger.error(
+        'Operator: emitRealtimeDashboardWaitingCallsInfoDirectly called without required data',
+        { connectedOperator }
       );
     }
   }
@@ -673,7 +709,7 @@ class OperatorsRoom {
     const connectedOperator = this.getConnectedOperator(id);
     if (connectedOperator) {
       const items = await calls.getActiveCallsByTenantId(
-        connectedOperator.tenantId
+        connectedOperator.realtimeDashboardTenantId
       );
 
       connectedOperator.emit(REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED, {
@@ -745,9 +781,9 @@ class OperatorsRoom {
   }
 
   async emitOperatorsStatusesChangedDirectly(connectedOperator) {
-    if (connectedOperator) {
+    if (connectedOperator && connectedOperator.realtimeDashboardTenantId) {
       const data = await this.prepareOperatorStatusesInfo(
-        connectedOperator.tenantId
+        connectedOperator.realtimeDashboardTenantId
       );
 
       connectedOperator.emit(
@@ -761,7 +797,8 @@ class OperatorsRoom {
       );
     } else {
       logger.error(
-        `Operators: emitOperatorsActivityChanged called without operator`
+        `Operators: emitOperatorsActivityChanged called without required data`,
+        { connectedOperator }
       );
     }
   }
