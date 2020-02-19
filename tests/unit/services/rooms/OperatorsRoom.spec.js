@@ -1620,12 +1620,9 @@ describe('OperatorsRoom: ', () => {
       operator.join = jest.fn();
       operator.emit = jest.fn();
 
-      const promise = operatorsRoom.subscribeToRealtimeDashboardUpdates(
-        operator,
-        realtimeDashboardTenantId
-      );
-
-      await expect(promise).resolves.toBe(undefined);
+      await operatorsRoom.subscribeToRealtimeDashboardUpdates(operator, {
+        tenantId: realtimeDashboardTenantId,
+      });
 
       expect(operatorsRoom.getRealtimeDashboardGroupName).toHaveBeenCalledWith(
         realtimeDashboardTenantId
