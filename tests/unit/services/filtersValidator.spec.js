@@ -90,6 +90,34 @@ describe('filtersValidator', () => {
       expect(request.query.tenantId).toBe('testTenantId');
     });
 
+    it("should return user's tenant if no tenantId was specified", async () => {
+      const response = {
+        status: jest.fn(() => ({
+          json: jest.fn(),
+        })),
+      };
+      const request = {
+        query: {},
+        headers: { authorization: 'token' },
+        authInfo: {
+          oid: 'userId',
+          extension_CompanyId: 'companyId',
+          extension_Group: 'role',
+        },
+      };
+      const next = jest.fn();
+      permissionsHelper.isPermissionGranted = jest.fn();
+
+      const middleware = validateTenantFilter('choose.tenant.permission');
+
+      await middleware(request, response, next);
+
+      expect(permissionsHelper.isPermissionGranted).not.toHaveBeenCalled();
+
+      expect(next).toHaveBeenCalled();
+      expect(request.query.tenantId).toBe('testTenantId');
+    });
+
     it('should return 500 response on any unexpected error', async () => {
       const testError = { text: 'test error' };
       const statusResponseFunction = jest.fn();
