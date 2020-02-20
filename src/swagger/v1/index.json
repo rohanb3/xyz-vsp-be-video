@@ -407,15 +407,17 @@
         "total",
         "maxCallDuration",
         "averageCallDuration",
+        "totalCallDuration",
         "maxWaitingDuration",
-        "averageWaitingDuration"
+        "averageWaitingDuration",
+        "totalWaitingDuration"
       ],
       "properties": {
-        "total": { "type": "int" },
-        "maxCallDuration": { "type": "int" },
+        "total": { "type": "number" },
+        "maxCallDuration": { "type": "number" },
         "averageCallDuration": { "type": "number" },
         "totalCallDuration": { "type": "number" },
-        "maxWaitingDuration": { "type": "int" },
+        "maxWaitingDuration": { "type": "number" },
         "averageWaitingDuration": { "type": "number" },
         "totalWaitingDuration": { "type": "number" }
       }

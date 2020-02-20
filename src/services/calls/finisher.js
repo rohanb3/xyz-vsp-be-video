@@ -41,13 +41,14 @@ async function markCallAsFinished(callId, finishedBy) {
   );
 
   const call = await callsDBClient.getById(callId);
+  const finishedAt = time.formattedTimestamp();
   logger.debug('call.finished.got.from.db markCallAsFinished', call);
-  const { finishedAt, acceptedAt } = call || {};
+  const { acceptedAt } = call || {};
 
   const updates = {
     finishedBy,
-    finishedAt: time.formattedTimestamp(),
-    callDuration: time.getDifferenceFromTo(finishedAt, acceptedAt),
+    finishedAt,
+    callDuration: time.getDifferenceFromTo(acceptedAt, finishedAt),
     callStatus: CALL_ANSWERED,
   };
 
