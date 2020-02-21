@@ -1261,8 +1261,6 @@ describe('OperatorsRoom: ', () => {
         },
       };
 
-      operatorsRoom.isLocalGroupNonEmpty = jest.fn(() => true);
-
       operatorsRoom.prepareOperatorStatusesInfo = jest
         .fn()
         .mockResolvedValue(expectedInfo);
@@ -1270,44 +1268,19 @@ describe('OperatorsRoom: ', () => {
       operatorsRoom.getRealtimeDashboardGroupName = jest.fn(
         () => realtimeDashboardGroupName
       );
-      operatorsRoom.emitToLocalGroup = jest.fn();
 
       await operatorsRoom.emitOperatorsStatusesChanged(operator);
 
-      expect(operatorsRoom.emitToLocalGroup).toHaveBeenCalledWith(
-        realtimeDashboardGroupName,
+      expect(mockedNamespace.to).toHaveBeenCalledWith(
+        realtimeDashboardGroupName
+      );
+      expect(mockedNamespace.emit).toHaveBeenCalledWith(
         REALTIME_DASHBOARD_OPERATORS_STATUSES_CHANGED,
         expectedInfo
       );
       expect(operatorsRoom.getRealtimeDashboardGroupName).toHaveBeenCalledWith(
         tenantId
       );
-    });
-    it('should do nothing if group is empty', async () => {
-      operatorsRoom.getGroupMembersCount = jest.fn();
-
-      operatorsRoom.isLocalGroupNonEmpty = jest.fn(() => false);
-      operatorsRoom.getActiveOperatorsGroupName = jest.fn();
-      operatorsRoom.getInactiveOperatorsGroupName = jest.fn();
-      operatorsRoom.emitToLocalGroup = jest.fn();
-      operatorsRoom.getRealtimeDashboardGroupName = jest.fn(
-        () => realtimeDashboardGroupName
-      );
-
-      await operatorsRoom.emitOperatorsStatusesChanged(operator);
-
-      expect(operatorsRoom.getRealtimeDashboardGroupName).toHaveBeenCalledWith(
-        tenantId
-      );
-      expect(operatorsRoom.isLocalGroupNonEmpty).toHaveBeenCalledWith(
-        realtimeDashboardGroupName
-      );
-      expect(operatorsRoom.getGroupMembersCount).not.toHaveBeenCalled();
-      expect(operatorsRoom.emitToLocalGroup).not.toHaveBeenCalled();
-      expect(operatorsRoom.getActiveOperatorsGroupName).not.toHaveBeenCalled();
-      expect(
-        operatorsRoom.getInactiveOperatorsGroupName
-      ).not.toHaveBeenCalled();
     });
   });
   describe('emitOperatorsStatusesChangedDirectly():', () => {
