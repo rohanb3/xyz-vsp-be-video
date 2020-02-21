@@ -473,7 +473,7 @@ class OperatorsRoom {
           REALTIME_DASHBOARD_SUBSCRIPTION_PERMISSION
         )
       ) {
-        let tenantForFilter = null;
+        let tenantForSubscribing = null;
 
         if (payload && payload.tenantId) {
           logger.debug(
@@ -486,24 +486,39 @@ class OperatorsRoom {
           logger.debug(
             `Operator: subscribeToRealtimeDashboardUpdates chooseTenantAllowed is "${chooseTenantAllowed}" for ${id}`
           );
-          tenantForFilter =
+          tenantForSubscribing =
             payload.tenantId !== tenantId && chooseTenantAllowed
               ? payload.tenantId
               : tenantId;
         } else {
-          tenantForFilter = tenantId;
+          tenantForSubscribing = tenantId;
         }
 
-        connectedOperator.realtimeDashboardTenantId = tenantForFilter;
-
         logger.debug(
-          `Operator: subscribeToRealtimeDashboardUpdates tenant is "${tenantForFilter}" for ${id}`
+          `Operator: subscribeToRealtimeDashboardUpdates tenant is "${tenantForSubscribing}" for ${id}`
         );
 
-        const groupName = this.getRealtimeDashboardGroupName(tenantForFilter);
+        if (connectedOperator.realtimeDashboardTenantId) {
+          const groupNameForLeave = this.getRealtimeDashboardGroupName(
+            connectedOperator.realtimeDashboardTenantId
+          );
+          connectedOperator.leave(groupNameForLeave);
+          logger.debug(
+            `Operator: subscribeToRealtimeDashboardUpdates leave group "${groupNameForLeave}" for ${id}`
+          );
+        }
+
+        connectedOperator.realtimeDashboardTenantId = tenantForSubscribing;
+
+        const groupName = this.getRealtimeDashboardGroupName(
+          tenantForSubscribing
+        );
 
         connectedOperator.join(groupName);
-        connectedOperator.emit(REALTIME_DASHBOARD_SUBSCRIBED);
+        connectedOperator.emit(REALTIME_DASHBOARD_SUBSCRIBED, {
+          tenantId: tenantForSubscribing,
+        });
+
         logger.debug(
           'Operator: subscribed to realtime dashboard',
           id,
@@ -759,25 +774,17 @@ class OperatorsRoom {
 
   async emitOperatorsStatusesChanged({ tenantId }) {
     const groupName = this.getRealtimeDashboardGroupName(tenantId);
-    if (this.isLocalGroupNonEmpty(groupName)) {
-      const data = await this.prepareOperatorStatusesInfo(tenantId);
 
-      this.emitToLocalGroup(
-        groupName,
-        REALTIME_DASHBOARD_OPERATORS_STATUSES_CHANGED,
-        data
-      );
+    const data = await this.prepareOperatorStatusesInfo(tenantId);
 
-      logger.debug(
-        `Operators: emitOperatorsActivityChanged to ${groupName}`,
-        data
-      );
-    } else {
-      const message =
-        "Operator: realtime dashboard waiting calls info didn't emited because group is empty";
+    this.operators
+      .to(groupName)
+      .emit(REALTIME_DASHBOARD_OPERATORS_STATUSES_CHANGED, data);
 
-      logger.debug(message, groupName);
-    }
+    logger.debug(
+      `Operators: emitOperatorsActivityChanged to ${groupName}`,
+      data
+    );
   }
 
   async emitOperatorsStatusesChangedDirectly(connectedOperator) {
@@ -834,6 +841,12 @@ class OperatorsRoom {
     return !!this.getLocalGroupMembers(groupName).length;
   }
 
+  /*
+    emitToLocalGroup is used for emitting event 
+    only for connections, connected to current
+    instance of service. To emit event to all connections
+    via RedisAdapter, use common this.operators.to(group).emit(type,data)
+  */
   emitToLocalGroup(groupName, message, data) {
     const members = this.getLocalGroupMembers(groupName);
     members.forEach(connection => {
