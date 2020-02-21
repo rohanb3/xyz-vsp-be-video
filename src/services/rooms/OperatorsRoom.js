@@ -473,7 +473,7 @@ class OperatorsRoom {
           REALTIME_DASHBOARD_SUBSCRIPTION_PERMISSION
         )
       ) {
-        let tenantForFilter = null;
+        let tenantForSubscribing = null;
 
         if (payload && payload.tenantId) {
           logger.debug(
@@ -486,24 +486,39 @@ class OperatorsRoom {
           logger.debug(
             `Operator: subscribeToRealtimeDashboardUpdates chooseTenantAllowed is "${chooseTenantAllowed}" for ${id}`
           );
-          tenantForFilter =
+          tenantForSubscribing =
             payload.tenantId !== tenantId && chooseTenantAllowed
               ? payload.tenantId
               : tenantId;
         } else {
-          tenantForFilter = tenantId;
+          tenantForSubscribing = tenantId;
         }
 
-        connectedOperator.realtimeDashboardTenantId = tenantForFilter;
-
         logger.debug(
-          `Operator: subscribeToRealtimeDashboardUpdates tenant is "${tenantForFilter}" for ${id}`
+          `Operator: subscribeToRealtimeDashboardUpdates tenant is "${tenantForSubscribing}" for ${id}`
         );
 
-        const groupName = this.getRealtimeDashboardGroupName(tenantForFilter);
+        if (connectedOperator.realtimeDashboardTenantId) {
+          const groupNameForLeave = this.getRealtimeDashboardGroupName(
+            connectedOperator.realtimeDashboardTenantId
+          );
+          connectedOperator.leave(groupNameForLeave);
+          logger.debug(
+            `Operator: subscribeToRealtimeDashboardUpdates leave group "${groupNameForLeave}" for ${id}`
+          );
+        }
+
+        connectedOperator.realtimeDashboardTenantId = tenantForSubscribing;
+
+        const groupName = this.getRealtimeDashboardGroupName(
+          tenantForSubscribing
+        );
 
         connectedOperator.join(groupName);
-        connectedOperator.emit(REALTIME_DASHBOARD_SUBSCRIBED);
+        connectedOperator.emit(REALTIME_DASHBOARD_SUBSCRIBED, {
+          tenantId: tenantForSubscribing,
+        });
+
         logger.debug(
           'Operator: subscribed to realtime dashboard',
           id,
