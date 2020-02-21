@@ -1582,14 +1582,12 @@ describe('OperatorsRoom: ', () => {
       const groupName = `tenant.${realtimeDashboardTenantId}.realtimeDashboard`;
       const groupNameToLeave = `tenant.${tenantId}.realtimeDashboard`;
 
-      operatorsRoom.getConnectedOperator;
       operatorsRoom.verifyToken = jest.fn().mockResolvedValue(true);
       operatorsRoom.emitOperatorsStatusesChangedDirectly = jest.fn();
       operatorsRoom.emitRealtimeDashboardActiveCallsInfoDirectly = jest.fn();
       operatorsRoom.emitRealtimeDashboardWaitingCallsInfoDirectly = jest.fn();
-      operatorsRoom.getRealtimeDashboardGroupName = jest.fn(
-        groupName => `tenant.${groupName}.realtimeDashboard`
-      );
+      jest.spyOn(operatorsRoom, 'getRealtimeDashboardGroupName');
+
       socketAuth.checkConnectionPermission = jest.fn(() => true);
       operator.join = jest.fn();
       operator.emit = jest.fn();
