@@ -43,14 +43,21 @@ function connectToSocket() {
   const connectDelay = userNumber * connectionDelay;
   setTimeout(() => {
     startConnectingAt = getNowSeconds();
-    socket = window.io(socketUrl, socketOptions);
+    socket = window.io(socketUrl, {
+      ...socketOptions,
+      query: `identity=${identity}`,
+    });
 
     socket.once(SOCKET_EVENTS.CONNECT, () => {
       const now = getNowSeconds();
       connectedAt = now;
       startAuthorizingAt = now;
 
-      socket.emit(SOCKET_EVENTS.AUTHENTICATION, { identity, deviceId, token: 'mocked-device-user-token' });
+      socket.emit(SOCKET_EVENTS.AUTHENTICATION, {
+        identity,
+        deviceId,
+        token: 'mocked-device-user-token',
+      });
       socket.once(SOCKET_EVENTS.AUTHENTICATED, onAuthenticated);
       socket.once(SOCKET_EVENTS.UNAUTHORIZED, onUnauthorized);
 
