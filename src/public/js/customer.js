@@ -234,7 +234,7 @@ var HandshakeProtocol = /** @class */ (function () {
 exports.HandshakeProtocol = HandshakeProtocol;
 
 }).call(this,require("buffer").Buffer)
-},{"./TextMessageFormat":17,"./Utils":18,"buffer":82}],5:[function(require,module,exports){
+},{"./TextMessageFormat":17,"./Utils":18,"buffer":48}],5:[function(require,module,exports){
 "use strict";
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
@@ -1925,7 +1925,7 @@ var NodeHttpClient = /** @class */ (function (_super) {
 exports.NodeHttpClient = NodeHttpClient;
 
 }).call(this,require("buffer").Buffer)
-},{"./Errors":3,"./HttpClient":5,"./ILogger":10,"./Utils":18,"buffer":82}],16:[function(require,module,exports){
+},{"./Errors":3,"./HttpClient":5,"./ILogger":10,"./Utils":18,"buffer":48}],16:[function(require,module,exports){
 "use strict";
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
@@ -2617,11574 +2617,6 @@ var JsonHubProtocol_1 = require("./JsonHubProtocol");
 exports.JsonHubProtocol = JsonHubProtocol_1.JsonHubProtocol;
 
 },{"./DefaultHttpClient":2,"./Errors":3,"./HttpClient":5,"./HubConnection":7,"./HubConnectionBuilder":8,"./IHubProtocol":9,"./ILogger":10,"./ITransport":11,"./JsonHubProtocol":12,"./Loggers":13}],22:[function(require,module,exports){
-module.exports={
-  "_args": [
-    [
-      "@twilio/sip.js@0.7.7",
-      "/var/www/xyzies/xys-vsp-be-video"
-    ]
-  ],
-  "_from": "@twilio/sip.js@0.7.7",
-  "_id": "@twilio/sip.js@0.7.7",
-  "_inBundle": false,
-  "_integrity": "sha1-z/UPZvmyldRvIZc3tyeAx9Dm31I=",
-  "_location": "/@twilio/sip.js",
-  "_phantomChildren": {},
-  "_requested": {
-    "type": "version",
-    "registry": true,
-    "raw": "@twilio/sip.js@0.7.7",
-    "name": "@twilio/sip.js",
-    "escapedName": "@twilio%2fsip.js",
-    "scope": "@twilio",
-    "rawSpec": "0.7.7",
-    "saveSpec": null,
-    "fetchSpec": "0.7.7"
-  },
-  "_requiredBy": [
-    "/twilio-video"
-  ],
-  "_resolved": "https://registry.npmjs.org/@twilio/sip.js/-/sip.js-0.7.7.tgz",
-  "_spec": "0.7.7",
-  "_where": "/var/www/xyzies/xys-vsp-be-video",
-  "author": {
-    "name": "OnSIP",
-    "email": "developer@onsip.com",
-    "url": "http://sipjs.com/authors/"
-  },
-  "browser": {
-    "./src/environment.js": "./src/environment_browser.js"
-  },
-  "bugs": {
-    "url": "https://github.com/onsip/SIP.js/issues"
-  },
-  "contributors": [
-    {
-      "url": "https://github.com/onsip/SIP.js/blob/master/THANKS.md"
-    }
-  ],
-  "description": "A simple, intuitive, and powerful JavaScript signaling library",
-  "devDependencies": {
-    "beefy": "^2.1.5",
-    "browserify": "^4.1.8",
-    "grunt": "~0.4.0",
-    "grunt-browserify": "^4.0.1",
-    "grunt-cli": "~0.1.6",
-    "grunt-contrib-copy": "^0.5.0",
-    "grunt-contrib-jasmine": "^1.0.3",
-    "grunt-contrib-jshint": ">0.5.0",
-    "grunt-contrib-uglify": "~0.2.0",
-    "grunt-peg": "~1.3.1",
-    "grunt-trimtrailingspaces": "^0.4.0",
-    "pegjs": "^0.8.0",
-    "release-tool": "^0.2.2"
-  },
-  "engines": {
-    "node": ">=0.12"
-  },
-  "homepage": "http://sipjs.com",
-  "keywords": [
-    "sip",
-    "websocket",
-    "webrtc",
-    "library",
-    "javascript"
-  ],
-  "license": "MIT",
-  "main": "src/index.js",
-  "name": "@twilio/sip.js",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/onsip/SIP.js.git"
-  },
-  "scripts": {
-    "build": "grunt build",
-    "repl": "beefy test/repl.js --open",
-    "test": "grunt travis --verbose"
-  },
-  "title": "SIP.js",
-  "version": "0.7.7"
-}
-
-},{}],23:[function(require,module,exports){
-"use strict";
-module.exports = function (SIP) {
-var ClientContext;
-
-ClientContext = function (ua, method, target, options) {
-  var originalTarget = target;
-
-  // Validate arguments
-  if (target === undefined) {
-    throw new TypeError('Not enough arguments');
-  }
-
-  this.ua = ua;
-  this.logger = ua.getLogger('sip.clientcontext');
-  this.method = method;
-  target = ua.normalizeTarget(target);
-  if (!target) {
-    throw new TypeError('Invalid target: ' + originalTarget);
-  }
-
-  /* Options
-   * - extraHeaders
-   * - params
-   * - contentType
-   * - body
-   */
-  options = Object.create(options || Object.prototype);
-  options.extraHeaders = (options.extraHeaders || []).slice();
-
-  // Build the request
-  this.request = new SIP.OutgoingRequest(this.method,
-                                         target,
-                                         this.ua,
-                                         options.params,
-                                         options.extraHeaders);
-  if (options.body) {
-    this.body = {};
-    this.body.body = options.body;
-    if (options.contentType) {
-      this.body.contentType = options.contentType;
-    }
-    this.request.body = this.body;
-  }
-
-  /* Set other properties from the request */
-  this.localIdentity = this.request.from;
-  this.remoteIdentity = this.request.to;
-
-  this.data = {};
-};
-ClientContext.prototype = Object.create(SIP.EventEmitter.prototype);
-
-ClientContext.prototype.send = function () {
-  (new SIP.RequestSender(this, this.ua)).send();
-  return this;
-};
-
-ClientContext.prototype.cancel = function (options) {
-  options = options || {};
-
-  options.extraHeaders = (options.extraHeaders || []).slice();
-
-  var cancel_reason = SIP.Utils.getCancelReason(options.status_code, options.reason_phrase);
-  this.request.cancel(cancel_reason, options.extraHeaders);
-
-  this.emit('cancel');
-};
-
-ClientContext.prototype.receiveResponse = function (response) {
-  var cause = SIP.Utils.getReasonPhrase(response.status_code);
-
-  switch(true) {
-    case /^1[0-9]{2}$/.test(response.status_code):
-      this.emit('progress', response, cause);
-      break;
-
-    case /^2[0-9]{2}$/.test(response.status_code):
-      if(this.ua.applicants[this]) {
-        delete this.ua.applicants[this];
-      }
-      this.emit('accepted', response, cause);
-      break;
-
-    default:
-      if(this.ua.applicants[this]) {
-        delete this.ua.applicants[this];
-      }
-      this.emit('rejected', response, cause);
-      this.emit('failed', response, cause);
-      break;
-  }
-
-};
-
-ClientContext.prototype.onRequestTimeout = function () {
-  this.emit('failed', null, SIP.C.causes.REQUEST_TIMEOUT);
-};
-
-ClientContext.prototype.onTransportError = function () {
-  this.emit('failed', null, SIP.C.causes.CONNECTION_ERROR);
-};
-
-SIP.ClientContext = ClientContext;
-};
-
-},{}],24:[function(require,module,exports){
-"use strict";
-/**
- * @fileoverview SIP Constants
- */
-
-/**
- * SIP Constants.
- * @augments SIP
- */
-
-module.exports = function (name, version) {
-return {
-  USER_AGENT: name +'/'+ version,
-
-  // SIP scheme
-  SIP:  'sip',
-  SIPS: 'sips',
-
-  // End and Failure causes
-  causes: {
-    // Generic error causes
-    CONNECTION_ERROR:         'Connection Error',
-    REQUEST_TIMEOUT:          'Request Timeout',
-    SIP_FAILURE_CODE:         'SIP Failure Code',
-    INTERNAL_ERROR:           'Internal Error',
-
-    // SIP error causes
-    BUSY:                     'Busy',
-    REJECTED:                 'Rejected',
-    REDIRECTED:               'Redirected',
-    UNAVAILABLE:              'Unavailable',
-    NOT_FOUND:                'Not Found',
-    ADDRESS_INCOMPLETE:       'Address Incomplete',
-    INCOMPATIBLE_SDP:         'Incompatible SDP',
-    AUTHENTICATION_ERROR:     'Authentication Error',
-    DIALOG_ERROR:             'Dialog Error',
-
-    // Session error causes
-    WEBRTC_NOT_SUPPORTED:     'WebRTC Not Supported',
-    WEBRTC_ERROR:             'WebRTC Error',
-    CANCELED:                 'Canceled',
-    NO_ANSWER:                'No Answer',
-    EXPIRES:                  'Expires',
-    NO_ACK:                   'No ACK',
-    NO_PRACK:                 'No PRACK',
-    USER_DENIED_MEDIA_ACCESS: 'User Denied Media Access',
-    BAD_MEDIA_DESCRIPTION:    'Bad Media Description',
-    RTP_TIMEOUT:              'RTP Timeout'
-  },
-
-  supported: {
-    UNSUPPORTED:        'none',
-    SUPPORTED:          'supported',
-    REQUIRED:           'required'
-  },
-
-  SIP_ERROR_CAUSES: {
-    REDIRECTED: [300,301,302,305,380],
-    BUSY: [486,600],
-    REJECTED: [403,603],
-    NOT_FOUND: [404,604],
-    UNAVAILABLE: [480,410,408,430],
-    ADDRESS_INCOMPLETE: [484],
-    INCOMPATIBLE_SDP: [488,606],
-    AUTHENTICATION_ERROR:[401,407]
-  },
-
-  // SIP Methods
-  ACK:        'ACK',
-  BYE:        'BYE',
-  CANCEL:     'CANCEL',
-  INFO:       'INFO',
-  INVITE:     'INVITE',
-  MESSAGE:    'MESSAGE',
-  NOTIFY:     'NOTIFY',
-  OPTIONS:    'OPTIONS',
-  REGISTER:   'REGISTER',
-  UPDATE:     'UPDATE',
-  SUBSCRIBE:  'SUBSCRIBE',
-  REFER:      'REFER',
-  PRACK:      'PRACK',
-
-  /* SIP Response Reasons
-   * DOC: http://www.iana.org/assignments/sip-parameters
-   * Copied from https://github.com/versatica/OverSIP/blob/master/lib/oversip/sip/constants.rb#L7
-   */
-  REASON_PHRASE: {
-    100: 'Trying',
-    180: 'Ringing',
-    181: 'Call Is Being Forwarded',
-    182: 'Queued',
-    183: 'Session Progress',
-    199: 'Early Dialog Terminated',  // draft-ietf-sipcore-199
-    200: 'OK',
-    202: 'Accepted',  // RFC 3265
-    204: 'No Notification',  //RFC 5839
-    300: 'Multiple Choices',
-    301: 'Moved Permanently',
-    302: 'Moved Temporarily',
-    305: 'Use Proxy',
-    380: 'Alternative Service',
-    400: 'Bad Request',
-    401: 'Unauthorized',
-    402: 'Payment Required',
-    403: 'Forbidden',
-    404: 'Not Found',
-    405: 'Method Not Allowed',
-    406: 'Not Acceptable',
-    407: 'Proxy Authentication Required',
-    408: 'Request Timeout',
-    410: 'Gone',
-    412: 'Conditional Request Failed',  // RFC 3903
-    413: 'Request Entity Too Large',
-    414: 'Request-URI Too Long',
-    415: 'Unsupported Media Type',
-    416: 'Unsupported URI Scheme',
-    417: 'Unknown Resource-Priority',  // RFC 4412
-    420: 'Bad Extension',
-    421: 'Extension Required',
-    422: 'Session Interval Too Small',  // RFC 4028
-    423: 'Interval Too Brief',
-    428: 'Use Identity Header',  // RFC 4474
-    429: 'Provide Referrer Identity',  // RFC 3892
-    430: 'Flow Failed',  // RFC 5626
-    433: 'Anonymity Disallowed',  // RFC 5079
-    436: 'Bad Identity-Info',  // RFC 4474
-    437: 'Unsupported Certificate',  // RFC 4744
-    438: 'Invalid Identity Header',  // RFC 4744
-    439: 'First Hop Lacks Outbound Support',  // RFC 5626
-    440: 'Max-Breadth Exceeded',  // RFC 5393
-    469: 'Bad Info Package',  // draft-ietf-sipcore-info-events
-    470: 'Consent Needed',  // RFC 5360
-    478: 'Unresolvable Destination',  // Custom code copied from Kamailio.
-    480: 'Temporarily Unavailable',
-    481: 'Call/Transaction Does Not Exist',
-    482: 'Loop Detected',
-    483: 'Too Many Hops',
-    484: 'Address Incomplete',
-    485: 'Ambiguous',
-    486: 'Busy Here',
-    487: 'Request Terminated',
-    488: 'Not Acceptable Here',
-    489: 'Bad Event',  // RFC 3265
-    491: 'Request Pending',
-    493: 'Undecipherable',
-    494: 'Security Agreement Required',  // RFC 3329
-    500: 'Internal Server Error',
-    501: 'Not Implemented',
-    502: 'Bad Gateway',
-    503: 'Service Unavailable',
-    504: 'Server Time-out',
-    505: 'Version Not Supported',
-    513: 'Message Too Large',
-    580: 'Precondition Failure',  // RFC 3312
-    600: 'Busy Everywhere',
-    603: 'Decline',
-    604: 'Does Not Exist Anywhere',
-    606: 'Not Acceptable'
-  },
-
-  /* SIP Option Tags
-   * DOC: http://www.iana.org/assignments/sip-parameters/sip-parameters.xhtml#sip-parameters-4
-   */
-  OPTION_TAGS: {
-    '100rel':                   true,  // RFC 3262
-    199:                        true,  // RFC 6228
-    answermode:                 true,  // RFC 5373
-    'early-session':            true,  // RFC 3959
-    eventlist:                  true,  // RFC 4662
-    explicitsub:                true,  // RFC-ietf-sipcore-refer-explicit-subscription-03
-    'from-change':              true,  // RFC 4916
-    'geolocation-http':         true,  // RFC 6442
-    'geolocation-sip':          true,  // RFC 6442
-    gin:                        true,  // RFC 6140
-    gruu:                       true,  // RFC 5627
-    histinfo:                   true,  // RFC 7044
-    ice:                        true,  // RFC 5768
-    join:                       true,  // RFC 3911
-    'multiple-refer':           true,  // RFC 5368
-    norefersub:                 true,  // RFC 4488
-    nosub:                      true,  // RFC-ietf-sipcore-refer-explicit-subscription-03
-    outbound:                   true,  // RFC 5626
-    path:                       true,  // RFC 3327
-    policy:                     true,  // RFC 6794
-    precondition:               true,  // RFC 3312
-    pref:                       true,  // RFC 3840
-    privacy:                    true,  // RFC 3323
-    'recipient-list-invite':    true,  // RFC 5366
-    'recipient-list-message':   true,  // RFC 5365
-    'recipient-list-subscribe': true,  // RFC 5367
-    replaces:                   true,  // RFC 3891
-    'resource-priority':        true,  // RFC 4412
-    'sdp-anat':                 true,  // RFC 4092
-    'sec-agree':                true,  // RFC 3329
-    tdialog:                    true,  // RFC 4538
-    timer:                      true,  // RFC 4028
-    uui:                        true   // RFC 7433
-  }
-};
-};
-
-},{}],25:[function(require,module,exports){
-"use strict";
-
-/**
- * @fileoverview In-Dialog Request Sender
- */
-
-/**
- * @augments SIP.Dialog
- * @class Class creating an In-dialog request sender.
- * @param {SIP.Dialog} dialog
- * @param {Object} applicant
- * @param {SIP.OutgoingRequest} request
- */
-/**
- * @fileoverview in-Dialog Request Sender
- */
-
-module.exports = function (SIP) {
-var RequestSender;
-
-RequestSender = function(dialog, applicant, request) {
-
-  this.dialog = dialog;
-  this.applicant = applicant;
-  this.request = request;
-
-  // RFC3261 14.1 Modifying an Existing Session. UAC Behavior.
-  this.reattempt = false;
-  this.reattemptTimer = null;
-};
-
-RequestSender.prototype = {
-  send: function() {
-    var self = this,
-      request_sender = new SIP.RequestSender(this, this.dialog.owner.ua);
-
-      request_sender.send();
-
-    // RFC3261 14.2 Modifying an Existing Session -UAC BEHAVIOR-
-    if (this.request.method === SIP.C.INVITE && request_sender.clientTransaction.state !== SIP.Transactions.C.STATUS_TERMINATED) {
-      this.dialog.uac_pending_reply = true;
-      request_sender.clientTransaction.on('stateChanged', function stateChanged(){
-        if (this.state === SIP.Transactions.C.STATUS_ACCEPTED ||
-            this.state === SIP.Transactions.C.STATUS_COMPLETED ||
-            this.state === SIP.Transactions.C.STATUS_TERMINATED) {
-
-          this.removeListener('stateChanged', stateChanged);
-          self.dialog.uac_pending_reply = false;
-
-          if (self.dialog.uas_pending_reply === false) {
-            self.dialog.owner.onReadyToReinvite();
-          }
-        }
-      });
-    }
-  },
-
-  onRequestTimeout: function() {
-    this.applicant.onRequestTimeout();
-  },
-
-  onTransportError: function() {
-    this.applicant.onTransportError();
-  },
-
-  receiveResponse: function(response) {
-    var self = this;
-
-    // RFC3261 12.2.1.2 408 or 481 is received for a request within a dialog.
-    if (response.status_code === 408 || response.status_code === 481) {
-      this.applicant.onDialogError(response);
-    } else if (response.method === SIP.C.INVITE && response.status_code === 491) {
-      if (this.reattempt) {
-        this.applicant.receiveResponse(response);
-      } else {
-        this.request.cseq.value = this.dialog.local_seqnum += 1;
-        this.reattemptTimer = SIP.Timers.setTimeout(
-          function() {
-            if (self.applicant.owner.status !== SIP.Session.C.STATUS_TERMINATED) {
-              self.reattempt = true;
-              self.request_sender.send();
-            }
-          },
-          this.getReattemptTimeout()
-        );
-      }
-    } else {
-      this.applicant.receiveResponse(response);
-    }
-  }
-};
-
-return RequestSender;
-};
-
-},{}],26:[function(require,module,exports){
-"use strict";
-/**
- * @fileoverview SIP Dialog
- */
-
-/**
- * @augments SIP
- * @class Class creating a SIP dialog.
- * @param {SIP.RTCSession} owner
- * @param {SIP.IncomingRequest|SIP.IncomingResponse} message
- * @param {Enum} type UAC / UAS
- * @param {Enum} state SIP.Dialog.C.STATUS_EARLY / SIP.Dialog.C.STATUS_CONFIRMED
- */
-module.exports = function (SIP) {
-
-var RequestSender = require('./Dialog/RequestSender')(SIP);
-
-var Dialog,
-  C = {
-    // Dialog states
-    STATUS_EARLY:       1,
-    STATUS_CONFIRMED:   2
-  };
-
-// RFC 3261 12.1
-Dialog = function(owner, message, type, state) {
-  var contact;
-
-  this.uac_pending_reply = false;
-  this.uas_pending_reply = false;
-
-  if(!message.hasHeader('contact')) {
-    return {
-      error: 'unable to create a Dialog without Contact header field'
-    };
-  }
-
-  if(message instanceof SIP.IncomingResponse) {
-    state = (message.status_code < 200) ? C.STATUS_EARLY : C.STATUS_CONFIRMED;
-  } else {
-    // Create confirmed dialog if state is not defined
-    state = state || C.STATUS_CONFIRMED;
-  }
-
-  contact = message.parseHeader('contact');
-
-  // RFC 3261 12.1.1
-  if(type === 'UAS') {
-    this.id = {
-      call_id: message.call_id,
-      local_tag: message.to_tag,
-      remote_tag: message.from_tag,
-      toString: function() {
-        return this.call_id + this.local_tag + this.remote_tag;
-      }
-    };
-    this.state = state;
-    this.remote_seqnum = message.cseq;
-    this.local_uri = message.parseHeader('to').uri;
-    this.remote_uri = message.parseHeader('from').uri;
-    this.remote_target = contact.uri;
-    this.route_set = message.getHeaders('record-route');
-    this.invite_seqnum = message.cseq;
-    this.local_seqnum = message.cseq;
-  }
-  // RFC 3261 12.1.2
-  else if(type === 'UAC') {
-    this.id = {
-      call_id: message.call_id,
-      local_tag: message.from_tag,
-      remote_tag: message.to_tag,
-      toString: function() {
-        return this.call_id + this.local_tag + this.remote_tag;
-      }
-    };
-    this.state = state;
-    this.invite_seqnum = message.cseq;
-    this.local_seqnum = message.cseq;
-    this.local_uri = message.parseHeader('from').uri;
-    this.pracked = [];
-    this.remote_uri = message.parseHeader('to').uri;
-    this.remote_target = contact.uri;
-    this.route_set = message.getHeaders('record-route').reverse();
-
-    //RENDERBODY
-    if (this.state === C.STATUS_EARLY && (!owner.hasOffer)) {
-      this.mediaHandler = owner.mediaHandlerFactory(owner);
-    }
-  }
-
-  this.logger = owner.ua.getLogger('sip.dialog', this.id.toString());
-  this.owner = owner;
-  owner.ua.dialogs[this.id.toString()] = this;
-  this.logger.log('new ' + type + ' dialog created with status ' + (this.state === C.STATUS_EARLY ? 'EARLY': 'CONFIRMED'));
-  owner.emit('dialog', this);
-};
-
-Dialog.prototype = {
-  /**
-   * @param {SIP.IncomingMessage} message
-   * @param {Enum} UAC/UAS
-   */
-  update: function(message, type) {
-    this.state = C.STATUS_CONFIRMED;
-
-    this.logger.log('dialog '+ this.id.toString() +'  changed to CONFIRMED state');
-
-    if(type === 'UAC') {
-      // RFC 3261 13.2.2.4
-      this.route_set = message.getHeaders('record-route').reverse();
-    }
-  },
-
-  terminate: function() {
-    this.logger.log('dialog ' + this.id.toString() + ' deleted');
-    if (this.mediaHandler && this.state !== C.STATUS_CONFIRMED) {
-      this.mediaHandler.peerConnection.close();
-    }
-    delete this.owner.ua.dialogs[this.id.toString()];
-  },
-
-  /**
-  * @param {String} method request method
-  * @param {Object} extraHeaders extra headers
-  * @returns {SIP.OutgoingRequest}
-  */
-
-  // RFC 3261 12.2.1.1
-  createRequest: function(method, extraHeaders, body) {
-    var cseq, request;
-    extraHeaders = (extraHeaders || []).slice();
-
-    if(!this.local_seqnum) { this.local_seqnum = Math.floor(Math.random() * 10000); }
-
-    cseq = (method === SIP.C.CANCEL || method === SIP.C.ACK) ? this.invite_seqnum : this.local_seqnum += 1;
-
-    request = new SIP.OutgoingRequest(
-      method,
-      this.remote_target,
-      this.owner.ua, {
-        'cseq': cseq,
-        'call_id': this.id.call_id,
-        'from_uri': this.local_uri,
-        'from_tag': this.id.local_tag,
-        'to_uri': this.remote_uri,
-        'to_tag': this.id.remote_tag,
-        'route_set': this.route_set
-      }, extraHeaders, body);
-
-    request.dialog = this;
-
-    return request;
-  },
-
-  /**
-  * @param {SIP.IncomingRequest} request
-  * @returns {Boolean}
-  */
-
-  // RFC 3261 12.2.2
-  checkInDialogRequest: function(request) {
-    var self = this;
-
-    if(!this.remote_seqnum) {
-      this.remote_seqnum = request.cseq;
-    } else if(request.cseq < this.remote_seqnum) {
-        //Do not try to reply to an ACK request.
-        if (request.method !== SIP.C.ACK) {
-          request.reply(500);
-        }
-        if (request.cseq === this.invite_seqnum) {
-          return true;
-        }
-        return false;
-    } else if(request.cseq > this.remote_seqnum) {
-      this.remote_seqnum = request.cseq;
-    }
-
-    switch(request.method) {
-      // RFC3261 14.2 Modifying an Existing Session -UAS BEHAVIOR-
-      case SIP.C.INVITE:
-        if (this.uac_pending_reply === true) {
-          request.reply(491);
-        } else if (this.uas_pending_reply === true) {
-          var retryAfter = (Math.random() * 10 | 0) + 1;
-          request.reply(500, null, ['Retry-After:' + retryAfter]);
-          return false;
-        } else {
-          this.uas_pending_reply = true;
-          request.server_transaction.on('stateChanged', function stateChanged(){
-            if (this.state === SIP.Transactions.C.STATUS_ACCEPTED ||
-                this.state === SIP.Transactions.C.STATUS_COMPLETED ||
-                this.state === SIP.Transactions.C.STATUS_TERMINATED) {
-
-              this.removeListener('stateChanged', stateChanged);
-              self.uas_pending_reply = false;
-
-              if (self.uac_pending_reply === false) {
-                self.owner.onReadyToReinvite();
-              }
-            }
-          });
-        }
-
-        // RFC3261 12.2.2 Replace the dialog`s remote target URI if the request is accepted
-        if(request.hasHeader('contact')) {
-          request.server_transaction.on('stateChanged', function(){
-            if (this.state === SIP.Transactions.C.STATUS_ACCEPTED) {
-              self.remote_target = request.parseHeader('contact').uri;
-            }
-          });
-        }
-        break;
-      case SIP.C.NOTIFY:
-        // RFC6665 3.2 Replace the dialog`s remote target URI if the request is accepted
-        if(request.hasHeader('contact')) {
-          request.server_transaction.on('stateChanged', function(){
-            if (this.state === SIP.Transactions.C.STATUS_COMPLETED) {
-              self.remote_target = request.parseHeader('contact').uri;
-            }
-          });
-        }
-        break;
-    }
-
-    return true;
-  },
-
-  sendRequest: function(applicant, method, options) {
-    options = options || {};
-
-    var extraHeaders = (options.extraHeaders || []).slice();
-
-    var body = null;
-    if (options.body) {
-      if (options.body.body) {
-        body = options.body;
-      } else {
-        body = {};
-        body.body = options.body;
-        if (options.contentType) {
-          body.contentType = options.contentType;
-        }
-      }
-    }
-
-    var request = this.createRequest(method, extraHeaders, body),
-      request_sender = new RequestSender(this, applicant, request);
-
-    request_sender.send();
-
-    return request;
-  },
-
-  /**
-  * @param {SIP.IncomingRequest} request
-  */
-  receiveRequest: function(request) {
-    //Check in-dialog request
-    if(!this.checkInDialogRequest(request)) {
-      return;
-    }
-
-    this.owner.receiveRequest(request);
-  }
-};
-
-Dialog.C = C;
-SIP.Dialog = Dialog;
-};
-
-},{"./Dialog/RequestSender":25}],27:[function(require,module,exports){
-"use strict";
-
-/**
- * @fileoverview SIP Digest Authentication
- */
-
-/**
- * SIP Digest Authentication.
- * @augments SIP.
- * @function Digest Authentication
- * @param {SIP.UA} ua
- */
-module.exports = function (Utils) {
-var DigestAuthentication;
-
-DigestAuthentication = function(ua) {
-  this.logger = ua.getLogger('sipjs.digestauthentication');
-  this.username = ua.configuration.authorizationUser;
-  this.password = ua.configuration.password;
-  this.cnonce = null;
-  this.nc = 0;
-  this.ncHex = '00000000';
-  this.response = null;
-};
-
-
-/**
-* Performs Digest authentication given a SIP request and the challenge
-* received in a response to that request.
-* Returns true if credentials were successfully generated, false otherwise.
-*
-* @param {SIP.OutgoingRequest} request
-* @param {Object} challenge
-*/
-DigestAuthentication.prototype.authenticate = function(request, challenge) {
-  // Inspect and validate the challenge.
-
-  this.algorithm = challenge.algorithm;
-  this.realm = challenge.realm;
-  this.nonce = challenge.nonce;
-  this.opaque = challenge.opaque;
-  this.stale = challenge.stale;
-
-  if (this.algorithm) {
-    if (this.algorithm !== 'MD5') {
-      this.logger.warn('challenge with Digest algorithm different than "MD5", authentication aborted');
-      return false;
-    }
-  } else {
-    this.algorithm = 'MD5';
-  }
-
-  if (! this.realm) {
-    this.logger.warn('challenge without Digest realm, authentication aborted');
-    return false;
-  }
-
-  if (! this.nonce) {
-    this.logger.warn('challenge without Digest nonce, authentication aborted');
-    return false;
-  }
-
-  // 'qop' can contain a list of values (Array). Let's choose just one.
-  if (challenge.qop) {
-    if (challenge.qop.indexOf('auth') > -1) {
-      this.qop = 'auth';
-    } else if (challenge.qop.indexOf('auth-int') > -1) {
-      this.qop = 'auth-int';
-    } else {
-      // Otherwise 'qop' is present but does not contain 'auth' or 'auth-int', so abort here.
-      this.logger.warn('challenge without Digest qop different than "auth" or "auth-int", authentication aborted');
-      return false;
-    }
-  } else {
-    this.qop = null;
-  }
-
-  // Fill other attributes.
-
-  this.method = request.method;
-  this.uri = request.ruri;
-  this.cnonce = Utils.createRandomToken(12);
-  this.nc += 1;
-  this.updateNcHex();
-
-  // nc-value = 8LHEX. Max value = 'FFFFFFFF'.
-  if (this.nc === 4294967296) {
-    this.nc = 1;
-    this.ncHex = '00000001';
-  }
-
-  // Calculate the Digest "response" value.
-  this.calculateResponse();
-
-  return true;
-};
-
-
-/**
-* Generate Digest 'response' value.
-* @private
-*/
-DigestAuthentication.prototype.calculateResponse = function() {
-  var ha1, ha2;
-
-  // HA1 = MD5(A1) = MD5(username:realm:password)
-  ha1 = Utils.calculateMD5(this.username + ":" + this.realm + ":" + this.password);
-
-  if (this.qop === 'auth') {
-    // HA2 = MD5(A2) = MD5(method:digestURI)
-    ha2 = Utils.calculateMD5(this.method + ":" + this.uri);
-    // response = MD5(HA1:nonce:nonceCount:credentialsNonce:qop:HA2)
-    this.response = Utils.calculateMD5(ha1 + ":" + this.nonce + ":" + this.ncHex + ":" + this.cnonce + ":auth:" + ha2);
-
-  } else if (this.qop === 'auth-int') {
-    // HA2 = MD5(A2) = MD5(method:digestURI:MD5(entityBody))
-    ha2 = Utils.calculateMD5(this.method + ":" + this.uri + ":" + Utils.calculateMD5(this.body ? this.body : ""));
-    // response = MD5(HA1:nonce:nonceCount:credentialsNonce:qop:HA2)
-    this.response = Utils.calculateMD5(ha1 + ":" + this.nonce + ":" + this.ncHex + ":" + this.cnonce + ":auth-int:" + ha2);
-
-  } else if (this.qop === null) {
-    // HA2 = MD5(A2) = MD5(method:digestURI)
-    ha2 = Utils.calculateMD5(this.method + ":" + this.uri);
-    // response = MD5(HA1:nonce:HA2)
-    this.response = Utils.calculateMD5(ha1 + ":" + this.nonce + ":" + ha2);
-  }
-};
-
-
-/**
-* Return the Proxy-Authorization or WWW-Authorization header value.
-*/
-DigestAuthentication.prototype.toString = function() {
-  var auth_params = [];
-
-  if (! this.response) {
-    throw new Error('response field does not exist, cannot generate Authorization header');
-  }
-
-  auth_params.push('algorithm=' + this.algorithm);
-  auth_params.push('username="' + this.username + '"');
-  auth_params.push('realm="' + this.realm + '"');
-  auth_params.push('nonce="' + this.nonce + '"');
-  auth_params.push('uri="' + this.uri + '"');
-  auth_params.push('response="' + this.response + '"');
-  if (this.opaque) {
-    auth_params.push('opaque="' + this.opaque + '"');
-  }
-  if (this.qop) {
-    auth_params.push('qop=' + this.qop);
-    auth_params.push('cnonce="' + this.cnonce + '"');
-    auth_params.push('nc=' + this.ncHex);
-  }
-
-  return 'Digest ' + auth_params.join(', ');
-};
-
-
-/**
-* Generate the 'nc' value as required by Digest in this.ncHex by reading this.nc.
-* @private
-*/
-DigestAuthentication.prototype.updateNcHex = function() {
-  var hex = Number(this.nc).toString(16);
-  this.ncHex = '00000000'.substr(0, 8-hex.length) + hex;
-};
-
-return DigestAuthentication;
-};
-
-},{}],28:[function(require,module,exports){
-"use strict";
-var NodeEventEmitter = require('events').EventEmitter;
-
-module.exports = function (console) {
-
-// Don't use `new SIP.EventEmitter()` for inheriting.
-// Use Object.create(SIP.EventEmitter.prototoype);
-function EventEmitter () {
-  NodeEventEmitter.call(this);
-}
-
-EventEmitter.prototype = Object.create(NodeEventEmitter.prototype, {
-  constructor: {
-    value: EventEmitter,
-    enumerable: false,
-    writable: true,
-    configurable: true
-  }
-});
-
-EventEmitter.prototype.off = function off (eventName, listener) {
-  var warning = '';
-  warning += 'SIP.EventEmitter#off is deprecated and may be removed in future SIP.js versions.\n';
-  warning += 'Please use removeListener or removeAllListeners instead.\n';
-  warning += 'See here for more details:\n';
-  warning += 'http://nodejs.org/api/events.html#events_emitter_removelistener_event_listener';
-  console.warn(warning);
-
-  if (arguments.length < 2) {
-    return this.removeAllListeners.apply(this, arguments);
-  } else {
-    return this.removeListener(eventName, listener);
-  }
-};
-
-return EventEmitter;
-
-};
-
-},{"events":100}],29:[function(require,module,exports){
-"use strict";
-/**
- * @fileoverview Exceptions
- */
-
-/**
- * SIP Exceptions.
- * @augments SIP
- */
-module.exports = {
-  ConfigurationError: (function(){
-    var exception = function(parameter, value) {
-      this.code = 1;
-      this.name = 'CONFIGURATION_ERROR';
-      this.parameter = parameter;
-      this.value = value;
-      this.message = (!this.value)? 'Missing parameter: '+ this.parameter : 'Invalid value '+ JSON.stringify(this.value) +' for parameter "'+ this.parameter +'"';
-    };
-    exception.prototype = new Error();
-    return exception;
-  }()),
-
-  InvalidStateError: (function(){
-    var exception = function(status) {
-      this.code = 2;
-      this.name = 'INVALID_STATE_ERROR';
-      this.status = status;
-      this.message = 'Invalid status: ' + status;
-    };
-    exception.prototype = new Error();
-    return exception;
-  }()),
-
-  NotSupportedError: (function(){
-    var exception = function(message) {
-      this.code = 3;
-      this.name = 'NOT_SUPPORTED_ERROR';
-      this.message = message;
-    };
-    exception.prototype = new Error();
-    return exception;
-  }()),
-
-  GetDescriptionError: (function(){
-    var exception = function(message) {
-      this.code = 4;
-      this.name = 'GET_DESCRIPTION_ERROR';
-      this.message = message;
-    };
-    exception.prototype = new Error();
-    return exception;
-  }())
-};
-
-},{}],30:[function(require,module,exports){
-"use strict";
-var Grammar = require('./Grammar/dist/Grammar');
-
-module.exports = function (SIP) {
-
-return {
-  parse: function parseCustom (input, startRule) {
-    var options = {startRule: startRule, SIP: SIP};
-    try {
-      Grammar.parse(input, options);
-    } catch (e) {
-      options.data = -1;
-    }
-    return options.data;
-  }
-};
-
-};
-
-},{"./Grammar/dist/Grammar":31}],31:[function(require,module,exports){
-module.exports = (function() {
-  /*
-   * Generated by PEG.js 0.8.0.
-   *
-   * http://pegjs.majda.cz/
-   */
-
-  function peg$subclass(child, parent) {
-    function ctor() { this.constructor = child; }
-    ctor.prototype = parent.prototype;
-    child.prototype = new ctor();
-  }
-
-  function SyntaxError(message, expected, found, offset, line, column) {
-    this.message  = message;
-    this.expected = expected;
-    this.found    = found;
-    this.offset   = offset;
-    this.line     = line;
-    this.column   = column;
-
-    this.name     = "SyntaxError";
-  }
-
-  peg$subclass(SyntaxError, Error);
-
-  function parse(input) {
-    var options = arguments.length > 1 ? arguments[1] : {},
-
-        peg$FAILED = {},
-
-        peg$startRuleIndices = { Contact: 118, Name_Addr_Header: 155, Record_Route: 175, Request_Response: 81, SIP_URI: 45, Subscription_State: 185, Supported: 190, Require: 181, Via: 193, absoluteURI: 84, Call_ID: 117, Content_Disposition: 129, Content_Length: 134, Content_Type: 135, CSeq: 145, displayName: 121, Event: 148, From: 150, host: 52, Max_Forwards: 153, Min_SE: 212, Proxy_Authenticate: 156, quoted_string: 40, Refer_To: 177, Replaces: 178, Session_Expires: 209, stun_URI: 216, To: 191, turn_URI: 223, uuid: 226, WWW_Authenticate: 208, challenge: 157 },
-        peg$startRuleIndex   = 118,
-
-        peg$consts = [
-          "\r\n",
-          { type: "literal", value: "\r\n", description: "\"\\r\\n\"" },
-          /^[0-9]/,
-          { type: "class", value: "[0-9]", description: "[0-9]" },
-          /^[a-zA-Z]/,
-          { type: "class", value: "[a-zA-Z]", description: "[a-zA-Z]" },
-          /^[0-9a-fA-F]/,
-          { type: "class", value: "[0-9a-fA-F]", description: "[0-9a-fA-F]" },
-          /^[\0-\xFF]/,
-          { type: "class", value: "[\\0-\\xFF]", description: "[\\0-\\xFF]" },
-          /^["]/,
-          { type: "class", value: "[\"]", description: "[\"]" },
-          " ",
-          { type: "literal", value: " ", description: "\" \"" },
-          "\t",
-          { type: "literal", value: "\t", description: "\"\\t\"" },
-          /^[a-zA-Z0-9]/,
-          { type: "class", value: "[a-zA-Z0-9]", description: "[a-zA-Z0-9]" },
-          ";",
-          { type: "literal", value: ";", description: "\";\"" },
-          "/",
-          { type: "literal", value: "/", description: "\"/\"" },
-          "?",
-          { type: "literal", value: "?", description: "\"?\"" },
-          ":",
-          { type: "literal", value: ":", description: "\":\"" },
-          "@",
-          { type: "literal", value: "@", description: "\"@\"" },
-          "&",
-          { type: "literal", value: "&", description: "\"&\"" },
-          "=",
-          { type: "literal", value: "=", description: "\"=\"" },
-          "+",
-          { type: "literal", value: "+", description: "\"+\"" },
-          "$",
-          { type: "literal", value: "$", description: "\"$\"" },
-          ",",
-          { type: "literal", value: ",", description: "\",\"" },
-          "-",
-          { type: "literal", value: "-", description: "\"-\"" },
-          "_",
-          { type: "literal", value: "_", description: "\"_\"" },
-          ".",
-          { type: "literal", value: ".", description: "\".\"" },
-          "!",
-          { type: "literal", value: "!", description: "\"!\"" },
-          "~",
-          { type: "literal", value: "~", description: "\"~\"" },
-          "*",
-          { type: "literal", value: "*", description: "\"*\"" },
-          "'",
-          { type: "literal", value: "'", description: "\"'\"" },
-          "(",
-          { type: "literal", value: "(", description: "\"(\"" },
-          ")",
-          { type: "literal", value: ")", description: "\")\"" },
-          peg$FAILED,
-          "%",
-          { type: "literal", value: "%", description: "\"%\"" },
-          null,
-          [],
-          function() {return " "; },
-          function() {return ':'; },
-          /^[!-~]/,
-          { type: "class", value: "[!-~]", description: "[!-~]" },
-          /^[\x80-\uFFFF]/,
-          { type: "class", value: "[\\x80-\\uFFFF]", description: "[\\x80-\\uFFFF]" },
-          /^[\x80-\xBF]/,
-          { type: "class", value: "[\\x80-\\xBF]", description: "[\\x80-\\xBF]" },
-          /^[a-f]/,
-          { type: "class", value: "[a-f]", description: "[a-f]" },
-          "`",
-          { type: "literal", value: "`", description: "\"`\"" },
-          "<",
-          { type: "literal", value: "<", description: "\"<\"" },
-          ">",
-          { type: "literal", value: ">", description: "\">\"" },
-          "\\",
-          { type: "literal", value: "\\", description: "\"\\\\\"" },
-          "[",
-          { type: "literal", value: "[", description: "\"[\"" },
-          "]",
-          { type: "literal", value: "]", description: "\"]\"" },
-          "{",
-          { type: "literal", value: "{", description: "\"{\"" },
-          "}",
-          { type: "literal", value: "}", description: "\"}\"" },
-          function() {return "*"; },
-          function() {return "/"; },
-          function() {return "="; },
-          function() {return "("; },
-          function() {return ")"; },
-          function() {return ">"; },
-          function() {return "<"; },
-          function() {return ","; },
-          function() {return ";"; },
-          function() {return ":"; },
-          function() {return "\""; },
-          /^[!-']/,
-          { type: "class", value: "[!-']", description: "[!-']" },
-          /^[*-[]/,
-          { type: "class", value: "[*-[]", description: "[*-[]" },
-          /^[\]-~]/,
-          { type: "class", value: "[\\]-~]", description: "[\\]-~]" },
-          function(contents) {
-                                  return contents; },
-          /^[#-[]/,
-          { type: "class", value: "[#-[]", description: "[#-[]" },
-          /^[\0-\t]/,
-          { type: "class", value: "[\\0-\\t]", description: "[\\0-\\t]" },
-          /^[\x0B-\f]/,
-          { type: "class", value: "[\\x0B-\\f]", description: "[\\x0B-\\f]" },
-          /^[\x0E-]/,
-          { type: "class", value: "[\\x0E-]", description: "[\\x0E-]" },
-          function() {
-                                  options.data.uri = new options.SIP.URI(options.data.scheme, options.data.user, options.data.host, options.data.port);
-                                  delete options.data.scheme;
-                                  delete options.data.user;
-                                  delete options.data.host;
-                                  delete options.data.host_type;
-                                  delete options.data.port;
-                                },
-          function() {
-                                  options.data.uri = new options.SIP.URI(options.data.scheme, options.data.user, options.data.host, options.data.port, options.data.uri_params, options.data.uri_headers);
-                                  delete options.data.scheme;
-                                  delete options.data.user;
-                                  delete options.data.host;
-                                  delete options.data.host_type;
-                                  delete options.data.port;
-                                  delete options.data.uri_params;
-
-                                  if (options.startRule === 'SIP_URI') { options.data = options.data.uri;}
-                                },
-          "sips",
-          { type: "literal", value: "sips", description: "\"sips\"" },
-          "sip",
-          { type: "literal", value: "sip", description: "\"sip\"" },
-          function(uri_scheme) {
-                              options.data.scheme = uri_scheme; },
-          function() {
-                              options.data.user = decodeURIComponent(text().slice(0, -1));},
-          function() {
-                              options.data.password = text(); },
-          function() {
-                              options.data.host = text();
-                              return options.data.host; },
-          function() {
-                            options.data.host_type = 'domain';
-                            return text(); },
-          /^[a-zA-Z0-9_\-]/,
-          { type: "class", value: "[a-zA-Z0-9_\\-]", description: "[a-zA-Z0-9_\\-]" },
-          /^[a-zA-Z0-9\-]/,
-          { type: "class", value: "[a-zA-Z0-9\\-]", description: "[a-zA-Z0-9\\-]" },
-          function() {
-                              options.data.host_type = 'IPv6';
-                              return text(); },
-          "::",
-          { type: "literal", value: "::", description: "\"::\"" },
-          function() {
-                            options.data.host_type = 'IPv6';
-                            return text(); },
-          function() {
-                              options.data.host_type = 'IPv4';
-                              return text(); },
-          "25",
-          { type: "literal", value: "25", description: "\"25\"" },
-          /^[0-5]/,
-          { type: "class", value: "[0-5]", description: "[0-5]" },
-          "2",
-          { type: "literal", value: "2", description: "\"2\"" },
-          /^[0-4]/,
-          { type: "class", value: "[0-4]", description: "[0-4]" },
-          "1",
-          { type: "literal", value: "1", description: "\"1\"" },
-          /^[1-9]/,
-          { type: "class", value: "[1-9]", description: "[1-9]" },
-          function(port) {
-                              port = parseInt(port.join(''));
-                              options.data.port = port;
-                              return port; },
-          "transport=",
-          { type: "literal", value: "transport=", description: "\"transport=\"" },
-          "udp",
-          { type: "literal", value: "udp", description: "\"udp\"" },
-          "tcp",
-          { type: "literal", value: "tcp", description: "\"tcp\"" },
-          "sctp",
-          { type: "literal", value: "sctp", description: "\"sctp\"" },
-          "tls",
-          { type: "literal", value: "tls", description: "\"tls\"" },
-          function(transport) {
-                                if(!options.data.uri_params) options.data.uri_params={};
-                                options.data.uri_params['transport'] = transport.toLowerCase(); },
-          "user=",
-          { type: "literal", value: "user=", description: "\"user=\"" },
-          "phone",
-          { type: "literal", value: "phone", description: "\"phone\"" },
-          "ip",
-          { type: "literal", value: "ip", description: "\"ip\"" },
-          function(user) {
-                                if(!options.data.uri_params) options.data.uri_params={};
-                                options.data.uri_params['user'] = user.toLowerCase(); },
-          "method=",
-          { type: "literal", value: "method=", description: "\"method=\"" },
-          function(method) {
-                                if(!options.data.uri_params) options.data.uri_params={};
-                                options.data.uri_params['method'] = method; },
-          "ttl=",
-          { type: "literal", value: "ttl=", description: "\"ttl=\"" },
-          function(ttl) {
-                                if(!options.data.params) options.data.params={};
-                                options.data.params['ttl'] = ttl; },
-          "maddr=",
-          { type: "literal", value: "maddr=", description: "\"maddr=\"" },
-          function(maddr) {
-                                if(!options.data.uri_params) options.data.uri_params={};
-                                options.data.uri_params['maddr'] = maddr; },
-          "lr",
-          { type: "literal", value: "lr", description: "\"lr\"" },
-          function() {
-                                if(!options.data.uri_params) options.data.uri_params={};
-                                options.data.uri_params['lr'] = undefined; },
-          function(param, value) {
-                                if(!options.data.uri_params) options.data.uri_params = {};
-                                if (value === null){
-                                  value = undefined;
-                                }
-                                else {
-                                  value = value[1];
-                                }
-                                options.data.uri_params[param.toLowerCase()] = value && value.toLowerCase();},
-          function(hname, hvalue) {
-                                hname = hname.join('').toLowerCase();
-                                hvalue = hvalue.join('');
-                                if(!options.data.uri_headers) options.data.uri_headers = {};
-                                if (!options.data.uri_headers[hname]) {
-                                  options.data.uri_headers[hname] = [hvalue];
-                                } else {
-                                  options.data.uri_headers[hname].push(hvalue);
-                                }},
-          function() {
-                                // lots of tests fail if this isn't guarded...
-                                if (options.startRule === 'Refer_To') {
-                                  options.data.uri = new options.SIP.URI(options.data.scheme, options.data.user, options.data.host, options.data.port, options.data.uri_params, options.data.uri_headers);
-                                  delete options.data.scheme;
-                                  delete options.data.user;
-                                  delete options.data.host;
-                                  delete options.data.host_type;
-                                  delete options.data.port;
-                                  delete options.data.uri_params;
-                                }
-                              },
-          "//",
-          { type: "literal", value: "//", description: "\"//\"" },
-          function() {
-                              options.data.scheme= text(); },
-          { type: "literal", value: "SIP", description: "\"SIP\"" },
-          function() {
-                              options.data.sip_version = text(); },
-          "INVITE",
-          { type: "literal", value: "INVITE", description: "\"INVITE\"" },
-          "ACK",
-          { type: "literal", value: "ACK", description: "\"ACK\"" },
-          "VXACH",
-          { type: "literal", value: "VXACH", description: "\"VXACH\"" },
-          "OPTIONS",
-          { type: "literal", value: "OPTIONS", description: "\"OPTIONS\"" },
-          "BYE",
-          { type: "literal", value: "BYE", description: "\"BYE\"" },
-          "CANCEL",
-          { type: "literal", value: "CANCEL", description: "\"CANCEL\"" },
-          "REGISTER",
-          { type: "literal", value: "REGISTER", description: "\"REGISTER\"" },
-          "SUBSCRIBE",
-          { type: "literal", value: "SUBSCRIBE", description: "\"SUBSCRIBE\"" },
-          "NOTIFY",
-          { type: "literal", value: "NOTIFY", description: "\"NOTIFY\"" },
-          "REFER",
-          { type: "literal", value: "REFER", description: "\"REFER\"" },
-          function() {
-
-                              options.data.method = text();
-                              return options.data.method; },
-          function(status_code) {
-                            options.data.status_code = parseInt(status_code.join('')); },
-          function() {
-                            options.data.reason_phrase = text(); },
-          function() {
-                        options.data = text(); },
-          function() {
-                                  var idx, length;
-                                  length = options.data.multi_header.length;
-                                  for (idx = 0; idx < length; idx++) {
-                                    if (options.data.multi_header[idx].parsed === null) {
-                                      options.data = null;
-                                      break;
-                                    }
-                                  }
-                                  if (options.data !== null) {
-                                    options.data = options.data.multi_header;
-                                  } else {
-                                    options.data = -1;
-                                  }},
-          function() {
-                                  var header;
-                                  if(!options.data.multi_header) options.data.multi_header = [];
-                                  try {
-                                    header = new options.SIP.NameAddrHeader(options.data.uri, options.data.displayName, options.data.params);
-                                    delete options.data.uri;
-                                    delete options.data.displayName;
-                                    delete options.data.params;
-                                  } catch(e) {
-                                    header = null;
-                                  }
-                                  options.data.multi_header.push( { 'position': peg$currPos,
-                                                            'offset': offset(),
-                                                            'parsed': header
-                                                          });},
-          function(displayName) {
-                                  displayName = text().trim();
-                                  if (displayName[0] === '\"') {
-                                    displayName = displayName.substring(1, displayName.length-1);
-                                  }
-                                  options.data.displayName = displayName; },
-          "q",
-          { type: "literal", value: "q", description: "\"q\"" },
-          function(q) {
-                                  if(!options.data.params) options.data.params = {};
-                                  options.data.params['q'] = q; },
-          "expires",
-          { type: "literal", value: "expires", description: "\"expires\"" },
-          function(expires) {
-                                  if(!options.data.params) options.data.params = {};
-                                  options.data.params['expires'] = expires; },
-          function(delta_seconds) {
-                                  return parseInt(delta_seconds.join('')); },
-          "0",
-          { type: "literal", value: "0", description: "\"0\"" },
-          function() {
-                                  return parseFloat(text()); },
-          function(param, value) {
-                                  if(!options.data.params) options.data.params = {};
-                                  if (value === null){
-                                    value = undefined;
-                                  }
-                                  else {
-                                    value = value[1];
-                                  }
-                                  options.data.params[param.toLowerCase()] = value;},
-          "render",
-          { type: "literal", value: "render", description: "\"render\"" },
-          "session",
-          { type: "literal", value: "session", description: "\"session\"" },
-          "icon",
-          { type: "literal", value: "icon", description: "\"icon\"" },
-          "alert",
-          { type: "literal", value: "alert", description: "\"alert\"" },
-          function() {
-                                      if (options.startRule === 'Content_Disposition') {
-                                        options.data.type = text().toLowerCase();
-                                      }
-                                    },
-          "handling",
-          { type: "literal", value: "handling", description: "\"handling\"" },
-          "optional",
-          { type: "literal", value: "optional", description: "\"optional\"" },
-          "required",
-          { type: "literal", value: "required", description: "\"required\"" },
-          function(length) {
-                                  options.data = parseInt(length.join('')); },
-          function() {
-                                  options.data = text(); },
-          "text",
-          { type: "literal", value: "text", description: "\"text\"" },
-          "image",
-          { type: "literal", value: "image", description: "\"image\"" },
-          "audio",
-          { type: "literal", value: "audio", description: "\"audio\"" },
-          "video",
-          { type: "literal", value: "video", description: "\"video\"" },
-          "application",
-          { type: "literal", value: "application", description: "\"application\"" },
-          "message",
-          { type: "literal", value: "message", description: "\"message\"" },
-          "multipart",
-          { type: "literal", value: "multipart", description: "\"multipart\"" },
-          "x-",
-          { type: "literal", value: "x-", description: "\"x-\"" },
-          function(cseq_value) {
-                            options.data.value=parseInt(cseq_value.join('')); },
-          function(expires) {options.data = expires; },
-          function(event_type) {
-                                 options.data.event = event_type.toLowerCase(); },
-          function() {
-                          var tag = options.data.tag;
-                            options.data = new options.SIP.NameAddrHeader(options.data.uri, options.data.displayName, options.data.params);
-                            if (tag) {options.data.setParam('tag',tag)}
-                          },
-          "tag",
-          { type: "literal", value: "tag", description: "\"tag\"" },
-          function(tag) {options.data.tag = tag; },
-          function(forwards) {
-                            options.data = parseInt(forwards.join('')); },
-          function(min_expires) {options.data = min_expires; },
-          function() {
-                                  options.data = new options.SIP.NameAddrHeader(options.data.uri, options.data.displayName, options.data.params);
-                                },
-          "digest",
-          { type: "literal", value: "Digest", description: "\"Digest\"" },
-          "realm",
-          { type: "literal", value: "realm", description: "\"realm\"" },
-          function(realm) { options.data.realm = realm; },
-          "domain",
-          { type: "literal", value: "domain", description: "\"domain\"" },
-          "nonce",
-          { type: "literal", value: "nonce", description: "\"nonce\"" },
-          function(nonce) { options.data.nonce=nonce; },
-          "opaque",
-          { type: "literal", value: "opaque", description: "\"opaque\"" },
-          function(opaque) { options.data.opaque=opaque; },
-          "stale",
-          { type: "literal", value: "stale", description: "\"stale\"" },
-          "true",
-          { type: "literal", value: "true", description: "\"true\"" },
-          function() { options.data.stale=true; },
-          "false",
-          { type: "literal", value: "false", description: "\"false\"" },
-          function() { options.data.stale=false; },
-          "algorithm",
-          { type: "literal", value: "algorithm", description: "\"algorithm\"" },
-          "md5",
-          { type: "literal", value: "MD5", description: "\"MD5\"" },
-          "md5-sess",
-          { type: "literal", value: "MD5-sess", description: "\"MD5-sess\"" },
-          function(algorithm) {
-                                options.data.algorithm=algorithm.toUpperCase(); },
-          "qop",
-          { type: "literal", value: "qop", description: "\"qop\"" },
-          "auth-int",
-          { type: "literal", value: "auth-int", description: "\"auth-int\"" },
-          "auth",
-          { type: "literal", value: "auth", description: "\"auth\"" },
-          function(qop_value) {
-                                  options.data.qop || (options.data.qop=[]);
-                                  options.data.qop.push(qop_value.toLowerCase()); },
-          function(rack_value) {
-                            options.data.value=parseInt(rack_value.join('')); },
-          function() {
-                            var idx, length;
-                            length = options.data.multi_header.length;
-                            for (idx = 0; idx < length; idx++) {
-                              if (options.data.multi_header[idx].parsed === null) {
-                                options.data = null;
-                                break;
-                              }
-                            }
-                            if (options.data !== null) {
-                              options.data = options.data.multi_header;
-                            } else {
-                              options.data = -1;
-                            }},
-          function() {
-                            var header;
-                            if(!options.data.multi_header) options.data.multi_header = [];
-                            try {
-                              header = new options.SIP.NameAddrHeader(options.data.uri, options.data.displayName, options.data.params);
-                              delete options.data.uri;
-                              delete options.data.displayName;
-                              delete options.data.params;
-                            } catch(e) {
-                              header = null;
-                            }
-                            options.data.multi_header.push( { 'position': peg$currPos,
-                                                      'offset': offset(),
-                                                      'parsed': header
-                                                    });},
-          function() {
-                        options.data = new options.SIP.NameAddrHeader(options.data.uri, options.data.displayName, options.data.params);
-                      },
-          function() {
-                                if (!(options.data.replaces_from_tag && options.data.replaces_to_tag)) {
-                                  options.data = -1;
-                                }
-                              },
-          function() {
-                                options.data = {
-                                  call_id: options.data
-                                };
-                              },
-          "from-tag",
-          { type: "literal", value: "from-tag", description: "\"from-tag\"" },
-          function(from_tag) {
-                                options.data.replaces_from_tag = from_tag;
-                              },
-          "to-tag",
-          { type: "literal", value: "to-tag", description: "\"to-tag\"" },
-          function(to_tag) {
-                                options.data.replaces_to_tag = to_tag;
-                              },
-          "early-only",
-          { type: "literal", value: "early-only", description: "\"early-only\"" },
-          function() {
-                                options.data.early_only = true;
-                              },
-          function(r) {return r;},
-          function(first, rest) { return list(first, rest); },
-          function(value) {
-                          if (options.startRule === 'Require') {
-                            options.data = value || [];
-                          }
-                        },
-          function(rseq_value) {
-                            options.data.value=parseInt(rseq_value.join('')); },
-          "active",
-          { type: "literal", value: "active", description: "\"active\"" },
-          "pending",
-          { type: "literal", value: "pending", description: "\"pending\"" },
-          "terminated",
-          { type: "literal", value: "terminated", description: "\"terminated\"" },
-          function() {
-                                  options.data.state = text(); },
-          "reason",
-          { type: "literal", value: "reason", description: "\"reason\"" },
-          function(reason) {
-                                  if (typeof reason !== 'undefined') options.data.reason = reason; },
-          function(expires) {
-                                  if (typeof expires !== 'undefined') options.data.expires = expires; },
-          "retry_after",
-          { type: "literal", value: "retry_after", description: "\"retry_after\"" },
-          function(retry_after) {
-                                  if (typeof retry_after !== 'undefined') options.data.retry_after = retry_after; },
-          "deactivated",
-          { type: "literal", value: "deactivated", description: "\"deactivated\"" },
-          "probation",
-          { type: "literal", value: "probation", description: "\"probation\"" },
-          "rejected",
-          { type: "literal", value: "rejected", description: "\"rejected\"" },
-          "timeout",
-          { type: "literal", value: "timeout", description: "\"timeout\"" },
-          "giveup",
-          { type: "literal", value: "giveup", description: "\"giveup\"" },
-          "noresource",
-          { type: "literal", value: "noresource", description: "\"noresource\"" },
-          "invariant",
-          { type: "literal", value: "invariant", description: "\"invariant\"" },
-          function(value) {
-                          if (options.startRule === 'Supported') {
-                            options.data = value || [];
-                          }
-                        },
-          function() {
-                        var tag = options.data.tag;
-                          options.data = new options.SIP.NameAddrHeader(options.data.uri, options.data.displayName, options.data.params);
-                          if (tag) {options.data.setParam('tag',tag)}
-                        },
-          "ttl",
-          { type: "literal", value: "ttl", description: "\"ttl\"" },
-          function(via_ttl_value) {
-                                options.data.ttl = via_ttl_value; },
-          "maddr",
-          { type: "literal", value: "maddr", description: "\"maddr\"" },
-          function(via_maddr) {
-                                options.data.maddr = via_maddr; },
-          "received",
-          { type: "literal", value: "received", description: "\"received\"" },
-          function(via_received) {
-                                options.data.received = via_received; },
-          "branch",
-          { type: "literal", value: "branch", description: "\"branch\"" },
-          function(via_branch) {
-                                options.data.branch = via_branch; },
-          "rport",
-          { type: "literal", value: "rport", description: "\"rport\"" },
-          function() {
-                                if(typeof response_port !== 'undefined')
-                                  options.data.rport = response_port.join(''); },
-          function(via_protocol) {
-                                options.data.protocol = via_protocol; },
-          { type: "literal", value: "UDP", description: "\"UDP\"" },
-          { type: "literal", value: "TCP", description: "\"TCP\"" },
-          { type: "literal", value: "TLS", description: "\"TLS\"" },
-          { type: "literal", value: "SCTP", description: "\"SCTP\"" },
-          function(via_transport) {
-                                options.data.transport = via_transport; },
-          function() {
-                                options.data.host = text(); },
-          function(via_sent_by_port) {
-                                options.data.port = parseInt(via_sent_by_port.join('')); },
-          function(ttl) {
-                                return parseInt(ttl.join('')); },
-          function(deltaSeconds) {
-                                if (options.startRule === 'Session_Expires') {
-                                  options.data.deltaSeconds = deltaSeconds;
-                                }
-                              },
-          "refresher",
-          { type: "literal", value: "refresher", description: "\"refresher\"" },
-          "uas",
-          { type: "literal", value: "uas", description: "\"uas\"" },
-          "uac",
-          { type: "literal", value: "uac", description: "\"uac\"" },
-          function(endpoint) {
-                                if (options.startRule === 'Session_Expires') {
-                                  options.data.refresher = endpoint;
-                                }
-                              },
-          function(deltaSeconds) {
-                                if (options.startRule === 'Min_SE') {
-                                  options.data = deltaSeconds;
-                                }
-                              },
-          "stuns",
-          { type: "literal", value: "stuns", description: "\"stuns\"" },
-          "stun",
-          { type: "literal", value: "stun", description: "\"stun\"" },
-          function(scheme) {
-                                options.data.scheme = scheme; },
-          function(host) {
-                                options.data.host = host; },
-          "?transport=",
-          { type: "literal", value: "?transport=", description: "\"?transport=\"" },
-          "turns",
-          { type: "literal", value: "turns", description: "\"turns\"" },
-          "turn",
-          { type: "literal", value: "turn", description: "\"turn\"" },
-          function() {
-                                options.data.transport = transport; },
-          function() {
-                            options.data = text(); }
-        ],
-
-        peg$bytecode = [
-          peg$decode(". \"\"2 3!"),
-          peg$decode("0\"\"\"1!3#"),
-          peg$decode("0$\"\"1!3%"),
-          peg$decode("0&\"\"1!3'"),
-          peg$decode("7'*# \"7("),
-          peg$decode("0(\"\"1!3)"),
-          peg$decode("0*\"\"1!3+"),
-          peg$decode(".,\"\"2,3-"),
-          peg$decode("..\"\"2.3/"),
-          peg$decode("00\"\"1!31"),
-          peg$decode(".2\"\"2233*\x89 \".4\"\"2435*} \".6\"\"2637*q \".8\"\"2839*e \".:\"\"2:3;*Y \".<\"\"2<3=*M \".>\"\"2>3?*A \".@\"\"2@3A*5 \".B\"\"2B3C*) \".D\"\"2D3E"),
-          peg$decode("7)*# \"7,"),
-          peg$decode(".F\"\"2F3G*} \".H\"\"2H3I*q \".J\"\"2J3K*e \".L\"\"2L3M*Y \".N\"\"2N3O*M \".P\"\"2P3Q*A \".R\"\"2R3S*5 \".T\"\"2T3U*) \".V\"\"2V3W"),
-          peg$decode("!!.Y\"\"2Y3Z+7$7#+-%7#+#%'#%$## X$\"# X\"# X+! (%"),
-          peg$decode("!! \\7$,#&7$\"+-$7 +#%'\"%$\"# X\"# X*# \" [+@$ \\7$+&$,#&7$\"\"\" X+'%4\"6]\" %$\"# X\"# X"),
-          peg$decode("7.*# \" ["),
-          peg$decode("! \\7'*# \"7(,)&7'*# \"7(\"+A$.8\"\"2839+1%7/+'%4#6^# %$## X$\"# X\"# X"),
-          peg$decode("!! \\72+&$,#&72\"\"\" X+o$ \\! \\7.,#&7.\"+-$72+#%'\"%$\"# X\"# X,@&! \\7.,#&7.\"+-$72+#%'\"%$\"# X\"# X\"+#%'\"%$\"# X\"# X+! (%"),
-          peg$decode("0_\"\"1!3`*# \"73"),
-          peg$decode("0a\"\"1!3b"),
-          peg$decode("0c\"\"1!3d"),
-          peg$decode("7!*) \"0e\"\"1!3f"),
-          peg$decode("! \\7)*\x95 \".F\"\"2F3G*\x89 \".J\"\"2J3K*} \".L\"\"2L3M*q \".Y\"\"2Y3Z*e \".P\"\"2P3Q*Y \".H\"\"2H3I*M \".@\"\"2@3A*A \".g\"\"2g3h*5 \".R\"\"2R3S*) \".N\"\"2N3O+\x9E$,\x9B&7)*\x95 \".F\"\"2F3G*\x89 \".J\"\"2J3K*} \".L\"\"2L3M*q \".Y\"\"2Y3Z*e \".P\"\"2P3Q*Y \".H\"\"2H3I*M \".@\"\"2@3A*A \".g\"\"2g3h*5 \".R\"\"2R3S*) \".N\"\"2N3O\"\"\" X+! (%"),
-          peg$decode("! \\7)*\x89 \".F\"\"2F3G*} \".L\"\"2L3M*q \".Y\"\"2Y3Z*e \".P\"\"2P3Q*Y \".H\"\"2H3I*M \".@\"\"2@3A*A \".g\"\"2g3h*5 \".R\"\"2R3S*) \".N\"\"2N3O+\x92$,\x8F&7)*\x89 \".F\"\"2F3G*} \".L\"\"2L3M*q \".Y\"\"2Y3Z*e \".P\"\"2P3Q*Y \".H\"\"2H3I*M \".@\"\"2@3A*A \".g\"\"2g3h*5 \".R\"\"2R3S*) \".N\"\"2N3O\"\"\" X+! (%"),
-          peg$decode(".T\"\"2T3U*\xE3 \".V\"\"2V3W*\xD7 \".i\"\"2i3j*\xCB \".k\"\"2k3l*\xBF \".:\"\"2:3;*\xB3 \".D\"\"2D3E*\xA7 \".2\"\"2233*\x9B \".8\"\"2839*\x8F \".m\"\"2m3n*\x83 \"7&*} \".4\"\"2435*q \".o\"\"2o3p*e \".q\"\"2q3r*Y \".6\"\"2637*M \".>\"\"2>3?*A \".s\"\"2s3t*5 \".u\"\"2u3v*) \"7'*# \"7("),
-          peg$decode("! \\7)*\u012B \".F\"\"2F3G*\u011F \".J\"\"2J3K*\u0113 \".L\"\"2L3M*\u0107 \".Y\"\"2Y3Z*\xFB \".P\"\"2P3Q*\xEF \".H\"\"2H3I*\xE3 \".@\"\"2@3A*\xD7 \".g\"\"2g3h*\xCB \".R\"\"2R3S*\xBF \".N\"\"2N3O*\xB3 \".T\"\"2T3U*\xA7 \".V\"\"2V3W*\x9B \".i\"\"2i3j*\x8F \".k\"\"2k3l*\x83 \".8\"\"2839*w \".m\"\"2m3n*k \"7&*e \".4\"\"2435*Y \".o\"\"2o3p*M \".q\"\"2q3r*A \".6\"\"2637*5 \".s\"\"2s3t*) \".u\"\"2u3v+\u0134$,\u0131&7)*\u012B \".F\"\"2F3G*\u011F \".J\"\"2J3K*\u0113 \".L\"\"2L3M*\u0107 \".Y\"\"2Y3Z*\xFB \".P\"\"2P3Q*\xEF \".H\"\"2H3I*\xE3 \".@\"\"2@3A*\xD7 \".g\"\"2g3h*\xCB \".R\"\"2R3S*\xBF \".N\"\"2N3O*\xB3 \".T\"\"2T3U*\xA7 \".V\"\"2V3W*\x9B \".i\"\"2i3j*\x8F \".k\"\"2k3l*\x83 \".8\"\"2839*w \".m\"\"2m3n*k \"7&*e \".4\"\"2435*Y \".o\"\"2o3p*M \".q\"\"2q3r*A \".6\"\"2637*5 \".s\"\"2s3t*) \".u\"\"2u3v\"\"\" X+! (%"),
-          peg$decode("!7/+A$.P\"\"2P3Q+1%7/+'%4#6w# %$## X$\"# X\"# X"),
-          peg$decode("!7/+A$.4\"\"2435+1%7/+'%4#6x# %$## X$\"# X\"# X"),
-          peg$decode("!7/+A$.>\"\"2>3?+1%7/+'%4#6y# %$## X$\"# X\"# X"),
-          peg$decode("!7/+A$.T\"\"2T3U+1%7/+'%4#6z# %$## X$\"# X\"# X"),
-          peg$decode("!7/+A$.V\"\"2V3W+1%7/+'%4#6{# %$## X$\"# X\"# X"),
-          peg$decode("!.k\"\"2k3l+1$7/+'%4\"6|\" %$\"# X\"# X"),
-          peg$decode("!7/+7$.i\"\"2i3j+'%4\"6}\" %$\"# X\"# X"),
-          peg$decode("!7/+A$.D\"\"2D3E+1%7/+'%4#6~# %$## X$\"# X\"# X"),
-          peg$decode("!7/+A$.2\"\"2233+1%7/+'%4#6# %$## X$\"# X\"# X"),
-          peg$decode("!7/+A$.8\"\"2839+1%7/+'%4#6\x80# %$## X$\"# X\"# X"),
-          peg$decode("!7/+1$7&+'%4\"6\x81\" %$\"# X\"# X"),
-          peg$decode("!7&+1$7/+'%4\"6\x81\" %$\"# X\"# X"),
-          peg$decode("!7=+W$ \\7G*) \"7K*# \"7F,/&7G*) \"7K*# \"7F\"+-%7>+#%'#%$## X$\"# X\"# X"),
-          peg$decode("0\x82\"\"1!3\x83*A \"0\x84\"\"1!3\x85*5 \"0\x86\"\"1!3\x87*) \"73*# \"7."),
-          peg$decode("!!7/+U$7&+K% \\7J*# \"7K,)&7J*# \"7K\"+-%7&+#%'$%$$# X$## X$\"# X\"# X+! (%"),
-          peg$decode("!7/+`$7&+V%! \\7J*# \"7K,)&7J*# \"7K\"+! (%+2%7&+(%4$6\x88$!!%$$# X$## X$\"# X\"# X"),
-          peg$decode("7.*G \".L\"\"2L3M*; \"0\x89\"\"1!3\x8A*/ \"0\x86\"\"1!3\x87*# \"73"),
-          peg$decode("!.m\"\"2m3n+K$0\x8B\"\"1!3\x8C*5 \"0\x8D\"\"1!3\x8E*) \"0\x8F\"\"1!3\x90+#%'\"%$\"# X\"# X"),
-          peg$decode("!7N+Q$.8\"\"2839+A%7O*# \" [+1%7S+'%4$6\x91$ %$$# X$## X$\"# X\"# X"),
-          peg$decode("!7N+k$.8\"\"2839+[%7O*# \" [+K%7S+A%7_+7%7l*# \" [+'%4&6\x92& %$&# X$%# X$$# X$## X$\"# X\"# X"),
-          peg$decode("!/\x93\"\"1$3\x94*) \"/\x95\"\"1#3\x96+' 4!6\x97!! %"),
-          peg$decode("!7P+b$!.8\"\"2839+-$7R+#%'\"%$\"# X\"# X*# \" [+7%.:\"\"2:3;+'%4#6\x98# %$## X$\"# X\"# X"),
-          peg$decode(" \\7+*) \"7-*# \"7Q+2$,/&7+*) \"7-*# \"7Q\"\"\" X"),
-          peg$decode(".<\"\"2<3=*q \".>\"\"2>3?*e \".@\"\"2@3A*Y \".B\"\"2B3C*M \".D\"\"2D3E*A \".2\"\"2233*5 \".6\"\"2637*) \".4\"\"2435"),
-          peg$decode("! \\7+*_ \"7-*Y \".<\"\"2<3=*M \".>\"\"2>3?*A \".@\"\"2@3A*5 \".B\"\"2B3C*) \".D\"\"2D3E,e&7+*_ \"7-*Y \".<\"\"2<3=*M \".>\"\"2>3?*A \".@\"\"2@3A*5 \".B\"\"2B3C*) \".D\"\"2D3E\"+& 4!6\x99! %"),
-          peg$decode("!7T+N$!.8\"\"2839+-$7^+#%'\"%$\"# X\"# X*# \" [+#%'\"%$\"# X\"# X"),
-          peg$decode("!7U*) \"7\\*# \"7X+& 4!6\x9A! %"),
-          peg$decode("! \\!7V+3$.J\"\"2J3K+#%'\"%$\"# X\"# X,>&!7V+3$.J\"\"2J3K+#%'\"%$\"# X\"# X\"+G$7W+=%.J\"\"2J3K*# \" [+'%4#6\x9B# %$## X$\"# X\"# X"),
-          peg$decode(" \\0\x9C\"\"1!3\x9D+,$,)&0\x9C\"\"1!3\x9D\"\"\" X"),
-          peg$decode("!0$\"\"1!3%+A$ \\0\x9E\"\"1!3\x9F,)&0\x9E\"\"1!3\x9F\"+#%'\"%$\"# X\"# X"),
-          peg$decode("!.o\"\"2o3p+A$7Y+7%.q\"\"2q3r+'%4#6\xA0# %$## X$\"# X\"# X"),
-          peg$decode("!!7Z+\xBF$.8\"\"2839+\xAF%7Z+\xA5%.8\"\"2839+\x95%7Z+\x8B%.8\"\"2839+{%7Z+q%.8\"\"2839+a%7Z+W%.8\"\"2839+G%7Z+=%.8\"\"2839+-%7[+#%'-%$-# X$,# X$+# X$*# X$)# X$(# X$'# X$&# X$%# X$$# X$## X$\"# X\"# X*\u0838 \"!.\xA1\"\"2\xA13\xA2+\xAF$7Z+\xA5%.8\"\"2839+\x95%7Z+\x8B%.8\"\"2839+{%7Z+q%.8\"\"2839+a%7Z+W%.8\"\"2839+G%7Z+=%.8\"\"2839+-%7[+#%',%$,# X$+# X$*# X$)# X$(# X$'# X$&# X$%# X$$# X$## X$\"# X\"# X*\u0795 \"!.\xA1\"\"2\xA13\xA2+\x95$7Z+\x8B%.8\"\"2839+{%7Z+q%.8\"\"2839+a%7Z+W%.8\"\"2839+G%7Z+=%.8\"\"2839+-%7[+#%'*%$*# X$)# X$(# X$'# X$&# X$%# X$$# X$## X$\"# X\"# X*\u070C \"!.\xA1\"\"2\xA13\xA2+{$7Z+q%.8\"\"2839+a%7Z+W%.8\"\"2839+G%7Z+=%.8\"\"2839+-%7[+#%'(%$(# X$'# X$&# X$%# X$$# X$## X$\"# X\"# X*\u069D \"!.\xA1\"\"2\xA13\xA2+a$7Z+W%.8\"\"2839+G%7Z+=%.8\"\"2839+-%7[+#%'&%$&# X$%# X$$# X$## X$\"# X\"# X*\u0648 \"!.\xA1\"\"2\xA13\xA2+G$7Z+=%.8\"\"2839+-%7[+#%'$%$$# X$## X$\"# X\"# X*\u060D \"!.\xA1\"\"2\xA13\xA2+-$7[+#%'\"%$\"# X\"# X*\u05EC \"!.\xA1\"\"2\xA13\xA2+-$7Z+#%'\"%$\"# X\"# X*\u05CB \"!7Z+\xA5$.\xA1\"\"2\xA13\xA2+\x95%7Z+\x8B%.8\"\"2839+{%7Z+q%.8\"\"2839+a%7Z+W%.8\"\"2839+G%7Z+=%.8\"\"2839+-%7[+#%'+%$+# X$*# X$)# X$(# X$'# X$&# X$%# X$$# X$## X$\"# X\"# X*\u0538 \"!7Z+\xB6$!.8\"\"2839+-$7Z+#%'\"%$\"# X\"# X*# \" [+\x8B%.\xA1\"\"2\xA13\xA2+{%7Z+q%.8\"\"2839+a%7Z+W%.8\"\"2839+G%7Z+=%.8\"\"2839+-%7[+#%'*%$*# X$)# X$(# X$'# X$&# X$%# X$$# X$## X$\"# X\"# X*\u0494 \"!7Z+\xC7$!.8\"\"2839+-$7Z+#%'\"%$\"# X\"# X*# \" [+\x9C%!.8\"\"2839+-$7Z+#%'\"%$\"# X\"# X*# \" [+q%.\xA1\"\"2\xA13\xA2+a%7Z+W%.8\"\"2839+G%7Z+=%.8\"\"2839+-%7[+#%')%$)# X$(# X$'# X$&# X$%# X$$# X$## X$\"# X\"# X*\u03DF \"!7Z+\xD8$!.8\"\"2839+-$7Z+#%'\"%$\"# X\"# X*# \" [+\xAD%!.8\"\"2839+-$7Z+#%'\"%$\"# X\"# X*# \" [+\x82%!.8\"\"2839+-$7Z+#%'\"%$\"# X\"# X*# \" [+W%.\xA1\"\"2\xA13\xA2+G%7Z+=%.8\"\"2839+-%7[+#%'(%$(# X$'# X$&# X$%# X$$# X$## X$\"# X\"# X*\u0319 \"!7Z+\xE9$!.8\"\"2839+-$7Z+#%'\"%$\"# X\"# X*# \" [+\xBE%!.8\"\"2839+-$7Z+#%'\"%$\"# X\"# X*# \" [+\x93%!.8\"\"2839+-$7Z+#%'\"%$\"# X\"# X*# \" [+h%!.8\"\"2839+-$7Z+#%'\"%$\"# X\"# X*# \" [+=%.\xA1\"\"2\xA13\xA2+-%7[+#%''%$'# X$&# X$%# X$$# X$## X$\"# X\"# X*\u0242 \"!7Z+\u0114$!.8\"\"2839+-$7Z+#%'\"%$\"# X\"# X*# \" [+\xE9%!.8\"\"2839+-$7Z+#%'\"%$\"# X\"# X*# \" [+\xBE%!.8\"\"2839+-$7Z+#%'\"%$\"# X\"# X*# \" [+\x93%!.8\"\"2839+-$7Z+#%'\"%$\"# X\"# X*# \" [+h%!.8\"\"2839+-$7Z+#%'\"%$\"# X\"# X*# \" [+=%.\xA1\"\"2\xA13\xA2+-%7Z+#%'(%$(# X$'# X$&# X$%# X$$# X$## X$\"# X\"# X*\u0140 \"!7Z+\u0135$!.8\"\"2839+-$7Z+#%'\"%$\"# X\"# X*# \" [+\u010A%!.8\"\"2839+-$7Z+#%'\"%$\"# X\"# X*# \" [+\xDF%!.8\"\"2839+-$7Z+#%'\"%$\"# X\"# X*# \" [+\xB4%!.8\"\"2839+-$7Z+#%'\"%$\"# X\"# X*# \" [+\x89%!.8\"\"2839+-$7Z+#%'\"%$\"# X\"# X*# \" [+^%!.8\"\"2839+-$7Z+#%'\"%$\"# X\"# X*# \" [+3%.\xA1\"\"2\xA13\xA2+#%'(%$(# X$'# X$&# X$%# X$$# X$## X$\"# X\"# X+& 4!6\xA3! %"),
-          peg$decode("!7#+S$7#*# \" [+C%7#*# \" [+3%7#*# \" [+#%'$%$$# X$## X$\"# X\"# X"),
-          peg$decode("!7Z+=$.8\"\"2839+-%7Z+#%'#%$## X$\"# X\"# X*# \"7\\"),
-          peg$decode("!7]+u$.J\"\"2J3K+e%7]+[%.J\"\"2J3K+K%7]+A%.J\"\"2J3K+1%7]+'%4'6\xA4' %$'# X$&# X$%# X$$# X$## X$\"# X\"# X"),
-          peg$decode("!.\xA5\"\"2\xA53\xA6+3$0\xA7\"\"1!3\xA8+#%'\"%$\"# X\"# X*\xA0 \"!.\xA9\"\"2\xA93\xAA+=$0\xAB\"\"1!3\xAC+-%7!+#%'#%$## X$\"# X\"# X*o \"!.\xAD\"\"2\xAD3\xAE+7$7!+-%7!+#%'#%$## X$\"# X\"# X*D \"!0\xAF\"\"1!3\xB0+-$7!+#%'\"%$\"# X\"# X*# \"7!"),
-          peg$decode("!!7!*# \" [+c$7!*# \" [+S%7!*# \" [+C%7!*# \" [+3%7!*# \" [+#%'%%$%# X$$# X$## X$\"# X\"# X+' 4!6\xB1!! %"),
-          peg$decode(" \\!.2\"\"2233+-$7`+#%'\"%$\"# X\"# X,>&!.2\"\"2233+-$7`+#%'\"%$\"# X\"# X\""),
-          peg$decode("7a*A \"7b*; \"7c*5 \"7d*/ \"7e*) \"7f*# \"7g"),
-          peg$decode("!/\xB2\"\"1*3\xB3+b$/\xB4\"\"1#3\xB5*G \"/\xB6\"\"1#3\xB7*; \"/\xB8\"\"1$3\xB9*/ \"/\xBA\"\"1#3\xBB*# \"76+(%4\"6\xBC\"! %$\"# X\"# X"),
-          peg$decode("!/\xBD\"\"1%3\xBE+J$/\xBF\"\"1%3\xC0*/ \"/\xC1\"\"1\"3\xC2*# \"76+(%4\"6\xC3\"! %$\"# X\"# X"),
-          peg$decode("!/\xC4\"\"1'3\xC5+2$7\x8F+(%4\"6\xC6\"! %$\"# X\"# X"),
-          peg$decode("!/\xC7\"\"1$3\xC8+2$7\xEF+(%4\"6\xC9\"! %$\"# X\"# X"),
-          peg$decode("!/\xCA\"\"1&3\xCB+2$7T+(%4\"6\xCC\"! %$\"# X\"# X"),
-          peg$decode("!/\xCD\"\"1\"3\xCE+R$!.>\"\"2>3?+-$76+#%'\"%$\"# X\"# X*# \" [+'%4\"6\xCF\" %$\"# X\"# X"),
-          peg$decode("!7h+T$!.>\"\"2>3?+-$7i+#%'\"%$\"# X\"# X*# \" [+)%4\"6\xD0\"\"! %$\"# X\"# X"),
-          peg$decode("! \\7j+&$,#&7j\"\"\" X+! (%"),
-          peg$decode("! \\7j+&$,#&7j\"\"\" X+! (%"),
-          peg$decode("7k*) \"7+*# \"7-"),
-          peg$decode(".o\"\"2o3p*e \".q\"\"2q3r*Y \".4\"\"2435*M \".8\"\"2839*A \".<\"\"2<3=*5 \".@\"\"2@3A*) \".B\"\"2B3C"),
-          peg$decode("!.6\"\"2637+u$7m+k% \\!.<\"\"2<3=+-$7m+#%'\"%$\"# X\"# X,>&!.<\"\"2<3=+-$7m+#%'\"%$\"# X\"# X\"+#%'#%$## X$\"# X\"# X"),
-          peg$decode("!7n+C$.>\"\"2>3?+3%7o+)%4#6\xD1#\"\" %$## X$\"# X\"# X"),
-          peg$decode(" \\7p*) \"7+*# \"7-+2$,/&7p*) \"7+*# \"7-\"\"\" X"),
-          peg$decode(" \\7p*) \"7+*# \"7-,/&7p*) \"7+*# \"7-\""),
-          peg$decode(".o\"\"2o3p*e \".q\"\"2q3r*Y \".4\"\"2435*M \".6\"\"2637*A \".8\"\"2839*5 \".@\"\"2@3A*) \".B\"\"2B3C"),
-          peg$decode("7\x90*# \"7r"),
-          peg$decode("!7\x8F+K$7'+A%7s+7%7'+-%7\x84+#%'%%$%# X$$# X$## X$\"# X\"# X"),
-          peg$decode("7M*# \"7t"),
-          peg$decode("!7+G$.8\"\"2839+7%7u*# \"7x+'%4#6\xD2# %$## X$\"# X\"# X"),
-          peg$decode("!7v*# \"7w+N$!.6\"\"2637+-$7\x83+#%'\"%$\"# X\"# X*# \" [+#%'\"%$\"# X\"# X"),
-          peg$decode("!.\xD3\"\"2\xD33\xD4+=$7\x80+3%7w*# \" [+#%'#%$## X$\"# X\"# X"),
-          peg$decode("!.4\"\"2435+-$7{+#%'\"%$\"# X\"# X"),
-          peg$decode("!7z+5$ \\7y,#&7y\"+#%'\"%$\"# X\"# X"),
-          peg$decode("7**) \"7+*# \"7-"),
-          peg$decode("7+*\x8F \"7-*\x89 \".2\"\"2233*} \".6\"\"2637*q \".8\"\"2839*e \".:\"\"2:3;*Y \".<\"\"2<3=*M \".>\"\"2>3?*A \".@\"\"2@3A*5 \".B\"\"2B3C*) \".D\"\"2D3E"),
-          peg$decode("!7|+k$ \\!.4\"\"2435+-$7|+#%'\"%$\"# X\"# X,>&!.4\"\"2435+-$7|+#%'\"%$\"# X\"# X\"+#%'\"%$\"# X\"# X"),
-          peg$decode("! \\7~,#&7~\"+k$ \\!.2\"\"2233+-$7}+#%'\"%$\"# X\"# X,>&!.2\"\"2233+-$7}+#%'\"%$\"# X\"# X\"+#%'\"%$\"# X\"# X"),
-          peg$decode(" \\7~,#&7~\""),
-          peg$decode("7+*w \"7-*q \".8\"\"2839*e \".:\"\"2:3;*Y \".<\"\"2<3=*M \".>\"\"2>3?*A \".@\"\"2@3A*5 \".B\"\"2B3C*) \".D\"\"2D3E"),
-          peg$decode("!7\"+\x8D$ \\7\"*G \"7!*A \".@\"\"2@3A*5 \".F\"\"2F3G*) \".J\"\"2J3K,M&7\"*G \"7!*A \".@\"\"2@3A*5 \".F\"\"2F3G*) \".J\"\"2J3K\"+'%4\"6\xD5\" %$\"# X\"# X"),
-          peg$decode("7\x81*# \"7\x82"),
-          peg$decode("!!7O+3$.:\"\"2:3;+#%'\"%$\"# X\"# X*# \" [+-$7S+#%'\"%$\"# X\"# X*# \" ["),
-          peg$decode(" \\7+*\x83 \"7-*} \".B\"\"2B3C*q \".D\"\"2D3E*e \".2\"\"2233*Y \".8\"\"2839*M \".:\"\"2:3;*A \".<\"\"2<3=*5 \".>\"\"2>3?*) \".@\"\"2@3A+\x8C$,\x89&7+*\x83 \"7-*} \".B\"\"2B3C*q \".D\"\"2D3E*e \".2\"\"2233*Y \".8\"\"2839*M \".:\"\"2:3;*A \".<\"\"2<3=*5 \".>\"\"2>3?*) \".@\"\"2@3A\"\"\" X"),
-          peg$decode(" \\7y,#&7y\""),
-          peg$decode("!/\x95\"\"1#3\xD6+y$.4\"\"2435+i% \\7!+&$,#&7!\"\"\" X+P%.J\"\"2J3K+@% \\7!+&$,#&7!\"\"\" X+'%4%6\xD7% %$%# X$$# X$## X$\"# X\"# X"),
-          peg$decode(".\xD8\"\"2\xD83\xD9"),
-          peg$decode(".\xDA\"\"2\xDA3\xDB"),
-          peg$decode(".\xDC\"\"2\xDC3\xDD"),
-          peg$decode(".\xDE\"\"2\xDE3\xDF"),
-          peg$decode(".\xE0\"\"2\xE03\xE1"),
-          peg$decode(".\xE2\"\"2\xE23\xE3"),
-          peg$decode(".\xE4\"\"2\xE43\xE5"),
-          peg$decode(".\xE6\"\"2\xE63\xE7"),
-          peg$decode(".\xE8\"\"2\xE83\xE9"),
-          peg$decode(".\xEA\"\"2\xEA3\xEB"),
-          peg$decode("!7\x85*S \"7\x86*M \"7\x88*G \"7\x89*A \"7\x8A*; \"7\x8B*5 \"7\x8C*/ \"7\x8D*) \"7\x8E*# \"76+& 4!6\xEC! %"),
-          peg$decode("!7\x84+K$7'+A%7\x91+7%7'+-%7\x93+#%'%%$%# X$$# X$## X$\"# X\"# X"),
-          peg$decode("!7\x92+' 4!6\xED!! %"),
-          peg$decode("!7!+7$7!+-%7!+#%'#%$## X$\"# X\"# X"),
-          peg$decode("! \\7**A \"7+*; \"7-*5 \"73*/ \"74*) \"7'*# \"7(,G&7**A \"7+*; \"7-*5 \"73*/ \"74*) \"7'*# \"7(\"+& 4!6\xEE! %"),
-          peg$decode("!7\xB5+_$ \\!7A+-$7\xB5+#%'\"%$\"# X\"# X,8&!7A+-$7\xB5+#%'\"%$\"# X\"# X\"+#%'\"%$\"# X\"# X"),
-          peg$decode("!79+R$!.:\"\"2:3;+-$79+#%'\"%$\"# X\"# X*# \" [+'%4\"6\xEF\" %$\"# X\"# X"),
-          peg$decode("!7:*j \"!7\x97+_$ \\!7A+-$7\x97+#%'\"%$\"# X\"# X,8&!7A+-$7\x97+#%'\"%$\"# X\"# X\"+#%'\"%$\"# X\"# X+& 4!6\xF0! %"),
-          peg$decode("!7L*# \"7\x98+c$ \\!7B+-$7\x9A+#%'\"%$\"# X\"# X,8&!7B+-$7\x9A+#%'\"%$\"# X\"# X\"+'%4\"6\xF1\" %$\"# X\"# X"),
-          peg$decode("!7\x99*# \" [+A$7@+7%7M+-%7?+#%'$%$$# X$## X$\"# X\"# X"),
-          peg$decode("!!76+_$ \\!7.+-$76+#%'\"%$\"# X\"# X,8&!7.+-$76+#%'\"%$\"# X\"# X\"+#%'\"%$\"# X\"# X*# \"7H+' 4!6\xF2!! %"),
-          peg$decode("7\x9B*) \"7\x9C*# \"7\x9F"),
-          peg$decode("!/\xF3\"\"1!3\xF4+<$7<+2%7\x9E+(%4#6\xF5#! %$## X$\"# X\"# X"),
-          peg$decode("!/\xF6\"\"1'3\xF7+<$7<+2%7\x9D+(%4#6\xF8#! %$## X$\"# X\"# X"),
-          peg$decode("! \\7!+&$,#&7!\"\"\" X+' 4!6\xF9!! %"),
-          peg$decode("!.\xFA\"\"2\xFA3\xFB+x$!.J\"\"2J3K+S$7!*# \" [+C%7!*# \" [+3%7!*# \" [+#%'$%$$# X$## X$\"# X\"# X*# \" [+'%4\"6\xFC\" %$\"# X\"# X"),
-          peg$decode("!76+N$!7<+-$7\xA0+#%'\"%$\"# X\"# X*# \" [+)%4\"6\xFD\"\"! %$\"# X\"# X"),
-          peg$decode("76*) \"7T*# \"7H"),
-          peg$decode("!7\xA2+_$ \\!7B+-$7\xA3+#%'\"%$\"# X\"# X,8&!7B+-$7\xA3+#%'\"%$\"# X\"# X\"+#%'\"%$\"# X\"# X"),
-          peg$decode("!/\xFE\"\"1&3\xFF*G \"/\u0100\"\"1'3\u0101*; \"/\u0102\"\"1$3\u0103*/ \"/\u0104\"\"1%3\u0105*# \"76+& 4!6\u0106! %"),
-          peg$decode("7\xA4*# \"7\x9F"),
-          peg$decode("!/\u0107\"\"1(3\u0108+O$7<+E%/\u0109\"\"1(3\u010A*/ \"/\u010B\"\"1(3\u010C*# \"76+#%'#%$## X$\"# X\"# X"),
-          peg$decode("!76+_$ \\!7A+-$76+#%'\"%$\"# X\"# X,8&!7A+-$76+#%'\"%$\"# X\"# X\"+#%'\"%$\"# X\"# X"),
-          peg$decode("! \\7!+&$,#&7!\"\"\" X+' 4!6\u010D!! %"),
-          peg$decode("!7\xA8+& 4!6\u010E! %"),
-          peg$decode("!7\xA9+s$7;+i%7\xAE+_% \\!7B+-$7\xAF+#%'\"%$\"# X\"# X,8&!7B+-$7\xAF+#%'\"%$\"# X\"# X\"+#%'$%$$# X$## X$\"# X\"# X"),
-          peg$decode("7\xAA*# \"7\xAB"),
-          peg$decode("/\u010F\"\"1$3\u0110*S \"/\u0111\"\"1%3\u0112*G \"/\u0113\"\"1%3\u0114*; \"/\u0115\"\"1%3\u0116*/ \"/\u0117\"\"1+3\u0118*# \"7\xAC"),
-          peg$decode("/\u0119\"\"1'3\u011A*/ \"/\u011B\"\"1)3\u011C*# \"7\xAC"),
-          peg$decode("76*# \"7\xAD"),
-          peg$decode("!/\u011D\"\"1\"3\u011E+-$76+#%'\"%$\"# X\"# X"),
-          peg$decode("7\xAC*# \"76"),
-          peg$decode("!76+7$7<+-%7\xB0+#%'#%$## X$\"# X\"# X"),
-          peg$decode("76*# \"7H"),
-          peg$decode("!7\xB2+7$7.+-%7\x8F+#%'#%$## X$\"# X\"# X"),
-          peg$decode("! \\7!+&$,#&7!\"\"\" X+' 4!6\u011F!! %"),
-          peg$decode("!7\x9D+' 4!6\u0120!! %"),
-          peg$decode("!7\xB5+d$ \\!7B+-$7\x9F+#%'\"%$\"# X\"# X,8&!7B+-$7\x9F+#%'\"%$\"# X\"# X\"+(%4\"6\u0121\"!!%$\"# X\"# X"),
-          peg$decode("!!77+k$ \\!.J\"\"2J3K+-$77+#%'\"%$\"# X\"# X,>&!.J\"\"2J3K+-$77+#%'\"%$\"# X\"# X\"+#%'\"%$\"# X\"# X+! (%"),
-          peg$decode("!7L*# \"7\x98+c$ \\!7B+-$7\xB7+#%'\"%$\"# X\"# X,8&!7B+-$7\xB7+#%'\"%$\"# X\"# X\"+'%4\"6\u0122\" %$\"# X\"# X"),
-          peg$decode("7\xB8*# \"7\x9F"),
-          peg$decode("!/\u0123\"\"1#3\u0124+<$7<+2%76+(%4#6\u0125#! %$## X$\"# X\"# X"),
-          peg$decode("! \\7!+&$,#&7!\"\"\" X+' 4!6\u0126!! %"),
-          peg$decode("!7\x9D+' 4!6\u0127!! %"),
-          peg$decode("! \\7\x99,#&7\x99\"+\x81$7@+w%7M+m%7?+c% \\!7B+-$7\x9F+#%'\"%$\"# X\"# X,8&!7B+-$7\x9F+#%'\"%$\"# X\"# X\"+'%4%6\u0128% %$%# X$$# X$## X$\"# X\"# X"),
-          peg$decode("7\xBD"),
-          peg$decode("!/\u0129\"\"1&3\u012A+s$7.+i%7\xC0+_% \\!7A+-$7\xC0+#%'\"%$\"# X\"# X,8&!7A+-$7\xC0+#%'\"%$\"# X\"# X\"+#%'$%$$# X$## X$\"# X\"# X*# \"7\xBE"),
-          peg$decode("!76+s$7.+i%7\xBF+_% \\!7A+-$7\xBF+#%'\"%$\"# X\"# X,8&!7A+-$7\xBF+#%'\"%$\"# X\"# X\"+#%'$%$$# X$## X$\"# X\"# X"),
-          peg$decode("!76+=$7<+3%76*# \"7H+#%'#%$## X$\"# X\"# X"),
-          peg$decode("7\xC1*G \"7\xC3*A \"7\xC5*; \"7\xC7*5 \"7\xC8*/ \"7\xC9*) \"7\xCA*# \"7\xBF"),
-          peg$decode("!/\u012B\"\"1%3\u012C+7$7<+-%7\xC2+#%'#%$## X$\"# X\"# X"),
-          peg$decode("!7I+' 4!6\u012D!! %"),
-          peg$decode("!/\u012E\"\"1&3\u012F+\xA5$7<+\x9B%7D+\x91%7\xC4+\x87% \\! \\7'+&$,#&7'\"\"\" X+-$7\xC4+#%'\"%$\"# X\"# X,G&! \\7'+&$,#&7'\"\"\" X+-$7\xC4+#%'\"%$\"# X\"# X\"+-%7E+#%'&%$&# X$%# X$$# X$## X$\"# X\"# X"),
-          peg$decode("7t*# \"7w"),
-          peg$decode("!/\u0130\"\"1%3\u0131+7$7<+-%7\xC6+#%'#%$## X$\"# X\"# X"),
-          peg$decode("!7I+' 4!6\u0132!! %"),
-          peg$decode("!/\u0133\"\"1&3\u0134+<$7<+2%7I+(%4#6\u0135#! %$## X$\"# X\"# X"),
-          peg$decode("!/\u0136\"\"1%3\u0137+_$7<+U%!/\u0138\"\"1$3\u0139+& 4!6\u013A! %*4 \"!/\u013B\"\"1%3\u013C+& 4!6\u013D! %+#%'#%$## X$\"# X\"# X"),
-          peg$decode("!/\u013E\"\"1)3\u013F+T$7<+J%/\u0140\"\"1#3\u0141*/ \"/\u0142\"\"1(3\u0143*# \"76+(%4#6\u0144#! %$## X$\"# X\"# X"),
-          peg$decode("!/\u0145\"\"1#3\u0146+\x9E$7<+\x94%7D+\x8A%!7\xCB+k$ \\!.D\"\"2D3E+-$7\xCB+#%'\"%$\"# X\"# X,>&!.D\"\"2D3E+-$7\xCB+#%'\"%$\"# X\"# X\"+#%'\"%$\"# X\"# X+-%7E+#%'%%$%# X$$# X$## X$\"# X\"# X"),
-          peg$decode("!/\u0147\"\"1(3\u0148*/ \"/\u0149\"\"1$3\u014A*# \"76+' 4!6\u014B!! %"),
-          peg$decode("!76+_$ \\!7A+-$76+#%'\"%$\"# X\"# X,8&!7A+-$76+#%'\"%$\"# X\"# X\"+#%'\"%$\"# X\"# X"),
-          peg$decode("!7\xCE+K$7.+A%7\xCE+7%7.+-%7\x8F+#%'%%$%# X$$# X$## X$\"# X\"# X"),
-          peg$decode("! \\7!+&$,#&7!\"\"\" X+' 4!6\u014C!! %"),
-          peg$decode("!7\xD0+c$ \\!7A+-$7\xD0+#%'\"%$\"# X\"# X,8&!7A+-$7\xD0+#%'\"%$\"# X\"# X\"+'%4\"6\u014D\" %$\"# X\"# X"),
-          peg$decode("!7\x98+c$ \\!7B+-$7\x9F+#%'\"%$\"# X\"# X,8&!7B+-$7\x9F+#%'\"%$\"# X\"# X\"+'%4\"6\u014E\" %$\"# X\"# X"),
-          peg$decode("!7L*T \"7\x98*N \"!7@*# \" [+=$7t+3%7?*# \" [+#%'#%$## X$\"# X\"# X+c$ \\!7B+-$7\x9F+#%'\"%$\"# X\"# X,8&!7B+-$7\x9F+#%'\"%$\"# X\"# X\"+'%4\"6\u014F\" %$\"# X\"# X"),
-          peg$decode("!7\xD3+c$ \\!7B+-$7\xD4+#%'\"%$\"# X\"# X,8&!7B+-$7\xD4+#%'\"%$\"# X\"# X\"+'%4\"6\u0150\" %$\"# X\"# X"),
-          peg$decode("!7\x95+& 4!6\u0151! %"),
-          peg$decode("!/\u0152\"\"1(3\u0153+<$7<+2%76+(%4#6\u0154#! %$## X$\"# X\"# X*j \"!/\u0155\"\"1&3\u0156+<$7<+2%76+(%4#6\u0157#! %$## X$\"# X\"# X*: \"!/\u0158\"\"1*3\u0159+& 4!6\u015A! %*# \"7\x9F"),
-          peg$decode("!!76+o$ \\!7A+2$76+(%4\"6\u015B\"! %$\"# X\"# X,=&!7A+2$76+(%4\"6\u015B\"! %$\"# X\"# X\"+)%4\"6\u015C\"\"! %$\"# X\"# X*# \" [+' 4!6\u015D!! %"),
-          peg$decode("!7\xD7+_$ \\!7A+-$7\xD7+#%'\"%$\"# X\"# X,8&!7A+-$7\xD7+#%'\"%$\"# X\"# X\"+#%'\"%$\"# X\"# X"),
-          peg$decode("!7\x98+_$ \\!7B+-$7\x9F+#%'\"%$\"# X\"# X,8&!7B+-$7\x9F+#%'\"%$\"# X\"# X\"+#%'\"%$\"# X\"# X"),
-          peg$decode("! \\7!+&$,#&7!\"\"\" X+' 4!6\u015E!! %"),
-          peg$decode("!7\xDA+_$ \\!7B+-$7\xDB+#%'\"%$\"# X\"# X,8&!7B+-$7\xDB+#%'\"%$\"# X\"# X\"+#%'\"%$\"# X\"# X"),
-          peg$decode("!/\u015F\"\"1&3\u0160*; \"/\u0161\"\"1'3\u0162*/ \"/\u0163\"\"1*3\u0164*# \"76+& 4!6\u0165! %"),
-          peg$decode("!/\u0166\"\"1&3\u0167+<$7<+2%7\xDC+(%4#6\u0168#! %$## X$\"# X\"# X*\x83 \"!/\xF6\"\"1'3\xF7+<$7<+2%7\x9D+(%4#6\u0169#! %$## X$\"# X\"# X*S \"!/\u016A\"\"1+3\u016B+<$7<+2%7\x9D+(%4#6\u016C#! %$## X$\"# X\"# X*# \"7\x9F"),
-          peg$decode("/\u016D\"\"1+3\u016E*k \"/\u016F\"\"1)3\u0170*_ \"/\u0171\"\"1(3\u0172*S \"/\u0173\"\"1'3\u0174*G \"/\u0175\"\"1&3\u0176*; \"/\u0177\"\"1*3\u0178*/ \"/\u0179\"\"1)3\u017A*# \"76"),
-          peg$decode("71*# \" ["),
-          peg$decode("!!76+o$ \\!7A+2$76+(%4\"6\u015B\"! %$\"# X\"# X,=&!7A+2$76+(%4\"6\u015B\"! %$\"# X\"# X\"+)%4\"6\u015C\"\"! %$\"# X\"# X*# \" [+' 4!6\u017B!! %"),
-          peg$decode("!7L*# \"7\x98+c$ \\!7B+-$7\xE0+#%'\"%$\"# X\"# X,8&!7B+-$7\xE0+#%'\"%$\"# X\"# X\"+'%4\"6\u017C\" %$\"# X\"# X"),
-          peg$decode("7\xB8*# \"7\x9F"),
-          peg$decode("!7\xE2+_$ \\!7A+-$7\xE2+#%'\"%$\"# X\"# X,8&!7A+-$7\xE2+#%'\"%$\"# X\"# X\"+#%'\"%$\"# X\"# X"),
-          peg$decode("!7\xE9+s$7.+i%7\xEC+_% \\!7B+-$7\xE3+#%'\"%$\"# X\"# X,8&!7B+-$7\xE3+#%'\"%$\"# X\"# X\"+#%'$%$$# X$## X$\"# X\"# X"),
-          peg$decode("7\xE4*; \"7\xE5*5 \"7\xE6*/ \"7\xE7*) \"7\xE8*# \"7\x9F"),
-          peg$decode("!/\u017D\"\"1#3\u017E+<$7<+2%7\xEF+(%4#6\u017F#! %$## X$\"# X\"# X"),
-          peg$decode("!/\u0180\"\"1%3\u0181+<$7<+2%7T+(%4#6\u0182#! %$## X$\"# X\"# X"),
-          peg$decode("!/\u0183\"\"1(3\u0184+B$7<+8%7\\*# \"7Y+(%4#6\u0185#! %$## X$\"# X\"# X"),
-          peg$decode("!/\u0186\"\"1&3\u0187+<$7<+2%76+(%4#6\u0188#! %$## X$\"# X\"# X"),
-          peg$decode("!/\u0189\"\"1%3\u018A+T$!7<+5$ \\7!,#&7!\"+#%'\"%$\"# X\"# X*# \" [+'%4\"6\u018B\" %$\"# X\"# X"),
-          peg$decode("!7\xEA+K$7;+A%76+7%7;+-%7\xEB+#%'%%$%# X$$# X$## X$\"# X\"# X"),
-          peg$decode("!/\x95\"\"1#3\xD6*# \"76+' 4!6\u018C!! %"),
-          peg$decode("!/\xB4\"\"1#3\u018D*G \"/\xB6\"\"1#3\u018E*; \"/\xBA\"\"1#3\u018F*/ \"/\xB8\"\"1$3\u0190*# \"76+' 4!6\u0191!! %"),
-          peg$decode("!7\xED+H$!7C+-$7\xEE+#%'\"%$\"# X\"# X*# \" [+#%'\"%$\"# X\"# X"),
-          peg$decode("!7U*) \"7\\*# \"7X+& 4!6\u0192! %"),
-          peg$decode("!!7!*# \" [+c$7!*# \" [+S%7!*# \" [+C%7!*# \" [+3%7!*# \" [+#%'%%$%# X$$# X$## X$\"# X\"# X+' 4!6\u0193!! %"),
-          peg$decode("!!7!+C$7!*# \" [+3%7!*# \" [+#%'#%$## X$\"# X\"# X+' 4!6\u0194!! %"),
-          peg$decode("7\xBD"),
-          peg$decode("!7\x9D+d$ \\!7B+-$7\xF2+#%'\"%$\"# X\"# X,8&!7B+-$7\xF2+#%'\"%$\"# X\"# X\"+(%4\"6\u0195\"!!%$\"# X\"# X"),
-          peg$decode("7\xF3*# \"7\x9F"),
-          peg$decode("!.\u0196\"\"2\u01963\u0197+N$7<+D%.\u0198\"\"2\u01983\u0199*) \".\u019A\"\"2\u019A3\u019B+(%4#6\u019C#! %$## X$\"# X\"# X"),
-          peg$decode("!7\x9D+d$ \\!7B+-$7\x9F+#%'\"%$\"# X\"# X,8&!7B+-$7\x9F+#%'\"%$\"# X\"# X\"+(%4\"6\u019D\"!!%$\"# X\"# X"),
-          peg$decode("!76+7$70+-%7\xF6+#%'#%$## X$\"# X\"# X"),
-          peg$decode(" \\72*) \"74*# \"7.,/&72*) \"74*# \"7.\""),
-          peg$decode(" \\7%,#&7%\""),
-          peg$decode("!7\xF9+=$.8\"\"2839+-%7\xFA+#%'#%$## X$\"# X\"# X"),
-          peg$decode("!/\u019E\"\"1%3\u019F*) \"/\u01A0\"\"1$3\u01A1+' 4!6\u01A2!! %"),
-          peg$decode("!7\xFB+N$!.8\"\"2839+-$7^+#%'\"%$\"# X\"# X*# \" [+#%'\"%$\"# X\"# X"),
-          peg$decode("!7\\*) \"7X*# \"7\x82+' 4!6\u01A3!! %"),
-          peg$decode("! \\7\xFD*) \"7-*# \"7\xFE,/&7\xFD*) \"7-*# \"7\xFE\"+! (%"),
-          peg$decode("7\"*S \"7!*M \".F\"\"2F3G*A \".J\"\"2J3K*5 \".H\"\"2H3I*) \".N\"\"2N3O"),
-          peg$decode(".L\"\"2L3M*\x95 \".B\"\"2B3C*\x89 \".<\"\"2<3=*} \".R\"\"2R3S*q \".T\"\"2T3U*e \".V\"\"2V3W*Y \".P\"\"2P3Q*M \".@\"\"2@3A*A \".D\"\"2D3E*5 \".2\"\"2233*) \".>\"\"2>3?"),
-          peg$decode("!7\u0100+h$.8\"\"2839+X%7\xFA+N%!.\u01A4\"\"2\u01A43\u01A5+-$7\xEB+#%'\"%$\"# X\"# X*# \" [+#%'$%$$# X$## X$\"# X\"# X"),
-          peg$decode("!/\u01A6\"\"1%3\u01A7*) \"/\u01A8\"\"1$3\u01A9+' 4!6\u01A2!! %"),
-          peg$decode("!7\xEB+Q$/\xB4\"\"1#3\xB5*7 \"/\xB6\"\"1#3\xB7*+ \" \\7+,#&7+\"+'%4\"6\u01AA\" %$\"# X\"# X"),
-          peg$decode("!7\u0104+\x8F$.F\"\"2F3G+%7\u0103+u%.F\"\"2F3G+e%7\u0103+[%.F\"\"2F3G+K%7\u0103+A%.F\"\"2F3G+1%7\u0105+'%4)6\u01AB) %$)# X$(# X$'# X$&# X$%# X$$# X$## X$\"# X\"# X"),
-          peg$decode("!7#+A$7#+7%7#+-%7#+#%'$%$$# X$## X$\"# X\"# X"),
-          peg$decode("!7\u0103+-$7\u0103+#%'\"%$\"# X\"# X"),
-          peg$decode("!7\u0103+7$7\u0103+-%7\u0103+#%'#%$## X$\"# X\"# X")
-        ],
-
-        peg$currPos          = 0,
-        peg$reportedPos      = 0,
-        peg$cachedPos        = 0,
-        peg$cachedPosDetails = { line: 1, column: 1, seenCR: false },
-        peg$maxFailPos       = 0,
-        peg$maxFailExpected  = [],
-        peg$silentFails      = 0,
-
-        peg$result;
-
-    if ("startRule" in options) {
-      if (!(options.startRule in peg$startRuleIndices)) {
-        throw new Error("Can't start parsing from rule \"" + options.startRule + "\".");
-      }
-
-      peg$startRuleIndex = peg$startRuleIndices[options.startRule];
-    }
-
-    function text() {
-      return input.substring(peg$reportedPos, peg$currPos);
-    }
-
-    function offset() {
-      return peg$reportedPos;
-    }
-
-    function line() {
-      return peg$computePosDetails(peg$reportedPos).line;
-    }
-
-    function column() {
-      return peg$computePosDetails(peg$reportedPos).column;
-    }
-
-    function expected(description) {
-      throw peg$buildException(
-        null,
-        [{ type: "other", description: description }],
-        peg$reportedPos
-      );
-    }
-
-    function error(message) {
-      throw peg$buildException(message, null, peg$reportedPos);
-    }
-
-    function peg$computePosDetails(pos) {
-      function advance(details, startPos, endPos) {
-        var p, ch;
-
-        for (p = startPos; p < endPos; p++) {
-          ch = input.charAt(p);
-          if (ch === "\n") {
-            if (!details.seenCR) { details.line++; }
-            details.column = 1;
-            details.seenCR = false;
-          } else if (ch === "\r" || ch === "\u2028" || ch === "\u2029") {
-            details.line++;
-            details.column = 1;
-            details.seenCR = true;
-          } else {
-            details.column++;
-            details.seenCR = false;
-          }
-        }
-      }
-
-      if (peg$cachedPos !== pos) {
-        if (peg$cachedPos > pos) {
-          peg$cachedPos = 0;
-          peg$cachedPosDetails = { line: 1, column: 1, seenCR: false };
-        }
-        advance(peg$cachedPosDetails, peg$cachedPos, pos);
-        peg$cachedPos = pos;
-      }
-
-      return peg$cachedPosDetails;
-    }
-
-    function peg$fail(expected) {
-      if (peg$currPos < peg$maxFailPos) { return; }
-
-      if (peg$currPos > peg$maxFailPos) {
-        peg$maxFailPos = peg$currPos;
-        peg$maxFailExpected = [];
-      }
-
-      peg$maxFailExpected.push(expected);
-    }
-
-    function peg$buildException(message, expected, pos) {
-      function cleanupExpected(expected) {
-        var i = 1;
-
-        expected.sort(function(a, b) {
-          if (a.description < b.description) {
-            return -1;
-          } else if (a.description > b.description) {
-            return 1;
-          } else {
-            return 0;
-          }
-        });
-
-        while (i < expected.length) {
-          if (expected[i - 1] === expected[i]) {
-            expected.splice(i, 1);
-          } else {
-            i++;
-          }
-        }
-      }
-
-      function buildMessage(expected, found) {
-        function stringEscape(s) {
-          function hex(ch) { return ch.charCodeAt(0).toString(16).toUpperCase(); }
-
-          return s
-            .replace(/\\/g,   '\\\\')
-            .replace(/"/g,    '\\"')
-            .replace(/\x08/g, '\\b')
-            .replace(/\t/g,   '\\t')
-            .replace(/\n/g,   '\\n')
-            .replace(/\f/g,   '\\f')
-            .replace(/\r/g,   '\\r')
-            .replace(/[\x00-\x07\x0B\x0E\x0F]/g, function(ch) { return '\\x0' + hex(ch); })
-            .replace(/[\x10-\x1F\x80-\xFF]/g,    function(ch) { return '\\x'  + hex(ch); })
-            .replace(/[\u0180-\u0FFF]/g,         function(ch) { return '\\u0' + hex(ch); })
-            .replace(/[\u1080-\uFFFF]/g,         function(ch) { return '\\u'  + hex(ch); });
-        }
-
-        var expectedDescs = new Array(expected.length),
-            expectedDesc, foundDesc, i;
-
-        for (i = 0; i < expected.length; i++) {
-          expectedDescs[i] = expected[i].description;
-        }
-
-        expectedDesc = expected.length > 1
-          ? expectedDescs.slice(0, -1).join(", ")
-              + " or "
-              + expectedDescs[expected.length - 1]
-          : expectedDescs[0];
-
-        foundDesc = found ? "\"" + stringEscape(found) + "\"" : "end of input";
-
-        return "Expected " + expectedDesc + " but " + foundDesc + " found.";
-      }
-
-      var posDetails = peg$computePosDetails(pos),
-          found      = pos < input.length ? input.charAt(pos) : null;
-
-      if (expected !== null) {
-        cleanupExpected(expected);
-      }
-
-      return new SyntaxError(
-        message !== null ? message : buildMessage(expected, found),
-        expected,
-        found,
-        pos,
-        posDetails.line,
-        posDetails.column
-      );
-    }
-
-    function peg$decode(s) {
-      var bc = new Array(s.length), i;
-
-      for (i = 0; i < s.length; i++) {
-        bc[i] = s.charCodeAt(i) - 32;
-      }
-
-      return bc;
-    }
-
-    function peg$parseRule(index) {
-      var bc    = peg$bytecode[index],
-          ip    = 0,
-          ips   = [],
-          end   = bc.length,
-          ends  = [],
-          stack = [],
-          params, i;
-
-      function protect(object) {
-        return Object.prototype.toString.apply(object) === "[object Array]" ? [] : object;
-      }
-
-      while (true) {
-        while (ip < end) {
-          switch (bc[ip]) {
-            case 0:
-              stack.push(protect(peg$consts[bc[ip + 1]]));
-              ip += 2;
-              break;
-
-            case 1:
-              stack.push(peg$currPos);
-              ip++;
-              break;
-
-            case 2:
-              stack.pop();
-              ip++;
-              break;
-
-            case 3:
-              peg$currPos = stack.pop();
-              ip++;
-              break;
-
-            case 4:
-              stack.length -= bc[ip + 1];
-              ip += 2;
-              break;
-
-            case 5:
-              stack.splice(-2, 1);
-              ip++;
-              break;
-
-            case 6:
-              stack[stack.length - 2].push(stack.pop());
-              ip++;
-              break;
-
-            case 7:
-              stack.push(stack.splice(stack.length - bc[ip + 1], bc[ip + 1]));
-              ip += 2;
-              break;
-
-            case 8:
-              stack.pop();
-              stack.push(input.substring(stack[stack.length - 1], peg$currPos));
-              ip++;
-              break;
-
-            case 9:
-              ends.push(end);
-              ips.push(ip + 3 + bc[ip + 1] + bc[ip + 2]);
-
-              if (stack[stack.length - 1]) {
-                end = ip + 3 + bc[ip + 1];
-                ip += 3;
-              } else {
-                end = ip + 3 + bc[ip + 1] + bc[ip + 2];
-                ip += 3 + bc[ip + 1];
-              }
-
-              break;
-
-            case 10:
-              ends.push(end);
-              ips.push(ip + 3 + bc[ip + 1] + bc[ip + 2]);
-
-              if (stack[stack.length - 1] === peg$FAILED) {
-                end = ip + 3 + bc[ip + 1];
-                ip += 3;
-              } else {
-                end = ip + 3 + bc[ip + 1] + bc[ip + 2];
-                ip += 3 + bc[ip + 1];
-              }
-
-              break;
-
-            case 11:
-              ends.push(end);
-              ips.push(ip + 3 + bc[ip + 1] + bc[ip + 2]);
-
-              if (stack[stack.length - 1] !== peg$FAILED) {
-                end = ip + 3 + bc[ip + 1];
-                ip += 3;
-              } else {
-                end = ip + 3 + bc[ip + 1] + bc[ip + 2];
-                ip += 3 + bc[ip + 1];
-              }
-
-              break;
-
-            case 12:
-              if (stack[stack.length - 1] !== peg$FAILED) {
-                ends.push(end);
-                ips.push(ip);
-
-                end = ip + 2 + bc[ip + 1];
-                ip += 2;
-              } else {
-                ip += 2 + bc[ip + 1];
-              }
-
-              break;
-
-            case 13:
-              ends.push(end);
-              ips.push(ip + 3 + bc[ip + 1] + bc[ip + 2]);
-
-              if (input.length > peg$currPos) {
-                end = ip + 3 + bc[ip + 1];
-                ip += 3;
-              } else {
-                end = ip + 3 + bc[ip + 1] + bc[ip + 2];
-                ip += 3 + bc[ip + 1];
-              }
-
-              break;
-
-            case 14:
-              ends.push(end);
-              ips.push(ip + 4 + bc[ip + 2] + bc[ip + 3]);
-
-              if (input.substr(peg$currPos, peg$consts[bc[ip + 1]].length) === peg$consts[bc[ip + 1]]) {
-                end = ip + 4 + bc[ip + 2];
-                ip += 4;
-              } else {
-                end = ip + 4 + bc[ip + 2] + bc[ip + 3];
-                ip += 4 + bc[ip + 2];
-              }
-
-              break;
-
-            case 15:
-              ends.push(end);
-              ips.push(ip + 4 + bc[ip + 2] + bc[ip + 3]);
-
-              if (input.substr(peg$currPos, peg$consts[bc[ip + 1]].length).toLowerCase() === peg$consts[bc[ip + 1]]) {
-                end = ip + 4 + bc[ip + 2];
-                ip += 4;
-              } else {
-                end = ip + 4 + bc[ip + 2] + bc[ip + 3];
-                ip += 4 + bc[ip + 2];
-              }
-
-              break;
-
-            case 16:
-              ends.push(end);
-              ips.push(ip + 4 + bc[ip + 2] + bc[ip + 3]);
-
-              if (peg$consts[bc[ip + 1]].test(input.charAt(peg$currPos))) {
-                end = ip + 4 + bc[ip + 2];
-                ip += 4;
-              } else {
-                end = ip + 4 + bc[ip + 2] + bc[ip + 3];
-                ip += 4 + bc[ip + 2];
-              }
-
-              break;
-
-            case 17:
-              stack.push(input.substr(peg$currPos, bc[ip + 1]));
-              peg$currPos += bc[ip + 1];
-              ip += 2;
-              break;
-
-            case 18:
-              stack.push(peg$consts[bc[ip + 1]]);
-              peg$currPos += peg$consts[bc[ip + 1]].length;
-              ip += 2;
-              break;
-
-            case 19:
-              stack.push(peg$FAILED);
-              if (peg$silentFails === 0) {
-                peg$fail(peg$consts[bc[ip + 1]]);
-              }
-              ip += 2;
-              break;
-
-            case 20:
-              peg$reportedPos = stack[stack.length - 1 - bc[ip + 1]];
-              ip += 2;
-              break;
-
-            case 21:
-              peg$reportedPos = peg$currPos;
-              ip++;
-              break;
-
-            case 22:
-              params = bc.slice(ip + 4, ip + 4 + bc[ip + 3]);
-              for (i = 0; i < bc[ip + 3]; i++) {
-                params[i] = stack[stack.length - 1 - params[i]];
-              }
-
-              stack.splice(
-                stack.length - bc[ip + 2],
-                bc[ip + 2],
-                peg$consts[bc[ip + 1]].apply(null, params)
-              );
-
-              ip += 4 + bc[ip + 3];
-              break;
-
-            case 23:
-              stack.push(peg$parseRule(bc[ip + 1]));
-              ip += 2;
-              break;
-
-            case 24:
-              peg$silentFails++;
-              ip++;
-              break;
-
-            case 25:
-              peg$silentFails--;
-              ip++;
-              break;
-
-            default:
-              throw new Error("Invalid opcode: " + bc[ip] + ".");
-          }
-        }
-
-        if (ends.length > 0) {
-          end = ends.pop();
-          ip = ips.pop();
-        } else {
-          break;
-        }
-      }
-
-      return stack[0];
-    }
-
-
-      options.data = {}; // Object to which header attributes will be assigned during parsing
-
-      function list (first, rest) {
-        return [first].concat(rest);
-      }
-
-
-    peg$result = peg$parseRule(peg$startRuleIndex);
-
-    if (peg$result !== peg$FAILED && peg$currPos === input.length) {
-      return peg$result;
-    } else {
-      if (peg$result !== peg$FAILED && peg$currPos < input.length) {
-        peg$fail({ type: "end", description: "end of input" });
-      }
-
-      throw peg$buildException(null, peg$maxFailExpected, peg$maxFailPos);
-    }
-  }
-
-  return {
-    SyntaxError: SyntaxError,
-    parse:       parse
-  };
-})();
-},{}],32:[function(require,module,exports){
-"use strict";
-/**
- * @fileoverview Hacks - This file contains all of the things we
- * wish we didn't have to do, just for interop.  It is similar to
- * Utils, which provides actually useful and relevant functions for
- * a SIP library. Methods in this file are grouped by vendor, so
- * as to most easily track when particular hacks may not be necessary anymore.
- */
-
-module.exports = function (SIP) {
-
-//keep to quiet jshint, and remain consistent with other files
-SIP = SIP;
-
-var Hacks = {
-  AllBrowsers: {
-    maskDtls: function (sdp) {
-      if (sdp) {
-        sdp = sdp.replace(/ UDP\/TLS\/RTP\/SAVP/gmi, " RTP/SAVP");
-      }
-      return sdp;
-    },
-    unmaskDtls: function (sdp) {
-      /**
-       * Chrome does not handle DTLS correctly (Canaray does, but not production)
-       * keeping Chrome as SDES until DTLS is fixed (comment out 'is_opera' condition)
-       *
-       * UPDATE: May 21, 2014
-       * Chrome 35 now properly defaults to DTLS.  Only Opera remains using SDES
-       *
-       * UPDATE: 2014-09-24
-       * Opera now supports DTLS by default as well.
-       *
-       **/
-      return sdp.replace(/ RTP\/SAVP/gmi, " UDP/TLS/RTP/SAVP");
-    }
-  },
-  Firefox: {
-    /* Condition to detect if hacks are applicable */
-    isFirefox: function () {
-      return typeof mozRTCPeerConnection !== 'undefined';
-    },
-
-    cannotHandleExtraWhitespace: function (sdp) {
-      if (this.isFirefox() && sdp) {
-        sdp = sdp.replace(/ \r\n/g, "\r\n");
-      }
-      return sdp;
-    },
-
-    hasMissingCLineInSDP: function (sdp) {
-      /*
-       * This is a Firefox hack to insert valid sdp when getDescription is
-       * called with the constraint offerToReceiveVideo = false.
-       * We search for either a c-line at the top of the sdp above all
-       * m-lines. If that does not exist then we search for a c-line
-       * beneath each m-line. If it is missing a c-line, we insert
-       * a fake c-line with the ip address 0.0.0.0. This is then valid
-       * sdp and no media will be sent for that m-line.
-       *
-       * Valid SDP is:
-       * m=
-       * i=
-       * c=
-       */
-      var insertAt, mlines;
-      if (sdp.indexOf('c=') > sdp.indexOf('m=')) {
-
-        // Find all m= lines
-        mlines = sdp.match(/m=.*\r\n.*/g);
-        for (var i=0; i<mlines.length; i++) {
-
-          // If it has an i= line, check if the next line is the c= line
-          if (mlines[i].toString().search(/i=.*/) >= 0) {
-            insertAt = sdp.indexOf(mlines[i].toString())+mlines[i].toString().length;
-            if (sdp.substr(insertAt,2)!=='c=') {
-              sdp = sdp.substr(0,insertAt) + '\r\nc=IN IP4 0.0.0.0' + sdp.substr(insertAt);
-            }
-
-          // else add the C line if it's missing
-          } else if (mlines[i].toString().search(/c=.*/) < 0) {
-            insertAt = sdp.indexOf(mlines[i].toString().match(/.*/))+mlines[i].toString().match(/.*/).toString().length;
-            sdp = sdp.substr(0,insertAt) + '\r\nc=IN IP4 0.0.0.0' + sdp.substr(insertAt);
-          }
-        }
-      }
-      return sdp;
-    },
-  },
-
-  Chrome: {
-    needsExplicitlyInactiveSDP: function (sdp) {
-      var sub, index;
-
-      if (Hacks.Firefox.isFirefox()) { // Fix this in Firefox before sending
-        index = sdp.indexOf('m=video 0');
-        if (index !== -1) {
-          sub = sdp.substr(index);
-          sub = sub.replace(/\r\nc=IN IP4.*\r\n$/,
-                            '\r\nc=IN IP4 0.0.0.0\r\na=inactive\r\n');
-          return sdp.substr(0, index) + sub;
-        }
-      }
-      return sdp;
-    },
-
-    getsConfusedAboutGUM: function (session) {
-      if (session.mediaHandler) {
-        session.mediaHandler.close();
-      }
-    }
-  }
-};
-return Hacks;
-};
-
-},{}],33:[function(require,module,exports){
-"use strict";
-var levels = {
-  'error': 0,
-  'warn': 1,
-  'log': 2,
-  'debug': 3
-};
-
-module.exports = function (console) {
-
-var LoggerFactory = function () {
-  var logger,
-    level = 2,
-    builtinEnabled = true,
-    connector = null;
-
-    this.loggers = {};
-
-    logger = this.getLogger('sip.loggerfactory');
-
-
-  Object.defineProperties(this, {
-    builtinEnabled: {
-      get: function(){ return builtinEnabled; },
-      set: function(value){
-        if (typeof value === 'boolean') {
-          builtinEnabled = value;
-        } else {
-          logger.error('invalid "builtinEnabled" parameter value: '+ JSON.stringify(value));
-        }
-      }
-    },
-
-    level: {
-      get: function() {return level; },
-      set: function(value) {
-        if (value >= 0 && value <=3) {
-          level = value;
-        } else if (value > 3) {
-          level = 3;
-        } else if (levels.hasOwnProperty(value)) {
-          level = levels[value];
-        } else {
-          logger.error('invalid "level" parameter value: '+ JSON.stringify(value));
-        }
-      }
-    },
-
-    connector: {
-      get: function() {return connector; },
-      set: function(value){
-        if(value === null || value === "" || value === undefined) {
-          connector = null;
-        } else if (typeof value === 'function') {
-          connector = value;
-        } else {
-          logger.error('invalid "connector" parameter value: '+ JSON.stringify(value));
-        }
-      }
-    }
-  });
-};
-
-LoggerFactory.prototype.print = function(target, category, label, content) {
-  if (typeof content === 'string') {
-    var prefix = [new Date(), category];
-    if (label) {
-      prefix.push(label);
-    }
-    content = prefix.concat(content).join(' | ');
-  }
-  target.call(console, content);
-};
-
-function Logger (logger, category, label) {
-  this.logger = logger;
-  this.category = category;
-  this.label = label;
-}
-
-Object.keys(levels).forEach(function (targetName) {
-  Logger.prototype[targetName] = function (content) {
-    this.logger[targetName](this.category, this.label, content);
-  };
-
-  LoggerFactory.prototype[targetName] = function (category, label, content) {
-    if (this.level >= levels[targetName]) {
-      if (this.builtinEnabled) {
-        this.print(console[targetName], category, label, content);
-      }
-
-      if (this.connector) {
-        this.connector(targetName, category, label, content);
-      }
-    }
-  };
-});
-
-LoggerFactory.prototype.getLogger = function(category, label) {
-  var logger;
-
-  if (label && this.level === 3) {
-    return new Logger(this, category, label);
-  } else if (this.loggers[category]) {
-    return this.loggers[category];
-  } else {
-    logger = new Logger(this, category);
-    this.loggers[category] = logger;
-    return logger;
-  }
-};
-
-return LoggerFactory;
-};
-
-},{}],34:[function(require,module,exports){
-"use strict";
-/**
- * @fileoverview MediaHandler
- */
-
-/* MediaHandler
- * @class PeerConnection helper Class.
- * @param {SIP.Session} session
- * @param {Object} [options]
- */
-module.exports = function (EventEmitter) {
-var MediaHandler = function(session, options) {
-  // keep jshint happy
-  session = session;
-  options = options;
-};
-
-MediaHandler.prototype = Object.create(EventEmitter.prototype, {
-  isReady: {value: function isReady () {}},
-
-  close: {value: function close () {}},
-
-  /**
-   * @param {Object} [mediaHint] A custom object describing the media to be used during this session.
-   */
-  getDescription: {value: function getDescription (mediaHint) {
-    // keep jshint happy
-    mediaHint = mediaHint;
-  }},
-
-  /**
-   * Check if a SIP message contains a session description.
-   * @param {SIP.SIPMessage} message
-   * @returns {boolean}
-   */
-  hasDescription: {value: function hasDescription (message) {
-    // keep jshint happy
-    message = message;
-  }},
-
-  /**
-   * Set the session description contained in a SIP message.
-   * @param {SIP.SIPMessage} message
-   * @returns {Promise}
-   */
-  setDescription: {value: function setDescription (message) {
-    // keep jshint happy
-    message = message;
-  }}
-});
-
-return MediaHandler;
-};
-
-},{}],35:[function(require,module,exports){
-"use strict";
-/**
- * @fileoverview SIP NameAddrHeader
- */
-
-/**
- * @augments SIP
- * @class Class creating a Name Address SIP header.
- *
- * @param {SIP.URI} uri
- * @param {String} [displayName]
- * @param {Object} [parameters]
- *
- */
-module.exports = function (SIP) {
-var NameAddrHeader;
-
-NameAddrHeader = function(uri, displayName, parameters) {
-  var param;
-
-  // Checks
-  if(!uri || !(uri instanceof SIP.URI)) {
-    throw new TypeError('missing or invalid "uri" parameter');
-  }
-
-  // Initialize parameters
-  this.uri = uri;
-  this.parameters = {};
-
-  for (param in parameters) {
-    this.setParam(param, parameters[param]);
-  }
-
-  Object.defineProperties(this, {
-    friendlyName: {
-      get: function() { return this.displayName || uri.aor; }
-    },
-
-    displayName: {
-      get: function() { return displayName; },
-      set: function(value) {
-        displayName = (value === 0) ? '0' : value;
-      }
-    }
-  });
-};
-NameAddrHeader.prototype = {
-  setParam: function (key, value) {
-    if(key) {
-      this.parameters[key.toLowerCase()] = (typeof value === 'undefined' || value === null) ? null : value.toString();
-    }
-  },
-  getParam: SIP.URI.prototype.getParam,
-  hasParam: SIP.URI.prototype.hasParam,
-  deleteParam: SIP.URI.prototype.deleteParam,
-  clearParams: SIP.URI.prototype.clearParams,
-
-  clone: function() {
-    return new NameAddrHeader(
-      this.uri.clone(),
-      this.displayName,
-      JSON.parse(JSON.stringify(this.parameters)));
-  },
-
-  toString: function() {
-    var body, parameter;
-
-    body  = (this.displayName || this.displayName === 0) ? '"' + this.displayName + '" ' : '';
-    body += '<' + this.uri.toString() + '>';
-
-    for (parameter in this.parameters) {
-      body += ';' + parameter;
-
-      if (this.parameters[parameter] !== null) {
-        body += '='+ this.parameters[parameter];
-      }
-    }
-
-    return body;
-  }
-};
-
-
-/**
-  * Parse the given string and returns a SIP.NameAddrHeader instance or undefined if
-  * it is an invalid NameAddrHeader.
-  * @public
-  * @param {String} name_addr_header
-  */
-NameAddrHeader.parse = function(name_addr_header) {
-  name_addr_header = SIP.Grammar.parse(name_addr_header,'Name_Addr_Header');
-
-  if (name_addr_header !== -1) {
-    return name_addr_header;
-  } else {
-    return undefined;
-  }
-};
-
-SIP.NameAddrHeader = NameAddrHeader;
-};
-
-},{}],36:[function(require,module,exports){
-"use strict";
-/**
- * @fileoverview SIP Message Parser
- */
-
-/**
- * Extract and parse every header of a SIP message.
- * @augments SIP
- * @namespace
- */
-module.exports = function (SIP) {
-var Parser;
-
-function getHeader(data, headerStart) {
-  var
-    // 'start' position of the header.
-    start = headerStart,
-    // 'end' position of the header.
-    end = 0,
-    // 'partial end' position of the header.
-    partialEnd = 0;
-
-  //End of message.
-  if (data.substring(start, start + 2).match(/(^\r\n)/)) {
-    return -2;
-  }
-
-  while(end === 0) {
-    // Partial End of Header.
-    partialEnd = data.indexOf('\r\n', start);
-
-    // 'indexOf' returns -1 if the value to be found never occurs.
-    if (partialEnd === -1) {
-      return partialEnd;
-    }
-
-    if(!data.substring(partialEnd + 2, partialEnd + 4).match(/(^\r\n)/) && data.charAt(partialEnd + 2).match(/(^\s+)/)) {
-      // Not the end of the message. Continue from the next position.
-      start = partialEnd + 2;
-    } else {
-      end = partialEnd;
-    }
-  }
-
-  return end;
-}
-
-function parseHeader(message, data, headerStart, headerEnd) {
-  var header, idx, length, parsed,
-    hcolonIndex = data.indexOf(':', headerStart),
-    headerName = data.substring(headerStart, hcolonIndex).trim(),
-    headerValue = data.substring(hcolonIndex + 1, headerEnd).trim();
-
-  // If header-field is well-known, parse it.
-  switch(headerName.toLowerCase()) {
-    case 'via':
-    case 'v':
-      message.addHeader('via', headerValue);
-      if(message.getHeaders('via').length === 1) {
-        parsed = message.parseHeader('Via');
-        if(parsed) {
-          message.via = parsed;
-          message.via_branch = parsed.branch;
-        }
-      } else {
-        parsed = 0;
-      }
-      break;
-    case 'from':
-    case 'f':
-      message.setHeader('from', headerValue);
-      parsed = message.parseHeader('from');
-      if(parsed) {
-        message.from = parsed;
-        message.from_tag = parsed.getParam('tag');
-      }
-      break;
-    case 'to':
-    case 't':
-      message.setHeader('to', headerValue);
-      parsed = message.parseHeader('to');
-      if(parsed) {
-        message.to = parsed;
-        message.to_tag = parsed.getParam('tag');
-      }
-      break;
-    case 'record-route':
-      parsed = SIP.Grammar.parse(headerValue, 'Record_Route');
-
-      if (parsed === -1) {
-        parsed = undefined;
-        break;
-      }
-
-      length = parsed.length;
-      for (idx = 0; idx < length; idx++) {
-        header = parsed[idx];
-        message.addHeader('record-route', headerValue.substring(header.position, header.offset));
-        message.headers['Record-Route'][message.getHeaders('record-route').length - 1].parsed = header.parsed;
-      }
-      break;
-    case 'call-id':
-    case 'i':
-      message.setHeader('call-id', headerValue);
-      parsed = message.parseHeader('call-id');
-      if(parsed) {
-        message.call_id = headerValue;
-      }
-      break;
-    case 'contact':
-    case 'm':
-      parsed = SIP.Grammar.parse(headerValue, 'Contact');
-
-      if (parsed === -1) {
-        parsed = undefined;
-        break;
-      }
-
-      length = parsed.length;
-      for (idx = 0; idx < length; idx++) {
-        header = parsed[idx];
-        message.addHeader('contact', headerValue.substring(header.position, header.offset));
-        message.headers['Contact'][message.getHeaders('contact').length - 1].parsed = header.parsed;
-      }
-      break;
-    case 'content-length':
-    case 'l':
-      message.setHeader('content-length', headerValue);
-      parsed = message.parseHeader('content-length');
-      break;
-    case 'content-type':
-    case 'c':
-      message.setHeader('content-type', headerValue);
-      parsed = message.parseHeader('content-type');
-      break;
-    case 'cseq':
-      message.setHeader('cseq', headerValue);
-      parsed = message.parseHeader('cseq');
-      if(parsed) {
-        message.cseq = parsed.value;
-      }
-      if(message instanceof SIP.IncomingResponse) {
-        message.method = parsed.method;
-      }
-      break;
-    case 'max-forwards':
-      message.setHeader('max-forwards', headerValue);
-      parsed = message.parseHeader('max-forwards');
-      break;
-    case 'www-authenticate':
-      message.setHeader('www-authenticate', headerValue);
-      parsed = message.parseHeader('www-authenticate');
-      break;
-    case 'proxy-authenticate':
-      message.setHeader('proxy-authenticate', headerValue);
-      parsed = message.parseHeader('proxy-authenticate');
-      break;
-    case 'refer-to':
-    case 'r':
-      message.setHeader('refer-to', headerValue);
-      parsed = message.parseHeader('refer-to');
-      if (parsed) {
-        message.refer_to = parsed;
-      }
-      break;
-    default:
-      // Do not parse this header.
-      message.setHeader(headerName, headerValue);
-      parsed = 0;
-  }
-
-  if (parsed === undefined) {
-    return {
-      error: 'error parsing header "'+ headerName +'"'
-    };
-  } else {
-    return true;
-  }
-}
-
-/** Parse SIP Message
- * @function
- * @param {String} message SIP message.
- * @param {Object} logger object.
- * @returns {SIP.IncomingRequest|SIP.IncomingResponse|undefined}
- */
-Parser = {};
-Parser.parseMessage = function(data, ua) {
-  var message, firstLine, contentLength, bodyStart, parsed,
-    headerStart = 0,
-    headerEnd = data.indexOf('\r\n'),
-    logger = ua.getLogger('sip.parser');
-
-  if(headerEnd === -1) {
-    logger.warn('no CRLF found, not a SIP message, discarded');
-    return;
-  }
-
-  // Parse first line. Check if it is a Request or a Reply.
-  firstLine = data.substring(0, headerEnd);
-  parsed = SIP.Grammar.parse(firstLine, 'Request_Response');
-
-  if(parsed === -1) {
-    logger.warn('error parsing first line of SIP message: "' + firstLine + '"');
-    return;
-  } else if(!parsed.status_code) {
-    message = new SIP.IncomingRequest(ua);
-    message.method = parsed.method;
-    message.ruri = parsed.uri;
-  } else {
-    message = new SIP.IncomingResponse(ua);
-    message.status_code = parsed.status_code;
-    message.reason_phrase = parsed.reason_phrase;
-  }
-
-  message.data = data;
-  headerStart = headerEnd + 2;
-
-  /* Loop over every line in data. Detect the end of each header and parse
-  * it or simply add to the headers collection.
-  */
-  while(true) {
-    headerEnd = getHeader(data, headerStart);
-
-    // The SIP message has normally finished.
-    if(headerEnd === -2) {
-      bodyStart = headerStart + 2;
-      break;
-    }
-    // data.indexOf returned -1 due to a malformed message.
-    else if(headerEnd === -1) {
-      logger.error('malformed message');
-      return;
-    }
-
-    parsed = parseHeader(message, data, headerStart, headerEnd);
-
-    if(parsed !== true) {
-      logger.error(parsed.error);
-      return;
-    }
-
-    headerStart = headerEnd + 2;
-  }
-
-  /* RFC3261 18.3.
-   * If there are additional bytes in the transport packet
-   * beyond the end of the body, they MUST be discarded.
-   */
-  if(message.hasHeader('content-length')) {
-    contentLength = message.getHeader('content-length');
-    message.body = data.substr(bodyStart, contentLength);
-  } else {
-    message.body = data.substring(bodyStart);
-  }
-
-  return message;
-};
-
-SIP.Parser = Parser;
-};
-
-},{}],37:[function(require,module,exports){
-var localMinSE = 90;
-
-module.exports = function (Timers) {
-
-// http://tools.ietf.org/html/rfc4028#section-9
-function hasSmallMinSE (message) {
-  var supportedOptions = message.parseHeader('Supported') || [];
-  var sessionExpires = message.parseHeader('Session-Expires') || {};
-  return supportedOptions.indexOf('timer') >= 0 && sessionExpires.deltaSeconds < localMinSE;
-}
-
-// `response` is an IncomingResponse or a String (outgoing response)
-function updateState (dialog, response, parseMessage, ua) {
-  dialog.sessionTimerState = dialog.sessionTimerState || {};
-  Timers.clearTimeout(dialog.sessionTimerState.timeout);
-
-  var isUAS = typeof response === 'string';
-  if (isUAS) {
-    response = parseMessage(response, ua);
-  }
-
-  var sessionExpires = response.parseHeader('Session-Expires');
-  // If the most recent 2xx response had no Session-Expires header field, there
-  // is no session expiration, and no refreshes have to be performed
-  if (!sessionExpires) {
-    dialog.sessionTimerState = null;
-    return;
-  }
-
-  var interval = sessionExpires.deltaSeconds;
-  var isRefresher = isUAS === (sessionExpires.refresher === 'uas');
-
-  dialog.sessionTimerState = {
-    interval: interval,
-    isRefresher: isRefresher
-  };
-
-  var intervalMilliseconds = interval * 1000;
-  var self = this;
-  if (isRefresher) {
-    dialog.sessionTimerState.timeout = Timers.setInterval(function sendRefresh () {
-      var exists = dialog.owner.ua.dialogs[dialog.id.toString()] || false;
-      if (exists) {
-        dialog.sendRequest(self, "UPDATE", { extraHeaders: ["Session-Expires: " + interval]});
-      } else {
-        Timers.clearInterval(dialog.sessionTimerState.timeout);
-      }
-    }, intervalMilliseconds / 2);
-  } else {
-    var before = Math.min(32 * 1000, intervalMilliseconds / 3);
-    dialog.sessionTimerState.timeout = Timers.setTimeout(function sendBye () {
-      // TODO
-    }, intervalMilliseconds - before);
-  }
-}
-
-function receiveResponse(response) {
-  /* jshint unused: false */
-}
-
-function onDialogError(response) {
-  /* jshint unused: false */
-}
-
-function onRequestTimeout() {
-  /* jshint unused: false */
-}
-
-function onTransportError() {
-  /* jshint unused: false */
-}
-
-return {
-  localMinSE: localMinSE,
-  hasSmallMinSE: hasSmallMinSE,
-  updateState: updateState,
-  receiveResponse: receiveResponse,
-  onDialogError: onDialogError,
-  onRequestTimeout: onRequestTimeout,
-  onTransportError: onTransportError
-};
-
-};
-
-},{}],38:[function(require,module,exports){
-"use strict";
-module.exports = function (SIP) {
-
-var RegisterContext;
-
-RegisterContext = function (ua) {
-  var params = {},
-      regId = 1;
-
-  this.registrar = ua.configuration.registrarServer;
-  this.expires = ua.configuration.registerExpires;
-
-
-  // Contact header
-  this.contact = ua.contact.toString();
-
-  if(regId) {
-    this.contact += ';reg-id='+ regId;
-    this.contact += ';+sip.instance="<urn:uuid:'+ ua.configuration.instanceId+'>"';
-  }
-
-  // Call-ID and CSeq values RFC3261 10.2
-  this.call_id = SIP.Utils.createRandomToken(22);
-  this.cseq = 80;
-
-  this.to_uri = ua.configuration.uri;
-
-  params.to_uri = this.to_uri;
-  params.to_displayName = ua.configuration.displayName;
-  params.call_id = this.call_id;
-  params.cseq = this.cseq;
-
-  // Extends ClientContext
-  SIP.Utils.augment(this, SIP.ClientContext, [ua, 'REGISTER', this.registrar, {params: params}]);
-
-  this.registrationTimer = null;
-  this.registrationExpiredTimer = null;
-
-  // Set status
-  this.registered = false;
-
-  this.logger = ua.getLogger('sip.registercontext');
-};
-
-RegisterContext.prototype = {
-  register: function (options) {
-    var self = this, extraHeaders;
-
-    // Handle Options
-    this.options = options || {};
-    extraHeaders = (this.options.extraHeaders || []).slice();
-    extraHeaders.push('Contact: ' + this.contact + ';expires=' + this.expires);
-    extraHeaders.push('Allow: ' + SIP.UA.C.ALLOWED_METHODS.toString());
-
-    // Save original extraHeaders to be used in .close
-    this.closeHeaders = this.options.closeWithHeaders ?
-      (this.options.extraHeaders || []).slice() : [];
-
-    this.receiveResponse = function(response) {
-      var contact, expires,
-        contacts = response.getHeaders('contact').length,
-        cause;
-
-      // Discard responses to older REGISTER/un-REGISTER requests.
-      if(response.cseq !== this.cseq) {
-        return;
-      }
-
-      // Clear registration timer
-      if (this.registrationTimer !== null) {
-        SIP.Timers.clearTimeout(this.registrationTimer);
-        this.registrationTimer = null;
-      }
-
-      switch(true) {
-        case /^1[0-9]{2}$/.test(response.status_code):
-          this.emit('progress', response);
-          break;
-        case /^2[0-9]{2}$/.test(response.status_code):
-          this.emit('accepted', response);
-
-          if(response.hasHeader('expires')) {
-            expires = response.getHeader('expires');
-          }
-
-          if (this.registrationExpiredTimer !== null) {
-            SIP.Timers.clearTimeout(this.registrationExpiredTimer);
-            this.registrationExpiredTimer = null;
-          }
-
-          // Search the Contact pointing to us and update the expires value accordingly.
-          if (!contacts) {
-            this.logger.warn('no Contact header in response to REGISTER, response ignored');
-            break;
-          }
-
-          while(contacts--) {
-            contact = response.parseHeader('contact', contacts);
-            if(contact.uri.user === this.ua.contact.uri.user) {
-              expires = contact.getParam('expires');
-              break;
-            } else {
-              contact = null;
-            }
-          }
-
-          if (!contact) {
-            this.logger.warn('no Contact header pointing to us, response ignored');
-            break;
-          }
-
-          if(!expires) {
-            expires = this.expires;
-          }
-
-          // Re-Register before the expiration interval has elapsed.
-          // For that, decrease the expires value. ie: 3 seconds
-          this.registrationTimer = SIP.Timers.setTimeout(function() {
-            self.registrationTimer = null;
-            self.register(self.options);
-          }, (expires * 1000) - 3000);
-          this.registrationExpiredTimer = SIP.Timers.setTimeout(function () {
-            self.logger.warn('registration expired');
-            if (self.registered) {
-              self.unregistered(null, SIP.C.causes.EXPIRES);
-            }
-          }, expires * 1000);
-
-          //Save gruu values
-          if (contact.hasParam('temp-gruu')) {
-            this.ua.contact.temp_gruu = SIP.URI.parse(contact.getParam('temp-gruu').replace(/"/g,''));
-          }
-          if (contact.hasParam('pub-gruu')) {
-            this.ua.contact.pub_gruu = SIP.URI.parse(contact.getParam('pub-gruu').replace(/"/g,''));
-          }
-
-          this.registered = true;
-          this.emit('registered', response || null);
-          break;
-        // Interval too brief RFC3261 10.2.8
-        case /^423$/.test(response.status_code):
-          if(response.hasHeader('min-expires')) {
-            // Increase our registration interval to the suggested minimum
-            this.expires = response.getHeader('min-expires');
-            // Attempt the registration again immediately
-            this.register(this.options);
-          } else { //This response MUST contain a Min-Expires header field
-            this.logger.warn('423 response received for REGISTER without Min-Expires');
-            this.registrationFailure(response, SIP.C.causes.SIP_FAILURE_CODE);
-          }
-          break;
-        default:
-          cause = SIP.Utils.sipErrorCause(response.status_code);
-          this.registrationFailure(response, cause);
-      }
-    };
-
-    this.onRequestTimeout = function() {
-      this.registrationFailure(null, SIP.C.causes.REQUEST_TIMEOUT);
-    };
-
-    this.onTransportError = function() {
-      this.registrationFailure(null, SIP.C.causes.CONNECTION_ERROR);
-    };
-
-    this.cseq++;
-    this.request.cseq = this.cseq;
-    this.request.setHeader('cseq', this.cseq + ' REGISTER');
-    this.request.extraHeaders = extraHeaders;
-    this.send();
-  },
-
-  registrationFailure: function (response, cause) {
-    this.emit('failed', response || null, cause || null);
-  },
-
-  onTransportClosed: function() {
-    this.registered_before = this.registered;
-    if (this.registrationTimer !== null) {
-      SIP.Timers.clearTimeout(this.registrationTimer);
-      this.registrationTimer = null;
-    }
-
-    if (this.registrationExpiredTimer !== null) {
-      SIP.Timers.clearTimeout(this.registrationExpiredTimer);
-      this.registrationExpiredTimer = null;
-    }
-
-    if(this.registered) {
-      this.unregistered(null, SIP.C.causes.CONNECTION_ERROR);
-    }
-  },
-
-  onTransportConnected: function() {
-    this.register(this.options);
-  },
-
-  close: function() {
-    var options = {
-      all: false,
-      extraHeaders: this.closeHeaders
-    };
-
-    this.registered_before = this.registered;
-    this.unregister(options);
-  },
-
-  unregister: function(options) {
-    var extraHeaders;
-
-    options = options || {};
-
-    if(!this.registered && !options.all) {
-      this.logger.warn('already unregistered');
-      return;
-    }
-
-    extraHeaders = (options.extraHeaders || []).slice();
-
-    this.registered = false;
-
-    // Clear the registration timer.
-    if (this.registrationTimer !== null) {
-      SIP.Timers.clearTimeout(this.registrationTimer);
-      this.registrationTimer = null;
-    }
-
-    if(options.all) {
-      extraHeaders.push('Contact: *');
-      extraHeaders.push('Expires: 0');
-    } else {
-      extraHeaders.push('Contact: '+ this.contact + ';expires=0');
-    }
-
-
-    this.receiveResponse = function(response) {
-      var cause;
-
-      switch(true) {
-        case /^1[0-9]{2}$/.test(response.status_code):
-          this.emit('progress', response);
-          break;
-        case /^2[0-9]{2}$/.test(response.status_code):
-          this.emit('accepted', response);
-          if (this.registrationExpiredTimer !== null) {
-            SIP.Timers.clearTimeout(this.registrationExpiredTimer);
-            this.registrationExpiredTimer = null;
-          }
-          this.unregistered(response);
-          break;
-        default:
-          cause = SIP.Utils.sipErrorCause(response.status_code);
-          this.unregistered(response,cause);
-      }
-    };
-
-    this.onRequestTimeout = function() {
-      // Not actually unregistered...
-      //this.unregistered(null, SIP.C.causes.REQUEST_TIMEOUT);
-    };
-
-    this.onTransportError = function() {
-      // Not actually unregistered...
-      //this.unregistered(null, SIP.C.causes.CONNECTION_ERROR);
-    };
-
-    this.cseq++;
-    this.request.cseq = this.cseq;
-    this.request.setHeader('cseq', this.cseq + ' REGISTER');
-    this.request.extraHeaders = extraHeaders;
-
-    this.send();
-  },
-
-  unregistered: function(response, cause) {
-    this.registered = false;
-    this.emit('unregistered', response || null, cause || null);
-  }
-
-};
-
-
-SIP.RegisterContext = RegisterContext;
-};
-
-},{}],39:[function(require,module,exports){
-"use strict";
-
-/**
- * @fileoverview Request Sender
- */
-
-/**
- * @augments SIP
- * @class Class creating a request sender.
- * @param {Object} applicant
- * @param {SIP.UA} ua
- */
-module.exports = function (SIP) {
-var RequestSender;
-
-RequestSender = function(applicant, ua) {
-  this.logger = ua.getLogger('sip.requestsender');
-  this.ua = ua;
-  this.applicant = applicant;
-  this.method = applicant.request.method;
-  this.request = applicant.request;
-  this.credentials = null;
-  this.challenged = false;
-  this.staled = false;
-
-  // If ua is in closing process or even closed just allow sending Bye and ACK
-  if (ua.status === SIP.UA.C.STATUS_USER_CLOSED && (this.method !== SIP.C.BYE || this.method !== SIP.C.ACK)) {
-    this.onTransportError();
-  }
-};
-
-/**
-* Create the client transaction and send the message.
-*/
-RequestSender.prototype = {
-  send: function() {
-    switch(this.method) {
-      case "INVITE":
-        this.clientTransaction = new SIP.Transactions.InviteClientTransaction(this, this.request, this.ua.transport);
-        break;
-      case "ACK":
-        this.clientTransaction = new SIP.Transactions.AckClientTransaction(this, this.request, this.ua.transport);
-        break;
-      default:
-        this.clientTransaction = new SIP.Transactions.NonInviteClientTransaction(this, this.request, this.ua.transport);
-    }
-    this.clientTransaction.send();
-
-    return this.clientTransaction;
-  },
-
-  /**
-  * Callback fired when receiving a request timeout error from the client transaction.
-  * To be re-defined by the applicant.
-  * @event
-  */
-  onRequestTimeout: function() {
-    this.applicant.onRequestTimeout();
-  },
-
-  /**
-  * Callback fired when receiving a transport error from the client transaction.
-  * To be re-defined by the applicant.
-  * @event
-  */
-  onTransportError: function() {
-    this.applicant.onTransportError();
-  },
-
-  /**
-  * Called from client transaction when receiving a correct response to the request.
-  * Authenticate request if needed or pass the response back to the applicant.
-  * @param {SIP.IncomingResponse} response
-  */
-  receiveResponse: function(response) {
-    var cseq, challenge, authorization_header_name,
-      status_code = response.status_code;
-
-    /*
-    * Authentication
-    * Authenticate once. _challenged_ flag used to avoid infinite authentications.
-    */
-    if (status_code === 401 || status_code === 407) {
-
-      // Get and parse the appropriate WWW-Authenticate or Proxy-Authenticate header.
-      if (response.status_code === 401) {
-        challenge = response.parseHeader('www-authenticate');
-        authorization_header_name = 'authorization';
-      } else {
-        challenge = response.parseHeader('proxy-authenticate');
-        authorization_header_name = 'proxy-authorization';
-      }
-
-      // Verify it seems a valid challenge.
-      if (! challenge) {
-        this.logger.warn(response.status_code + ' with wrong or missing challenge, cannot authenticate');
-        this.applicant.receiveResponse(response);
-        return;
-      }
-
-      if (!this.challenged || (!this.staled && challenge.stale === true)) {
-        if (!this.credentials) {
-          this.credentials = this.ua.configuration.authenticationFactory(this.ua);
-        }
-
-        // Verify that the challenge is really valid.
-        if (!this.credentials.authenticate(this.request, challenge)) {
-          this.applicant.receiveResponse(response);
-          return;
-        }
-        this.challenged = true;
-
-        if (challenge.stale) {
-          this.staled = true;
-        }
-
-        if (response.method === SIP.C.REGISTER) {
-          cseq = this.applicant.cseq += 1;
-        } else if (this.request.dialog){
-          cseq = this.request.dialog.local_seqnum += 1;
-        } else {
-          cseq = this.request.cseq + 1;
-          this.request.cseq = cseq;
-        }
-        this.request.setHeader('cseq', cseq +' '+ this.method);
-
-        this.request.setHeader(authorization_header_name, this.credentials.toString());
-        this.send();
-      } else {
-        this.applicant.receiveResponse(response);
-      }
-    } else {
-      this.applicant.receiveResponse(response);
-    }
-  }
-};
-
-SIP.RequestSender = RequestSender;
-};
-
-},{}],40:[function(require,module,exports){
-/**
- * @name SIP
- * @namespace
- */
-"use strict";
-
-module.exports = function (environment) {
-
-var pkg = require('../package.json');
-
-var SIP = Object.defineProperties({}, {
-  version: {
-    get: function(){ return pkg.version; }
-  },
-  name: {
-    get: function(){ return pkg.title; }
-  }
-});
-
-require('./Utils')(SIP, environment);
-SIP.LoggerFactory = require('./LoggerFactory')(environment.console);
-SIP.EventEmitter = require('./EventEmitter')(environment.console);
-SIP.C = require('./Constants')(SIP.name, SIP.version);
-SIP.Exceptions = require('./Exceptions');
-SIP.Timers = require('./Timers')(environment.timers);
-SIP.Transport = environment.Transport(SIP, environment.WebSocket);
-require('./Parser')(SIP);
-require('./SIPMessage')(SIP);
-require('./URI')(SIP);
-require('./NameAddrHeader')(SIP);
-require('./Transactions')(SIP);
-require('./Dialogs')(SIP);
-require('./RequestSender')(SIP);
-require('./RegisterContext')(SIP);
-SIP.MediaHandler = require('./MediaHandler')(SIP.EventEmitter);
-require('./ClientContext')(SIP);
-require('./ServerContext')(SIP);
-require('./Session')(SIP, environment);
-require('./Subscription')(SIP);
-SIP.WebRTC = require('./WebRTC')(SIP, environment);
-require('./UA')(SIP, environment);
-SIP.Hacks = require('./Hacks')(SIP);
-require('./SanityCheck')(SIP);
-SIP.DigestAuthentication = require('./DigestAuthentication')(SIP.Utils);
-SIP.Grammar = require('./Grammar')(SIP);
-
-return SIP;
-};
-
-},{"../package.json":22,"./ClientContext":23,"./Constants":24,"./Dialogs":26,"./DigestAuthentication":27,"./EventEmitter":28,"./Exceptions":29,"./Grammar":30,"./Hacks":32,"./LoggerFactory":33,"./MediaHandler":34,"./NameAddrHeader":35,"./Parser":36,"./RegisterContext":38,"./RequestSender":39,"./SIPMessage":41,"./SanityCheck":42,"./ServerContext":43,"./Session":44,"./Subscription":46,"./Timers":47,"./Transactions":48,"./UA":50,"./URI":51,"./Utils":52,"./WebRTC":53}],41:[function(require,module,exports){
-"use strict";
-/**
- * @fileoverview SIP Message
- */
-
-module.exports = function (SIP) {
-var
-  OutgoingRequest,
-  IncomingMessage,
-  IncomingRequest,
-  IncomingResponse;
-
-function getSupportedHeader (request) {
-  var allowUnregistered = request.ua.configuration.hackAllowUnregisteredOptionTags;
-  var optionTags = [];
-  var optionTagSet = {};
-
-  if (request.method === SIP.C.REGISTER) {
-    optionTags.push('path', 'gruu');
-  } else if (request.method === SIP.C.INVITE &&
-             (request.ua.contact.pub_gruu || request.ua.contact.temp_gruu)) {
-    optionTags.push('gruu');
-  }
-
-  if (request.ua.configuration.rel100 === SIP.C.supported.SUPPORTED) {
-    optionTags.push('100rel');
-  }
-  if (request.ua.configuration.replaces === SIP.C.supported.SUPPORTED) {
-    optionTags.push('replaces');
-  }
-
-  optionTags.push('outbound');
-
-  optionTags = optionTags.concat(request.ua.configuration.extraSupported);
-
-  optionTags = optionTags.filter(function(optionTag) {
-    var registered = SIP.C.OPTION_TAGS[optionTag];
-    var unique = !optionTagSet[optionTag];
-    optionTagSet[optionTag] = true;
-    return (registered || allowUnregistered) && unique;
-  });
-
-  return 'Supported: ' + optionTags.join(', ') + '\r\n';
-}
-
-/**
- * @augments SIP
- * @class Class for outgoing SIP request.
- * @param {String} method request method
- * @param {String} ruri request uri
- * @param {SIP.UA} ua
- * @param {Object} params parameters that will have priority over ua.configuration parameters:
- * <br>
- *  - cseq, call_id, from_tag, from_uri, from_displayName, to_uri, to_tag, route_set
- * @param {Object} [headers] extra headers
- * @param {String} [body]
- */
-OutgoingRequest = function(method, ruri, ua, params, extraHeaders, body) {
-  var
-    to,
-    from,
-    call_id,
-    cseq,
-    to_uri,
-    from_uri;
-
-  params = params || {};
-
-  // Mandatory parameters check
-  if(!method || !ruri || !ua) {
-    return null;
-  }
-
-  this.logger = ua.getLogger('sip.sipmessage');
-  this.ua = ua;
-  this.headers = {};
-  this.method = method;
-  this.ruri = ruri;
-  this.body = body;
-  this.extraHeaders = (extraHeaders || []).slice();
-  this.statusCode = params.status_code;
-  this.reasonPhrase = params.reason_phrase;
-
-  // Fill the Common SIP Request Headers
-
-  // Route
-  if (params.route_set) {
-    this.setHeader('route', params.route_set);
-  } else if (ua.configuration.usePreloadedRoute){
-    this.setHeader('route', ua.transport.server.sip_uri);
-  }
-
-  // Via
-  // Empty Via header. Will be filled by the client transaction.
-  this.setHeader('via', '');
-
-  // Max-Forwards
-  this.setHeader('max-forwards', SIP.UA.C.MAX_FORWARDS);
-
-  // To
-  to_uri = params.to_uri || ruri;
-  to = (params.to_displayName || params.to_displayName === 0) ? '"' + params.to_displayName + '" ' : '';
-  to += '<' + (to_uri && to_uri.toRaw ? to_uri.toRaw() : to_uri) + '>';
-  to += params.to_tag ? ';tag=' + params.to_tag : '';
-  this.to = new SIP.NameAddrHeader.parse(to);
-  this.setHeader('to', to);
-
-  // From
-  from_uri = params.from_uri || ua.configuration.uri;
-  if (params.from_displayName || params.from_displayName === 0) {
-    from = '"' + params.from_displayName + '" ';
-  } else if (ua.configuration.displayName) {
-    from = '"' + ua.configuration.displayName + '" ';
-  } else {
-    from = '';
-  }
-  from += '<' + (from_uri && from_uri.toRaw ? from_uri.toRaw() : from_uri) + '>;tag=';
-  from += params.from_tag || SIP.Utils.newTag();
-  this.from = new SIP.NameAddrHeader.parse(from);
-  this.setHeader('from', from);
-
-  // Call-ID
-  call_id = params.call_id || (ua.configuration.sipjsId + SIP.Utils.createRandomToken(15));
-  this.call_id = call_id;
-  this.setHeader('call-id', call_id);
-
-  // CSeq
-  cseq = params.cseq || Math.floor(Math.random() * 10000);
-  this.cseq = cseq;
-  this.setHeader('cseq', cseq + ' ' + method);
-};
-
-OutgoingRequest.prototype = {
-  /**
-   * Replace the the given header by the given value.
-   * @param {String} name header name
-   * @param {String | Array} value header value
-   */
-  setHeader: function(name, value) {
-    this.headers[SIP.Utils.headerize(name)] = (value instanceof Array) ? value : [value];
-  },
-
-  /**
-   * Get the value of the given header name at the given position.
-   * @param {String} name header name
-   * @returns {String|undefined} Returns the specified header, undefined if header doesn't exist.
-   */
-  getHeader: function(name) {
-    var regexp, idx,
-      length = this.extraHeaders.length,
-      header = this.headers[SIP.Utils.headerize(name)];
-
-    if(header) {
-      if(header[0]) {
-        return header[0];
-      }
-    } else {
-      regexp = new RegExp('^\\s*' + name + '\\s*:','i');
-      for (idx = 0; idx < length; idx++) {
-        header = this.extraHeaders[idx];
-        if (regexp.test(header)) {
-          return header.substring(header.indexOf(':')+1).trim();
-        }
-      }
-    }
-
-    return;
-  },
-
-  /**
-   * Get the header/s of the given name.
-   * @param {String} name header name
-   * @returns {Array} Array with all the headers of the specified name.
-   */
-  getHeaders: function(name) {
-    var idx, length, regexp,
-      header = this.headers[SIP.Utils.headerize(name)],
-      result = [];
-
-    if(header) {
-      length = header.length;
-      for (idx = 0; idx < length; idx++) {
-        result.push(header[idx]);
-      }
-      return result;
-    } else {
-      length = this.extraHeaders.length;
-      regexp = new RegExp('^\\s*' + name + '\\s*:','i');
-      for (idx = 0; idx < length; idx++) {
-        header = this.extraHeaders[idx];
-        if (regexp.test(header)) {
-          result.push(header.substring(header.indexOf(':')+1).trim());
-        }
-      }
-      return result;
-    }
-  },
-
-  /**
-   * Verify the existence of the given header.
-   * @param {String} name header name
-   * @returns {boolean} true if header with given name exists, false otherwise
-   */
-  hasHeader: function(name) {
-    var regexp, idx,
-      length = this.extraHeaders.length;
-
-    if (this.headers[SIP.Utils.headerize(name)]) {
-      return true;
-    } else {
-      regexp = new RegExp('^\\s*' + name + '\\s*:','i');
-      for (idx = 0; idx < length; idx++) {
-        if (regexp.test(this.extraHeaders[idx])) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  },
-
-  toString: function() {
-    var msg = '', header, length, idx;
-
-    msg += this.method + ' ' + (this.ruri.toRaw ? this.ruri.toRaw() : this.ruri) + ' SIP/2.0\r\n';
-
-    for (header in this.headers) {
-      length = this.headers[header].length;
-      for (idx = 0; idx < length; idx++) {
-        msg += header + ': ' + this.headers[header][idx] + '\r\n';
-      }
-    }
-
-    length = this.extraHeaders.length;
-    for (idx = 0; idx < length; idx++) {
-      msg += this.extraHeaders[idx].trim() +'\r\n';
-    }
-
-    msg += getSupportedHeader(this);
-    msg += 'User-Agent: ' + this.ua.configuration.userAgentString +'\r\n';
-
-    if (this.body) {
-      if (typeof this.body === 'string') {
-        length = SIP.Utils.str_utf8_length(this.body);
-        msg += 'Content-Length: ' + length + '\r\n\r\n';
-        msg += this.body;
-      } else {
-        if (this.body.body && this.body.contentType) {
-          length = SIP.Utils.str_utf8_length(this.body.body);
-          msg += 'Content-Type: ' + this.body.contentType + '\r\n';
-          msg += 'Content-Length: ' + length + '\r\n\r\n';
-          msg += this.body.body;
-        } else {
-          msg += 'Content-Length: ' + 0 + '\r\n\r\n';
-        }
-      }
-    } else {
-      msg += 'Content-Length: ' + 0 + '\r\n\r\n';
-    }
-
-    return msg;
-  }
-};
-
-/**
- * @augments SIP
- * @class Class for incoming SIP message.
- */
-IncomingMessage = function(){
-  this.data = null;
-  this.headers = null;
-  this.method =  null;
-  this.via = null;
-  this.via_branch = null;
-  this.call_id = null;
-  this.cseq = null;
-  this.from = null;
-  this.from_tag = null;
-  this.to = null;
-  this.to_tag = null;
-  this.body = null;
-};
-
-IncomingMessage.prototype = {
-  /**
-  * Insert a header of the given name and value into the last position of the
-  * header array.
-  * @param {String} name header name
-  * @param {String} value header value
-  */
-  addHeader: function(name, value) {
-    var header = { raw: value };
-
-    name = SIP.Utils.headerize(name);
-
-    if(this.headers[name]) {
-      this.headers[name].push(header);
-    } else {
-      this.headers[name] = [header];
-    }
-  },
-
-  /**
-   * Get the value of the given header name at the given position.
-   * @param {String} name header name
-   * @returns {String|undefined} Returns the specified header, null if header doesn't exist.
-   */
-  getHeader: function(name) {
-    var header = this.headers[SIP.Utils.headerize(name)];
-
-    if(header) {
-      if(header[0]) {
-        return header[0].raw;
-      }
-    } else {
-      return;
-    }
-  },
-
-  /**
-   * Get the header/s of the given name.
-   * @param {String} name header name
-   * @returns {Array} Array with all the headers of the specified name.
-   */
-  getHeaders: function(name) {
-    var idx, length,
-      header = this.headers[SIP.Utils.headerize(name)],
-      result = [];
-
-    if(!header) {
-      return [];
-    }
-
-    length = header.length;
-    for (idx = 0; idx < length; idx++) {
-      result.push(header[idx].raw);
-    }
-
-    return result;
-  },
-
-  /**
-   * Verify the existence of the given header.
-   * @param {String} name header name
-   * @returns {boolean} true if header with given name exists, false otherwise
-   */
-  hasHeader: function(name) {
-    return(this.headers[SIP.Utils.headerize(name)]) ? true : false;
-  },
-
-  /**
-  * Parse the given header on the given index.
-  * @param {String} name header name
-  * @param {Number} [idx=0] header index
-  * @returns {Object|undefined} Parsed header object, undefined if the header is not present or in case of a parsing error.
-  */
-  parseHeader: function(name, idx) {
-    var header, value, parsed;
-
-    name = SIP.Utils.headerize(name);
-
-    idx = idx || 0;
-
-    if(!this.headers[name]) {
-      this.logger.log('header "' + name + '" not present');
-      return;
-    } else if(idx >= this.headers[name].length) {
-      this.logger.log('not so many "' + name + '" headers present');
-      return;
-    }
-
-    header = this.headers[name][idx];
-    value = header.raw;
-
-    if(header.parsed) {
-      return header.parsed;
-    }
-
-    //substitute '-' by '_' for grammar rule matching.
-    parsed = SIP.Grammar.parse(value, name.replace(/-/g, '_'));
-
-    if(parsed === -1) {
-      this.headers[name].splice(idx, 1); //delete from headers
-      this.logger.warn('error parsing "' + name + '" header field with value "' + value + '"');
-      return;
-    } else {
-      header.parsed = parsed;
-      return parsed;
-    }
-  },
-
-  /**
-   * Message Header attribute selector. Alias of parseHeader.
-   * @param {String} name header name
-   * @param {Number} [idx=0] header index
-   * @returns {Object|undefined} Parsed header object, undefined if the header is not present or in case of a parsing error.
-   *
-   * @example
-   * message.s('via',3).port
-   */
-  s: function(name, idx) {
-    return this.parseHeader(name, idx);
-  },
-
-  /**
-  * Replace the value of the given header by the value.
-  * @param {String} name header name
-  * @param {String} value header value
-  */
-  setHeader: function(name, value) {
-    var header = { raw: value };
-    this.headers[SIP.Utils.headerize(name)] = [header];
-  },
-
-  toString: function() {
-    return this.data;
-  }
-};
-
-/**
- * @augments IncomingMessage
- * @class Class for incoming SIP request.
- */
-IncomingRequest = function(ua) {
-  this.logger = ua.getLogger('sip.sipmessage');
-  this.ua = ua;
-  this.headers = {};
-  this.ruri = null;
-  this.transport = null;
-  this.server_transaction = null;
-};
-IncomingRequest.prototype = new IncomingMessage();
-
-/**
-* Stateful reply.
-* @param {Number} code status code
-* @param {String} reason reason phrase
-* @param {Object} headers extra headers
-* @param {String} body body
-* @param {Function} [onSuccess] onSuccess callback
-* @param {Function} [onFailure] onFailure callback
-*/
-IncomingRequest.prototype.reply = function(code, reason, extraHeaders, body, onSuccess, onFailure) {
-  var rr, vias, length, idx, response,
-    to = this.getHeader('To'),
-    r = 0,
-    v = 0;
-
-  response = SIP.Utils.buildStatusLine(code, reason);
-  extraHeaders = (extraHeaders || []).slice();
-
-  if(this.method === SIP.C.INVITE && code > 100 && code <= 200) {
-    rr = this.getHeaders('record-route');
-    length = rr.length;
-
-    for(r; r < length; r++) {
-      response += 'Record-Route: ' + rr[r] + '\r\n';
-    }
-  }
-
-  vias = this.getHeaders('via');
-  length = vias.length;
-
-  for(v; v < length; v++) {
-    response += 'Via: ' + vias[v] + '\r\n';
-  }
-
-  if(!this.to_tag && code > 100) {
-    to += ';tag=' + SIP.Utils.newTag();
-  } else if(this.to_tag && !this.s('to').hasParam('tag')) {
-    to += ';tag=' + this.to_tag;
-  }
-
-  response += 'To: ' + to + '\r\n';
-  response += 'From: ' + this.getHeader('From') + '\r\n';
-  response += 'Call-ID: ' + this.call_id + '\r\n';
-  response += 'CSeq: ' + this.cseq + ' ' + this.method + '\r\n';
-
-  length = extraHeaders.length;
-  for (idx = 0; idx < length; idx++) {
-    response += extraHeaders[idx].trim() +'\r\n';
-  }
-
-  response += getSupportedHeader(this);
-  response += 'User-Agent: ' + this.ua.configuration.userAgentString +'\r\n';
-
-  if (body) {
-    if (typeof body === 'string') {
-      length = SIP.Utils.str_utf8_length(body);
-      response += 'Content-Type: application/sdp\r\n';
-      response += 'Content-Length: ' + length + '\r\n\r\n';
-      response += body;
-    } else {
-      if (body.body && body.contentType) {
-        length = SIP.Utils.str_utf8_length(body.body);
-        response += 'Content-Type: ' + body.contentType + '\r\n';
-        response += 'Content-Length: ' + length + '\r\n\r\n';
-        response += body.body;
-      } else {
-        response += 'Content-Length: ' + 0 + '\r\n\r\n';
-      }
-    }
-  } else {
-    response += 'Content-Length: ' + 0 + '\r\n\r\n';
-  }
-
-  this.server_transaction.receiveResponse(code, response).then(onSuccess, onFailure);
-
-  return response;
-};
-
-/**
-* Stateless reply.
-* @param {Number} code status code
-* @param {String} reason reason phrase
-*/
-IncomingRequest.prototype.reply_sl = function(code, reason) {
-  var to, response,
-    v = 0,
-    vias = this.getHeaders('via'),
-    length = vias.length;
-
-  response = SIP.Utils.buildStatusLine(code, reason);
-
-  for(v; v < length; v++) {
-    response += 'Via: ' + vias[v] + '\r\n';
-  }
-
-  to = this.getHeader('To');
-
-  if(!this.to_tag && code > 100) {
-    to += ';tag=' + SIP.Utils.newTag();
-  } else if(this.to_tag && !this.s('to').hasParam('tag')) {
-    to += ';tag=' + this.to_tag;
-  }
-
-  response += 'To: ' + to + '\r\n';
-  response += 'From: ' + this.getHeader('From') + '\r\n';
-  response += 'Call-ID: ' + this.call_id + '\r\n';
-  response += 'CSeq: ' + this.cseq + ' ' + this.method + '\r\n';
-  response += 'User-Agent: ' + this.ua.configuration.userAgentString +'\r\n';
-  response += 'Content-Length: ' + 0 + '\r\n\r\n';
-
-  this.transport.send(response);
-};
-
-
-/**
- * @augments IncomingMessage
- * @class Class for incoming SIP response.
- */
-IncomingResponse = function(ua) {
-  this.logger = ua.getLogger('sip.sipmessage');
-  this.headers = {};
-  this.status_code = null;
-  this.reason_phrase = null;
-};
-IncomingResponse.prototype = new IncomingMessage();
-
-SIP.OutgoingRequest = OutgoingRequest;
-SIP.IncomingRequest = IncomingRequest;
-SIP.IncomingResponse = IncomingResponse;
-};
-
-},{}],42:[function(require,module,exports){
-"use strict";
-/**
- * @fileoverview Incoming SIP Message Sanity Check
- */
-
-/**
- * SIP message sanity check.
- * @augments SIP
- * @function
- * @param {SIP.IncomingMessage} message
- * @param {SIP.UA} ua
- * @param {SIP.Transport} transport
- * @returns {Boolean}
- */
-module.exports = function (SIP) {
-var sanityCheck,
- requests = [],
- responses = [],
- all = [];
-
-// Reply
-function reply(status_code, message, transport) {
-  var to,
-    response = SIP.Utils.buildStatusLine(status_code),
-    vias = message.getHeaders('via'),
-    length = vias.length,
-    idx = 0;
-
-  for(idx; idx < length; idx++) {
-    response += "Via: " + vias[idx] + "\r\n";
-  }
-
-  to = message.getHeader('To');
-
-  if(!message.to_tag) {
-    to += ';tag=' + SIP.Utils.newTag();
-  }
-
-  response += "To: " + to + "\r\n";
-  response += "From: " + message.getHeader('From') + "\r\n";
-  response += "Call-ID: " + message.call_id + "\r\n";
-  response += "CSeq: " + message.cseq + " " + message.method + "\r\n";
-  response += "\r\n";
-
-  transport.send(response);
-}
-
-/*
- * Sanity Check for incoming Messages
- *
- * Requests:
- *  - _rfc3261_8_2_2_1_ Receive a Request with a non supported URI scheme
- *  - _rfc3261_16_3_4_ Receive a Request already sent by us
- *   Does not look at via sent-by but at sipjsId, which is inserted as
- *   a prefix in all initial requests generated by the ua
- *  - _rfc3261_18_3_request_ Body Content-Length
- *  - _rfc3261_8_2_2_2_ Merged Requests
- *
- * Responses:
- *  - _rfc3261_8_1_3_3_ Multiple Via headers
- *  - _rfc3261_18_1_2_ sent-by mismatch
- *  - _rfc3261_18_3_response_ Body Content-Length
- *
- * All:
- *  - Minimum headers in a SIP message
- */
-
-// Sanity Check functions for requests
-function rfc3261_8_2_2_1(message, ua, transport) {
-  if(!message.ruri || message.ruri.scheme !== 'sip') {
-    reply(416, message, transport);
-    return false;
-  }
-}
-
-function rfc3261_16_3_4(message, ua, transport) {
-  if(!message.to_tag) {
-    if(message.call_id.substr(0, 5) === ua.configuration.sipjsId) {
-      reply(482, message, transport);
-      return false;
-    }
-  }
-}
-
-function rfc3261_18_3_request(message, ua, transport) {
-  var len = SIP.Utils.str_utf8_length(message.body),
-  contentLength = message.getHeader('content-length');
-
-  if(len < contentLength) {
-    reply(400, message, transport);
-    return false;
-  }
-}
-
-function rfc3261_8_2_2_2(message, ua, transport) {
-  var tr, idx,
-    fromTag = message.from_tag,
-    call_id = message.call_id,
-    cseq = message.cseq;
-
-  if(!message.to_tag) {
-    if(message.method === SIP.C.INVITE) {
-      tr = ua.transactions.ist[message.via_branch];
-      if(tr) {
-        return;
-      } else {
-        for(idx in ua.transactions.ist) {
-          tr = ua.transactions.ist[idx];
-          if(tr.request.from_tag === fromTag && tr.request.call_id === call_id && tr.request.cseq === cseq) {
-            reply(482, message, transport);
-            return false;
-          }
-        }
-      }
-    } else {
-      tr = ua.transactions.nist[message.via_branch];
-      if(tr) {
-        return;
-      } else {
-        for(idx in ua.transactions.nist) {
-          tr = ua.transactions.nist[idx];
-          if(tr.request.from_tag === fromTag && tr.request.call_id === call_id && tr.request.cseq === cseq) {
-            reply(482, message, transport);
-            return false;
-          }
-        }
-      }
-    }
-  }
-}
-
-// Sanity Check functions for responses
-function rfc3261_8_1_3_3(message, ua) {
-  if(message.getHeaders('via').length > 1) {
-    ua.getLogger('sip.sanitycheck').warn('More than one Via header field present in the response. Dropping the response');
-    return false;
-  }
-}
-
-function rfc3261_18_3_response(message, ua) {
-  var
-    len = SIP.Utils.str_utf8_length(message.body),
-    contentLength = message.getHeader('content-length');
-
-    if(len < contentLength) {
-      ua.getLogger('sip.sanitycheck').warn('Message body length is lower than the value in Content-Length header field. Dropping the response');
-      return false;
-    }
-}
-
-// Sanity Check functions for requests and responses
-function minimumHeaders(message, ua) {
-  var
-    mandatoryHeaders = ['from', 'to', 'call_id', 'cseq', 'via'],
-    idx = mandatoryHeaders.length;
-
-  while(idx--) {
-    if(!message.hasHeader(mandatoryHeaders[idx])) {
-      ua.getLogger('sip.sanitycheck').warn('Missing mandatory header field : '+ mandatoryHeaders[idx] +'. Dropping the response');
-      return false;
-    }
-  }
-}
-
-requests.push(rfc3261_8_2_2_1);
-requests.push(rfc3261_16_3_4);
-requests.push(rfc3261_18_3_request);
-requests.push(rfc3261_8_2_2_2);
-
-responses.push(rfc3261_8_1_3_3);
-// responses.push(rfc3261_18_1_2);
-responses.push(rfc3261_18_3_response);
-
-all.push(minimumHeaders);
-
-sanityCheck = function(message, ua, transport) {
-  var len, pass;
-
-  len = all.length;
-  while(len--) {
-    pass = all[len](message, ua, transport);
-    if(pass === false) {
-      return false;
-    }
-  }
-
-  if(message instanceof SIP.IncomingRequest) {
-    len = requests.length;
-    while(len--) {
-      pass = requests[len](message, ua, transport);
-      if(pass === false) {
-        return false;
-      }
-    }
-  }
-
-  else if(message instanceof SIP.IncomingResponse) {
-    len = responses.length;
-    while(len--) {
-      pass = responses[len](message, ua, transport);
-      if(pass === false) {
-        return false;
-      }
-    }
-  }
-
-  //Everything is OK
-  return true;
-};
-
-SIP.sanityCheck = sanityCheck;
-};
-
-},{}],43:[function(require,module,exports){
-"use strict";
-module.exports = function (SIP) {
-var ServerContext;
-
-ServerContext = function (ua, request) {
-  this.ua = ua;
-  this.logger = ua.getLogger('sip.servercontext');
-  this.request = request;
-  if (request.method === SIP.C.INVITE) {
-    this.transaction = new SIP.Transactions.InviteServerTransaction(request, ua);
-  } else {
-    this.transaction = new SIP.Transactions.NonInviteServerTransaction(request, ua);
-  }
-
-  if (request.body) {
-    this.body = request.body;
-  }
-  if (request.hasHeader('Content-Type')) {
-    this.contentType = request.getHeader('Content-Type');
-  }
-  this.method = request.method;
-
-  this.data = {};
-
-  this.localIdentity = request.to;
-  this.remoteIdentity = request.from;
-};
-
-ServerContext.prototype = Object.create(SIP.EventEmitter.prototype);
-
-ServerContext.prototype.progress = function (options) {
-  options = Object.create(options || Object.prototype);
-  options.statusCode || (options.statusCode = 180);
-  options.minCode = 100;
-  options.maxCode = 199;
-  options.events = ['progress'];
-  return this.reply(options);
-};
-
-ServerContext.prototype.accept = function (options) {
-  options = Object.create(options || Object.prototype);
-  options.statusCode || (options.statusCode = 200);
-  options.minCode = 200;
-  options.maxCode = 299;
-  options.events = ['accepted'];
-  return this.reply(options);
-};
-
-ServerContext.prototype.reject = function (options) {
-  options = Object.create(options || Object.prototype);
-  options.statusCode || (options.statusCode = 480);
-  options.minCode = 300;
-  options.maxCode = 699;
-  options.events = ['rejected', 'failed'];
-  return this.reply(options);
-};
-
-ServerContext.prototype.reply = function (options) {
-  options = options || {}; // This is okay, so long as we treat options as read-only in this method
-  var
-    statusCode = options.statusCode || 100,
-    minCode = options.minCode || 100,
-    maxCode = options.maxCode || 699,
-    reasonPhrase = SIP.Utils.getReasonPhrase(statusCode, options.reasonPhrase),
-    extraHeaders = options.extraHeaders || [],
-    body = options.body,
-    events = options.events || [],
-    response;
-
-  if (statusCode < minCode || statusCode > maxCode) {
-    throw new TypeError('Invalid statusCode: ' + statusCode);
-  }
-  response = this.request.reply(statusCode, reasonPhrase, extraHeaders, body);
-  events.forEach(function (event) {
-    this.emit(event, response, reasonPhrase);
-  }, this);
-
-  return this;
-};
-
-ServerContext.prototype.onRequestTimeout = function () {
-  this.emit('failed', null, SIP.C.causes.REQUEST_TIMEOUT);
-};
-
-ServerContext.prototype.onTransportError = function () {
-  this.emit('failed', null, SIP.C.causes.CONNECTION_ERROR);
-};
-
-SIP.ServerContext = ServerContext;
-};
-
-},{}],44:[function(require,module,exports){
-"use strict";
-module.exports = function (SIP, environment) {
-
-var DTMF = require('./Session/DTMF')(SIP);
-var RFC4028 = require('./RFC4028')(SIP.Timers);
-
-var Session, InviteServerContext, InviteClientContext,
- C = {
-    //Session states
-    STATUS_NULL:                        0,
-    STATUS_INVITE_SENT:                 1,
-    STATUS_1XX_RECEIVED:                2,
-    STATUS_INVITE_RECEIVED:             3,
-    STATUS_WAITING_FOR_ANSWER:          4,
-    STATUS_ANSWERED:                    5,
-    STATUS_WAITING_FOR_PRACK:           6,
-    STATUS_WAITING_FOR_ACK:             7,
-    STATUS_CANCELED:                    8,
-    STATUS_TERMINATED:                  9,
-    STATUS_ANSWERED_WAITING_FOR_PRACK: 10,
-    STATUS_EARLY_MEDIA:                11,
-    STATUS_CONFIRMED:                  12
-  };
-
-/*
- * @param {function returning SIP.MediaHandler} [mediaHandlerFactory]
- *        (See the documentation for the mediaHandlerFactory argument of the UA constructor.)
- */
-Session = function (mediaHandlerFactory) {
-  this.status = C.STATUS_NULL;
-  this.dialog = null;
-  this.earlyDialogs = {};
-  this.mediaHandlerFactory = mediaHandlerFactory || SIP.WebRTC.MediaHandler.defaultFactory;
-  // this.mediaHandler gets set by ICC/ISC constructors
-  this.hasOffer = false;
-  this.hasAnswer = false;
-
-  // Session Timers
-  this.timers = {
-    ackTimer: null,
-    expiresTimer: null,
-    invite2xxTimer: null,
-    userNoAnswerTimer: null,
-    rel1xxTimer: null,
-    prackTimer: null
-  };
-
-  // Session info
-  this.startTime = null;
-  this.endTime = null;
-  this.tones = null;
-
-  // Mute/Hold state
-  this.local_hold = false;
-  this.remote_hold = false;
-
-  this.pending_actions = {
-    actions: [],
-
-    length: function() {
-      return this.actions.length;
-    },
-
-    isPending: function(name){
-      var
-      idx = 0,
-      length = this.actions.length;
-
-      for (idx; idx<length; idx++) {
-        if (this.actions[idx].name === name) {
-          return true;
-        }
-      }
-      return false;
-    },
-
-    shift: function() {
-      return this.actions.shift();
-    },
-
-    push: function(name) {
-      this.actions.push({
-        name: name
-      });
-    },
-
-    pop: function(name) {
-      var
-      idx = 0,
-      length = this.actions.length;
-
-      for (idx; idx<length; idx++) {
-        if (this.actions[idx].name === name) {
-          this.actions.splice(idx,1);
-          length --;
-          idx--;
-        }
-      }
-    }
-   };
-
-  this.early_sdp = null;
-  this.rel100 = SIP.C.supported.UNSUPPORTED;
-};
-
-Session.prototype = {
-  dtmf: function(tones, options) {
-    var tone, dtmfs = [],
-        self = this;
-
-    options = options || {};
-
-    if (tones === undefined) {
-      throw new TypeError('Not enough arguments');
-    }
-
-    // Check Session Status
-    if (this.status !== C.STATUS_CONFIRMED && this.status !== C.STATUS_WAITING_FOR_ACK) {
-      throw new SIP.Exceptions.InvalidStateError(this.status);
-    }
-
-    // Check tones
-    if ((typeof tones !== 'string' && typeof tones !== 'number') || !tones.toString().match(/^[0-9A-D#*,]+$/i)) {
-      throw new TypeError('Invalid tones: '+ tones);
-    }
-
-    tones = tones.toString().split('');
-
-    while (tones.length > 0) { dtmfs.push(new DTMF(this, tones.shift(), options)); }
-
-    if (this.tones) {
-      // Tones are already queued, just add to the queue
-      this.tones =  this.tones.concat(dtmfs);
-      return this;
-    }
-
-    var sendDTMF = function () {
-      var dtmf, timeout;
-
-      if (self.status === C.STATUS_TERMINATED || !self.tones || self.tones.length === 0) {
-        // Stop sending DTMF
-        self.tones = null;
-        return this;
-      }
-
-      dtmf = self.tones.shift();
-
-      if (tone === ',') {
-        timeout = 2000;
-      } else {
-        dtmf.on('failed', function(){self.tones = null;});
-        dtmf.send(options);
-        timeout = dtmf.duration + dtmf.interToneGap;
-      }
-
-      // Set timeout for the next tone
-      SIP.Timers.setTimeout(sendDTMF, timeout);
-    };
-
-    this.tones = dtmfs;
-    sendDTMF();
-    return this;
-  },
-
-  bye: function(options) {
-    options = Object.create(options || Object.prototype);
-    var statusCode = options.statusCode;
-
-    // Check Session Status
-    if (this.status === C.STATUS_TERMINATED) {
-      this.logger.error('Error: Attempted to send BYE in a terminated session.');
-      return this;
-    }
-
-    this.logger.log('terminating Session');
-
-    if (statusCode && (statusCode < 200 || statusCode >= 700)) {
-      throw new TypeError('Invalid statusCode: '+ statusCode);
-    }
-
-    options.receiveResponse = function () {};
-
-    return this.
-      sendRequest(SIP.C.BYE, options).
-      terminated();
-  },
-
-  refer: function(target, options) {
-    options = options || {};
-    var extraHeaders = (options.extraHeaders || []).slice(),
-        withReplaces =
-          target instanceof SIP.InviteServerContext ||
-          target instanceof SIP.InviteClientContext,
-        originalTarget = target;
-
-    if (target === undefined) {
-      throw new TypeError('Not enough arguments');
-    }
-
-    // Check Session Status
-    if (this.status !== C.STATUS_CONFIRMED) {
-      throw new SIP.Exceptions.InvalidStateError(this.status);
-    }
-
-    // transform `target` so that it can be a Refer-To header value
-    if (withReplaces) {
-      //Attended Transfer
-      // B.transfer(C)
-      target = '"' + target.remoteIdentity.friendlyName + '" ' +
-        '<' + target.dialog.remote_target.toString() +
-        '?Replaces=' + target.dialog.id.call_id +
-        '%3Bto-tag%3D' + target.dialog.id.remote_tag +
-        '%3Bfrom-tag%3D' + target.dialog.id.local_tag + '>';
-    } else {
-      //Blind Transfer
-      // normalizeTarget allows instances of SIP.URI to pass through unaltered,
-      // so try to make one ahead of time
-      try {
-        target = SIP.Grammar.parse(target, 'Refer_To').uri || target;
-      } catch (e) {
-        this.logger.debug(".refer() cannot parse Refer_To from", target);
-        this.logger.debug("...falling through to normalizeTarget()");
-      }
-
-      // Check target validity
-      target = this.ua.normalizeTarget(target);
-      if (!target) {
-        throw new TypeError('Invalid target: ' + originalTarget);
-      }
-    }
-
-    extraHeaders.push('Contact: '+ this.contact);
-    extraHeaders.push('Allow: '+ SIP.UA.C.ALLOWED_METHODS.toString());
-    extraHeaders.push('Refer-To: '+ target);
-
-    // Send the request
-    this.sendRequest(SIP.C.REFER, {
-      extraHeaders: extraHeaders,
-      body: options.body,
-      receiveResponse: function (response) {
-        if ( ! /^2[0-9]{2}$/.test(response.status_code) ) {
-          return;
-        }
-        // hang up only if we transferred to a SIP address
-        if (withReplaces || (target.scheme && target.scheme.match("^sips?$"))) {
-          this.terminate();
-        }
-      }.bind(this)
-    });
-    return this;
-  },
-
-  followRefer: function followRefer (callback) {
-    return function referListener (callback, request) {
-      // open non-SIP URIs if possible and keep session open
-      var referTo = request.parseHeader('refer-to');
-      var target = referTo.uri;
-      if (!target.scheme.match("^sips?$")) {
-        var targetString = target.toString();
-        if (typeof environment.open === "function") {
-          environment.open(targetString);
-        } else {
-          this.logger.warn("referred to non-SIP URI but `open` isn't in the environment: " + targetString);
-        }
-        return;
-      }
-
-      var extraHeaders = [];
-
-      /* Copy the Replaces query into a Replaces header */
-      /* TODO - make sure we don't copy a poorly formatted header? */
-      var replaces = target.getHeader('Replaces');
-      if (replaces !== undefined) {
-        extraHeaders.push('Replaces: ' + decodeURIComponent(replaces));
-      }
-
-      // don't embed headers into Request-URI of INVITE
-      target.clearHeaders();
-
-      /*
-        Harmless race condition.  Both sides of REFER
-        may send a BYE, but in the end the dialogs are destroyed.
-      */
-      var getReferMedia = this.mediaHandler.getReferMedia;
-      var mediaHint = getReferMedia ? getReferMedia.call(this.mediaHandler) : this.mediaHint;
-
-      SIP.Hacks.Chrome.getsConfusedAboutGUM(this);
-
-      var referSession = this.ua.invite(target, {
-        media: mediaHint,
-        params: {
-          to_displayName: referTo.friendlyName
-        },
-        extraHeaders: extraHeaders
-      });
-
-      callback.call(this, request, referSession);
-
-      this.terminate();
-    }.bind(this, callback);
-  },
-
-  sendRequest: function(method,options) {
-    options = options || {};
-    var self = this;
-
-    var request = new SIP.OutgoingRequest(
-      method,
-      this.dialog.remote_target,
-      this.ua,
-      {
-        cseq: options.cseq || (this.dialog.local_seqnum += 1),
-        call_id: this.dialog.id.call_id,
-        from_uri: this.dialog.local_uri,
-        from_tag: this.dialog.id.local_tag,
-        to_uri: this.dialog.remote_uri,
-        to_tag: this.dialog.id.remote_tag,
-        route_set: this.dialog.route_set,
-        statusCode: options.statusCode,
-        reasonPhrase: options.reasonPhrase
-      },
-      options.extraHeaders || [],
-      options.body
-    );
-
-    new SIP.RequestSender({
-      request: request,
-      onRequestTimeout: function() {
-        self.onRequestTimeout();
-      },
-      onTransportError: function() {
-        self.onTransportError();
-      },
-      receiveResponse: options.receiveResponse || function(response) {
-        self.receiveNonInviteResponse(response);
-      }
-    }, this.ua).send();
-
-    // Emit the request event
-    this.emit(method.toLowerCase(), request);
-
-    return this;
-  },
-
-  close: function() {
-    var idx;
-
-    if(this.status === C.STATUS_TERMINATED) {
-      return this;
-    }
-
-    this.logger.log('closing INVITE session ' + this.id);
-
-    // 1st Step. Terminate media.
-    if (this.mediaHandler){
-      this.mediaHandler.close();
-    }
-
-    // 2nd Step. Terminate signaling.
-
-    // Clear session timers
-    for(idx in this.timers) {
-      SIP.Timers.clearTimeout(this.timers[idx]);
-    }
-
-    // Terminate dialogs
-
-    // Terminate confirmed dialog
-    if(this.dialog) {
-      this.dialog.terminate();
-      delete this.dialog;
-    }
-
-    // Terminate early dialogs
-    for(idx in this.earlyDialogs) {
-      this.earlyDialogs[idx].terminate();
-      delete this.earlyDialogs[idx];
-    }
-
-    this.status = C.STATUS_TERMINATED;
-
-    delete this.ua.sessions[this.id];
-    return this;
-  },
-
-  createDialog: function(message, type, early) {
-    var dialog, early_dialog,
-      local_tag = message[(type === 'UAS') ? 'to_tag' : 'from_tag'],
-      remote_tag = message[(type === 'UAS') ? 'from_tag' : 'to_tag'],
-      id = message.call_id + local_tag + remote_tag;
-
-    early_dialog = this.earlyDialogs[id];
-
-    // Early Dialog
-    if (early) {
-      if (early_dialog) {
-        return true;
-      } else {
-        early_dialog = new SIP.Dialog(this, message, type, SIP.Dialog.C.STATUS_EARLY);
-
-        // Dialog has been successfully created.
-        if(early_dialog.error) {
-          this.logger.error(early_dialog.error);
-          this.failed(message, SIP.C.causes.INTERNAL_ERROR);
-          return false;
-        } else {
-          this.earlyDialogs[id] = early_dialog;
-          return true;
-        }
-      }
-    }
-    // Confirmed Dialog
-    else {
-      // In case the dialog is in _early_ state, update it
-      if (early_dialog) {
-        early_dialog.update(message, type);
-        this.dialog = early_dialog;
-        delete this.earlyDialogs[id];
-        for (var dia in this.earlyDialogs) {
-          this.earlyDialogs[dia].terminate();
-          delete this.earlyDialogs[dia];
-        }
-        return true;
-      }
-
-      // Otherwise, create a _confirmed_ dialog
-      dialog = new SIP.Dialog(this, message, type);
-
-      if(dialog.error) {
-        this.logger.error(dialog.error);
-        this.failed(message, SIP.C.causes.INTERNAL_ERROR);
-        return false;
-      } else {
-        this.to_tag = message.to_tag;
-        this.dialog = dialog;
-        return true;
-      }
-    }
-  },
-
-  /**
-  * Check if Session is ready for a re-INVITE
-  *
-  * @returns {Boolean}
-  */
-  isReadyToReinvite: function() {
-    return this.mediaHandler.isReady() &&
-      !this.dialog.uac_pending_reply &&
-      !this.dialog.uas_pending_reply;
-  },
-
-  /**
-   * Mute
-   */
-  mute: function(options) {
-    var ret = this.mediaHandler.mute(options);
-    if (ret) {
-      this.onmute(ret);
-    }
-  },
-
-  /**
-   * Unmute
-   */
-  unmute: function(options) {
-    var ret = this.mediaHandler.unmute(options);
-    if (ret) {
-      this.onunmute(ret);
-    }
-  },
-
-  /**
-   * Hold
-   */
-  hold: function() {
-
-    if (this.status !== C.STATUS_WAITING_FOR_ACK && this.status !== C.STATUS_CONFIRMED) {
-      throw new SIP.Exceptions.InvalidStateError(this.status);
-    }
-
-    this.mediaHandler.hold();
-
-    // Check if RTCSession is ready to send a reINVITE
-    if (!this.isReadyToReinvite()) {
-      /* If there is a pending 'unhold' action, cancel it and don't queue this one
-       * Else, if there isn't any 'hold' action, add this one to the queue
-       * Else, if there is already a 'hold' action, skip
-       */
-      if (this.pending_actions.isPending('unhold')) {
-        this.pending_actions.pop('unhold');
-      } else if (!this.pending_actions.isPending('hold')) {
-        this.pending_actions.push('hold');
-      }
-      return;
-    } else if (this.local_hold === true) {
-        return;
-    }
-
-    this.onhold('local');
-
-    this.sendReinvite();
-  },
-
-  /**
-   * Unhold
-   */
-  unhold: function(options) {
-
-    if (this.status !== C.STATUS_WAITING_FOR_ACK && this.status !== C.STATUS_CONFIRMED) {
-      throw new SIP.Exceptions.InvalidStateError(this.status);
-    }
-
-    this.mediaHandler.unhold();
-
-    if (!this.isReadyToReinvite()) {
-      /* If there is a pending 'hold' action, cancel it and don't queue this one
-       * Else, if there isn't any 'unhold' action, add this one to the queue
-       * Else, if there is already a 'unhold' action, skip
-       */
-      if (this.pending_actions.isPending('hold')) {
-        this.pending_actions.pop('hold');
-      } else if (!this.pending_actions.isPending('unhold')) {
-        this.pending_actions.push('unhold');
-      }
-      return;
-    } else if (this.local_hold === false) {
-      return;
-    }
-
-    this.onunhold('local');
-
-    this.sendReinvite(options);
-  },
-
-  /**
-   * isOnHold
-   */
-  isOnHold: function() {
-    return {
-      local: this.local_hold,
-      remote: this.remote_hold
-    };
-  },
-
-  /**
-   * In dialog INVITE Reception
-   * @private
-   */
-  receiveReinvite: function(request) {
-    var self = this;
-
-    if (!this.mediaHandler.hasDescription(request)) {
-      this.logger.warn('invalid Content-Type');
-      request.reply(415);
-      return;
-    }
-
-    this.mediaHandler.setDescription(request)
-    .then(this.mediaHandler.getDescription.bind(this.mediaHandler, this.mediaHint))
-    .then(function(description) {
-      var extraHeaders = ['Contact: ' + self.contact];
-      request.reply(200, null, extraHeaders, description,
-        function() {
-          self.status = C.STATUS_WAITING_FOR_ACK;
-          self.setInvite2xxTimer(request, description);
-          self.setACKTimer();
-
-          if (self.remote_hold && !self.mediaHandler.remote_hold) {
-            self.onunhold('remote');
-          } else if (!self.remote_hold && self.mediaHandler.remote_hold) {
-            self.onhold('remote');
-          }
-        });
-    })
-    .catch(function onFailure (e) {
-      var statusCode;
-      if (e instanceof SIP.Exceptions.GetDescriptionError) {
-        statusCode = 500;
-      } else {
-        self.logger.error(e);
-        statusCode = 488;
-      }
-      request.reply(statusCode);
-    });
-  },
-
-  sendReinvite: function(options) {
-    options = options || {};
-
-    var
-      self = this,
-       extraHeaders = (options.extraHeaders || []).slice(),
-       eventHandlers = options.eventHandlers || {},
-       succeeded;
-
-    if (eventHandlers.succeeded) {
-      succeeded = eventHandlers.succeeded;
-    }
-    this.reinviteSucceeded = function(){
-      SIP.Timers.clearTimeout(self.timers.ackTimer);
-      SIP.Timers.clearTimeout(self.timers.invite2xxTimer);
-      self.status = C.STATUS_CONFIRMED;
-      succeeded && succeeded.apply(this, arguments);
-    };
-    if (eventHandlers.failed) {
-      this.reinviteFailed = eventHandlers.failed;
-    } else {
-      this.reinviteFailed = function(){};
-    }
-
-    extraHeaders.push('Contact: ' + this.contact);
-    extraHeaders.push('Allow: '+ SIP.UA.C.ALLOWED_METHODS.toString());
-
-    this.receiveResponse = this.receiveReinviteResponse;
-    //REVISIT
-    this.mediaHandler.getDescription(self.mediaHint)
-    .then(
-      function(description){
-        self.dialog.sendRequest(self, SIP.C.INVITE, {
-          extraHeaders: extraHeaders,
-          body: description
-        });
-      },
-      function() {
-        if (self.isReadyToReinvite()) {
-          self.onReadyToReinvite();
-        }
-        self.reinviteFailed();
-      }
-    );
-  },
-
-  receiveRequest: function (request) {
-    switch (request.method) {
-      case SIP.C.BYE:
-        request.reply(200);
-        if(this.status === C.STATUS_CONFIRMED) {
-          this.emit('bye', request);
-          this.terminated(request, SIP.C.causes.BYE);
-        }
-        break;
-      case SIP.C.INVITE:
-        if(this.status === C.STATUS_CONFIRMED) {
-          this.logger.log('re-INVITE received');
-          this.receiveReinvite(request);
-        }
-        break;
-      case SIP.C.INFO:
-        if (this.status === C.STATUS_1XX_RECEIVED ||
-            this.status === C.STATUS_WAITING_FOR_PRACK ||
-            this.status === C.STATUS_WAITING_FOR_ACK ||
-            this.status === C.STATUS_ANSWERED_WAITING_FOR_PRACK ||
-            this.status === C.STATUS_EARLY_MEDIA ||
-            this.status === C.STATUS_CONFIRMED ||
-            this.dialog) {
-          if (this.onInfo) {
-            return this.onInfo(request);
-          }
-
-          var body, tone, duration,
-              contentType = request.getHeader('content-type'),
-              reg_tone = /^(Signal\s*?=\s*?)([0-9A-D#*]{1})(\s)?.*/,
-              reg_duration = /^(Duration\s?=\s?)([0-9]{1,4})(\s)?.*/;
-
-          if (contentType) {
-            if (contentType.match(/^application\/dtmf-relay/i)) {
-              if (request.body) {
-                body = request.body.split('\r\n', 2);
-                if (body.length === 2) {
-                  if (reg_tone.test(body[0])) {
-                    tone = body[0].replace(reg_tone,"$2");
-                  }
-                  if (reg_duration.test(body[1])) {
-                    duration = parseInt(body[1].replace(reg_duration,"$2"), 10);
-                  }
-                }
-              }
-
-              new DTMF(this, tone, {duration: duration}).init_incoming(request);
-            } else {
-              request.reply(415, null, ["Accept: application/dtmf-relay"]);
-            }
-          }
-        }
-        break;
-      case SIP.C.REFER:
-        if(this.status ===  C.STATUS_CONFIRMED) {
-          this.logger.log('REFER received');
-          var hasReferListener = this.listeners('refer').length,
-              notifyBody;
-
-          if (hasReferListener) {
-            request.reply(202, 'Accepted');
-            notifyBody = 'SIP/2.0 100 Trying';
-
-            this.sendRequest(SIP.C.NOTIFY, {
-              extraHeaders:[
-                'Event: refer',
-                'Subscription-State: terminated',
-                'Content-Type: message/sipfrag'
-              ],
-              body: notifyBody,
-              receiveResponse: function() {}
-            });
-
-            this.emit('refer', request);
-          } else {
-            // RFC 3515.2.4.2: 'the UA MAY decline the request.'
-            request.reply(603, 'Declined');
-          }
-        }
-        break;
-      case SIP.C.NOTIFY:
-        request.reply(200, 'OK');
-        this.emit('notify', request);
-        break;
-    }
-  },
-
-  /**
-   * Reception of Response for in-dialog INVITE
-   * @private
-   */
-  receiveReinviteResponse: function(response) {
-    var self = this;
-
-    if (this.status === C.STATUS_TERMINATED) {
-      return;
-    }
-
-    switch(true) {
-      case /^1[0-9]{2}$/.test(response.status_code):
-        break;
-      case /^2[0-9]{2}$/.test(response.status_code):
-        this.status = C.STATUS_CONFIRMED;
-
-        this.sendRequest(SIP.C.ACK,{cseq:response.cseq});
-
-        if (!this.mediaHandler.hasDescription(response)) {
-          this.reinviteFailed();
-          break;
-        }
-
-        //REVISIT
-        this.mediaHandler.setDescription(response)
-        .then(
-          function onSuccess () {
-            self.reinviteSucceeded();
-          },
-          function onFailure () {
-            self.reinviteFailed();
-          }
-        );
-        break;
-      default:
-        this.reinviteFailed();
-    }
-  },
-
-  acceptAndTerminate: function(response, status_code, reason_phrase) {
-    var extraHeaders = [];
-
-    if (status_code) {
-      extraHeaders.push('Reason: ' + SIP.Utils.getReasonHeaderValue(status_code, reason_phrase));
-    }
-
-    // An error on dialog creation will fire 'failed' event
-    if (this.dialog || this.createDialog(response, 'UAC')) {
-      this.sendRequest(SIP.C.ACK,{cseq: response.cseq});
-      this.sendRequest(SIP.C.BYE, {
-        extraHeaders: extraHeaders
-      });
-    }
-
-    return this;
-  },
-
-  /**
-   * RFC3261 13.3.1.4
-   * Response retransmissions cannot be accomplished by transaction layer
-   *  since it is destroyed when receiving the first 2xx answer
-   */
-  setInvite2xxTimer: function(request, description) {
-    var self = this,
-        timeout = SIP.Timers.T1;
-
-    this.timers.invite2xxTimer = SIP.Timers.setTimeout(function invite2xxRetransmission() {
-      if (self.status !== C.STATUS_WAITING_FOR_ACK) {
-        return;
-      }
-
-      self.logger.log('no ACK received, attempting to retransmit OK');
-
-      var extraHeaders = ['Contact: ' + self.contact];
-
-      request.reply(200, null, extraHeaders, description);
-
-      timeout = Math.min(timeout * 2, SIP.Timers.T2);
-
-      self.timers.invite2xxTimer = SIP.Timers.setTimeout(invite2xxRetransmission, timeout);
-    }, timeout);
-  },
-
-  /**
-   * RFC3261 14.2
-   * If a UAS generates a 2xx response and never receives an ACK,
-   *  it SHOULD generate a BYE to terminate the dialog.
-   */
-  setACKTimer: function() {
-    var self = this;
-
-    this.timers.ackTimer = SIP.Timers.setTimeout(function() {
-      if(self.status === C.STATUS_WAITING_FOR_ACK) {
-        self.logger.log('no ACK received for an extended period of time, terminating the call');
-        SIP.Timers.clearTimeout(self.timers.invite2xxTimer);
-        self.sendRequest(SIP.C.BYE);
-        self.terminated(null, SIP.C.causes.NO_ACK);
-      }
-    }, SIP.Timers.TIMER_H);
-  },
-
-  /*
-   * @private
-   */
-  onReadyToReinvite: function() {
-    var action = this.pending_actions.shift();
-
-    if (!action || !this[action.name]) {
-      return;
-    }
-
-    this[action.name]();
-  },
-
-  onTransportError: function() {
-    if (this.status !== C.STATUS_CONFIRMED && this.status !== C.STATUS_TERMINATED) {
-      this.failed(null, SIP.C.causes.CONNECTION_ERROR);
-    }
-  },
-
-  onRequestTimeout: function() {
-    if (this.status === C.STATUS_CONFIRMED) {
-      this.terminated(null, SIP.C.causes.REQUEST_TIMEOUT);
-    } else if (this.status !== C.STATUS_TERMINATED) {
-      this.failed(null, SIP.C.causes.REQUEST_TIMEOUT);
-      this.terminated(null, SIP.C.causes.REQUEST_TIMEOUT);
-    }
-  },
-
-  onDialogError: function(response) {
-    if (this.status === C.STATUS_CONFIRMED) {
-      this.terminated(response, SIP.C.causes.DIALOG_ERROR);
-    } else if (this.status !== C.STATUS_TERMINATED) {
-      this.failed(response, SIP.C.causes.DIALOG_ERROR);
-      this.terminated(response, SIP.C.causes.DIALOG_ERROR);
-    }
-  },
-
-  /**
-   * @private
-   */
-  onhold: function(originator) {
-    this[originator === 'local' ? 'local_hold' : 'remote_hold'] = true;
-    this.emit('hold', { originator: originator });
-  },
-
-  /**
-   * @private
-   */
-  onunhold: function(originator) {
-    this[originator === 'local' ? 'local_hold' : 'remote_hold'] = false;
-    this.emit('unhold', { originator: originator });
-  },
-
-  /*
-   * @private
-   */
-  onmute: function(options) {
-    this.emit('muted', {
-      audio: options.audio,
-      video: options.video
-    });
-  },
-
-  /*
-   * @private
-   */
-  onunmute: function(options) {
-    this.emit('unmuted', {
-      audio: options.audio,
-      video: options.video
-    });
-  },
-
-  failed: function(response, cause) {
-    if (this.status === C.STATUS_TERMINATED) {
-      return this;
-    }
-    this.emit('failed', response || null, cause || null);
-    return this;
-  },
-
-  rejected: function(response, cause) {
-    this.emit('rejected',
-      response || null,
-      cause || null
-    );
-    return this;
-  },
-
-  canceled: function() {
-    this.emit('cancel');
-    return this;
-  },
-
-  accepted: function(response, cause) {
-    cause = SIP.Utils.getReasonPhrase(response && response.status_code, cause);
-
-    this.startTime = new Date();
-
-    if (this.replacee) {
-      this.replacee.emit('replaced', this);
-      this.replacee.terminate();
-    }
-    if (response) {
-      RFC4028.updateState(this.dialog, response, SIP.Parser.parseMessage, this.ua);
-    }
-    this.emit('accepted', response, cause);
-    return this;
-  },
-
-  terminated: function(message, cause) {
-    if (this.status === C.STATUS_TERMINATED) {
-      return this;
-    }
-
-    this.endTime = new Date();
-
-    this.close();
-    this.emit('terminated',
-      message || null,
-      cause || null
-    );
-    return this;
-  },
-
-  connecting: function(request) {
-    this.emit('connecting', { request: request });
-    return this;
-  }
-};
-
-Session.desugar = function desugar(options) {
-  if (environment.HTMLMediaElement && options instanceof environment.HTMLMediaElement) {
-    options = {
-      media: {
-        constraints: {
-          audio: true,
-          video: options.tagName === 'VIDEO'
-        },
-        render: {
-          remote: options
-        }
-      }
-    };
-  }
-  return options || {};
-};
-
-
-Session.C = C;
-SIP.Session = Session;
-
-
-InviteServerContext = function(ua, request) {
-  var expires,
-    self = this,
-    contentType = request.getHeader('Content-Type'),
-    contentDisp = request.parseHeader('Content-Disposition');
-
-  SIP.Utils.augment(this, SIP.ServerContext, [ua, request]);
-  SIP.Utils.augment(this, SIP.Session, [ua.configuration.mediaHandlerFactory]);
-
-  //Initialize Media Session
-  this.mediaHandler = this.mediaHandlerFactory(this, {
-    RTCConstraints: {"optional": [{'DtlsSrtpKeyAgreement': 'true'}]}
-  });
-
-  // Check body and content type
-  if ((!contentDisp && !this.mediaHandler.hasDescription(request)) || (contentDisp && contentDisp.type === 'render')) {
-    this.renderbody = request.body;
-    this.rendertype = contentType;
-  } else if (!this.mediaHandler.hasDescription(request) && (contentDisp && contentDisp.type === 'session')) {
-    request.reply(415);
-    //TODO: instead of 415, pass off to the media handler, who can then decide if we can use it
-    return;
-  }
-
-  // TODO test
-  // http://tools.ietf.org/html/rfc4028#section-9
-  if (RFC4028.hasSmallMinSE(request)) {
-    request.reply(422, null, ['Min-SE: ' + RFC4028.localMinSE]);
-    return;
-  }
-
-  this.status = C.STATUS_INVITE_RECEIVED;
-  this.from_tag = request.from_tag;
-  this.id = request.call_id + this.from_tag;
-  this.request = request;
-  this.contact = this.ua.contact.toString();
-
-  this.receiveNonInviteResponse = function () {}; // intentional no-op
-
-  this.logger = ua.getLogger('sip.inviteservercontext', this.id);
-
-  //Save the session into the ua sessions collection.
-  this.ua.sessions[this.id] = this;
-
-  //Get the Expires header value if exists
-  if(request.hasHeader('expires')) {
-    expires = request.getHeader('expires') * 1000;
-  }
-
-  //Set 100rel if necessary
-  function set100rel(h,c) {
-    if (request.hasHeader(h) && request.getHeader(h).toLowerCase().indexOf('100rel') >= 0) {
-      self.rel100 = c;
-    }
-  }
-  set100rel('require', SIP.C.supported.REQUIRED);
-  set100rel('supported', SIP.C.supported.SUPPORTED);
-
-  /* Set the to_tag before
-   * replying a response code that will create a dialog.
-   */
-  request.to_tag = SIP.Utils.newTag();
-
-  // An error on dialog creation will fire 'failed' event
-  if(!this.createDialog(request, 'UAS', true)) {
-    request.reply(500, 'Missing Contact header field');
-    return;
-  }
-
-  if (this.mediaHandler && this.mediaHandler.getRemoteStreams) {
-    this.getRemoteStreams = this.mediaHandler.getRemoteStreams.bind(this.mediaHandler);
-    this.getLocalStreams = this.mediaHandler.getLocalStreams.bind(this.mediaHandler);
-  }
-
-  function fireNewSession() {
-    var options = {extraHeaders: ['Contact: ' + self.contact]};
-
-    if (self.rel100 !== SIP.C.supported.REQUIRED) {
-      self.progress(options);
-    }
-    self.status = C.STATUS_WAITING_FOR_ANSWER;
-
-    // Set userNoAnswerTimer
-    self.timers.userNoAnswerTimer = SIP.Timers.setTimeout(function() {
-      request.reply(408);
-      self.failed(request, SIP.C.causes.NO_ANSWER);
-      self.terminated(request, SIP.C.causes.NO_ANSWER);
-    }, self.ua.configuration.noAnswerTimeout);
-
-    /* Set expiresTimer
-     * RFC3261 13.3.1
-     */
-    if (expires) {
-      self.timers.expiresTimer = SIP.Timers.setTimeout(function() {
-        if(self.status === C.STATUS_WAITING_FOR_ANSWER) {
-          request.reply(487);
-          self.failed(request, SIP.C.causes.EXPIRES);
-          self.terminated(request, SIP.C.causes.EXPIRES);
-        }
-      }, expires);
-    }
-
-    self.emit('invite',request);
-  }
-
-  if (!this.mediaHandler.hasDescription(request) || this.renderbody) {
-    SIP.Timers.setTimeout(fireNewSession, 0);
-  } else {
-    this.hasOffer = true;
-    this.mediaHandler.setDescription(request)
-    .then(
-      fireNewSession,
-      function onFailure (e) {
-        self.logger.warn('invalid description');
-        self.logger.warn(e);
-        request.reply(488);
-      }
-    );
-  }
-};
-
-InviteServerContext.prototype = {
-  reject: function(options) {
-    // Check Session Status
-    if (this.status === C.STATUS_TERMINATED) {
-      throw new SIP.Exceptions.InvalidStateError(this.status);
-    }
-
-    this.logger.log('rejecting RTCSession');
-
-    SIP.ServerContext.prototype.reject.call(this, options);
-    return this.terminated();
-  },
-
-  terminate: function(options) {
-    options = options || {};
-
-    var
-    extraHeaders = (options.extraHeaders || []).slice(),
-    body = options.body,
-    dialog,
-    self = this;
-
-    if (this.status === C.STATUS_WAITING_FOR_ACK &&
-       this.request.server_transaction.state !== SIP.Transactions.C.STATUS_TERMINATED) {
-      dialog = this.dialog;
-
-      this.receiveRequest = function(request) {
-        if (request.method === SIP.C.ACK) {
-          this.sendRequest(SIP.C.BYE, {
-            extraHeaders: extraHeaders,
-            body: body
-          });
-          dialog.terminate();
-        }
-      };
-
-      this.request.server_transaction.on('stateChanged', function(){
-        if (this.state === SIP.Transactions.C.STATUS_TERMINATED && this.dialog) {
-          this.request = new SIP.OutgoingRequest(
-            SIP.C.BYE,
-            this.dialog.remote_target,
-            this.ua,
-            {
-              'cseq': this.dialog.local_seqnum+=1,
-              'call_id': this.dialog.id.call_id,
-              'from_uri': this.dialog.local_uri,
-              'from_tag': this.dialog.id.local_tag,
-              'to_uri': this.dialog.remote_uri,
-              'to_tag': this.dialog.id.remote_tag,
-              'route_set': this.dialog.route_set
-            },
-            extraHeaders,
-            body
-          );
-
-          new SIP.RequestSender(
-            {
-              request: this.request,
-              onRequestTimeout: function() {
-                self.onRequestTimeout();
-              },
-              onTransportError: function() {
-                self.onTransportError();
-              },
-              receiveResponse: function() {
-                return;
-              }
-            },
-            this.ua
-          ).send();
-          dialog.terminate();
-        }
-      });
-
-      this.emit('bye', this.request);
-      this.terminated();
-
-      // Restore the dialog into 'this' in order to be able to send the in-dialog BYE :-)
-      this.dialog = dialog;
-
-      // Restore the dialog into 'ua' so the ACK can reach 'this' session
-      this.ua.dialogs[dialog.id.toString()] = dialog;
-
-    } else if (this.status === C.STATUS_CONFIRMED) {
-      this.bye(options);
-    } else {
-      this.reject(options);
-    }
-
-    return this;
-  },
-
-  /*
-   * @param {Object} [options.media] gets passed to SIP.MediaHandler.getDescription as mediaHint
-   */
-  progress: function (options) {
-    options = options || {};
-    var
-      statusCode = options.statusCode || 180,
-      reasonPhrase = options.reasonPhrase,
-      extraHeaders = (options.extraHeaders || []).slice(),
-      iceServers,
-      stunServers = options.stunServers || null,
-      turnServers = options.turnServers || null,
-      body = options.body,
-      response;
-
-    if (statusCode < 100 || statusCode > 199) {
-      throw new TypeError('Invalid statusCode: ' + statusCode);
-    }
-
-    if (this.isCanceled || this.status === C.STATUS_TERMINATED) {
-      return this;
-    }
-
-    if (stunServers || turnServers) {
-      if (stunServers) {
-        iceServers = SIP.UA.configuration_check.optional['stunServers'](stunServers);
-        if (!iceServers) {
-          throw new TypeError('Invalid stunServers: '+ stunServers);
-        } else {
-          this.stunServers = iceServers;
-        }
-      }
-
-      if (turnServers) {
-        iceServers = SIP.UA.configuration_check.optional['turnServers'](turnServers);
-        if (!iceServers) {
-          throw new TypeError('Invalid turnServers: '+ turnServers);
-        } else {
-          this.turnServers = iceServers;
-        }
-      }
-
-      this.mediaHandler.updateIceServers({
-        stunServers: this.stunServers,
-        turnServers: this.turnServers
-      });
-    }
-
-    function do100rel() {
-      /* jshint validthis: true */
-      statusCode = options.statusCode || 183;
-
-      // Set status and add extra headers
-      this.status = C.STATUS_WAITING_FOR_PRACK;
-      extraHeaders.push('Contact: '+ this.contact);
-      extraHeaders.push('Require: 100rel');
-      extraHeaders.push('RSeq: ' + Math.floor(Math.random() * 10000));
-
-      // Save media hint for later (referred sessions)
-      this.mediaHint = options.media;
-
-      // Get the session description to add to preaccept with
-      this.mediaHandler.getDescription(options.media)
-      .then(
-        function onSuccess (description) {
-          if (this.isCanceled || this.status === C.STATUS_TERMINATED) {
-            return;
-          }
-
-          this.early_sdp = description.body;
-          this[this.hasOffer ? 'hasAnswer' : 'hasOffer'] = true;
-
-          // Retransmit until we get a response or we time out (see prackTimer below)
-          var timeout = SIP.Timers.T1;
-          this.timers.rel1xxTimer = SIP.Timers.setTimeout(function rel1xxRetransmission() {
-            this.request.reply(statusCode, null, extraHeaders, description);
-            timeout *= 2;
-            this.timers.rel1xxTimer = SIP.Timers.setTimeout(rel1xxRetransmission.bind(this), timeout);
-          }.bind(this), timeout);
-
-          // Timeout and reject INVITE if no response
-          this.timers.prackTimer = SIP.Timers.setTimeout(function () {
-            if (this.status !== C.STATUS_WAITING_FOR_PRACK) {
-              return;
-            }
-
-            this.logger.log('no PRACK received, rejecting the call');
-            SIP.Timers.clearTimeout(this.timers.rel1xxTimer);
-            this.request.reply(504);
-            this.terminated(null, SIP.C.causes.NO_PRACK);
-          }.bind(this), SIP.Timers.T1 * 64);
-
-          // Send the initial response
-          response = this.request.reply(statusCode, reasonPhrase, extraHeaders, description);
-          this.emit('progress', response, reasonPhrase);
-        }.bind(this),
-
-        function onFailure () {
-          this.request.reply(480);
-          this.failed(null, SIP.C.causes.WEBRTC_ERROR);
-          this.terminated(null, SIP.C.causes.WEBRTC_ERROR);
-        }.bind(this)
-      );
-    } // end do100rel
-
-    function normalReply() {
-      /* jshint validthis:true */
-      response = this.request.reply(statusCode, reasonPhrase, extraHeaders, body);
-      this.emit('progress', response, reasonPhrase);
-    }
-
-    if (options.statusCode !== 100 &&
-        (this.rel100 === SIP.C.supported.REQUIRED ||
-         (this.rel100 === SIP.C.supported.SUPPORTED && options.rel100) ||
-         (this.rel100 === SIP.C.supported.SUPPORTED && (this.ua.configuration.rel100 === SIP.C.supported.REQUIRED)))) {
-      do100rel.apply(this);
-    } else {
-      normalReply.apply(this);
-    }
-    return this;
-  },
-
-  /*
-   * @param {Object} [options.media] gets passed to SIP.MediaHandler.getDescription as mediaHint
-   */
-  accept: function(options) {
-    options = Object.create(Session.desugar(options));
-    SIP.Utils.optionsOverride(options, 'media', 'mediaConstraints', true, this.logger, this.ua.configuration.media);
-    this.mediaHint = options.media;
-
-    this.onInfo = options.onInfo;
-
-    // commented out now-unused hold-related variables for jshint. See below. JMF 2014-1-21
-    var
-      //idx, length, hasAudio, hasVideo,
-      self = this,
-      request = this.request,
-      extraHeaders = (options.extraHeaders || []).slice(),
-    //mediaStream = options.mediaStream || null,
-      iceServers,
-      stunServers = options.stunServers || null,
-      turnServers = options.turnServers || null,
-      descriptionCreationSucceeded = function(description) {
-        var
-          response,
-          // run for reply success callback
-          replySucceeded = function() {
-            self.status = C.STATUS_WAITING_FOR_ACK;
-
-            self.setInvite2xxTimer(request, description);
-            self.setACKTimer();
-          },
-
-          // run for reply failure callback
-          replyFailed = function() {
-            self.failed(null, SIP.C.causes.CONNECTION_ERROR);
-            self.terminated(null, SIP.C.causes.CONNECTION_ERROR);
-          };
-
-        // Chrome might call onaddstream before accept() is called, which means
-        // mediaHandler.render() was called without a renderHint, so we need to
-        // re-render now that mediaHint.render has been set.
-        //
-        // Chrome seems to be in the right regarding this, see
-        // http://dev.w3.org/2011/webrtc/editor/webrtc.html#widl-RTCPeerConnection-onaddstream
-        self.mediaHandler.render();
-
-        extraHeaders.push('Contact: ' + self.contact);
-        extraHeaders.push('Allow: ' + SIP.UA.C.ALLOWED_METHODS.toString());
-
-        // TODO test
-        // http://tools.ietf.org/html/rfc4028#section-9
-        var supportedOptions = request.parseHeader('Supported') || [];
-        var sessionExpires = request.parseHeader('Session-Expires') || {};
-        var interval = sessionExpires.deltaSeconds;
-        if (interval) {
-          var refresher = sessionExpires.refresher || 'uas';
-          extraHeaders.push('Session-Expires: ' + interval + ';' + refresher);
-          if (refresher === 'uac' || supportedOptions.indexOf('timer') >= 0) {
-            extraHeaders.push('Require: timer');
-          }
-        }
-
-        if(!self.hasOffer) {
-          self.hasOffer = true;
-        } else {
-          self.hasAnswer = true;
-        }
-        response = request.reply(200, null, extraHeaders,
-                      description,
-                      replySucceeded,
-                      replyFailed
-                     );
-        if (self.status !== C.STATUS_TERMINATED) { // Didn't fail
-          self.accepted(response, SIP.Utils.getReasonPhrase(200));
-        }
-      },
-
-      descriptionCreationFailed = function() {
-        if (self.status === C.STATUS_TERMINATED) {
-          return;
-        }
-        // TODO - fail out on error
-        self.request.reply(480);
-        //self.failed(response, SIP.C.causes.USER_DENIED_MEDIA_ACCESS);
-        self.failed(null, SIP.C.causes.WEBRTC_ERROR);
-        self.terminated(null, SIP.C.causes.WEBRTC_ERROR);
-      };
-
-    // Check Session Status
-    if (this.status === C.STATUS_WAITING_FOR_PRACK) {
-      this.status = C.STATUS_ANSWERED_WAITING_FOR_PRACK;
-      return this;
-    } else if (this.status === C.STATUS_WAITING_FOR_ANSWER) {
-      this.status = C.STATUS_ANSWERED;
-    } else if (this.status !== C.STATUS_EARLY_MEDIA) {
-      throw new SIP.Exceptions.InvalidStateError(this.status);
-    }
-
-    if ((stunServers || turnServers) &&
-        (this.status !== C.STATUS_EARLY_MEDIA && this.status !== C.STATUS_ANSWERED_WAITING_FOR_PRACK)) {
-      if (stunServers) {
-        iceServers = SIP.UA.configuration_check.optional['stunServers'](stunServers);
-        if (!iceServers) {
-          throw new TypeError('Invalid stunServers: '+ stunServers);
-        } else {
-          this.stunServers = iceServers;
-        }
-      }
-
-      if (turnServers) {
-        iceServers = SIP.UA.configuration_check.optional['turnServers'](turnServers);
-        if (!iceServers) {
-          throw new TypeError('Invalid turnServers: '+ turnServers);
-        } else {
-          this.turnServers = iceServers;
-        }
-      }
-
-      this.mediaHandler.updateIceServers({
-        stunServers: this.stunServers,
-        turnServers: this.turnServers
-      });
-    }
-
-    // An error on dialog creation will fire 'failed' event
-    if(!this.createDialog(request, 'UAS')) {
-      request.reply(500, 'Missing Contact header field');
-      return this;
-    }
-
-    SIP.Timers.clearTimeout(this.timers.userNoAnswerTimer);
-
-    // this hold-related code breaks FF accepting new calls - JMF 2014-1-21
-    /*
-    length = this.getRemoteStreams().length;
-
-    for (idx = 0; idx < length; idx++) {
-      if (this.mediaHandler.getRemoteStreams()[idx].getVideoTracks().length > 0) {
-        hasVideo = true;
-      }
-      if (this.mediaHandler.getRemoteStreams()[idx].getAudioTracks().length > 0) {
-        hasAudio = true;
-      }
-    }
-
-    if (!hasAudio && this.mediaConstraints.audio === true) {
-      this.mediaConstraints.audio = false;
-      if (mediaStream) {
-        length = mediaStream.getAudioTracks().length;
-        for (idx = 0; idx < length; idx++) {
-          mediaStream.removeTrack(mediaStream.getAudioTracks()[idx]);
-        }
-      }
-    }
-
-    if (!hasVideo && this.mediaConstraints.video === true) {
-      this.mediaConstraints.video = false;
-      if (mediaStream) {
-        length = mediaStream.getVideoTracks().length;
-        for (idx = 0; idx < length; idx++) {
-          mediaStream.removeTrack(mediaStream.getVideoTracks()[idx]);
-        }
-      }
-    }
-    */
-
-    if (this.status === C.STATUS_EARLY_MEDIA) {
-      descriptionCreationSucceeded({});
-    } else {
-      this.mediaHandler.getDescription(self.mediaHint)
-      .then(
-        descriptionCreationSucceeded,
-        descriptionCreationFailed
-      );
-    }
-
-    return this;
-  },
-
-  receiveRequest: function(request) {
-
-    // ISC RECEIVE REQUEST
-
-    function confirmSession() {
-      /* jshint validthis:true */
-      var contentType;
-
-      SIP.Timers.clearTimeout(this.timers.ackTimer);
-      SIP.Timers.clearTimeout(this.timers.invite2xxTimer);
-      this.status = C.STATUS_CONFIRMED;
-      this.unmute();
-
-      // TODO - this logic assumes Content-Disposition defaults
-      contentType = request.getHeader('Content-Type');
-      if (!this.mediaHandler.hasDescription(request)) {
-        this.renderbody = request.body;
-        this.rendertype = contentType;
-      }
-
-      this.emit('confirmed', request);
-    }
-
-    switch(request.method) {
-    case SIP.C.CANCEL:
-      /* RFC3261 15 States that a UAS may have accepted an invitation while a CANCEL
-       * was in progress and that the UAC MAY continue with the session established by
-       * any 2xx response, or MAY terminate with BYE. SIP does continue with the
-       * established session. So the CANCEL is processed only if the session is not yet
-       * established.
-       */
-
-      /*
-       * Terminate the whole session in case the user didn't accept (or yet to send the answer) nor reject the
-       *request opening the session.
-       */
-      if(this.status === C.STATUS_WAITING_FOR_ANSWER ||
-         this.status === C.STATUS_WAITING_FOR_PRACK ||
-         this.status === C.STATUS_ANSWERED_WAITING_FOR_PRACK ||
-         this.status === C.STATUS_EARLY_MEDIA ||
-         this.status === C.STATUS_ANSWERED) {
-
-        this.status = C.STATUS_CANCELED;
-        this.request.reply(487);
-        this.canceled(request);
-        this.rejected(request, SIP.C.causes.CANCELED);
-        this.failed(request, SIP.C.causes.CANCELED);
-        this.terminated(request, SIP.C.causes.CANCELED);
-      }
-      break;
-    case SIP.C.ACK:
-      if(this.status === C.STATUS_WAITING_FOR_ACK) {
-        if (!this.hasAnswer) {
-          if(this.mediaHandler.hasDescription(request)) {
-            // ACK contains answer to an INVITE w/o SDP negotiation
-            this.hasAnswer = true;
-            this.mediaHandler.setDescription(request)
-            .then(
-              confirmSession.bind(this),
-              function onFailure (e) {
-                this.logger.warn(e);
-                this.terminate({
-                  statusCode: '488',
-                  reasonPhrase: 'Bad Media Description'
-                });
-                this.failed(request, SIP.C.causes.BAD_MEDIA_DESCRIPTION);
-                this.terminated(request, SIP.C.causes.BAD_MEDIA_DESCRIPTION);
-              }.bind(this)
-            );
-          } else if (this.early_sdp) {
-            confirmSession.apply(this);
-          } else {
-            //TODO: Pass to mediahandler
-            this.failed(request, SIP.C.causes.BAD_MEDIA_DESCRIPTION);
-            this.terminated(request, SIP.C.causes.BAD_MEDIA_DESCRIPTION);
-          }
-        } else {
-          confirmSession.apply(this);
-        }
-      }
-      break;
-    case SIP.C.PRACK:
-      if (this.status === C.STATUS_WAITING_FOR_PRACK || this.status === C.STATUS_ANSWERED_WAITING_FOR_PRACK) {
-        //localMedia = session.mediaHandler.localMedia;
-        if(!this.hasAnswer) {
-          if(this.mediaHandler.hasDescription(request)) {
-            this.hasAnswer = true;
-            this.mediaHandler.setDescription(request)
-            .then(
-              function onSuccess () {
-                SIP.Timers.clearTimeout(this.timers.rel1xxTimer);
-                SIP.Timers.clearTimeout(this.timers.prackTimer);
-                request.reply(200);
-                if (this.status === C.STATUS_ANSWERED_WAITING_FOR_PRACK) {
-                  this.status = C.STATUS_EARLY_MEDIA;
-                  this.accept();
-                }
-                this.status = C.STATUS_EARLY_MEDIA;
-                //REVISIT
-                this.mute();
-              }.bind(this),
-              function onFailure (e) {
-                //TODO: Send to media handler
-                this.logger.warn(e);
-                this.terminate({
-                  statusCode: '488',
-                  reasonPhrase: 'Bad Media Description'
-                });
-                this.failed(request, SIP.C.causes.BAD_MEDIA_DESCRIPTION);
-                this.terminated(request, SIP.C.causes.BAD_MEDIA_DESCRIPTION);
-              }.bind(this)
-            );
-          } else {
-            this.terminate({
-              statusCode: '488',
-              reasonPhrase: 'Bad Media Description'
-            });
-            this.failed(request, SIP.C.causes.BAD_MEDIA_DESCRIPTION);
-            this.terminated(request, SIP.C.causes.BAD_MEDIA_DESCRIPTION);
-          }
-        } else {
-          SIP.Timers.clearTimeout(this.timers.rel1xxTimer);
-          SIP.Timers.clearTimeout(this.timers.prackTimer);
-          request.reply(200);
-
-          if (this.status === C.STATUS_ANSWERED_WAITING_FOR_PRACK) {
-            this.status = C.STATUS_EARLY_MEDIA;
-            this.accept();
-          }
-          this.status = C.STATUS_EARLY_MEDIA;
-          //REVISIT
-          this.mute();
-        }
-      } else if(this.status === C.STATUS_EARLY_MEDIA) {
-        request.reply(200);
-      }
-      break;
-    default:
-      Session.prototype.receiveRequest.apply(this, [request]);
-      break;
-    }
-  },
-
-  onTransportError: function() {
-    if (this.status !== C.STATUS_CONFIRMED && this.status !== C.STATUS_TERMINATED) {
-      this.failed(null, SIP.C.causes.CONNECTION_ERROR);
-    }
-  },
-
-  onRequestTimeout: function() {
-    if (this.status === C.STATUS_CONFIRMED) {
-      this.terminated(null, SIP.C.causes.REQUEST_TIMEOUT);
-    } else if (this.status !== C.STATUS_TERMINATED) {
-      this.failed(null, SIP.C.causes.REQUEST_TIMEOUT);
-      this.terminated(null, SIP.C.causes.REQUEST_TIMEOUT);
-    }
-  }
-
-};
-
-SIP.InviteServerContext = InviteServerContext;
-
-InviteClientContext = function(ua, target, options) {
-  options = Object.create(Session.desugar(options));
-  options.params = Object.create(options.params || Object.prototype);
-
-  var iceServers,
-    extraHeaders = (options.extraHeaders || []).slice(),
-    stunServers = options.stunServers || null,
-    turnServers = options.turnServers || null,
-    mediaHandlerFactory = options.mediaHandlerFactory || ua.configuration.mediaHandlerFactory,
-    isMediaSupported = mediaHandlerFactory.isSupported;
-
-  // Check WebRTC support
-  if (isMediaSupported && !isMediaSupported()) {
-    throw new SIP.Exceptions.NotSupportedError('Media not supported');
-  }
-
-  this.RTCConstraints = options.RTCConstraints || {};
-  this.inviteWithoutSdp = options.inviteWithoutSdp || false;
-
-  // Set anonymous property
-  this.anonymous = options.anonymous || false;
-
-  // Custom data to be sent either in INVITE or in ACK
-  this.renderbody = options.renderbody || null;
-  this.rendertype = options.rendertype || 'text/plain';
-
-  options.params.from_tag = this.from_tag;
-
-  /* Do not add ;ob in initial forming dialog requests if the registration over
-   *  the current connection got a GRUU URI.
-   */
-  this.contact = ua.contact.toString({
-    anonymous: this.anonymous,
-    outbound: this.anonymous ? !ua.contact.temp_gruu : !ua.contact.pub_gruu
-  });
-
-  if (this.anonymous) {
-    options.params.from_displayName = 'Anonymous';
-    options.params.from_uri = 'sip:anonymous@anonymous.invalid';
-
-    extraHeaders.push('P-Preferred-Identity: '+ ua.configuration.uri.toString());
-    extraHeaders.push('Privacy: id');
-  }
-  extraHeaders.push('Contact: '+ this.contact);
-  extraHeaders.push('Allow: '+ SIP.UA.C.ALLOWED_METHODS.toString());
-  if (this.inviteWithoutSdp && this.renderbody) {
-    extraHeaders.push('Content-Type: ' + this.rendertype);
-    extraHeaders.push('Content-Disposition: render;handling=optional');
-  }
-
-  if (ua.configuration.rel100 === SIP.C.supported.REQUIRED) {
-    extraHeaders.push('Require: 100rel');
-  }
-  if (ua.configuration.replaces === SIP.C.supported.REQUIRED) {
-    extraHeaders.push('Require: replaces');
-  }
-
-  options.extraHeaders = extraHeaders;
-
-  SIP.Utils.augment(this, SIP.ClientContext, [ua, SIP.C.INVITE, target, options]);
-  SIP.Utils.augment(this, SIP.Session, [mediaHandlerFactory]);
-
-  // Check Session Status
-  if (this.status !== C.STATUS_NULL) {
-    throw new SIP.Exceptions.InvalidStateError(this.status);
-  }
-
-  // Session parameter initialization
-  this.from_tag = SIP.Utils.newTag();
-
-  // OutgoingSession specific parameters
-  this.isCanceled = false;
-  this.received_100 = false;
-
-  this.method = SIP.C.INVITE;
-
-  this.receiveNonInviteResponse = this.receiveResponse;
-  this.receiveResponse = this.receiveInviteResponse;
-
-  this.logger = ua.getLogger('sip.inviteclientcontext');
-
-  if (stunServers) {
-    iceServers = SIP.UA.configuration_check.optional['stunServers'](stunServers);
-    if (!iceServers) {
-      throw new TypeError('Invalid stunServers: '+ stunServers);
-    } else {
-      this.stunServers = iceServers;
-    }
-  }
-
-  if (turnServers) {
-    iceServers = SIP.UA.configuration_check.optional['turnServers'](turnServers);
-    if (!iceServers) {
-      throw new TypeError('Invalid turnServers: '+ turnServers);
-    } else {
-      this.turnServers = iceServers;
-    }
-  }
-
-  ua.applicants[this] = this;
-
-  this.id = this.request.call_id + this.from_tag;
-
-  //Initialize Media Session
-  this.mediaHandler = this.mediaHandlerFactory(this, {
-    RTCConstraints: this.RTCConstraints,
-    stunServers: this.stunServers,
-    turnServers: this.turnServers
-  });
-
-  if (this.mediaHandler && this.mediaHandler.getRemoteStreams) {
-    this.getRemoteStreams = this.mediaHandler.getRemoteStreams.bind(this.mediaHandler);
-    this.getLocalStreams = this.mediaHandler.getLocalStreams.bind(this.mediaHandler);
-  }
-
-  SIP.Utils.optionsOverride(options, 'media', 'mediaConstraints', true, this.logger, this.ua.configuration.media);
-  this.mediaHint = options.media;
-
-  this.onInfo = options.onInfo;
-};
-
-InviteClientContext.prototype = {
-  invite: function () {
-    var self = this;
-
-    //Save the session into the ua sessions collection.
-    //Note: placing in constructor breaks call to request.cancel on close... User does not need this anyway
-    this.ua.sessions[this.id] = this;
-
-    //Note: due to the way Firefox handles gUM calls, it is recommended to make the gUM call at the app level
-    // and hand sip.js a stream as the mediaHint
-    if (this.inviteWithoutSdp) {
-      //just send an invite with no sdp...
-      this.request.body = self.renderbody;
-      this.status = C.STATUS_INVITE_SENT;
-      this.send();
-    } else {
-      this.mediaHandler.getDescription(self.mediaHint)
-      .then(
-        function onSuccess(description) {
-          if (self.isCanceled || self.status === C.STATUS_TERMINATED) {
-            return;
-          }
-          self.hasOffer = true;
-          self.request.body = description;
-          self.status = C.STATUS_INVITE_SENT;
-          self.send();
-        },
-        function onFailure() {
-          if (self.status === C.STATUS_TERMINATED) {
-            return;
-          }
-          // TODO...fail out
-          //self.failed(null, SIP.C.causes.USER_DENIED_MEDIA_ACCESS);
-          //self.failed(null, SIP.C.causes.WEBRTC_ERROR);
-          self.failed(null, SIP.C.causes.WEBRTC_ERROR);
-          self.terminated(null, SIP.C.causes.WEBRTC_ERROR);
-        }
-      );
-    }
-
-    return this;
-  },
-
-  receiveInviteResponse: function(response) {
-    var cause, //localMedia,
-      session = this,
-      id = response.call_id + response.from_tag + response.to_tag,
-      extraHeaders = [],
-      options = {};
-
-    if (this.status === C.STATUS_TERMINATED || response.method !== SIP.C.INVITE) {
-      return;
-    }
-
-    if (this.dialog && (response.status_code >= 200 && response.status_code <= 299)) {
-      if (id !== this.dialog.id.toString() ) {
-        if (!this.createDialog(response, 'UAC', true)) {
-          return;
-        }
-        this.earlyDialogs[id].sendRequest(this, SIP.C.ACK,
-                                          {
-                                            body: SIP.Utils.generateFakeSDP(response.body)
-                                          });
-        this.earlyDialogs[id].sendRequest(this, SIP.C.BYE);
-
-        /* NOTE: This fails because the forking proxy does not recognize that an unanswerable
-         * leg (due to peerConnection limitations) has been answered first. If your forking
-         * proxy does not hang up all unanswered branches on the first branch answered, remove this.
-         */
-        if(this.status !== C.STATUS_CONFIRMED) {
-          this.failed(response, SIP.C.causes.WEBRTC_ERROR);
-          this.terminated(response, SIP.C.causes.WEBRTC_ERROR);
-        }
-        return;
-      } else if (this.status === C.STATUS_CONFIRMED) {
-        this.sendRequest(SIP.C.ACK,{cseq: response.cseq});
-        return;
-      } else if (!this.hasAnswer) {
-        // invite w/o sdp is waiting for callback
-        //an invite with sdp must go on, and hasAnswer is true
-        return;
-      }
-    }
-
-    if (this.dialog && response.status_code < 200) {
-      /*
-        Early media has been set up with at least one other different branch,
-        but a final 2xx response hasn't been received
-      */
-      if (this.dialog.pracked.indexOf(response.getHeader('rseq')) !== -1 ||
-          (this.dialog.pracked[this.dialog.pracked.length-1] >= response.getHeader('rseq') && this.dialog.pracked.length > 0)) {
-        return;
-      }
-
-      if (!this.earlyDialogs[id] && !this.createDialog(response, 'UAC', true)) {
-        return;
-      }
-
-      if (this.earlyDialogs[id].pracked.indexOf(response.getHeader('rseq')) !== -1 ||
-          (this.earlyDialogs[id].pracked[this.earlyDialogs[id].pracked.length-1] >= response.getHeader('rseq') && this.earlyDialogs[id].pracked.length > 0)) {
-        return;
-      }
-
-      extraHeaders.push('RAck: ' + response.getHeader('rseq') + ' ' + response.getHeader('cseq'));
-      this.earlyDialogs[id].pracked.push(response.getHeader('rseq'));
-
-      this.earlyDialogs[id].sendRequest(this, SIP.C.PRACK, {
-        extraHeaders: extraHeaders,
-        body: SIP.Utils.generateFakeSDP(response.body)
-      });
-      return;
-    }
-
-    // Proceed to cancellation if the user requested.
-    if(this.isCanceled) {
-      if(response.status_code >= 100 && response.status_code < 200) {
-        this.request.cancel(this.cancelReason, extraHeaders);
-        this.canceled(null);
-      } else if(response.status_code >= 200 && response.status_code < 299) {
-        this.acceptAndTerminate(response);
-        this.emit('bye', this.request);
-      } else if (response.status_code >= 300) {
-        cause = SIP.C.REASON_PHRASE[response.status_code] || SIP.C.causes.CANCELED;
-        this.rejected(response, cause);
-        this.failed(response, cause);
-        this.terminated(response, cause);
-      }
-      return;
-    }
-
-    switch(true) {
-      case /^100$/.test(response.status_code):
-        this.received_100 = true;
-        this.emit('progress', response);
-        break;
-      case (/^1[0-9]{2}$/.test(response.status_code)):
-        // Do nothing with 1xx responses without To tag.
-        if(!response.to_tag) {
-          this.logger.warn('1xx response received without to tag');
-          break;
-        }
-
-        // Create Early Dialog if 1XX comes with contact
-        if(response.hasHeader('contact')) {
-          // An error on dialog creation will fire 'failed' event
-          if (!this.createDialog(response, 'UAC', true)) {
-            break;
-          }
-        }
-
-        this.status = C.STATUS_1XX_RECEIVED;
-
-        if(response.hasHeader('require') &&
-           response.getHeader('require').indexOf('100rel') !== -1) {
-
-          // Do nothing if this.dialog is already confirmed
-          if (this.dialog || !this.earlyDialogs[id]) {
-            break;
-          }
-
-          if (this.earlyDialogs[id].pracked.indexOf(response.getHeader('rseq')) !== -1 ||
-              (this.earlyDialogs[id].pracked[this.earlyDialogs[id].pracked.length-1] >= response.getHeader('rseq') && this.earlyDialogs[id].pracked.length > 0)) {
-            return;
-          }
-
-          if (!this.mediaHandler.hasDescription(response)) {
-            extraHeaders.push('RAck: ' + response.getHeader('rseq') + ' ' + response.getHeader('cseq'));
-            this.earlyDialogs[id].pracked.push(response.getHeader('rseq'));
-            this.earlyDialogs[id].sendRequest(this, SIP.C.PRACK, {
-              extraHeaders: extraHeaders
-            });
-            this.emit('progress', response);
-
-          } else if (this.hasOffer) {
-            if (!this.createDialog(response, 'UAC')) {
-              break;
-            }
-            this.hasAnswer = true;
-            this.dialog.pracked.push(response.getHeader('rseq'));
-
-            this.mediaHandler.setDescription(response)
-            .then(
-              function onSuccess () {
-                extraHeaders.push('RAck: ' + response.getHeader('rseq') + ' ' + response.getHeader('cseq'));
-
-                session.sendRequest(SIP.C.PRACK, {
-                  extraHeaders: extraHeaders,
-                  receiveResponse: function() {}
-                });
-                session.status = C.STATUS_EARLY_MEDIA;
-                session.mute();
-                session.emit('progress', response);
-                /*
-                if (session.status === C.STATUS_EARLY_MEDIA) {
-                  localMedia = session.mediaHandler.localMedia;
-                  if (localMedia.getAudioTracks().length > 0) {
-                    localMedia.getAudioTracks()[0].enabled = false;
-                  }
-                  if (localMedia.getVideoTracks().length > 0) {
-                    localMedia.getVideoTracks()[0].enabled = false;
-                  }
-                }*/
-              },
-              function onFailure (e) {
-                session.logger.warn(e);
-                session.acceptAndTerminate(response, 488, 'Not Acceptable Here');
-                session.failed(response, SIP.C.causes.BAD_MEDIA_DESCRIPTION);
-              }
-            );
-          } else {
-            var earlyDialog = this.earlyDialogs[id];
-            var earlyMedia = earlyDialog.mediaHandler;
-
-            earlyDialog.pracked.push(response.getHeader('rseq'));
-
-            earlyMedia.setDescription(response)
-            .then(earlyMedia.getDescription.bind(earlyMedia, session.mediaHint))
-            .then(function onSuccess(description) {
-              extraHeaders.push('RAck: ' + response.getHeader('rseq') + ' ' + response.getHeader('cseq'));
-              earlyDialog.sendRequest(session, SIP.C.PRACK, {
-                extraHeaders: extraHeaders,
-                body: description
-              });
-              session.status = C.STATUS_EARLY_MEDIA;
-              session.emit('progress', response);
-            })
-            .catch(function onFailure(e) {
-              if (e instanceof SIP.Exceptions.GetDescriptionError) {
-                earlyDialog.pracked.push(response.getHeader('rseq'));
-                if (session.status === C.STATUS_TERMINATED) {
-                  return;
-                }
-                // TODO - fail out on error
-                // session.failed(gum error);
-                session.failed(null, SIP.C.causes.WEBRTC_ERROR);
-                session.terminated(null, SIP.C.causes.WEBRTC_ERROR);
-              } else {
-                earlyDialog.pracked.splice(earlyDialog.pracked.indexOf(response.getHeader('rseq')), 1);
-                // Could not set remote description
-                session.logger.warn('invalid description');
-                session.logger.warn(e);
-              }
-            });
-          }
-        } else {
-          this.emit('progress', response);
-        }
-        break;
-      case /^2[0-9]{2}$/.test(response.status_code):
-        var cseq = this.request.cseq + ' ' + this.request.method;
-        if (cseq !== response.getHeader('cseq')) {
-          break;
-        }
-
-        if (this.status === C.STATUS_EARLY_MEDIA && this.dialog) {
-          this.status = C.STATUS_CONFIRMED;
-          this.unmute();
-          /*localMedia = this.mediaHandler.localMedia;
-          if (localMedia.getAudioTracks().length > 0) {
-            localMedia.getAudioTracks()[0].enabled = true;
-          }
-          if (localMedia.getVideoTracks().length > 0) {
-            localMedia.getVideoTracks()[0].enabled = true;
-          }*/
-          options = {};
-          if (this.renderbody) {
-            extraHeaders.push('Content-Type: ' + this.rendertype);
-            options.extraHeaders = extraHeaders;
-            options.body = this.renderbody;
-          }
-          options.cseq = response.cseq;
-          this.sendRequest(SIP.C.ACK, options);
-          this.accepted(response);
-          break;
-        }
-        // Do nothing if this.dialog is already confirmed
-        if (this.dialog) {
-          break;
-        }
-
-        // This is an invite without sdp
-        if (!this.hasOffer) {
-          if (this.earlyDialogs[id] && this.earlyDialogs[id].mediaHandler.localMedia) {
-            //REVISIT
-            this.hasOffer = true;
-            this.hasAnswer = true;
-            this.mediaHandler = this.earlyDialogs[id].mediaHandler;
-            if (!this.createDialog(response, 'UAC')) {
-              break;
-            }
-            this.status = C.STATUS_CONFIRMED;
-            this.sendRequest(SIP.C.ACK, {cseq:response.cseq});
-
-            this.unmute();
-            /*
-            localMedia = session.mediaHandler.localMedia;
-            if (localMedia.getAudioTracks().length > 0) {
-              localMedia.getAudioTracks()[0].enabled = true;
-            }
-            if (localMedia.getVideoTracks().length > 0) {
-              localMedia.getVideoTracks()[0].enabled = true;
-            }*/
-            this.accepted(response);
-          } else {
-            if(!this.mediaHandler.hasDescription(response)) {
-              this.acceptAndTerminate(response, 400, 'Missing session description');
-              this.failed(response, SIP.C.causes.BAD_MEDIA_DESCRIPTION);
-              break;
-            }
-            if (!this.createDialog(response, 'UAC')) {
-              break;
-            }
-            this.hasOffer = true;
-            this.mediaHandler.setDescription(response)
-            .then(this.mediaHandler.getDescription.bind(this.mediaHandler, this.mediaHint))
-            .then(function onSuccess(description) {
-              //var localMedia;
-              if(session.isCanceled || session.status === C.STATUS_TERMINATED) {
-                return;
-              }
-
-              session.status = C.STATUS_CONFIRMED;
-              session.hasAnswer = true;
-
-              session.unmute();
-              /*localMedia = session.mediaHandler.localMedia;
-              if (localMedia.getAudioTracks().length > 0) {
-                localMedia.getAudioTracks()[0].enabled = true;
-              }
-              if (localMedia.getVideoTracks().length > 0) {
-                localMedia.getVideoTracks()[0].enabled = true;
-              }*/
-              session.sendRequest(SIP.C.ACK,{
-                body: description,
-                cseq:response.cseq
-              });
-              session.accepted(response);
-            })
-            .catch(function onFailure(e) {
-              if (e instanceof SIP.Exceptions.GetDescriptionError) {
-                // TODO do something here
-                session.logger.warn("there was a problem");
-              } else {
-                session.logger.warn('invalid description');
-                session.logger.warn(e);
-                response.reply(488);
-              }
-            });
-          }
-        } else if (this.hasAnswer){
-          if (this.renderbody) {
-            extraHeaders.push('Content-Type: ' + session.rendertype);
-            options.extraHeaders = extraHeaders;
-            options.body = this.renderbody;
-          }
-          this.sendRequest(SIP.C.ACK, options);
-        } else {
-          if(!this.mediaHandler.hasDescription(response)) {
-            this.acceptAndTerminate(response, 400, 'Missing session description');
-            this.failed(response, SIP.C.causes.BAD_MEDIA_DESCRIPTION);
-            break;
-          }
-          if (!this.createDialog(response, 'UAC')) {
-            break;
-          }
-          this.hasAnswer = true;
-          this.mediaHandler.setDescription(response)
-          .then(
-            function onSuccess () {
-              var options = {};//,localMedia;
-              session.status = C.STATUS_CONFIRMED;
-              session.unmute();
-              /*localMedia = session.mediaHandler.localMedia;
-              if (localMedia.getAudioTracks().length > 0) {
-                localMedia.getAudioTracks()[0].enabled = true;
-              }
-              if (localMedia.getVideoTracks().length > 0) {
-                localMedia.getVideoTracks()[0].enabled = true;
-              }*/
-              if (session.renderbody) {
-                extraHeaders.push('Content-Type: ' + session.rendertype);
-                options.extraHeaders = extraHeaders;
-                options.body = session.renderbody;
-              }
-              options.cseq = response.cseq;
-              session.sendRequest(SIP.C.ACK, options);
-              session.accepted(response);
-            },
-            function onFailure (e) {
-              session.logger.warn(e);
-              session.acceptAndTerminate(response, 488, 'Not Acceptable Here');
-              session.failed(response, SIP.C.causes.BAD_MEDIA_DESCRIPTION);
-            }
-          );
-        }
-        break;
-      default:
-        cause = SIP.Utils.sipErrorCause(response.status_code);
-        this.rejected(response, cause);
-        this.failed(response, cause);
-        this.terminated(response, cause);
-    }
-  },
-
-  cancel: function(options) {
-    options = options || {};
-
-    options.extraHeaders = (options.extraHeaders || []).slice();
-
-    // Check Session Status
-    if (this.status === C.STATUS_TERMINATED || this.status === C.STATUS_CONFIRMED) {
-      throw new SIP.Exceptions.InvalidStateError(this.status);
-    }
-
-    this.logger.log('canceling RTCSession');
-
-    var cancel_reason = SIP.Utils.getCancelReason(options.status_code, options.reason_phrase);
-
-    // Check Session Status
-    if (this.status === C.STATUS_NULL ||
-        (this.status === C.STATUS_INVITE_SENT && !this.received_100)) {
-      this.isCanceled = true;
-      this.cancelReason = cancel_reason;
-    } else if (this.status === C.STATUS_INVITE_SENT ||
-               this.status === C.STATUS_1XX_RECEIVED ||
-               this.status === C.STATUS_EARLY_MEDIA) {
-      this.request.cancel(cancel_reason, options.extraHeaders);
-    }
-
-    return this.canceled();
-  },
-
-  terminate: function(options) {
-    if (this.status === C.STATUS_TERMINATED) {
-      return this;
-    }
-
-    if (this.status === C.STATUS_WAITING_FOR_ACK || this.status === C.STATUS_CONFIRMED) {
-      this.bye(options);
-    } else {
-      this.cancel(options);
-    }
-
-    return this;
-  },
-
-  receiveRequest: function(request) {
-    // ICC RECEIVE REQUEST
-
-    // Reject CANCELs
-    if (request.method === SIP.C.CANCEL) {
-      // TODO; make this a switch when it gets added
-    }
-
-    if (request.method === SIP.C.ACK && this.status === C.STATUS_WAITING_FOR_ACK) {
-      SIP.Timers.clearTimeout(this.timers.ackTimer);
-      SIP.Timers.clearTimeout(this.timers.invite2xxTimer);
-      this.status = C.STATUS_CONFIRMED;
-      this.unmute();
-
-      this.accepted();
-    }
-
-    return Session.prototype.receiveRequest.apply(this, [request]);
-  },
-
-  onTransportError: function() {
-    if (this.status !== C.STATUS_CONFIRMED && this.status !== C.STATUS_TERMINATED) {
-      this.failed(null, SIP.C.causes.CONNECTION_ERROR);
-    }
-  },
-
-  onRequestTimeout: function() {
-    if (this.status === C.STATUS_CONFIRMED) {
-      this.terminated(null, SIP.C.causes.REQUEST_TIMEOUT);
-    } else if (this.status !== C.STATUS_TERMINATED) {
-      this.failed(null, SIP.C.causes.REQUEST_TIMEOUT);
-      this.terminated(null, SIP.C.causes.REQUEST_TIMEOUT);
-    }
-  }
-
-};
-
-SIP.InviteClientContext = InviteClientContext;
-
-};
-
-},{"./RFC4028":37,"./Session/DTMF":45}],45:[function(require,module,exports){
-"use strict";
-/**
- * @fileoverview DTMF
- */
-
-/**
- * @class DTMF
- * @param {SIP.Session} session
- */
-module.exports = function (SIP) {
-
-var DTMF,
-  C = {
-    MIN_DURATION:            70,
-    MAX_DURATION:            6000,
-    DEFAULT_DURATION:        100,
-    MIN_INTER_TONE_GAP:      50,
-    DEFAULT_INTER_TONE_GAP:  500
-  };
-
-DTMF = function(session, tone, options) {
-  var duration, interToneGap;
-
-  if (tone === undefined) {
-    throw new TypeError('Not enough arguments');
-  }
-
-  this.logger = session.ua.getLogger('sip.invitecontext.dtmf', session.id);
-  this.owner = session;
-  this.direction = null;
-
-  options = options || {};
-  duration = options.duration || null;
-  interToneGap = options.interToneGap || null;
-
-  // Check tone type
-  if (typeof tone === 'string' ) {
-    tone = tone.toUpperCase();
-  } else if (typeof tone === 'number') {
-    tone = tone.toString();
-  } else {
-    throw new TypeError('Invalid tone: '+ tone);
-  }
-
-  // Check tone value
-  if (!tone.match(/^[0-9A-D#*]$/)) {
-    throw new TypeError('Invalid tone: '+ tone);
-  } else {
-    this.tone = tone;
-  }
-
-  // Check duration
-  if (duration && !SIP.Utils.isDecimal(duration)) {
-    throw new TypeError('Invalid tone duration: '+ duration);
-  } else if (!duration) {
-    duration = DTMF.C.DEFAULT_DURATION;
-  } else if (duration < DTMF.C.MIN_DURATION) {
-    this.logger.warn('"duration" value is lower than the minimum allowed, setting it to '+ DTMF.C.MIN_DURATION+ ' milliseconds');
-    duration = DTMF.C.MIN_DURATION;
-  } else if (duration > DTMF.C.MAX_DURATION) {
-    this.logger.warn('"duration" value is greater than the maximum allowed, setting it to '+ DTMF.C.MAX_DURATION +' milliseconds');
-    duration = DTMF.C.MAX_DURATION;
-  } else {
-    duration = Math.abs(duration);
-  }
-  this.duration = duration;
-
-  // Check interToneGap
-  if (interToneGap && !SIP.Utils.isDecimal(interToneGap)) {
-    throw new TypeError('Invalid interToneGap: '+ interToneGap);
-  } else if (!interToneGap) {
-    interToneGap = DTMF.C.DEFAULT_INTER_TONE_GAP;
-  } else if (interToneGap < DTMF.C.MIN_INTER_TONE_GAP) {
-    this.logger.warn('"interToneGap" value is lower than the minimum allowed, setting it to '+ DTMF.C.MIN_INTER_TONE_GAP +' milliseconds');
-    interToneGap = DTMF.C.MIN_INTER_TONE_GAP;
-  } else {
-    interToneGap = Math.abs(interToneGap);
-  }
-  this.interToneGap = interToneGap;
-};
-DTMF.prototype = Object.create(SIP.EventEmitter.prototype);
-
-
-DTMF.prototype.send = function(options) {
-  var extraHeaders,
-    body = {};
-
-  this.direction = 'outgoing';
-
-  // Check RTCSession Status
-  if (this.owner.status !== SIP.Session.C.STATUS_CONFIRMED &&
-    this.owner.status !== SIP.Session.C.STATUS_WAITING_FOR_ACK) {
-    throw new SIP.Exceptions.InvalidStateError(this.owner.status);
-  }
-
-  // Get DTMF options
-  options = options || {};
-  extraHeaders = options.extraHeaders ? options.extraHeaders.slice() : [];
-
-  body.contentType = 'application/dtmf-relay';
-
-  body.body = "Signal= " + this.tone + "\r\n";
-  body.body += "Duration= " + this.duration;
-
-  this.request = this.owner.dialog.sendRequest(this, SIP.C.INFO, {
-    extraHeaders: extraHeaders,
-    body: body
-  });
-
-  this.owner.emit('dtmf', this.request, this);
-};
-
-/**
- * @private
- */
-DTMF.prototype.receiveResponse = function(response) {
-  var cause;
-
-  switch(true) {
-    case /^1[0-9]{2}$/.test(response.status_code):
-      // Ignore provisional responses.
-      break;
-
-    case /^2[0-9]{2}$/.test(response.status_code):
-      this.emit('succeeded', {
-        originator: 'remote',
-        response: response
-      });
-      break;
-
-    default:
-      cause = SIP.Utils.sipErrorCause(response.status_code);
-      this.emit('failed', response, cause);
-      break;
-  }
-};
-
-/**
- * @private
- */
-DTMF.prototype.onRequestTimeout = function() {
-  this.emit('failed', null, SIP.C.causes.REQUEST_TIMEOUT);
-  this.owner.onRequestTimeout();
-};
-
-/**
- * @private
- */
-DTMF.prototype.onTransportError = function() {
-  this.emit('failed', null, SIP.C.causes.CONNECTION_ERROR);
-  this.owner.onTransportError();
-};
-
-/**
- * @private
- */
-DTMF.prototype.onDialogError = function(response) {
-  this.emit('failed', response, SIP.C.causes.DIALOG_ERROR);
-  this.owner.onDialogError(response);
-};
-
-/**
- * @private
- */
-DTMF.prototype.init_incoming = function(request) {
-  this.direction = 'incoming';
-  this.request = request;
-
-  request.reply(200);
-
-  if (!this.tone || !this.duration) {
-    this.logger.warn('invalid INFO DTMF received, discarded');
-  } else {
-    this.owner.emit('dtmf', request, this);
-  }
-};
-
-DTMF.C = C;
-return DTMF;
-};
-
-},{}],46:[function(require,module,exports){
-"use strict";
-
-/**
- * @fileoverview SIP Subscriber (SIP-Specific Event Notifications RFC6665)
- */
-
-/**
- * @augments SIP
- * @class Class creating a SIP Subscription.
- */
-module.exports = function (SIP) {
-SIP.Subscription = function (ua, target, event, options) {
-  options = Object.create(options || Object.prototype);
-  this.extraHeaders = options.extraHeaders = (options.extraHeaders || []).slice();
-
-  this.id = null;
-  this.state = 'init';
-
-  if (!event) {
-    throw new TypeError('Event necessary to create a subscription.');
-  } else {
-    //TODO: check for valid events here probably make a list in SIP.C; or leave it up to app to check?
-    //The check may need to/should probably occur on the other side,
-    this.event = event;
-  }
-
-  if(typeof options.expires !== 'number'){
-    ua.logger.warn('expires must be a number. Using default of 3600.');
-    this.expires = 3600;
-  } else {
-    this.expires = options.expires;
-  }
-
-  options.extraHeaders.push('Event: ' + this.event);
-  options.extraHeaders.push('Expires: ' + this.expires);
-
-  if (options.body) {
-    this.body = options.body;
-  }
-
-  this.contact = ua.contact.toString();
-
-  options.extraHeaders.push('Contact: '+ this.contact);
-  options.extraHeaders.push('Allow: '+ SIP.UA.C.ALLOWED_METHODS.toString());
-
-  SIP.Utils.augment(this, SIP.ClientContext, [ua, SIP.C.SUBSCRIBE, target, options]);
-
-  this.logger = ua.getLogger('sip.subscription');
-
-  this.dialog = null;
-  this.timers = {N: null, sub_duration: null};
-  this.errorCodes  = [404,405,410,416,480,481,482,483,484,485,489,501,604];
-};
-
-SIP.Subscription.prototype = {
-  subscribe: function() {
-    var sub = this;
-
-     //these states point to an existing subscription, no subscribe is necessary
-    if (this.state === 'active') {
-      this.refresh();
-      return this;
-    } else if (this.state === 'notify_wait') {
-      return this;
-    }
-
-    SIP.Timers.clearTimeout(this.timers.sub_duration);
-    SIP.Timers.clearTimeout(this.timers.N);
-    this.timers.N = SIP.Timers.setTimeout(sub.timer_fire.bind(sub), SIP.Timers.TIMER_N);
-
-    this.send();
-
-    this.state = 'notify_wait';
-
-    return this;
-  },
-
-  refresh: function () {
-    if (this.state === 'terminated' || this.state === 'pending' || this.state === 'notify_wait') {
-      return;
-    }
-
-    this.dialog.sendRequest(this, SIP.C.SUBSCRIBE, {
-      extraHeaders: this.extraHeaders,
-      body: this.body
-    });
-  },
-
-  receiveResponse: function(response) {
-    var expires, sub = this,
-        cause = SIP.Utils.getReasonPhrase(response.status_code);
-
-    if ((this.state === 'notify_wait' && response.status_code >= 300) ||
-        (this.state !== 'notify_wait' && this.errorCodes.indexOf(response.status_code) !== -1)) {
-      this.failed(response, null);
-    } else if (/^2[0-9]{2}$/.test(response.status_code)){
-      expires = response.getHeader('Expires');
-      SIP.Timers.clearTimeout(this.timers.N);
-
-      if (this.createConfirmedDialog(response,'UAC')) {
-        this.id = this.dialog.id.toString();
-        this.ua.subscriptions[this.id] = this;
-        this.emit('accepted', response, cause);
-        // UPDATE ROUTE SET TO BE BACKWARDS COMPATIBLE?
-      }
-
-      if (expires && expires <= this.expires) {
-        // Preserve new expires value for subsequent requests
-        this.expires = expires;
-        this.timers.sub_duration = SIP.Timers.setTimeout(sub.refresh.bind(sub), expires * 900);
-      } else {
-        if (!expires) {
-          this.logger.warn('Expires header missing in a 200-class response to SUBSCRIBE');
-          this.failed(response, SIP.C.EXPIRES_HEADER_MISSING);
-        } else {
-          this.logger.warn('Expires header in a 200-class response to SUBSCRIBE with a higher value than the one in the request');
-          this.failed(response, SIP.C.INVALID_EXPIRES_HEADER);
-        }
-      }
-    } //Used to just ignore provisional responses; now ignores everything except errorCodes and 2xx
-  },
-
-  unsubscribe: function() {
-    var extraHeaders = [], sub = this;
-
-    this.state = 'terminated';
-
-    extraHeaders.push('Event: ' + this.event);
-    extraHeaders.push('Expires: 0');
-
-    extraHeaders.push('Contact: '+ this.contact);
-    extraHeaders.push('Allow: '+ SIP.UA.C.ALLOWED_METHODS.toString());
-
-    //makes sure expires isn't set, and other typical resubscribe behavior
-    this.receiveResponse = function(){};
-
-    this.dialog.sendRequest(this, this.method, {
-      extraHeaders: extraHeaders,
-      body: this.body
-    });
-
-    SIP.Timers.clearTimeout(this.timers.sub_duration);
-    SIP.Timers.clearTimeout(this.timers.N);
-    this.timers.N = SIP.Timers.setTimeout(sub.timer_fire.bind(sub), SIP.Timers.TIMER_N);
-  },
-
-  /**
-  * @private
-  */
-  timer_fire: function(){
-    if (this.state === 'terminated') {
-      this.terminateDialog();
-      SIP.Timers.clearTimeout(this.timers.N);
-      SIP.Timers.clearTimeout(this.timers.sub_duration);
-
-      delete this.ua.subscriptions[this.id];
-    } else if (this.state === 'pending' || this.state === 'notify_wait') {
-      this.close();
-    } else {
-      this.refresh();
-    }
-  },
-
-  /**
-  * @private
-  */
-  close: function() {
-    if(this.state !== 'notify_wait' && this.state !== 'terminated') {
-      this.unsubscribe();
-    }
-  },
-
-  /**
-  * @private
-  */
-  createConfirmedDialog: function(message, type) {
-    var dialog;
-
-    this.terminateDialog();
-    dialog = new SIP.Dialog(this, message, type);
-
-    if(!dialog.error) {
-      this.dialog = dialog;
-      return true;
-    }
-    // Dialog not created due to an error
-    else {
-      return false;
-    }
-  },
-
-  /**
-  * @private
-  */
-  terminateDialog: function() {
-    if(this.dialog) {
-      delete this.ua.subscriptions[this.id];
-      this.dialog.terminate();
-      delete this.dialog;
-    }
-  },
-
-  /**
-  * @private
-  */
-  receiveRequest: function(request) {
-    var sub_state, sub = this;
-
-    function setExpiresTimeout() {
-      if (sub_state.expires) {
-        SIP.Timers.clearTimeout(sub.timers.sub_duration);
-        sub_state.expires = Math.min(sub.expires,
-                                     Math.max(sub_state.expires, 0));
-        sub.timers.sub_duration = SIP.Timers.setTimeout(sub.refresh.bind(sub),
-                                                    sub_state.expires * 900);
-      }
-    }
-
-    if (!this.matchEvent(request)) { //checks event and subscription_state headers
-      request.reply(489);
-      return;
-    }
-
-    sub_state = request.parseHeader('Subscription-State');
-
-    request.reply(200, SIP.C.REASON_200);
-
-    SIP.Timers.clearTimeout(this.timers.N);
-
-    this.emit('notify', {request: request});
-
-    // if we've set state to terminated, no further processing should take place
-    // and we are only interested in cleaning up after the appropriate NOTIFY
-    if (this.state === 'terminated') {
-      if (sub_state.state === 'terminated') {
-        this.terminateDialog();
-        SIP.Timers.clearTimeout(this.timers.N);
-        SIP.Timers.clearTimeout(this.timers.sub_duration);
-
-        delete this.ua.subscriptions[this.id];
-      }
-      return;
-    }
-
-    switch (sub_state.state) {
-      case 'active':
-        this.state = 'active';
-        setExpiresTimeout();
-        break;
-      case 'pending':
-        if (this.state === 'notify_wait') {
-          setExpiresTimeout();
-        }
-        this.state = 'pending';
-        break;
-      case 'terminated':
-        SIP.Timers.clearTimeout(this.timers.sub_duration);
-        if (sub_state.reason) {
-          this.logger.log('terminating subscription with reason '+ sub_state.reason);
-          switch (sub_state.reason) {
-            case 'deactivated':
-            case 'timeout':
-              this.subscribe();
-              return;
-            case 'probation':
-            case 'giveup':
-              if(sub_state.params && sub_state.params['retry-after']) {
-                this.timers.sub_duration = SIP.Timers.setTimeout(sub.subscribe.bind(sub), sub_state.params['retry-after']);
-              } else {
-                this.subscribe();
-              }
-              return;
-            case 'rejected':
-            case 'noresource':
-            case 'invariant':
-              break;
-          }
-        }
-        this.close();
-        break;
-    }
-  },
-
-  failed: function(response, cause) {
-    this.close();
-    this.emit('failed', response, cause);
-    return this;
-  },
-
-  onDialogError: function(response) {
-    this.failed(response, SIP.C.causes.DIALOG_ERROR);
-  },
-
-  /**
-  * @private
-  */
-  matchEvent: function(request) {
-    var event;
-
-    // Check mandatory header Event
-    if (!request.hasHeader('Event')) {
-      this.logger.warn('missing Event header');
-      return false;
-    }
-    // Check mandatory header Subscription-State
-    if (!request.hasHeader('Subscription-State')) {
-      this.logger.warn('missing Subscription-State header');
-      return false;
-    }
-
-    // Check whether the event in NOTIFY matches the event in SUBSCRIBE
-    event = request.parseHeader('event').event;
-
-    if (this.event !== event) {
-      this.logger.warn('event match failed');
-      request.reply(481, 'Event Match Failed');
-      return false;
-    } else {
-      return true;
-    }
-  }
-};
-};
-
-},{}],47:[function(require,module,exports){
-"use strict";
-/**
- * @fileoverview SIP TIMERS
- */
-
-/**
- * @augments SIP
- */
-var
-  T1 = 500,
-  T2 = 4000,
-  T4 = 5000;
-module.exports = function (timers) {
-  var Timers = {
-    T1: T1,
-    T2: T2,
-    T4: T4,
-    TIMER_B: 64 * T1,
-    TIMER_D: 0  * T1,
-    TIMER_F: 64 * T1,
-    TIMER_H: 64 * T1,
-    TIMER_I: 0  * T1,
-    TIMER_J: 0  * T1,
-    TIMER_K: 0  * T4,
-    TIMER_L: 64 * T1,
-    TIMER_M: 64 * T1,
-    TIMER_N: 64 * T1,
-    PROVISIONAL_RESPONSE_INTERVAL: 60000  // See RFC 3261 Section 13.3.1.1
-  };
-
-  ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval']
-  .forEach(function (name) {
-    // can't just use timers[name].bind(timers) since it bypasses jasmine's
-    // clock-mocking
-    Timers[name] = function () {
-      return timers[name].apply(timers, arguments);
-    };
-  });
-
-  return Timers;
-};
-
-},{}],48:[function(require,module,exports){
-"use strict";
-/**
- * @fileoverview SIP Transactions
- */
-
-/**
- * SIP Transactions module.
- * @augments SIP
- */
-module.exports = function (SIP) {
-var
-  C = {
-    // Transaction states
-    STATUS_TRYING:     1,
-    STATUS_PROCEEDING: 2,
-    STATUS_CALLING:    3,
-    STATUS_ACCEPTED:   4,
-    STATUS_COMPLETED:  5,
-    STATUS_TERMINATED: 6,
-    STATUS_CONFIRMED:  7,
-
-    // Transaction types
-    NON_INVITE_CLIENT: 'nict',
-    NON_INVITE_SERVER: 'nist',
-    INVITE_CLIENT: 'ict',
-    INVITE_SERVER: 'ist'
-  };
-
-function buildViaHeader (request_sender, transport, id) {
-  var via;
-  via = 'SIP/2.0/' + (request_sender.ua.configuration.hackViaTcp ? 'TCP' : transport.server.scheme);
-  via += ' ' + request_sender.ua.configuration.viaHost + ';branch=' + id;
-  if (request_sender.ua.configuration.forceRport) {
-    via += ';rport';
-  }
-  return via;
-}
-
-/**
-* @augments SIP.Transactions
-* @class Non Invite Client Transaction
-* @param {SIP.RequestSender} request_sender
-* @param {SIP.OutgoingRequest} request
-* @param {SIP.Transport} transport
-*/
-var NonInviteClientTransaction = function(request_sender, request, transport) {
-  var via;
-
-  this.type = C.NON_INVITE_CLIENT;
-  this.transport = transport;
-  this.id = 'z9hG4bK' + Math.floor(Math.random() * 10000000);
-  this.request_sender = request_sender;
-  this.request = request;
-
-  this.logger = request_sender.ua.getLogger('sip.transaction.nict', this.id);
-
-  via = buildViaHeader(request_sender, transport, this.id);
-  this.request.setHeader('via', via);
-
-  this.request_sender.ua.newTransaction(this);
-};
-NonInviteClientTransaction.prototype = Object.create(SIP.EventEmitter.prototype);
-
-NonInviteClientTransaction.prototype.stateChanged = function(state) {
-  this.state = state;
-  this.emit('stateChanged');
-};
-
-NonInviteClientTransaction.prototype.send = function() {
-  var tr = this;
-
-  this.stateChanged(C.STATUS_TRYING);
-  this.F = SIP.Timers.setTimeout(tr.timer_F.bind(tr), SIP.Timers.TIMER_F);
-
-  if(!this.transport.send(this.request)) {
-    this.onTransportError();
-  }
-};
-
-NonInviteClientTransaction.prototype.onTransportError = function() {
-  this.logger.log('transport error occurred, deleting non-INVITE client transaction ' + this.id);
-  SIP.Timers.clearTimeout(this.F);
-  SIP.Timers.clearTimeout(this.K);
-  this.stateChanged(C.STATUS_TERMINATED);
-  this.request_sender.ua.destroyTransaction(this);
-  this.request_sender.onTransportError();
-};
-
-NonInviteClientTransaction.prototype.timer_F = function() {
-  this.logger.log('Timer F expired for non-INVITE client transaction ' + this.id);
-  this.stateChanged(C.STATUS_TERMINATED);
-  this.request_sender.ua.destroyTransaction(this);
-  this.request_sender.onRequestTimeout();
-};
-
-NonInviteClientTransaction.prototype.timer_K = function() {
-  this.stateChanged(C.STATUS_TERMINATED);
-  this.request_sender.ua.destroyTransaction(this);
-};
-
-NonInviteClientTransaction.prototype.receiveResponse = function(response) {
-  var
-    tr = this,
-    status_code = response.status_code;
-
-  if(status_code < 200) {
-    switch(this.state) {
-      case C.STATUS_TRYING:
-      case C.STATUS_PROCEEDING:
-        this.stateChanged(C.STATUS_PROCEEDING);
-        this.request_sender.receiveResponse(response);
-        break;
-    }
-  } else {
-    switch(this.state) {
-      case C.STATUS_TRYING:
-      case C.STATUS_PROCEEDING:
-        this.stateChanged(C.STATUS_COMPLETED);
-        SIP.Timers.clearTimeout(this.F);
-
-        if(status_code === 408) {
-          this.request_sender.onRequestTimeout();
-        } else {
-          this.request_sender.receiveResponse(response);
-        }
-
-        this.K = SIP.Timers.setTimeout(tr.timer_K.bind(tr), SIP.Timers.TIMER_K);
-        break;
-      case C.STATUS_COMPLETED:
-        break;
-    }
-  }
-};
-
-
-
-/**
-* @augments SIP.Transactions
-* @class Invite Client Transaction
-* @param {SIP.RequestSender} request_sender
-* @param {SIP.OutgoingRequest} request
-* @param {SIP.Transport} transport
-*/
-var InviteClientTransaction = function(request_sender, request, transport) {
-  var via,
-    tr = this;
-
-  this.type = C.INVITE_CLIENT;
-  this.transport = transport;
-  this.id = 'z9hG4bK' + Math.floor(Math.random() * 10000000);
-  this.request_sender = request_sender;
-  this.request = request;
-
-  this.logger = request_sender.ua.getLogger('sip.transaction.ict', this.id);
-
-  via = buildViaHeader(request_sender, transport, this.id);
-  this.request.setHeader('via', via);
-
-  this.request_sender.ua.newTransaction(this);
-
-  // Add the cancel property to the request.
-  //Will be called from the request instance, not the transaction itself.
-  this.request.cancel = function(reason, extraHeaders) {
-    extraHeaders = (extraHeaders || []).slice();
-    var length = extraHeaders.length;
-    var extraHeadersString = null;
-    for (var idx = 0; idx < length; idx++) {
-      extraHeadersString = (extraHeadersString || '') + extraHeaders[idx].trim() + '\r\n';
-    }
-
-    tr.cancel_request(tr, reason, extraHeadersString);
-  };
-};
-InviteClientTransaction.prototype = Object.create(SIP.EventEmitter.prototype);
-
-InviteClientTransaction.prototype.stateChanged = function(state) {
-  this.state = state;
-  this.emit('stateChanged');
-};
-
-InviteClientTransaction.prototype.send = function() {
-  var tr = this;
-  this.stateChanged(C.STATUS_CALLING);
-  this.B = SIP.Timers.setTimeout(tr.timer_B.bind(tr), SIP.Timers.TIMER_B);
-
-  if(!this.transport.send(this.request)) {
-    this.onTransportError();
-  }
-};
-
-InviteClientTransaction.prototype.onTransportError = function() {
-  this.logger.log('transport error occurred, deleting INVITE client transaction ' + this.id);
-  SIP.Timers.clearTimeout(this.B);
-  SIP.Timers.clearTimeout(this.D);
-  SIP.Timers.clearTimeout(this.M);
-  this.stateChanged(C.STATUS_TERMINATED);
-  this.request_sender.ua.destroyTransaction(this);
-
-  if (this.state !== C.STATUS_ACCEPTED) {
-    this.request_sender.onTransportError();
-  }
-};
-
-// RFC 6026 7.2
-InviteClientTransaction.prototype.timer_M = function() {
-  this.logger.log('Timer M expired for INVITE client transaction ' + this.id);
-
-  if(this.state === C.STATUS_ACCEPTED) {
-    SIP.Timers.clearTimeout(this.B);
-    this.stateChanged(C.STATUS_TERMINATED);
-    this.request_sender.ua.destroyTransaction(this);
-  }
-};
-
-// RFC 3261 17.1.1
-InviteClientTransaction.prototype.timer_B = function() {
-  this.logger.log('Timer B expired for INVITE client transaction ' + this.id);
-  if(this.state === C.STATUS_CALLING) {
-    this.stateChanged(C.STATUS_TERMINATED);
-    this.request_sender.ua.destroyTransaction(this);
-    this.request_sender.onRequestTimeout();
-  }
-};
-
-InviteClientTransaction.prototype.timer_D = function() {
-  this.logger.log('Timer D expired for INVITE client transaction ' + this.id);
-  SIP.Timers.clearTimeout(this.B);
-  this.stateChanged(C.STATUS_TERMINATED);
-  this.request_sender.ua.destroyTransaction(this);
-};
-
-InviteClientTransaction.prototype.sendACK = function(response) {
-  var tr = this;
-
-  this.ack = 'ACK ' + this.request.ruri + ' SIP/2.0\r\n';
-  this.ack += 'Via: ' + this.request.headers['Via'].toString() + '\r\n';
-
-  if(this.request.headers['Route']) {
-    this.ack += 'Route: ' + this.request.headers['Route'].toString() + '\r\n';
-  }
-
-  this.ack += 'To: ' + response.getHeader('to') + '\r\n';
-  this.ack += 'From: ' + this.request.headers['From'].toString() + '\r\n';
-  this.ack += 'Call-ID: ' + this.request.headers['Call-ID'].toString() + '\r\n';
-  this.ack += 'Content-Length: 0\r\n';
-  this.ack += 'CSeq: ' + this.request.headers['CSeq'].toString().split(' ')[0];
-  this.ack += ' ACK\r\n\r\n';
-
-  this.D = SIP.Timers.setTimeout(tr.timer_D.bind(tr), SIP.Timers.TIMER_D);
-
-  this.transport.send(this.ack);
-};
-
-InviteClientTransaction.prototype.cancel_request = function(tr, reason, extraHeaders) {
-  var request = tr.request;
-
-  this.cancel = SIP.C.CANCEL + ' ' + request.ruri + ' SIP/2.0\r\n';
-  this.cancel += 'Via: ' + request.headers['Via'].toString() + '\r\n';
-
-  if(this.request.headers['Route']) {
-    this.cancel += 'Route: ' + request.headers['Route'].toString() + '\r\n';
-  }
-
-  this.cancel += 'To: ' + request.headers['To'].toString() + '\r\n';
-  this.cancel += 'From: ' + request.headers['From'].toString() + '\r\n';
-  this.cancel += 'Call-ID: ' + request.headers['Call-ID'].toString() + '\r\n';
-  this.cancel += 'CSeq: ' + request.headers['CSeq'].toString().split(' ')[0] +
-  ' CANCEL\r\n';
-
-  if(reason) {
-    this.cancel += 'Reason: ' + reason + '\r\n';
-  }
-
-  if (extraHeaders) {
-    this.cancel += extraHeaders;
-  }
-
-  this.cancel += 'Content-Length: 0\r\n\r\n';
-
-  // Send only if a provisional response (>100) has been received.
-  if(this.state === C.STATUS_PROCEEDING) {
-    this.transport.send(this.cancel);
-  }
-};
-
-InviteClientTransaction.prototype.receiveResponse = function(response) {
-  var
-  tr = this,
-  status_code = response.status_code;
-
-  if(status_code >= 100 && status_code <= 199) {
-    switch(this.state) {
-      case C.STATUS_CALLING:
-        this.stateChanged(C.STATUS_PROCEEDING);
-        this.request_sender.receiveResponse(response);
-        if(this.cancel) {
-          this.transport.send(this.cancel);
-        }
-        break;
-      case C.STATUS_PROCEEDING:
-        this.request_sender.receiveResponse(response);
-        break;
-    }
-  } else if(status_code >= 200 && status_code <= 299) {
-    switch(this.state) {
-      case C.STATUS_CALLING:
-      case C.STATUS_PROCEEDING:
-        this.stateChanged(C.STATUS_ACCEPTED);
-        this.M = SIP.Timers.setTimeout(tr.timer_M.bind(tr), SIP.Timers.TIMER_M);
-        this.request_sender.receiveResponse(response);
-        break;
-      case C.STATUS_ACCEPTED:
-        this.request_sender.receiveResponse(response);
-        break;
-    }
-  } else if(status_code >= 300 && status_code <= 699) {
-    switch(this.state) {
-      case C.STATUS_CALLING:
-      case C.STATUS_PROCEEDING:
-        this.stateChanged(C.STATUS_COMPLETED);
-        this.sendACK(response);
-        this.request_sender.receiveResponse(response);
-        break;
-      case C.STATUS_COMPLETED:
-        this.sendACK(response);
-        break;
-    }
-  }
-};
-
-
-/**
- * @augments SIP.Transactions
- * @class ACK Client Transaction
- * @param {SIP.RequestSender} request_sender
- * @param {SIP.OutgoingRequest} request
- * @param {SIP.Transport} transport
- */
-var AckClientTransaction = function(request_sender, request, transport) {
-  var via;
-
-  this.transport = transport;
-  this.id = 'z9hG4bK' + Math.floor(Math.random() * 10000000);
-  this.request_sender = request_sender;
-  this.request = request;
-
-  this.logger = request_sender.ua.getLogger('sip.transaction.nict', this.id);
-
-  via = buildViaHeader(request_sender, transport, this.id);
-  this.request.setHeader('via', via);
-};
-AckClientTransaction.prototype = Object.create(SIP.EventEmitter.prototype);
-
-AckClientTransaction.prototype.send = function() {
-  if(!this.transport.send(this.request)) {
-    this.onTransportError();
-  }
-};
-
-AckClientTransaction.prototype.onTransportError = function() {
-  this.logger.log('transport error occurred, for an ACK client transaction ' + this.id);
-  this.request_sender.onTransportError();
-};
-
-
-/**
-* @augments SIP.Transactions
-* @class Non Invite Server Transaction
-* @param {SIP.IncomingRequest} request
-* @param {SIP.UA} ua
-*/
-var NonInviteServerTransaction = function(request, ua) {
-  this.type = C.NON_INVITE_SERVER;
-  this.id = request.via_branch;
-  this.request = request;
-  this.transport = request.transport;
-  this.ua = ua;
-  this.last_response = '';
-  request.server_transaction = this;
-
-  this.logger = ua.getLogger('sip.transaction.nist', this.id);
-
-  this.state = C.STATUS_TRYING;
-
-  ua.newTransaction(this);
-};
-NonInviteServerTransaction.prototype = Object.create(SIP.EventEmitter.prototype);
-
-NonInviteServerTransaction.prototype.stateChanged = function(state) {
-  this.state = state;
-  this.emit('stateChanged');
-};
-
-NonInviteServerTransaction.prototype.timer_J = function() {
-  this.logger.log('Timer J expired for non-INVITE server transaction ' + this.id);
-  this.stateChanged(C.STATUS_TERMINATED);
-  this.ua.destroyTransaction(this);
-};
-
-NonInviteServerTransaction.prototype.onTransportError = function() {
-  if (!this.transportError) {
-    this.transportError = true;
-
-    this.logger.log('transport error occurred, deleting non-INVITE server transaction ' + this.id);
-
-    SIP.Timers.clearTimeout(this.J);
-    this.stateChanged(C.STATUS_TERMINATED);
-    this.ua.destroyTransaction(this);
-  }
-};
-
-NonInviteServerTransaction.prototype.receiveResponse = function(status_code, response) {
-  var tr = this;
-  var deferred = SIP.Utils.defer();
-
-  if(status_code === 100) {
-    /* RFC 4320 4.1
-     * 'A SIP element MUST NOT
-     * send any provisional response with a
-     * Status-Code other than 100 to a non-INVITE request.'
-     */
-    switch(this.state) {
-      case C.STATUS_TRYING:
-        this.stateChanged(C.STATUS_PROCEEDING);
-        if(!this.transport.send(response))  {
-          this.onTransportError();
-        }
-        break;
-      case C.STATUS_PROCEEDING:
-        this.last_response = response;
-        if(!this.transport.send(response)) {
-          this.onTransportError();
-          deferred.reject();
-        } else {
-          deferred.resolve();
-        }
-        break;
-    }
-  } else if(status_code >= 200 && status_code <= 699) {
-    switch(this.state) {
-      case C.STATUS_TRYING:
-      case C.STATUS_PROCEEDING:
-        this.stateChanged(C.STATUS_COMPLETED);
-        this.last_response = response;
-        this.J = SIP.Timers.setTimeout(tr.timer_J.bind(tr), SIP.Timers.TIMER_J);
-        if(!this.transport.send(response)) {
-          this.onTransportError();
-          deferred.reject();
-        } else {
-          deferred.resolve();
-        }
-        break;
-      case C.STATUS_COMPLETED:
-        break;
-    }
-  }
-
-  return deferred.promise;
-};
-
-/**
-* @augments SIP.Transactions
-* @class Invite Server Transaction
-* @param {SIP.IncomingRequest} request
-* @param {SIP.UA} ua
-*/
-var InviteServerTransaction = function(request, ua) {
-  this.type = C.INVITE_SERVER;
-  this.id = request.via_branch;
-  this.request = request;
-  this.transport = request.transport;
-  this.ua = ua;
-  this.last_response = '';
-  request.server_transaction = this;
-
-  this.logger = ua.getLogger('sip.transaction.ist', this.id);
-
-  this.state = C.STATUS_PROCEEDING;
-
-  ua.newTransaction(this);
-
-  this.resendProvisionalTimer = null;
-
-  request.reply(100);
-};
-InviteServerTransaction.prototype = Object.create(SIP.EventEmitter.prototype);
-
-InviteServerTransaction.prototype.stateChanged = function(state) {
-  this.state = state;
-  this.emit('stateChanged');
-};
-
-InviteServerTransaction.prototype.timer_H = function() {
-  this.logger.log('Timer H expired for INVITE server transaction ' + this.id);
-
-  if(this.state === C.STATUS_COMPLETED) {
-    this.logger.warn('transactions', 'ACK for INVITE server transaction was never received, call will be terminated');
-  }
-
-  this.stateChanged(C.STATUS_TERMINATED);
-  this.ua.destroyTransaction(this);
-};
-
-InviteServerTransaction.prototype.timer_I = function() {
-  this.stateChanged(C.STATUS_TERMINATED);
-  this.ua.destroyTransaction(this);
-};
-
-// RFC 6026 7.1
-InviteServerTransaction.prototype.timer_L = function() {
-  this.logger.log('Timer L expired for INVITE server transaction ' + this.id);
-
-  if(this.state === C.STATUS_ACCEPTED) {
-    this.stateChanged(C.STATUS_TERMINATED);
-    this.ua.destroyTransaction(this);
-  }
-};
-
-InviteServerTransaction.prototype.onTransportError = function() {
-  if (!this.transportError) {
-    this.transportError = true;
-
-    this.logger.log('transport error occurred, deleting INVITE server transaction ' + this.id);
-
-    if (this.resendProvisionalTimer !== null) {
-      SIP.Timers.clearInterval(this.resendProvisionalTimer);
-      this.resendProvisionalTimer = null;
-    }
-
-    SIP.Timers.clearTimeout(this.L);
-    SIP.Timers.clearTimeout(this.H);
-    SIP.Timers.clearTimeout(this.I);
-
-    this.stateChanged(C.STATUS_TERMINATED);
-    this.ua.destroyTransaction(this);
-  }
-};
-
-InviteServerTransaction.prototype.resend_provisional = function() {
-  if(!this.transport.send(this.last_response)) {
-    this.onTransportError();
-  }
-};
-
-// INVITE Server Transaction RFC 3261 17.2.1
-InviteServerTransaction.prototype.receiveResponse = function(status_code, response) {
-  var tr = this;
-  var deferred = SIP.Utils.defer();
-
-  if(status_code >= 100 && status_code <= 199) {
-    switch(this.state) {
-      case C.STATUS_PROCEEDING:
-        if(!this.transport.send(response)) {
-          this.onTransportError();
-        }
-        this.last_response = response;
-        break;
-    }
-  }
-
-  if(status_code > 100 && status_code <= 199 && this.state === C.STATUS_PROCEEDING) {
-    // Trigger the resendProvisionalTimer only for the first non 100 provisional response.
-    if(this.resendProvisionalTimer === null) {
-      this.resendProvisionalTimer = SIP.Timers.setInterval(tr.resend_provisional.bind(tr),
-        SIP.Timers.PROVISIONAL_RESPONSE_INTERVAL);
-    }
-  } else if(status_code >= 200 && status_code <= 299) {
-    switch(this.state) {
-      case C.STATUS_PROCEEDING:
-        this.stateChanged(C.STATUS_ACCEPTED);
-        this.last_response = response;
-        this.L = SIP.Timers.setTimeout(tr.timer_L.bind(tr), SIP.Timers.TIMER_L);
-
-        if (this.resendProvisionalTimer !== null) {
-          SIP.Timers.clearInterval(this.resendProvisionalTimer);
-          this.resendProvisionalTimer = null;
-        }
-        /* falls through */
-        case C.STATUS_ACCEPTED:
-          // Note that this point will be reached for proceeding tr.state also.
-          if(!this.transport.send(response)) {
-            this.onTransportError();
-            deferred.reject();
-          } else {
-            deferred.resolve();
-          }
-          break;
-    }
-  } else if(status_code >= 300 && status_code <= 699) {
-    switch(this.state) {
-      case C.STATUS_PROCEEDING:
-        if (this.resendProvisionalTimer !== null) {
-          SIP.Timers.clearInterval(this.resendProvisionalTimer);
-          this.resendProvisionalTimer = null;
-        }
-
-        if(!this.transport.send(response)) {
-          this.onTransportError();
-          deferred.reject();
-        } else {
-          this.stateChanged(C.STATUS_COMPLETED);
-          this.H = SIP.Timers.setTimeout(tr.timer_H.bind(tr), SIP.Timers.TIMER_H);
-          deferred.resolve();
-        }
-        break;
-    }
-  }
-
-  return deferred.promise;
-};
-
-/**
- * @function
- * @param {SIP.UA} ua
- * @param {SIP.IncomingRequest} request
- *
- * @return {boolean}
- * INVITE:
- *  _true_ if retransmission
- *  _false_ new request
- *
- * ACK:
- *  _true_  ACK to non2xx response
- *  _false_ ACK must be passed to TU (accepted state)
- *          ACK to 2xx response
- *
- * CANCEL:
- *  _true_  no matching invite transaction
- *  _false_ matching invite transaction and no final response sent
- *
- * OTHER:
- *  _true_  retransmission
- *  _false_ new request
- */
-var checkTransaction = function(ua, request) {
-  var tr;
-
-  switch(request.method) {
-    case SIP.C.INVITE:
-      tr = ua.transactions.ist[request.via_branch];
-      if(tr) {
-        switch(tr.state) {
-          case C.STATUS_PROCEEDING:
-            tr.transport.send(tr.last_response);
-            break;
-
-            // RFC 6026 7.1 Invite retransmission
-            //received while in C.STATUS_ACCEPTED state. Absorb it.
-          case C.STATUS_ACCEPTED:
-            break;
-        }
-        return true;
-      }
-      break;
-    case SIP.C.ACK:
-      tr = ua.transactions.ist[request.via_branch];
-
-      // RFC 6026 7.1
-      if(tr) {
-        if(tr.state === C.STATUS_ACCEPTED) {
-          return false;
-        } else if(tr.state === C.STATUS_COMPLETED) {
-          tr.stateChanged(C.STATUS_CONFIRMED);
-          tr.I = SIP.Timers.setTimeout(tr.timer_I.bind(tr), SIP.Timers.TIMER_I);
-          return true;
-        }
-      }
-
-      // ACK to 2XX Response.
-      else {
-        return false;
-      }
-      break;
-    case SIP.C.CANCEL:
-      tr = ua.transactions.ist[request.via_branch];
-      if(tr) {
-        request.reply_sl(200);
-        if(tr.state === C.STATUS_PROCEEDING) {
-          return false;
-        } else {
-          return true;
-        }
-      } else {
-        request.reply_sl(481);
-        return true;
-      }
-      break;
-    default:
-
-      // Non-INVITE Server Transaction RFC 3261 17.2.2
-      tr = ua.transactions.nist[request.via_branch];
-      if(tr) {
-        switch(tr.state) {
-          case C.STATUS_TRYING:
-            break;
-          case C.STATUS_PROCEEDING:
-          case C.STATUS_COMPLETED:
-            tr.transport.send(tr.last_response);
-            break;
-        }
-        return true;
-      }
-      break;
-  }
-};
-
-SIP.Transactions = {
-  C: C,
-  checkTransaction: checkTransaction,
-  NonInviteClientTransaction: NonInviteClientTransaction,
-  InviteClientTransaction: InviteClientTransaction,
-  AckClientTransaction: AckClientTransaction,
-  NonInviteServerTransaction: NonInviteServerTransaction,
-  InviteServerTransaction: InviteServerTransaction
-};
-
-};
-
-},{}],49:[function(require,module,exports){
-"use strict";
-/**
- * @fileoverview Transport
- */
-
-/**
- * @augments SIP
- * @class Transport
- * @param {SIP.UA} ua
- * @param {Object} server ws_server Object
- */
-module.exports = function (SIP, WebSocket) {
-var Transport,
-  C = {
-    // Transport status codes
-    STATUS_READY:        0,
-    STATUS_DISCONNECTED: 1,
-    STATUS_ERROR:        2
-  };
-
-/**
- * Compute an amount of time in seconds to wait before sending another
- * keep-alive.
- * @returns {Number}
- */
-function computeKeepAliveTimeout(upperBound) {
-  var lowerBound = upperBound * 0.8;
-  return 1000 * (Math.random() * (upperBound - lowerBound) + lowerBound);
-}
-
-Transport = function(ua, server) {
-
-  this.logger = ua.getLogger('sip.transport');
-  this.ua = ua;
-  this.ws = null;
-  this.server = server;
-  this.reconnection_attempts = 0;
-  this.closed = false;
-  this.connected = false;
-  this.reconnectTimer = null;
-  this.lastTransportError = {};
-
-  this.keepAliveInterval = ua.configuration.keepAliveInterval;
-  this.keepAliveTimeout = null;
-  this.keepAliveTimer = null;
-
-  this.ua.transport = this;
-
-  // Connect
-  this.connect();
-};
-
-Transport.prototype = {
-  /**
-   * Send a message.
-   * @param {SIP.OutgoingRequest|String} msg
-   * @returns {Boolean}
-   */
-  send: function(msg) {
-    var message = msg.toString();
-
-    if(this.ws && this.ws.readyState === WebSocket.OPEN) {
-      if (this.ua.configuration.traceSip === true) {
-        this.logger.log('sending WebSocket message:\n\n' + message + '\n');
-      }
-      this.ws.send(message);
-      return true;
-    } else {
-      this.logger.warn('unable to send message, WebSocket is not open');
-      return false;
-    }
-  },
-
-  /**
-   * Send a keep-alive (a double-CRLF sequence).
-   * @private
-   * @returns {Boolean}
-   */
-  sendKeepAlive: function() {
-    if(this.keepAliveTimeout) { return; }
-
-    this.keepAliveTimeout = SIP.Timers.setTimeout(function() {
-      this.ua.emit('keepAliveTimeout');
-    }.bind(this), 10000);
-
-    return this.send('\r\n\r\n');
-  },
-
-  /**
-   * Start sending keep-alives.
-   * @private
-   */
-  startSendingKeepAlives: function() {
-    if (this.keepAliveInterval && !this.keepAliveTimer) {
-      this.keepAliveTimer = SIP.Timers.setTimeout(function() {
-        this.sendKeepAlive();
-        this.keepAliveTimer = null;
-        this.startSendingKeepAlives();
-      }.bind(this), computeKeepAliveTimeout(this.keepAliveInterval));
-    }
-  },
-
-  /**
-   * Stop sending keep-alives.
-   * @private
-   */
-  stopSendingKeepAlives: function() {
-    SIP.Timers.clearTimeout(this.keepAliveTimer);
-    SIP.Timers.clearTimeout(this.keepAliveTimeout);
-    this.keepAliveTimer = null;
-    this.keepAliveTimeout = null;
-  },
-
-  /**
-  * Disconnect socket.
-  */
-  disconnect: function() {
-    if(this.ws) {
-      // Clear reconnectTimer
-      SIP.Timers.clearTimeout(this.reconnectTimer);
-
-      this.stopSendingKeepAlives();
-
-      this.closed = true;
-      this.logger.log('closing WebSocket ' + this.server.ws_uri);
-      this.ws.close();
-    }
-
-    if (this.reconnectTimer !== null) {
-      SIP.Timers.clearTimeout(this.reconnectTimer);
-      this.reconnectTimer = null;
-      this.ua.emit('disconnected', {
-        transport: this,
-        code: this.lastTransportError.code,
-        reason: this.lastTransportError.reason
-      });
-    }
-  },
-
-  /**
-  * Connect socket.
-  */
-  connect: function() {
-    var transport = this;
-
-    if(this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
-      this.logger.log('WebSocket ' + this.server.ws_uri + ' is already connected');
-      return false;
-    }
-
-    if(this.ws) {
-      this.ws.close();
-    }
-
-    this.logger.log('connecting to WebSocket ' + this.server.ws_uri);
-    this.ua.onTransportConnecting(this,
-      (this.reconnection_attempts === 0)?1:this.reconnection_attempts);
-
-    try {
-      this.ws = new WebSocket(this.server.ws_uri, 'sip');
-    } catch(e) {
-      this.logger.warn('error connecting to WebSocket ' + this.server.ws_uri + ': ' + e);
-    }
-
-    this.ws.binaryType = 'arraybuffer';
-
-    this.ws.onopen = function() {
-      transport.onOpen();
-    };
-
-    this.ws.onclose = function(e) {
-      transport.onClose(e);
-    };
-
-    this.ws.onmessage = function(e) {
-      transport.onMessage(e);
-    };
-
-    this.ws.onerror = function(e) {
-      transport.onError(e);
-    };
-  },
-
-  // Transport Event Handlers
-
-  /**
-  * @event
-  * @param {event} e
-  */
-  onOpen: function() {
-    this.connected = true;
-
-    this.logger.log('WebSocket ' + this.server.ws_uri + ' connected');
-    // Clear reconnectTimer since we are not disconnected
-    if (this.reconnectTimer !== null) {
-      SIP.Timers.clearTimeout(this.reconnectTimer);
-      this.reconnectTimer = null;
-    }
-    // Reset reconnection_attempts
-    this.reconnection_attempts = 0;
-    // Disable closed
-    this.closed = false;
-    // Trigger onTransportConnected callback
-    this.ua.onTransportConnected(this);
-    // Start sending keep-alives
-    this.startSendingKeepAlives();
-  },
-
-  /**
-  * @event
-  * @param {event} e
-  */
-  onClose: function(e) {
-    var connected_before = this.connected;
-
-    this.lastTransportError.code = e.code;
-    this.lastTransportError.reason = e.reason;
-
-    this.stopSendingKeepAlives();
-
-    if (this.reconnection_attempts > 0) {
-      this.logger.log('Reconnection attempt ' + this.reconnection_attempts + ' failed (code: ' + e.code + (e.reason? '| reason: ' + e.reason : '') +')');
-      this.reconnect();
-    } else {
-      this.connected = false;
-      this.logger.log('WebSocket disconnected (code: ' + e.code + (e.reason? '| reason: ' + e.reason : '') +')');
-
-      if(e.wasClean === false) {
-        this.logger.warn('WebSocket abrupt disconnection');
-      }
-      // Transport was connected
-      if(connected_before === true) {
-        this.ua.onTransportClosed(this);
-        // Check whether the user requested to close.
-        if(!this.closed) {
-          this.reconnect();
-        } else {
-          this.ua.emit('disconnected', {
-            transport: this,
-            code: this.lastTransportError.code,
-            reason: this.lastTransportError.reason
-          });
-
-        }
-      } else {
-        // This is the first connection attempt
-        //Network error
-        this.ua.onTransportError(this);
-      }
-    }
-  },
-
-  /**
-  * @event
-  * @param {event} e
-  */
-  onMessage: function(e) {
-    var message, transaction,
-      data = e.data;
-
-    // CRLF Keep Alive response from server. Ignore it.
-    if(data === '\r\n') {
-      SIP.Timers.clearTimeout(this.keepAliveTimeout);
-      this.keepAliveTimeout = null;
-
-      if (this.ua.configuration.traceSip === true) {
-        this.logger.log('received WebSocket message with CRLF Keep Alive response');
-      }
-
-      return;
-    }
-
-    // WebSocket binary message.
-    else if (typeof data !== 'string') {
-      try {
-        data = String.fromCharCode.apply(null, new Uint8Array(data));
-      } catch(evt) {
-        this.logger.warn('received WebSocket binary message failed to be converted into string, message discarded');
-        return;
-      }
-
-      if (this.ua.configuration.traceSip === true) {
-        this.logger.log('received WebSocket binary message:\n\n' + data + '\n');
-      }
-    }
-
-    // WebSocket text message.
-    else {
-      if (this.ua.configuration.traceSip === true) {
-        this.logger.log('received WebSocket text message:\n\n' + data + '\n');
-      }
-    }
-
-    message = SIP.Parser.parseMessage(data, this.ua);
-
-    if (!message) {
-      return;
-    }
-
-    if(this.ua.status === SIP.UA.C.STATUS_USER_CLOSED && message instanceof SIP.IncomingRequest) {
-      return;
-    }
-
-    // Do some sanity check
-    if(SIP.sanityCheck(message, this.ua, this)) {
-      if(message instanceof SIP.IncomingRequest) {
-        message.transport = this;
-        this.ua.receiveRequest(message);
-      } else if(message instanceof SIP.IncomingResponse) {
-        /* Unike stated in 18.1.2, if a response does not match
-        * any transaction, it is discarded here and no passed to the core
-        * in order to be discarded there.
-        */
-        switch(message.method) {
-          case SIP.C.INVITE:
-            transaction = this.ua.transactions.ict[message.via_branch];
-            if(transaction) {
-              transaction.receiveResponse(message);
-            }
-            break;
-          case SIP.C.ACK:
-            // Just in case ;-)
-            break;
-          default:
-            transaction = this.ua.transactions.nict[message.via_branch];
-            if(transaction) {
-              transaction.receiveResponse(message);
-            }
-            break;
-        }
-      }
-    }
-  },
-
-  /**
-  * @event
-  * @param {event} e
-  */
-  onError: function(e) {
-    this.logger.warn('WebSocket connection error: ' + JSON.stringify(e));
-  },
-
-  /**
-  * Reconnection attempt logic.
-  * @private
-  */
-  reconnect: function() {
-    var transport = this;
-
-    this.reconnection_attempts += 1;
-
-    if(this.reconnection_attempts > this.ua.configuration.wsServerMaxReconnection) {
-      this.logger.warn('maximum reconnection attempts for WebSocket ' + this.server.ws_uri);
-      this.ua.onTransportError(this);
-    } else if (this.reconnection_attempts === 1) {
-      this.logger.log('Connection to WebSocket ' + this.server.ws_uri + ' severed, attempting first reconnect');
-      transport.connect();
-    } else {
-      this.logger.log('trying to reconnect to WebSocket ' + this.server.ws_uri + ' (reconnection attempt ' + this.reconnection_attempts + ')');
-
-      this.reconnectTimer = SIP.Timers.setTimeout(function() {
-        transport.connect();
-        transport.reconnectTimer = null;
-      }, this.ua.configuration.wsServerReconnectionTimeout * 1000);
-    }
-  }
-};
-
-Transport.C = C;
-return Transport;
-};
-
-},{}],50:[function(require,module,exports){
-(function (global){
-"use strict";
-/**
- * @augments SIP
- * @class Class creating a SIP User Agent.
- * @param {function returning SIP.MediaHandler} [configuration.mediaHandlerFactory]
- *        A function will be invoked by each of the UA's Sessions to build the MediaHandler for that Session.
- *        If no (or a falsy) value is provided, each Session will use a default (WebRTC) MediaHandler.
- *
- * @param {Object} [configuration.media] gets passed to SIP.MediaHandler.getDescription as mediaHint
- */
-module.exports = function (SIP, environment) {
-var UA,
-  C = {
-    // UA status codes
-    STATUS_INIT:                0,
-    STATUS_STARTING:            1,
-    STATUS_READY:               2,
-    STATUS_USER_CLOSED:         3,
-    STATUS_NOT_READY:           4,
-
-    // UA error codes
-    CONFIGURATION_ERROR:  1,
-    NETWORK_ERROR:        2,
-
-    ALLOWED_METHODS: [
-      'ACK',
-      'CANCEL',
-      'INVITE',
-      'MESSAGE',
-      'BYE',
-      'OPTIONS',
-      'INFO',
-      'NOTIFY',
-      'REFER'
-    ],
-
-    ACCEPTED_BODY_TYPES: [
-      'application/sdp',
-      'application/dtmf-relay'
-    ],
-
-    MAX_FORWARDS: 70,
-    TAG_LENGTH: 10
-  };
-
-UA = function(configuration) {
-  var self = this;
-
-  // Helper function for forwarding events
-  function selfEmit(type) {
-    //registrationFailed handler is invoked with two arguments. Allow event handlers to be invoked with a variable no. of arguments
-    return self.emit.bind(self, type);
-  }
-
-  // Set Accepted Body Types
-  C.ACCEPTED_BODY_TYPES = C.ACCEPTED_BODY_TYPES.toString();
-
-  this.log = new SIP.LoggerFactory();
-  this.logger = this.getLogger('sip.ua');
-
-  this.cache = {
-    credentials: {}
-  };
-
-  this.configuration = {};
-  this.dialogs = {};
-
-  //User actions outside any session/dialog (MESSAGE)
-  this.applicants = {};
-
-  this.data = {};
-  this.sessions = {};
-  this.subscriptions = {};
-  this.transport = null;
-  this.contact = null;
-  this.status = C.STATUS_INIT;
-  this.error = null;
-  this.transactions = {
-    nist: {},
-    nict: {},
-    ist: {},
-    ict: {}
-  };
-
-  this.transportRecoverAttempts = 0;
-  this.transportRecoveryTimer = null;
-
-  Object.defineProperties(this, {
-    transactionsCount: {
-      get: function() {
-        var type,
-          transactions = ['nist','nict','ist','ict'],
-          count = 0;
-
-        for (type in transactions) {
-          count += Object.keys(this.transactions[transactions[type]]).length;
-        }
-
-        return count;
-      }
-    },
-
-    nictTransactionsCount: {
-      get: function() {
-        return Object.keys(this.transactions['nict']).length;
-      }
-    },
-
-    nistTransactionsCount: {
-      get: function() {
-        return Object.keys(this.transactions['nist']).length;
-      }
-    },
-
-    ictTransactionsCount: {
-      get: function() {
-        return Object.keys(this.transactions['ict']).length;
-      }
-    },
-
-    istTransactionsCount: {
-      get: function() {
-        return Object.keys(this.transactions['ist']).length;
-      }
-    }
-  });
-
-  /**
-   * Load configuration
-   *
-   * @throws {SIP.Exceptions.ConfigurationError}
-   * @throws {TypeError}
-   */
-
-  if(configuration === undefined) {
-    configuration = {};
-  } else if (typeof configuration === 'string' || configuration instanceof String) {
-    configuration = {
-      uri: configuration
-    };
-  }
-
-  // Apply log configuration if present
-  if (configuration.log) {
-    if (configuration.log.hasOwnProperty('builtinEnabled')) {
-      this.log.builtinEnabled = configuration.log.builtinEnabled;
-    }
-
-    if (configuration.log.hasOwnProperty('level')) {
-      this.log.level = configuration.log.level;
-    }
-
-    if (configuration.log.hasOwnProperty('connector')) {
-      this.log.connector = configuration.log.connector;
-    }
-  }
-
-  try {
-    this.loadConfig(configuration);
-  } catch(e) {
-    this.status = C.STATUS_NOT_READY;
-    this.error = C.CONFIGURATION_ERROR;
-    throw e;
-  }
-
-  // Initialize registerContext
-  this.registerContext = new SIP.RegisterContext(this);
-  this.registerContext.on('failed', selfEmit('registrationFailed'));
-  this.registerContext.on('registered', selfEmit('registered'));
-  this.registerContext.on('unregistered', selfEmit('unregistered'));
-
-  if(this.configuration.autostart) {
-    this.start();
-  }
-
-  if (typeof environment.addEventListener === 'function') {
-    // Google Chrome Packaged Apps don't allow 'unload' listeners:
-    // unload is not available in packaged apps
-    if (!(global.chrome && global.chrome.app && global.chrome.app.runtime)) {
-      environment.addEventListener('unload', this.stop.bind(this));
-    }
-  }
-};
-UA.prototype = Object.create(SIP.EventEmitter.prototype);
-
-//=================
-//  High Level API
-//=================
-
-UA.prototype.register = function(options) {
-  this.configuration.register = true;
-  this.registerContext.register(options);
-
-  return this;
-};
-
-/**
- * Unregister.
- *
- * @param {Boolean} [all] unregister all user bindings.
- *
- */
-UA.prototype.unregister = function(options) {
-  this.configuration.register = false;
-
-  var context = this.registerContext;
-  this.afterConnected(context.unregister.bind(context, options));
-
-  return this;
-};
-
-UA.prototype.isRegistered = function() {
-  return this.registerContext.registered;
-};
-
-/**
- * Connection state.
- * @param {Boolean}
- */
-UA.prototype.isConnected = function() {
-  return this.transport ? this.transport.connected : false;
-};
-
-UA.prototype.afterConnected = function afterConnected (callback) {
-  if (this.isConnected()) {
-    callback();
-  } else {
-    this.once('connected', callback);
-  }
-};
-
-/**
- * Make an outgoing call.
- *
- * @param {String} target
- * @param {Object} views
- * @param {Object} [options.media] gets passed to SIP.MediaHandler.getDescription as mediaHint
- *
- * @throws {TypeError}
- *
- */
-UA.prototype.invite = function(target, options) {
-  var context = new SIP.InviteClientContext(this, target, options);
-
-  this.afterConnected(context.invite.bind(context));
-  return context;
-};
-
-UA.prototype.subscribe = function(target, event, options) {
-  var sub = new SIP.Subscription(this, target, event, options);
-
-  this.afterConnected(sub.subscribe.bind(sub));
-  return sub;
-};
-
-/**
- * Send a message.
- *
- * @param {String} target
- * @param {String} body
- * @param {Object} [options]
- *
- * @throws {TypeError}
- *
- */
-UA.prototype.message = function(target, body, options) {
-  if (body === undefined) {
-    throw new TypeError('Not enough arguments');
-  }
-
-  // There is no Message module, so it is okay that the UA handles defaults here.
-  options = Object.create(options || Object.prototype);
-  options.contentType || (options.contentType = 'text/plain');
-  options.body = body;
-
-  return this.request(SIP.C.MESSAGE, target, options);
-};
-
-UA.prototype.request = function (method, target, options) {
-  var req = new SIP.ClientContext(this, method, target, options);
-
-  this.afterConnected(req.send.bind(req));
-  return req;
-};
-
-/**
- * Gracefully close.
- *
- */
-UA.prototype.stop = function() {
-  var session, subscription, applicant,
-    ua = this;
-
-  function transactionsListener() {
-    if (ua.nistTransactionsCount === 0 && ua.nictTransactionsCount === 0) {
-        ua.removeListener('transactionDestroyed', transactionsListener);
-        ua.transport.disconnect();
-    }
-  }
-
-  this.logger.log('user requested closure...');
-
-  if(this.status === C.STATUS_USER_CLOSED) {
-    this.logger.warn('UA already closed');
-    return this;
-  }
-
-  // Clear transportRecoveryTimer
-  SIP.Timers.clearTimeout(this.transportRecoveryTimer);
-
-  // Close registerContext
-  this.logger.log('closing registerContext');
-  this.registerContext.close();
-
-  // Run  _terminate_ on every Session
-  for(session in this.sessions) {
-    this.logger.log('closing session ' + session);
-    this.sessions[session].terminate();
-  }
-
-  //Run _close_ on every Subscription
-  for(subscription in this.subscriptions) {
-    this.logger.log('unsubscribing from subscription ' + subscription);
-    this.subscriptions[subscription].close();
-  }
-
-  // Run  _close_ on every applicant
-  for(applicant in this.applicants) {
-    this.applicants[applicant].close();
-  }
-
-  this.status = C.STATUS_USER_CLOSED;
-
-  /*
-   * If the remaining transactions are all INVITE transactions, there is no need to
-   * wait anymore because every session has already been closed by this method.
-   * - locally originated sessions where terminated (CANCEL or BYE)
-   * - remotely originated sessions where rejected (4XX) or terminated (BYE)
-   * Remaining INVITE transactions belong tho sessions that where answered. This are in
-   * 'accepted' state due to timers 'L' and 'M' defined in [RFC 6026]
-   */
-  if (this.nistTransactionsCount === 0 && this.nictTransactionsCount === 0) {
-    if (this.transport) {
-      this.transport.disconnect();
-    }
-  } else {
-    this.on('transactionDestroyed', transactionsListener);
-  }
-
-  return this;
-};
-
-/**
- * Connect to the WS server if status = STATUS_INIT.
- * Resume UA after being closed.
- *
- */
-UA.prototype.start = function() {
-  var server;
-
-  this.logger.log('user requested startup...');
-  if (this.status === C.STATUS_INIT) {
-    server = this.getNextWsServer();
-    this.status = C.STATUS_STARTING;
-    new SIP.Transport(this, server);
-  } else if(this.status === C.STATUS_USER_CLOSED) {
-    this.logger.log('resuming');
-    this.status = C.STATUS_READY;
-    this.transport.connect();
-  } else if (this.status === C.STATUS_STARTING) {
-    this.logger.log('UA is in STARTING status, not opening new connection');
-  } else if (this.status === C.STATUS_READY) {
-    this.logger.log('UA is in READY status, not resuming');
-  } else {
-    this.logger.error('Connection is down. Auto-Recovery system is trying to connect');
-  }
-
-  return this;
-};
-
-/**
- * Normalize a string into a valid SIP request URI
- *
- * @param {String} target
- *
- * @returns {SIP.URI|undefined}
- */
-UA.prototype.normalizeTarget = function(target) {
-  return SIP.Utils.normalizeTarget(target, this.configuration.hostportParams);
-};
-
-
-//===============================
-//  Private (For internal use)
-//===============================
-
-UA.prototype.saveCredentials = function(credentials) {
-  this.cache.credentials[credentials.realm] = this.cache.credentials[credentials.realm] || {};
-  this.cache.credentials[credentials.realm][credentials.uri] = credentials;
-
-  return this;
-};
-
-UA.prototype.getCredentials = function(request) {
-  var realm, credentials;
-
-  realm = request.ruri.host;
-
-  if (this.cache.credentials[realm] && this.cache.credentials[realm][request.ruri]) {
-    credentials = this.cache.credentials[realm][request.ruri];
-    credentials.method = request.method;
-  }
-
-  return credentials;
-};
-
-UA.prototype.getLogger = function(category, label) {
-  return this.log.getLogger(category, label);
-};
-
-
-//==============================
-// Event Handlers
-//==============================
-
-/**
- * Transport Close event
- * @private
- * @event
- * @param {SIP.Transport} transport.
- */
-UA.prototype.onTransportClosed = function(transport) {
-  // Run _onTransportError_ callback on every client transaction using _transport_
-  var type, idx, length,
-    client_transactions = ['nict', 'ict', 'nist', 'ist'];
-
-  transport.server.status = SIP.Transport.C.STATUS_DISCONNECTED;
-  this.logger.log('connection state set to '+ SIP.Transport.C.STATUS_DISCONNECTED);
-
-  length = client_transactions.length;
-  for (type = 0; type < length; type++) {
-    for(idx in this.transactions[client_transactions[type]]) {
-      this.transactions[client_transactions[type]][idx].onTransportError();
-    }
-  }
-
-  // Close sessions if GRUU is not being used
-  if (!this.contact.pub_gruu) {
-    this.closeSessionsOnTransportError();
-  }
-
-};
-
-/**
- * Unrecoverable transport event.
- * Connection reattempt logic has been done and didn't success.
- * @private
- * @event
- * @param {SIP.Transport} transport.
- */
-UA.prototype.onTransportError = function(transport) {
-  var server;
-
-  this.logger.log('transport ' + transport.server.ws_uri + ' failed | connection state set to '+ SIP.Transport.C.STATUS_ERROR);
-
-  // Close sessions.
-  //Mark this transport as 'down'
-  transport.server.status = SIP.Transport.C.STATUS_ERROR;
-
-  this.emit('disconnected', {
-    transport: transport
-  });
-
-  // try the next transport if the UA isn't closed
-  if(this.status === C.STATUS_USER_CLOSED) {
-    return;
-  }
-
-  server = this.getNextWsServer();
-
-  if(server) {
-    new SIP.Transport(this, server);
-  }else {
-    this.closeSessionsOnTransportError();
-    if (!this.error || this.error !== C.NETWORK_ERROR) {
-      this.status = C.STATUS_NOT_READY;
-      this.error = C.NETWORK_ERROR;
-    }
-    // Transport Recovery process
-    this.recoverTransport();
-  }
-};
-
-/**
- * Transport connection event.
- * @private
- * @event
- * @param {SIP.Transport} transport.
- */
-UA.prototype.onTransportConnected = function(transport) {
-  this.transport = transport;
-
-  // Reset transport recovery counter
-  this.transportRecoverAttempts = 0;
-
-  transport.server.status = SIP.Transport.C.STATUS_READY;
-  this.logger.log('connection state set to '+ SIP.Transport.C.STATUS_READY);
-
-  if(this.status === C.STATUS_USER_CLOSED) {
-    return;
-  }
-
-  this.status = C.STATUS_READY;
-  this.error = null;
-
-  if(this.configuration.register) {
-    this.configuration.authenticationFactory.initialize().then(function () {
-      this.registerContext.onTransportConnected();
-    }.bind(this));
-  }
-
-  this.emit('connected', {
-    transport: transport
-  });
-};
-
-
-/**
- * Transport connecting event
- * @private
- * @param {SIP.Transport} transport.
- * #param {Integer} attempts.
- */
-  UA.prototype.onTransportConnecting = function(transport, attempts) {
-    this.emit('connecting', {
-      transport: transport,
-      attempts: attempts
-    });
-  };
-
-
-/**
- * new Transaction
- * @private
- * @param {SIP.Transaction} transaction.
- */
-UA.prototype.newTransaction = function(transaction) {
-  this.transactions[transaction.type][transaction.id] = transaction;
-  this.emit('newTransaction', {transaction: transaction});
-};
-
-
-/**
- * destroy Transaction
- * @private
- * @param {SIP.Transaction} transaction.
- */
-UA.prototype.destroyTransaction = function(transaction) {
-  delete this.transactions[transaction.type][transaction.id];
-  this.emit('transactionDestroyed', {
-    transaction: transaction
-  });
-};
-
-
-//=========================
-// receiveRequest
-//=========================
-
-/**
- * Request reception
- * @private
- * @param {SIP.IncomingRequest} request.
- */
-UA.prototype.receiveRequest = function(request) {
-  var dialog, session, message,
-    method = request.method,
-    transaction,
-    replaces,
-    replacedDialog,
-    self = this;
-
-  function ruriMatches (uri) {
-    return uri && uri.user === request.ruri.user;
-  }
-
-  // Check that request URI points to us
-  if(!(ruriMatches(this.configuration.uri) ||
-       ruriMatches(this.contact.uri) ||
-       ruriMatches(this.contact.pub_gruu) ||
-       ruriMatches(this.contact.temp_gruu))) {
-    this.logger.warn('Request-URI does not point to us');
-    if (request.method !== SIP.C.ACK) {
-      request.reply_sl(404);
-    }
-    return;
-  }
-
-  // Check request URI scheme
-  if(request.ruri.scheme === SIP.C.SIPS) {
-    request.reply_sl(416);
-    return;
-  }
-
-  // Check transaction
-  if(SIP.Transactions.checkTransaction(this, request)) {
-    return;
-  }
-
-  /* RFC3261 12.2.2
-   * Requests that do not change in any way the state of a dialog may be
-   * received within a dialog (for example, an OPTIONS request).
-   * They are processed as if they had been received outside the dialog.
-   */
-  if(method === SIP.C.OPTIONS) {
-    new SIP.Transactions.NonInviteServerTransaction(request, this);
-    request.reply(200, null, [
-      'Allow: '+ SIP.UA.C.ALLOWED_METHODS.toString(),
-      'Accept: '+ C.ACCEPTED_BODY_TYPES
-    ]);
-  } else if (method === SIP.C.MESSAGE) {
-    message = new SIP.ServerContext(this, request);
-    message.body = request.body;
-    message.content_type = request.getHeader('Content-Type') || 'text/plain';
-
-    request.reply(200, null);
-    this.emit('message', message);
-  } else if (method !== SIP.C.INVITE &&
-             method !== SIP.C.ACK) {
-    // Let those methods pass through to normal processing for now.
-    transaction = new SIP.ServerContext(this, request);
-  }
-
-  // Initial Request
-  if(!request.to_tag) {
-    switch(method) {
-      case SIP.C.INVITE:
-        replaces =
-          this.configuration.replaces !== SIP.C.supported.UNSUPPORTED &&
-          request.parseHeader('replaces');
-
-        if (replaces) {
-          replacedDialog = this.dialogs[replaces.call_id + replaces.replaces_to_tag + replaces.replaces_from_tag];
-
-          if (!replacedDialog) {
-            //Replaced header without a matching dialog, reject
-            request.reply_sl(481, null);
-            return;
-          } else if (replacedDialog.owner.status === SIP.Session.C.STATUS_TERMINATED) {
-            request.reply_sl(603, null);
-            return;
-          } else if (replacedDialog.state === SIP.Dialog.C.STATUS_CONFIRMED && replaces.early_only) {
-            request.reply_sl(486, null);
-            return;
-          }
-        }
-
-        var isMediaSupported = this.configuration.mediaHandlerFactory.isSupported;
-        if(!isMediaSupported || isMediaSupported()) {
-          session = new SIP.InviteServerContext(this, request);
-          session.replacee = replacedDialog && replacedDialog.owner;
-          session.on('invite', function() {
-            self.emit('invite', this);
-          });
-        } else {
-          this.logger.warn('INVITE received but WebRTC is not supported');
-          request.reply(488);
-        }
-        break;
-      case SIP.C.BYE:
-        // Out of dialog BYE received
-        request.reply(481);
-        break;
-      case SIP.C.CANCEL:
-        session = this.findSession(request);
-        if(session) {
-          session.receiveRequest(request);
-        } else {
-          this.logger.warn('received CANCEL request for a non existent session');
-        }
-        break;
-      case SIP.C.ACK:
-        /* Absorb it.
-         * ACK request without a corresponding Invite Transaction
-         * and without To tag.
-         */
-        break;
-      case SIP.C.NOTIFY:
-        if (this.configuration.allowLegacyNotifications && this.listeners('notify').length > 0) {
-          request.reply(200, null);
-          self.emit('notify', {request: request});
-        } else {
-          request.reply(481, 'Subscription does not exist');
-        }
-        break;
-      default:
-        request.reply(405);
-        break;
-    }
-  }
-  // In-dialog request
-  else {
-    dialog = this.findDialog(request);
-
-    if(dialog) {
-      if (method === SIP.C.INVITE) {
-        new SIP.Transactions.InviteServerTransaction(request, this);
-      }
-      dialog.receiveRequest(request);
-    } else if (method === SIP.C.NOTIFY) {
-      session = this.findSession(request);
-      if(session) {
-        session.receiveRequest(request);
-      } else {
-        this.logger.warn('received NOTIFY request for a non existent session');
-        request.reply(481, 'Subscription does not exist');
-      }
-    }
-    /* RFC3261 12.2.2
-     * Request with to tag, but no matching dialog found.
-     * Exception: ACK for an Invite request for which a dialog has not
-     * been created.
-     */
-    else {
-      if(method !== SIP.C.ACK) {
-        request.reply(481);
-      }
-    }
-  }
-};
-
-//=================
-// Utils
-//=================
-
-/**
- * Get the session to which the request belongs to, if any.
- * @private
- * @param {SIP.IncomingRequest} request.
- * @returns {SIP.OutgoingSession|SIP.IncomingSession|null}
- */
-UA.prototype.findSession = function(request) {
-  return this.sessions[request.call_id + request.from_tag] ||
-          this.sessions[request.call_id + request.to_tag] ||
-          null;
-};
-
-/**
- * Get the dialog to which the request belongs to, if any.
- * @private
- * @param {SIP.IncomingRequest}
- * @returns {SIP.Dialog|null}
- */
-UA.prototype.findDialog = function(request) {
-  return this.dialogs[request.call_id + request.from_tag + request.to_tag] ||
-          this.dialogs[request.call_id + request.to_tag + request.from_tag] ||
-          null;
-};
-
-/**
- * Retrieve the next server to which connect.
- * @private
- * @returns {Object} ws_server
- */
-UA.prototype.getNextWsServer = function() {
-  // Order servers by weight
-  var idx, length, ws_server,
-    candidates = [];
-
-  length = this.configuration.wsServers.length;
-  for (idx = 0; idx < length; idx++) {
-    ws_server = this.configuration.wsServers[idx];
-
-    if (ws_server.status === SIP.Transport.C.STATUS_ERROR) {
-      continue;
-    } else if (candidates.length === 0) {
-      candidates.push(ws_server);
-    } else if (ws_server.weight > candidates[0].weight) {
-      candidates = [ws_server];
-    } else if (ws_server.weight === candidates[0].weight) {
-      candidates.push(ws_server);
-    }
-  }
-
-  idx = Math.floor(Math.random() * candidates.length);
-
-  return candidates[idx];
-};
-
-/**
- * Close all sessions on transport error.
- * @private
- */
-UA.prototype.closeSessionsOnTransportError = function() {
-  var idx;
-
-  // Run _transportError_ for every Session
-  for(idx in this.sessions) {
-    this.sessions[idx].onTransportError();
-  }
-  // Call registerContext _onTransportClosed_
-  this.registerContext.onTransportClosed();
-};
-
-UA.prototype.recoverTransport = function(ua) {
-  var idx, length, k, nextRetry, count, server;
-
-  ua = ua || this;
-  count = ua.transportRecoverAttempts;
-
-  length = ua.configuration.wsServers.length;
-  for (idx = 0; idx < length; idx++) {
-    ua.configuration.wsServers[idx].status = 0;
-  }
-
-  server = ua.getNextWsServer();
-
-  k = Math.floor((Math.random() * Math.pow(2,count)) +1);
-  nextRetry = k * ua.configuration.connectionRecoveryMinInterval;
-
-  if (nextRetry > ua.configuration.connectionRecoveryMaxInterval) {
-    this.logger.log('time for next connection attempt exceeds connectionRecoveryMaxInterval, resetting counter');
-    nextRetry = ua.configuration.connectionRecoveryMinInterval;
-    count = 0;
-  }
-
-  this.logger.log('next connection attempt in '+ nextRetry +' seconds');
-
-  this.transportRecoveryTimer = SIP.Timers.setTimeout(
-    function(){
-      ua.transportRecoverAttempts = count + 1;
-      new SIP.Transport(ua, server);
-    }, nextRetry * 1000);
-};
-
-function checkAuthenticationFactory (authenticationFactory) {
-  if (!(authenticationFactory instanceof Function)) {
-    return;
-  }
-  if (!authenticationFactory.initialize) {
-    authenticationFactory.initialize = function initialize () {
-      return SIP.Utils.Promise.resolve();
-    };
-  }
-  return authenticationFactory;
-}
-
-/**
- * Configuration load.
- * @private
- * returns {Boolean}
- */
-UA.prototype.loadConfig = function(configuration) {
-  // Settings and default values
-  var parameter, value, checked_value, hostportParams, registrarServer,
-    settings = {
-      /* Host address
-      * Value to be set in Via sent_by and host part of Contact FQDN
-      */
-      viaHost: SIP.Utils.createRandomToken(12) + '.invalid',
-
-      uri: new SIP.URI('sip', 'anonymous.' + SIP.Utils.createRandomToken(6), 'anonymous.invalid', null, null),
-      wsServers: [{
-        scheme: 'WSS',
-        sip_uri: '<sip:edge.sip.onsip.com;transport=ws;lr>',
-        status: 0,
-        weight: 0,
-        ws_uri: 'wss://edge.sip.onsip.com'
-      }],
-
-      // Password
-      password: null,
-
-      // Registration parameters
-      registerExpires: 600,
-      register: true,
-      registrarServer: null,
-
-      // Transport related parameters
-      wsServerMaxReconnection: 3,
-      wsServerReconnectionTimeout: 4,
-
-      connectionRecoveryMinInterval: 2,
-      connectionRecoveryMaxInterval: 30,
-
-      keepAliveInterval: 0,
-
-      extraSupported: [],
-
-      usePreloadedRoute: false,
-
-      //string to be inserted into User-Agent request header
-      userAgentString: SIP.C.USER_AGENT,
-
-      // Session parameters
-      iceCheckingTimeout: 5000,
-      noAnswerTimeout: 60,
-      stunServers: ['stun:stun.l.google.com:19302'],
-      turnServers: [],
-
-      // Logging parameters
-      traceSip: false,
-
-      // Hacks
-      hackViaTcp: false,
-      hackIpInContact: false,
-      hackWssInTransport: false,
-      hackAllowUnregisteredOptionTags: false,
-      hackCleanJitsiSdpImageattr: false,
-      hackStripTcp: false,
-
-      contactTransport: 'ws',
-      forceRport: false,
-
-      //autostarting
-      autostart: true,
-
-      //Reliable Provisional Responses
-      rel100: SIP.C.supported.UNSUPPORTED,
-
-      // Replaces header (RFC 3891)
-      // http://tools.ietf.org/html/rfc3891
-      replaces: SIP.C.supported.UNSUPPORTED,
-
-      mediaHandlerFactory: SIP.WebRTC.MediaHandler.defaultFactory,
-
-      authenticationFactory: checkAuthenticationFactory(function authenticationFactory (ua) {
-        return new SIP.DigestAuthentication(ua);
-      }),
-
-      allowLegacyNotifications: false
-    };
-
-  // Pre-Configuration
-  function aliasUnderscored (parameter, logger) {
-    var underscored = parameter.replace(/([a-z][A-Z])/g, function (m) {
-      return m[0] + '_' + m[1].toLowerCase();
-    });
-
-    if (parameter === underscored) {
-      return;
-    }
-
-    var hasParameter = configuration.hasOwnProperty(parameter);
-    if (configuration.hasOwnProperty(underscored)) {
-      logger.warn(underscored + ' is deprecated, please use ' + parameter);
-      if (hasParameter) {
-        logger.warn(parameter + ' overriding ' + underscored);
-      }
-    }
-
-    configuration[parameter] = hasParameter ? configuration[parameter] : configuration[underscored];
-  }
-
-  // Check Mandatory parameters
-  for(parameter in UA.configuration_check.mandatory) {
-    aliasUnderscored(parameter, this.logger);
-    if(!configuration.hasOwnProperty(parameter)) {
-      throw new SIP.Exceptions.ConfigurationError(parameter);
-    } else {
-      value = configuration[parameter];
-      checked_value = UA.configuration_check.mandatory[parameter](value);
-      if (checked_value !== undefined) {
-        settings[parameter] = checked_value;
-      } else {
-        throw new SIP.Exceptions.ConfigurationError(parameter, value);
-      }
-    }
-  }
-
-  SIP.Utils.optionsOverride(configuration, 'rel100', 'reliable', true, this.logger, SIP.C.supported.UNSUPPORTED);
-
-  var emptyArraysAllowed = ['stunServers', 'turnServers'];
-
-  // Check Optional parameters
-  for(parameter in UA.configuration_check.optional) {
-    aliasUnderscored(parameter, this.logger);
-    if(configuration.hasOwnProperty(parameter)) {
-      value = configuration[parameter];
-
-      // If the parameter value is an empty array, but shouldn't be, apply its default value.
-      if (value instanceof Array && value.length === 0 && emptyArraysAllowed.indexOf(parameter) < 0) { continue; }
-
-      // If the parameter value is null, empty string, or undefined then apply its default value.
-      if(value === null || value === "" || value === undefined) { continue; }
-      // If it's a number with NaN value then also apply its default value.
-      // NOTE: JS does not allow "value === NaN", the following does the work:
-      else if(typeof(value) === 'number' && isNaN(value)) { continue; }
-
-      checked_value = UA.configuration_check.optional[parameter](value);
-      if (checked_value !== undefined) {
-        settings[parameter] = checked_value;
-      } else {
-        throw new SIP.Exceptions.ConfigurationError(parameter, value);
-      }
-    }
-  }
-
-  // Sanity Checks
-
-  // Connection recovery intervals
-  if(settings.connectionRecoveryMaxInterval < settings.connectionRecoveryMinInterval) {
-    throw new SIP.Exceptions.ConfigurationError('connectionRecoveryMaxInterval', settings.connectionRecoveryMaxInterval);
-  }
-
-  // Post Configuration Process
-
-  // Allow passing 0 number as displayName.
-  if (settings.displayName === 0) {
-    settings.displayName = '0';
-  }
-
-  // Instance-id for GRUU
-  if (!settings.instanceId) {
-    settings.instanceId = SIP.Utils.newUUID();
-  }
-
-  // sipjsId instance parameter. Static random tag of length 5
-  settings.sipjsId = SIP.Utils.createRandomToken(5);
-
-  // String containing settings.uri without scheme and user.
-  hostportParams = settings.uri.clone();
-  hostportParams.user = null;
-  settings.hostportParams = hostportParams.toRaw().replace(/^sip:/i, '');
-
-  /* Check whether authorizationUser is explicitly defined.
-   * Take 'settings.uri.user' value if not.
-   */
-  if (!settings.authorizationUser) {
-    settings.authorizationUser = settings.uri.user;
-  }
-
-  /* If no 'registrarServer' is set use the 'uri' value without user portion. */
-  if (!settings.registrarServer) {
-    registrarServer = settings.uri.clone();
-    registrarServer.user = null;
-    settings.registrarServer = registrarServer;
-  }
-
-  // User noAnswerTimeout
-  settings.noAnswerTimeout = settings.noAnswerTimeout * 1000;
-
-  // Via Host
-  if (settings.hackIpInContact) {
-    if (typeof settings.hackIpInContact === 'boolean') {
-      settings.viaHost = SIP.Utils.getRandomTestNetIP();
-    }
-    else if (typeof settings.hackIpInContact === 'string') {
-      settings.viaHost = settings.hackIpInContact;
-    }
-  }
-
-  // Contact transport parameter
-  if (settings.hackWssInTransport) {
-    settings.contactTransport = 'wss';
-  }
-
-  this.contact = {
-    pub_gruu: null,
-    temp_gruu: null,
-    uri: new SIP.URI('sip', SIP.Utils.createRandomToken(8), settings.viaHost, null, {transport: settings.contactTransport}),
-    toString: function(options){
-      options = options || {};
-
-      var
-        anonymous = options.anonymous || null,
-        outbound = options.outbound || null,
-        contact = '<';
-
-      if (anonymous) {
-        contact += (this.temp_gruu || ('sip:anonymous@anonymous.invalid;transport='+settings.contactTransport)).toString();
-      } else {
-        contact += (this.pub_gruu || this.uri).toString();
-      }
-
-      if (outbound) {
-        contact += ';ob';
-      }
-
-      contact += '>';
-
-      return contact;
-    }
-  };
-
-  // media overrides mediaConstraints
-  SIP.Utils.optionsOverride(settings, 'media', 'mediaConstraints', true, this.logger);
-
-  // Fill the value of the configuration_skeleton
-  for(parameter in settings) {
-    UA.configuration_skeleton[parameter].value = settings[parameter];
-  }
-
-  Object.defineProperties(this.configuration, UA.configuration_skeleton);
-
-  // Clean UA.configuration_skeleton
-  for(parameter in settings) {
-    UA.configuration_skeleton[parameter].value = '';
-  }
-
-  this.logger.log('configuration parameters after validation:');
-  for(parameter in settings) {
-    switch(parameter) {
-      case 'uri':
-      case 'registrarServer':
-      case 'mediaHandlerFactory':
-        this.logger.log('· ' + parameter + ': ' + settings[parameter]);
-        break;
-      case 'password':
-        this.logger.log('· ' + parameter + ': ' + 'NOT SHOWN');
-        break;
-      default:
-        this.logger.log('· ' + parameter + ': ' + JSON.stringify(settings[parameter]));
-    }
-  }
-
-  return;
-};
-
-/**
- * Configuration Object skeleton.
- * @private
- */
-UA.configuration_skeleton = (function() {
-  var idx,  parameter,
-    skeleton = {},
-    parameters = [
-      // Internal parameters
-      "sipjsId",
-      "hostportParams",
-
-      // Optional user configurable parameters
-      "uri",
-      "wsServers",
-      "authorizationUser",
-      "connectionRecoveryMaxInterval",
-      "connectionRecoveryMinInterval",
-      "keepAliveInterval",
-      "extraSupported",
-      "displayName",
-      "hackViaTcp", // false.
-      "hackIpInContact", //false
-      "hackWssInTransport", //false
-      "hackAllowUnregisteredOptionTags", //false
-      "hackCleanJitsiSdpImageattr", //false
-      "hackStripTcp", //false
-      "contactTransport", // 'ws'
-      "forceRport", // false
-      "iceCheckingTimeout",
-      "instanceId",
-      "noAnswerTimeout", // 30 seconds.
-      "password",
-      "registerExpires", // 600 seconds.
-      "registrarServer",
-      "reliable",
-      "rel100",
-      "replaces",
-      "userAgentString", //SIP.C.USER_AGENT
-      "autostart",
-      "stunServers",
-      "traceSip",
-      "turnServers",
-      "usePreloadedRoute",
-      "wsServerMaxReconnection",
-      "wsServerReconnectionTimeout",
-      "mediaHandlerFactory",
-      "media",
-      "mediaConstraints",
-      "authenticationFactory",
-      "allowLegacyNotifications",
-
-      // Post-configuration generated parameters
-      "via_core_value",
-      "viaHost"
-    ];
-
-  for(idx in parameters) {
-    parameter = parameters[idx];
-    skeleton[parameter] = {
-      value: '',
-      writable: false,
-      configurable: false
-    };
-  }
-
-  skeleton['register'] = {
-    value: '',
-    writable: true,
-    configurable: false
-  };
-
-  return skeleton;
-}());
-
-/**
- * Configuration checker.
- * @private
- * @return {Boolean}
- */
-UA.configuration_check = {
-  mandatory: {
-  },
-
-  optional: {
-
-    uri: function(uri) {
-      var parsed;
-
-      if (!(/^sip:/i).test(uri)) {
-        uri = SIP.C.SIP + ':' + uri;
-      }
-      parsed = SIP.URI.parse(uri);
-
-      if(!parsed) {
-        return;
-      } else if(!parsed.user) {
-        return;
-      } else {
-        return parsed;
-      }
-    },
-
-    //Note: this function used to call 'this.logger.error' but calling 'this' with anything here is invalid
-    wsServers: function(wsServers) {
-      var idx, length, url;
-
-      /* Allow defining wsServers parameter as:
-       *  String: "host"
-       *  Array of Strings: ["host1", "host2"]
-       *  Array of Objects: [{ws_uri:"host1", weight:1}, {ws_uri:"host2", weight:0}]
-       *  Array of Objects and Strings: [{ws_uri:"host1"}, "host2"]
-       */
-      if (typeof wsServers === 'string') {
-        wsServers = [{ws_uri: wsServers}];
-      } else if (wsServers instanceof Array) {
-        length = wsServers.length;
-        for (idx = 0; idx < length; idx++) {
-          if (typeof wsServers[idx] === 'string'){
-            wsServers[idx] = {ws_uri: wsServers[idx]};
-          }
-        }
-      } else {
-        return;
-      }
-
-      if (wsServers.length === 0) {
-        return false;
-      }
-
-      length = wsServers.length;
-      for (idx = 0; idx < length; idx++) {
-        if (!wsServers[idx].ws_uri) {
-          return;
-        }
-        if (wsServers[idx].weight && !Number(wsServers[idx].weight)) {
-          return;
-        }
-
-        url = SIP.Grammar.parse(wsServers[idx].ws_uri, 'absoluteURI');
-
-        if(url === -1) {
-          return;
-        } else if(['wss', 'ws', 'udp'].indexOf(url.scheme) < 0) {
-          return;
-        } else {
-          wsServers[idx].sip_uri = '<sip:' + url.host + (url.port ? ':' + url.port : '') + ';transport=' + url.scheme.replace(/^wss$/i, 'ws') + ';lr>';
-
-          if (!wsServers[idx].weight) {
-            wsServers[idx].weight = 0;
-          }
-
-          wsServers[idx].status = 0;
-          wsServers[idx].scheme = url.scheme.toUpperCase();
-        }
-      }
-      return wsServers;
-    },
-
-    authorizationUser: function(authorizationUser) {
-      if(SIP.Grammar.parse('"'+ authorizationUser +'"', 'quoted_string') === -1) {
-        return;
-      } else {
-        return authorizationUser;
-      }
-    },
-
-    connectionRecoveryMaxInterval: function(connectionRecoveryMaxInterval) {
-      var value;
-      if(SIP.Utils.isDecimal(connectionRecoveryMaxInterval)) {
-        value = Number(connectionRecoveryMaxInterval);
-        if(value > 0) {
-          return value;
-        }
-      }
-    },
-
-    connectionRecoveryMinInterval: function(connectionRecoveryMinInterval) {
-      var value;
-      if(SIP.Utils.isDecimal(connectionRecoveryMinInterval)) {
-        value = Number(connectionRecoveryMinInterval);
-        if(value > 0) {
-          return value;
-        }
-      }
-    },
-
-    displayName: function(displayName) {
-      if(SIP.Grammar.parse('"' + displayName + '"', 'displayName') === -1) {
-        return;
-      } else {
-        return displayName;
-      }
-    },
-
-    hackViaTcp: function(hackViaTcp) {
-      if (typeof hackViaTcp === 'boolean') {
-        return hackViaTcp;
-      }
-    },
-
-    hackIpInContact: function(hackIpInContact) {
-      if (typeof hackIpInContact === 'boolean') {
-        return hackIpInContact;
-      }
-      else if (typeof hackIpInContact === 'string' && SIP.Grammar.parse(hackIpInContact, 'host') !== -1) {
-        return hackIpInContact;
-      }
-    },
-
-    iceCheckingTimeout: function(iceCheckingTimeout) {
-      if(SIP.Utils.isDecimal(iceCheckingTimeout)) {
-        return Math.max(500, iceCheckingTimeout);
-      }
-    },
-
-    hackWssInTransport: function(hackWssInTransport) {
-      if (typeof hackWssInTransport === 'boolean') {
-        return hackWssInTransport;
-      }
-    },
-
-    hackAllowUnregisteredOptionTags: function(hackAllowUnregisteredOptionTags) {
-      if (typeof hackAllowUnregisteredOptionTags === 'boolean') {
-        return hackAllowUnregisteredOptionTags;
-      }
-    },
-
-    hackCleanJitsiSdpImageattr: function(hackCleanJitsiSdpImageattr) {
-      if (typeof hackCleanJitsiSdpImageattr === 'boolean') {
-        return hackCleanJitsiSdpImageattr;
-      }
-    },
-
-    hackStripTcp: function(hackStripTcp) {
-      if (typeof hackStripTcp === 'boolean') {
-        return hackStripTcp;
-      }
-    },
-
-    contactTransport: function(contactTransport) {
-      if (typeof contactTransport === 'string') {
-        return contactTransport;
-      }
-    },
-
-    forceRport: function(forceRport) {
-      if (typeof forceRport === 'boolean') {
-        return forceRport;
-      }
-    },
-
-    instanceId: function(instanceId) {
-      if(typeof instanceId !== 'string') {
-        return;
-      }
-
-      if ((/^uuid:/i.test(instanceId))) {
-        instanceId = instanceId.substr(5);
-      }
-
-      if(SIP.Grammar.parse(instanceId, 'uuid') === -1) {
-        return;
-      } else {
-        return instanceId;
-      }
-    },
-
-    keepAliveInterval: function(keepAliveInterval) {
-      var value;
-      if (SIP.Utils.isDecimal(keepAliveInterval)) {
-        value = Number(keepAliveInterval);
-        if (value > 0) {
-          return value;
-        }
-      }
-    },
-
-    extraSupported: function(optionTags) {
-      var idx, length;
-
-      if (!(optionTags instanceof Array)) {
-        return;
-      }
-
-      length = optionTags.length;
-      for (idx = 0; idx < length; idx++) {
-        if (typeof optionTags[idx] !== 'string') {
-          return;
-        }
-      }
-
-      return optionTags;
-    },
-
-    noAnswerTimeout: function(noAnswerTimeout) {
-      var value;
-      if (SIP.Utils.isDecimal(noAnswerTimeout)) {
-        value = Number(noAnswerTimeout);
-        if (value > 0) {
-          return value;
-        }
-      }
-    },
-
-    password: function(password) {
-      return String(password);
-    },
-
-    rel100: function(rel100) {
-      if(rel100 === SIP.C.supported.REQUIRED) {
-        return SIP.C.supported.REQUIRED;
-      } else if (rel100 === SIP.C.supported.SUPPORTED) {
-        return SIP.C.supported.SUPPORTED;
-      } else  {
-        return SIP.C.supported.UNSUPPORTED;
-      }
-    },
-
-    replaces: function(replaces) {
-      if(replaces === SIP.C.supported.REQUIRED) {
-        return SIP.C.supported.REQUIRED;
-      } else if (replaces === SIP.C.supported.SUPPORTED) {
-        return SIP.C.supported.SUPPORTED;
-      } else  {
-        return SIP.C.supported.UNSUPPORTED;
-      }
-    },
-
-    register: function(register) {
-      if (typeof register === 'boolean') {
-        return register;
-      }
-    },
-
-    registerExpires: function(registerExpires) {
-      var value;
-      if (SIP.Utils.isDecimal(registerExpires)) {
-        value = Number(registerExpires);
-        if (value > 0) {
-          return value;
-        }
-      }
-    },
-
-    registrarServer: function(registrarServer) {
-      var parsed;
-
-      if(typeof registrarServer !== 'string') {
-        return;
-      }
-
-      if (!/^sip:/i.test(registrarServer)) {
-        registrarServer = SIP.C.SIP + ':' + registrarServer;
-      }
-      parsed = SIP.URI.parse(registrarServer);
-
-      if(!parsed) {
-        return;
-      } else if(parsed.user) {
-        return;
-      } else {
-        return parsed;
-      }
-    },
-
-    stunServers: function(stunServers) {
-      var idx, length, stun_server;
-
-      if (typeof stunServers === 'string') {
-        stunServers = [stunServers];
-      } else if (!(stunServers instanceof Array)) {
-        return;
-      }
-
-      length = stunServers.length;
-      for (idx = 0; idx < length; idx++) {
-        stun_server = stunServers[idx];
-        if (!(/^stuns?:/.test(stun_server))) {
-          stun_server = 'stun:' + stun_server;
-        }
-
-        if(SIP.Grammar.parse(stun_server, 'stun_URI') === -1) {
-          return;
-        } else {
-          stunServers[idx] = stun_server;
-        }
-      }
-      return stunServers;
-    },
-
-    traceSip: function(traceSip) {
-      if (typeof traceSip === 'boolean') {
-        return traceSip;
-      }
-    },
-
-    turnServers: function(turnServers) {
-      var idx, jdx, length, turn_server, num_turn_server_urls, url;
-
-      if (turnServers instanceof Array) {
-        // Do nothing
-      } else {
-        turnServers = [turnServers];
-      }
-
-      length = turnServers.length;
-      for (idx = 0; idx < length; idx++) {
-        turn_server = turnServers[idx];
-        //Backwards compatibility: Allow defining the turn_server url with the 'server' property.
-        if (turn_server.server) {
-          turn_server.urls = [turn_server.server];
-        }
-
-        if (!turn_server.urls || !turn_server.username || !turn_server.password) {
-          return;
-        }
-
-        if (turn_server.urls instanceof Array) {
-          num_turn_server_urls = turn_server.urls.length;
-        } else {
-          turn_server.urls = [turn_server.urls];
-          num_turn_server_urls = 1;
-        }
-
-        for (jdx = 0; jdx < num_turn_server_urls; jdx++) {
-          url = turn_server.urls[jdx];
-
-          if (!(/^turns?:/.test(url))) {
-            url = 'turn:' + url;
-          }
-
-          if(SIP.Grammar.parse(url, 'turn_URI') === -1) {
-            return;
-          }
-        }
-      }
-      return turnServers;
-    },
-
-    userAgentString: function(userAgentString) {
-      if (typeof userAgentString === 'string') {
-        return userAgentString;
-      }
-    },
-
-    usePreloadedRoute: function(usePreloadedRoute) {
-      if (typeof usePreloadedRoute === 'boolean') {
-        return usePreloadedRoute;
-      }
-    },
-
-    wsServerMaxReconnection: function(wsServerMaxReconnection) {
-      var value;
-      if (SIP.Utils.isDecimal(wsServerMaxReconnection)) {
-        value = Number(wsServerMaxReconnection);
-        if (value > 0) {
-          return value;
-        }
-      }
-    },
-
-    wsServerReconnectionTimeout: function(wsServerReconnectionTimeout) {
-      var value;
-      if (SIP.Utils.isDecimal(wsServerReconnectionTimeout)) {
-        value = Number(wsServerReconnectionTimeout);
-        if (value > 0) {
-          return value;
-        }
-      }
-    },
-
-    autostart: function(autostart) {
-      if (typeof autostart === 'boolean') {
-        return autostart;
-      }
-    },
-
-    mediaHandlerFactory: function(mediaHandlerFactory) {
-      if (mediaHandlerFactory instanceof Function) {
-        var promisifiedFactory = function promisifiedFactory () {
-          var mediaHandler = mediaHandlerFactory.apply(this, arguments);
-
-          function patchMethod (methodName) {
-            var method = mediaHandler[methodName];
-            if (method.length > 1) {
-              var callbacksFirst = methodName === 'getDescription';
-              mediaHandler[methodName] = SIP.Utils.promisify(mediaHandler, methodName, callbacksFirst);
-            }
-          }
-
-          patchMethod('getDescription');
-          patchMethod('setDescription');
-
-          return mediaHandler;
-        };
-
-        promisifiedFactory.isSupported = mediaHandlerFactory.isSupported;
-        return promisifiedFactory;
-      }
-    },
-
-    authenticationFactory: checkAuthenticationFactory,
-
-    allowLegacyNotifications: function(allowLegacyNotifications) {
-      if (typeof allowLegacyNotifications === 'boolean') {
-        return allowLegacyNotifications;
-      }
-    }
-  }
-};
-
-UA.C = C;
-SIP.UA = UA;
-};
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],51:[function(require,module,exports){
-"use strict";
-/**
- * @fileoverview SIP URI
- */
-
-/**
- * @augments SIP
- * @class Class creating a SIP URI.
- *
- * @param {String} [scheme]
- * @param {String} [user]
- * @param {String} host
- * @param {String} [port]
- * @param {Object} [parameters]
- * @param {Object} [headers]
- *
- */
-module.exports = function (SIP) {
-var URI;
-
-URI = function(scheme, user, host, port, parameters, headers) {
-  var param, header, raw, normal;
-
-  // Checks
-  if(!host) {
-    throw new TypeError('missing or invalid "host" parameter');
-  }
-
-  // Initialize parameters
-  scheme = scheme || SIP.C.SIP;
-  this.parameters = {};
-  this.headers = {};
-
-  for (param in parameters) {
-    this.setParam(param, parameters[param]);
-  }
-
-  for (header in headers) {
-    this.setHeader(header, headers[header]);
-  }
-
-  // Raw URI
-  raw = {
-    scheme: scheme,
-    user: user,
-    host: host,
-    port: port
-  };
-
-  // Normalized URI
-  normal = {
-    scheme: scheme.toLowerCase(),
-    user: user,
-    host: host.toLowerCase(),
-    port: port
-  };
-
-  Object.defineProperties(this, {
-    _normal: {
-      get: function() { return normal; }
-    },
-
-    _raw: {
-      get: function() { return raw; }
-    },
-
-    scheme: {
-      get: function() { return normal.scheme; },
-      set: function(value) {
-        raw.scheme = value;
-        normal.scheme = value.toLowerCase();
-      }
-    },
-
-    user: {
-      get: function() { return normal.user; },
-      set: function(value) {
-        normal.user = raw.user = value;
-      }
-    },
-
-    host: {
-      get: function() { return normal.host; },
-      set: function(value) {
-        raw.host = value;
-        normal.host = value.toLowerCase();
-      }
-    },
-
-    aor: {
-      get: function() { return normal.user + '@' + normal.host; }
-    },
-
-    port: {
-      get: function() { return normal.port; },
-      set: function(value) {
-        normal.port = raw.port = value === 0 ? value : (parseInt(value,10) || null);
-      }
-    }
-  });
-};
-
-URI.prototype = {
-  setParam: function(key, value) {
-    if(key) {
-      this.parameters[key.toLowerCase()] = (typeof value === 'undefined' || value === null) ? null : value.toString().toLowerCase();
-    }
-  },
-
-  getParam: function(key) {
-    if(key) {
-      return this.parameters[key.toLowerCase()];
-    }
-  },
-
-  hasParam: function(key) {
-    if(key) {
-      return (this.parameters.hasOwnProperty(key.toLowerCase()) && true) || false;
-    }
-  },
-
-  deleteParam: function(parameter) {
-    var value;
-    parameter = parameter.toLowerCase();
-    if (this.parameters.hasOwnProperty(parameter)) {
-      value = this.parameters[parameter];
-      delete this.parameters[parameter];
-      return value;
-    }
-  },
-
-  clearParams: function() {
-    this.parameters = {};
-  },
-
-  setHeader: function(name, value) {
-    this.headers[SIP.Utils.headerize(name)] = (value instanceof Array) ? value : [value];
-  },
-
-  getHeader: function(name) {
-    if(name) {
-      return this.headers[SIP.Utils.headerize(name)];
-    }
-  },
-
-  hasHeader: function(name) {
-    if(name) {
-      return (this.headers.hasOwnProperty(SIP.Utils.headerize(name)) && true) || false;
-    }
-  },
-
-  deleteHeader: function(header) {
-    var value;
-    header = SIP.Utils.headerize(header);
-    if(this.headers.hasOwnProperty(header)) {
-      value = this.headers[header];
-      delete this.headers[header];
-      return value;
-    }
-  },
-
-  clearHeaders: function() {
-    this.headers = {};
-  },
-
-  clone: function() {
-    return new URI(
-      this._raw.scheme,
-      this._raw.user,
-      this._raw.host,
-      this._raw.port,
-      JSON.parse(JSON.stringify(this.parameters)),
-      JSON.parse(JSON.stringify(this.headers)));
-  },
-
-  toRaw: function() {
-    return this._toString(this._raw);
-  },
-
-  toString: function() {
-    return this._toString(this._normal);
-  },
-
-  _toString: function(uri) {
-    var header, parameter, idx, uriString, headers = [];
-
-    uriString  = uri.scheme + ':';
-    // add slashes if it's not a sip(s) URI
-    if (!uri.scheme.toLowerCase().match("^sips?$")) {
-      uriString += "//";
-    }
-    if (uri.user) {
-      uriString += SIP.Utils.escapeUser(uri.user) + '@';
-    }
-    uriString += uri.host;
-    if (uri.port || uri.port === 0) {
-      uriString += ':' + uri.port;
-    }
-
-    for (parameter in this.parameters) {
-      uriString += ';' + parameter;
-
-      if (this.parameters[parameter] !== null) {
-        uriString += '='+ this.parameters[parameter];
-      }
-    }
-
-    for(header in this.headers) {
-      for(idx in this.headers[header]) {
-        headers.push(header + '=' + this.headers[header][idx]);
-      }
-    }
-
-    if (headers.length > 0) {
-      uriString += '?' + headers.join('&');
-    }
-
-    return uriString;
-  }
-};
-
-
-/**
-  * Parse the given string and returns a SIP.URI instance or undefined if
-  * it is an invalid URI.
-  * @public
-  * @param {String} uri
-  */
-URI.parse = function(uri) {
-  uri = SIP.Grammar.parse(uri,'SIP_URI');
-
-  if (uri !== -1) {
-    return uri;
-  } else {
-    return undefined;
-  }
-};
-
-SIP.URI = URI;
-};
-
-},{}],52:[function(require,module,exports){
-"use strict";
-/**
- * @fileoverview Utils
- */
-
-module.exports = function (SIP, environment) {
-var Utils;
-
-Utils= {
-
-  Promise: environment.Promise,
-
-  defer: function defer () {
-    var deferred = {};
-    deferred.promise = new Utils.Promise(function (resolve, reject) {
-      deferred.resolve = resolve;
-      deferred.reject = reject;
-    });
-    return deferred;
-  },
-
-  promisify: function promisify (object, methodName, callbacksFirst) {
-    var oldMethod = object[methodName];
-    return function promisifiedMethod (arg, onSuccess, onFailure) {
-      return new Utils.Promise(function (resolve, reject) {
-        var oldArgs = [arg, resolve, reject];
-        if (callbacksFirst) {
-          oldArgs = [resolve, reject, arg];
-        }
-        oldMethod.apply(object, oldArgs);
-      }).then(onSuccess, onFailure);
-    };
-  },
-
-  augment: function (object, constructor, args, override) {
-    var idx, proto;
-
-    // Add public properties from constructor's prototype onto object
-    proto = constructor.prototype;
-    for (idx in proto) {
-      if (override || object[idx] === undefined) {
-        object[idx] = proto[idx];
-      }
-    }
-
-    // Construct the object as though it were just created by constructor
-    constructor.apply(object, args);
-  },
-
-  optionsOverride: function (options, winner, loser, isDeprecated, logger, defaultValue) {
-    if (isDeprecated && options[loser]) {
-      logger.warn(loser + ' is deprecated, please use ' + winner + ' instead');
-    }
-
-    if (options[winner] && options[loser]) {
-      logger.warn(winner + ' overriding ' + loser);
-    }
-
-    options[winner] = options[winner] || options[loser] || defaultValue;
-  },
-
-  str_utf8_length: function(string) {
-    return encodeURIComponent(string).replace(/%[A-F\d]{2}/g, 'U').length;
-  },
-
-  generateFakeSDP: function(body) {
-    if (!body) {
-      return;
-    }
-
-    var start = body.indexOf('o=');
-    var end = body.indexOf('\r\n', start);
-
-    return 'v=0\r\n' + body.slice(start, end) + '\r\ns=-\r\nt=0 0\r\nc=IN IP4 0.0.0.0';
-  },
-
-  isFunction: function(fn) {
-    if (fn !== undefined) {
-      return Object.prototype.toString.call(fn) === '[object Function]';
-    } else {
-      return false;
-    }
-  },
-
-  isDecimal: function (num) {
-    return !isNaN(num) && (parseFloat(num) === parseInt(num,10));
-  },
-
-  createRandomToken: function(size, base) {
-    var i, r,
-      token = '';
-
-    base = base || 32;
-
-    for( i=0; i < size; i++ ) {
-      r = Math.random() * base|0;
-      token += r.toString(base);
-    }
-
-    return token;
-  },
-
-  newTag: function() {
-    return SIP.Utils.createRandomToken(SIP.UA.C.TAG_LENGTH);
-  },
-
-  // http://stackoverflow.com/users/109538/broofa
-  newUUID: function() {
-    var UUID =  'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      var r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);
-      return v.toString(16);
-    });
-
-    return UUID;
-  },
-
-  hostType: function(host) {
-    if (!host) {
-      return;
-    } else {
-      host = SIP.Grammar.parse(host,'host');
-      if (host !== -1) {
-        return host.host_type;
-      }
-    }
-  },
-
-  /**
-  * Normalize SIP URI.
-  * NOTE: It does not allow a SIP URI without username.
-  * Accepts 'sip', 'sips' and 'tel' URIs and convert them into 'sip'.
-  * Detects the domain part (if given) and properly hex-escapes the user portion.
-  * If the user portion has only 'tel' number symbols the user portion is clean of 'tel' visual separators.
-  * @private
-  * @param {String} target
-  * @param {String} [domain]
-  */
-  normalizeTarget: function(target, domain) {
-    var uri, target_array, target_user, target_domain;
-
-    // If no target is given then raise an error.
-    if (!target) {
-      return;
-    // If a SIP.URI instance is given then return it.
-    } else if (target instanceof SIP.URI) {
-      return target;
-
-    // If a string is given split it by '@':
-    // - Last fragment is the desired domain.
-    // - Otherwise append the given domain argument.
-    } else if (typeof target === 'string') {
-      target_array = target.split('@');
-
-      switch(target_array.length) {
-        case 1:
-          if (!domain) {
-            return;
-          }
-          target_user = target;
-          target_domain = domain;
-          break;
-        case 2:
-          target_user = target_array[0];
-          target_domain = target_array[1];
-          break;
-        default:
-          target_user = target_array.slice(0, target_array.length-1).join('@');
-          target_domain = target_array[target_array.length-1];
-      }
-
-      // Remove the URI scheme (if present).
-      target_user = target_user.replace(/^(sips?|tel):/i, '');
-
-      // Remove 'tel' visual separators if the user portion just contains 'tel' number symbols.
-      if (/^[\-\.\(\)]*\+?[0-9\-\.\(\)]+$/.test(target_user)) {
-        target_user = target_user.replace(/[\-\.\(\)]/g, '');
-      }
-
-      // Build the complete SIP URI.
-      target = SIP.C.SIP + ':' + SIP.Utils.escapeUser(target_user) + '@' + target_domain;
-
-      // Finally parse the resulting URI.
-      if (uri = SIP.URI.parse(target)) {
-        return uri;
-      } else {
-        return;
-      }
-    } else {
-      return;
-    }
-  },
-
-  /**
-  * Hex-escape a SIP URI user.
-  * @private
-  * @param {String} user
-  */
-  escapeUser: function(user) {
-    // Don't hex-escape ':' (%3A), '+' (%2B), '?' (%3F"), '/' (%2F).
-    return encodeURIComponent(decodeURIComponent(user)).replace(/%3A/ig, ':').replace(/%2B/ig, '+').replace(/%3F/ig, '?').replace(/%2F/ig, '/');
-  },
-
-  headerize: function(string) {
-    var exceptions = {
-      'Call-Id': 'Call-ID',
-      'Cseq': 'CSeq',
-      'Min-Se': 'Min-SE',
-      'Rack': 'RAck',
-      'Rseq': 'RSeq',
-      'Www-Authenticate': 'WWW-Authenticate'
-      },
-      name = string.toLowerCase().replace(/_/g,'-').split('-'),
-      hname = '',
-      parts = name.length, part;
-
-    for (part = 0; part < parts; part++) {
-      if (part !== 0) {
-        hname +='-';
-      }
-      hname += name[part].charAt(0).toUpperCase()+name[part].substring(1);
-    }
-    if (exceptions[hname]) {
-      hname = exceptions[hname];
-    }
-    return hname;
-  },
-
-  sipErrorCause: function(status_code) {
-    var cause;
-
-    for (cause in SIP.C.SIP_ERROR_CAUSES) {
-      if (SIP.C.SIP_ERROR_CAUSES[cause].indexOf(status_code) !== -1) {
-        return SIP.C.causes[cause];
-      }
-    }
-
-    return SIP.C.causes.SIP_FAILURE_CODE;
-  },
-
-  getReasonPhrase: function getReasonPhrase (code, specific) {
-    return specific || SIP.C.REASON_PHRASE[code] || '';
-  },
-
-  getReasonHeaderValue: function getReasonHeaderValue (code, reason) {
-    reason = SIP.Utils.getReasonPhrase(code, reason);
-    return 'SIP ;cause=' + code + ' ;text="' + reason + '"';
-  },
-
-  getCancelReason: function getCancelReason (code, reason) {
-    if (code && code < 200 || code > 699) {
-      throw new TypeError('Invalid status_code: ' + code);
-    } else if (code) {
-      return SIP.Utils.getReasonHeaderValue(code, reason);
-    }
-  },
-
-  buildStatusLine: function buildStatusLine (code, reason) {
-    code = code || null;
-    reason = reason || null;
-
-    // Validate code and reason values
-    if (!code || (code < 100 || code > 699)) {
-      throw new TypeError('Invalid status_code: '+ code);
-    } else if (reason && typeof reason !== 'string' && !(reason instanceof String)) {
-      throw new TypeError('Invalid reason_phrase: '+ reason);
-    }
-
-    reason = Utils.getReasonPhrase(code, reason);
-
-    return 'SIP/2.0 ' + code + ' ' + reason + '\r\n';
-  },
-
-  /**
-  * Generate a random Test-Net IP (http://tools.ietf.org/html/rfc5735)
-  * @private
-  */
-  getRandomTestNetIP: function() {
-    function getOctet(from,to) {
-      return Math.floor(Math.random()*(to-from+1)+from);
-    }
-    return '192.0.2.' + getOctet(1, 254);
-  },
-
-  // MD5 (Message-Digest Algorithm) http://www.webtoolkit.info
-  calculateMD5: function(string) {
-    function RotateLeft(lValue, iShiftBits) {
-      return (lValue<<iShiftBits) | (lValue>>>(32-iShiftBits));
-    }
-
-    function AddUnsigned(lX,lY) {
-      var lX4,lY4,lX8,lY8,lResult;
-      lX8 = (lX & 0x80000000);
-      lY8 = (lY & 0x80000000);
-      lX4 = (lX & 0x40000000);
-      lY4 = (lY & 0x40000000);
-      lResult = (lX & 0x3FFFFFFF)+(lY & 0x3FFFFFFF);
-      if (lX4 & lY4) {
-        return (lResult ^ 0x80000000 ^ lX8 ^ lY8);
-      }
-      if (lX4 | lY4) {
-        if (lResult & 0x40000000) {
-          return (lResult ^ 0xC0000000 ^ lX8 ^ lY8);
-        } else {
-          return (lResult ^ 0x40000000 ^ lX8 ^ lY8);
-        }
-      } else {
-        return (lResult ^ lX8 ^ lY8);
-      }
-    }
-
-    function F(x,y,z) {
-      return (x & y) | ((~x) & z);
-    }
-
-    function G(x,y,z) {
-      return (x & z) | (y & (~z));
-    }
-
-    function H(x,y,z) {
-      return (x ^ y ^ z);
-    }
-
-    function I(x,y,z) {
-      return (y ^ (x | (~z)));
-    }
-
-    function FF(a,b,c,d,x,s,ac) {
-      a = AddUnsigned(a, AddUnsigned(AddUnsigned(F(b, c, d), x), ac));
-      return AddUnsigned(RotateLeft(a, s), b);
-    }
-
-    function GG(a,b,c,d,x,s,ac) {
-      a = AddUnsigned(a, AddUnsigned(AddUnsigned(G(b, c, d), x), ac));
-      return AddUnsigned(RotateLeft(a, s), b);
-    }
-
-    function HH(a,b,c,d,x,s,ac) {
-      a = AddUnsigned(a, AddUnsigned(AddUnsigned(H(b, c, d), x), ac));
-      return AddUnsigned(RotateLeft(a, s), b);
-    }
-
-    function II(a,b,c,d,x,s,ac) {
-      a = AddUnsigned(a, AddUnsigned(AddUnsigned(I(b, c, d), x), ac));
-      return AddUnsigned(RotateLeft(a, s), b);
-    }
-
-    function ConvertToWordArray(string) {
-      var lWordCount;
-      var lMessageLength = string.length;
-      var lNumberOfWords_temp1=lMessageLength + 8;
-      var lNumberOfWords_temp2=(lNumberOfWords_temp1-(lNumberOfWords_temp1 % 64))/64;
-      var lNumberOfWords = (lNumberOfWords_temp2+1)*16;
-      var lWordArray=Array(lNumberOfWords-1);
-      var lBytePosition = 0;
-      var lByteCount = 0;
-      while ( lByteCount < lMessageLength ) {
-        lWordCount = (lByteCount-(lByteCount % 4))/4;
-        lBytePosition = (lByteCount % 4)*8;
-        lWordArray[lWordCount] = (lWordArray[lWordCount] | (string.charCodeAt(lByteCount)<<lBytePosition));
-        lByteCount++;
-      }
-      lWordCount = (lByteCount-(lByteCount % 4))/4;
-      lBytePosition = (lByteCount % 4)*8;
-      lWordArray[lWordCount] = lWordArray[lWordCount] | (0x80<<lBytePosition);
-      lWordArray[lNumberOfWords-2] = lMessageLength<<3;
-      lWordArray[lNumberOfWords-1] = lMessageLength>>>29;
-      return lWordArray;
-    }
-
-    function WordToHex(lValue) {
-      var WordToHexValue="",WordToHexValue_temp="",lByte,lCount;
-      for (lCount = 0;lCount<=3;lCount++) {
-        lByte = (lValue>>>(lCount*8)) & 255;
-        WordToHexValue_temp = "0" + lByte.toString(16);
-        WordToHexValue = WordToHexValue + WordToHexValue_temp.substr(WordToHexValue_temp.length-2,2);
-      }
-      return WordToHexValue;
-    }
-
-    function Utf8Encode(string) {
-      string = string.replace(/\r\n/g,"\n");
-      var utftext = "";
-
-      for (var n = 0; n < string.length; n++) {
-        var c = string.charCodeAt(n);
-
-        if (c < 128) {
-          utftext += String.fromCharCode(c);
-        }
-        else if((c > 127) && (c < 2048)) {
-          utftext += String.fromCharCode((c >> 6) | 192);
-          utftext += String.fromCharCode((c & 63) | 128);
-        }
-        else {
-          utftext += String.fromCharCode((c >> 12) | 224);
-          utftext += String.fromCharCode(((c >> 6) & 63) | 128);
-          utftext += String.fromCharCode((c & 63) | 128);
-        }
-      }
-      return utftext;
-    }
-
-    var x=[];
-    var k,AA,BB,CC,DD,a,b,c,d;
-    var S11=7, S12=12, S13=17, S14=22;
-    var S21=5, S22=9 , S23=14, S24=20;
-    var S31=4, S32=11, S33=16, S34=23;
-    var S41=6, S42=10, S43=15, S44=21;
-
-    string = Utf8Encode(string);
-
-    x = ConvertToWordArray(string);
-
-    a = 0x67452301; b = 0xEFCDAB89; c = 0x98BADCFE; d = 0x10325476;
-
-    for (k=0;k<x.length;k+=16) {
-      AA=a; BB=b; CC=c; DD=d;
-      a=FF(a,b,c,d,x[k+0], S11,0xD76AA478);
-      d=FF(d,a,b,c,x[k+1], S12,0xE8C7B756);
-      c=FF(c,d,a,b,x[k+2], S13,0x242070DB);
-      b=FF(b,c,d,a,x[k+3], S14,0xC1BDCEEE);
-      a=FF(a,b,c,d,x[k+4], S11,0xF57C0FAF);
-      d=FF(d,a,b,c,x[k+5], S12,0x4787C62A);
-      c=FF(c,d,a,b,x[k+6], S13,0xA8304613);
-      b=FF(b,c,d,a,x[k+7], S14,0xFD469501);
-      a=FF(a,b,c,d,x[k+8], S11,0x698098D8);
-      d=FF(d,a,b,c,x[k+9], S12,0x8B44F7AF);
-      c=FF(c,d,a,b,x[k+10],S13,0xFFFF5BB1);
-      b=FF(b,c,d,a,x[k+11],S14,0x895CD7BE);
-      a=FF(a,b,c,d,x[k+12],S11,0x6B901122);
-      d=FF(d,a,b,c,x[k+13],S12,0xFD987193);
-      c=FF(c,d,a,b,x[k+14],S13,0xA679438E);
-      b=FF(b,c,d,a,x[k+15],S14,0x49B40821);
-      a=GG(a,b,c,d,x[k+1], S21,0xF61E2562);
-      d=GG(d,a,b,c,x[k+6], S22,0xC040B340);
-      c=GG(c,d,a,b,x[k+11],S23,0x265E5A51);
-      b=GG(b,c,d,a,x[k+0], S24,0xE9B6C7AA);
-      a=GG(a,b,c,d,x[k+5], S21,0xD62F105D);
-      d=GG(d,a,b,c,x[k+10],S22,0x2441453);
-      c=GG(c,d,a,b,x[k+15],S23,0xD8A1E681);
-      b=GG(b,c,d,a,x[k+4], S24,0xE7D3FBC8);
-      a=GG(a,b,c,d,x[k+9], S21,0x21E1CDE6);
-      d=GG(d,a,b,c,x[k+14],S22,0xC33707D6);
-      c=GG(c,d,a,b,x[k+3], S23,0xF4D50D87);
-      b=GG(b,c,d,a,x[k+8], S24,0x455A14ED);
-      a=GG(a,b,c,d,x[k+13],S21,0xA9E3E905);
-      d=GG(d,a,b,c,x[k+2], S22,0xFCEFA3F8);
-      c=GG(c,d,a,b,x[k+7], S23,0x676F02D9);
-      b=GG(b,c,d,a,x[k+12],S24,0x8D2A4C8A);
-      a=HH(a,b,c,d,x[k+5], S31,0xFFFA3942);
-      d=HH(d,a,b,c,x[k+8], S32,0x8771F681);
-      c=HH(c,d,a,b,x[k+11],S33,0x6D9D6122);
-      b=HH(b,c,d,a,x[k+14],S34,0xFDE5380C);
-      a=HH(a,b,c,d,x[k+1], S31,0xA4BEEA44);
-      d=HH(d,a,b,c,x[k+4], S32,0x4BDECFA9);
-      c=HH(c,d,a,b,x[k+7], S33,0xF6BB4B60);
-      b=HH(b,c,d,a,x[k+10],S34,0xBEBFBC70);
-      a=HH(a,b,c,d,x[k+13],S31,0x289B7EC6);
-      d=HH(d,a,b,c,x[k+0], S32,0xEAA127FA);
-      c=HH(c,d,a,b,x[k+3], S33,0xD4EF3085);
-      b=HH(b,c,d,a,x[k+6], S34,0x4881D05);
-      a=HH(a,b,c,d,x[k+9], S31,0xD9D4D039);
-      d=HH(d,a,b,c,x[k+12],S32,0xE6DB99E5);
-      c=HH(c,d,a,b,x[k+15],S33,0x1FA27CF8);
-      b=HH(b,c,d,a,x[k+2], S34,0xC4AC5665);
-      a=II(a,b,c,d,x[k+0], S41,0xF4292244);
-      d=II(d,a,b,c,x[k+7], S42,0x432AFF97);
-      c=II(c,d,a,b,x[k+14],S43,0xAB9423A7);
-      b=II(b,c,d,a,x[k+5], S44,0xFC93A039);
-      a=II(a,b,c,d,x[k+12],S41,0x655B59C3);
-      d=II(d,a,b,c,x[k+3], S42,0x8F0CCC92);
-      c=II(c,d,a,b,x[k+10],S43,0xFFEFF47D);
-      b=II(b,c,d,a,x[k+1], S44,0x85845DD1);
-      a=II(a,b,c,d,x[k+8], S41,0x6FA87E4F);
-      d=II(d,a,b,c,x[k+15],S42,0xFE2CE6E0);
-      c=II(c,d,a,b,x[k+6], S43,0xA3014314);
-      b=II(b,c,d,a,x[k+13],S44,0x4E0811A1);
-      a=II(a,b,c,d,x[k+4], S41,0xF7537E82);
-      d=II(d,a,b,c,x[k+11],S42,0xBD3AF235);
-      c=II(c,d,a,b,x[k+2], S43,0x2AD7D2BB);
-      b=II(b,c,d,a,x[k+9], S44,0xEB86D391);
-      a=AddUnsigned(a,AA);
-      b=AddUnsigned(b,BB);
-      c=AddUnsigned(c,CC);
-      d=AddUnsigned(d,DD);
-    }
-
-    var temp = WordToHex(a)+WordToHex(b)+WordToHex(c)+WordToHex(d);
-
-    return temp.toLowerCase();
-  }
-};
-
-SIP.Utils = Utils;
-};
-
-},{}],53:[function(require,module,exports){
-"use strict";
-/**
- * @fileoverview WebRTC
- */
-
-module.exports = function (SIP, environment) {
-var WebRTC;
-
-WebRTC = {};
-
-WebRTC.MediaHandler = require('./WebRTC/MediaHandler')(SIP);
-WebRTC.MediaStreamManager = require('./WebRTC/MediaStreamManager')(SIP, environment);
-
-var _isSupported;
-
-WebRTC.isSupported = function () {
-  if (_isSupported !== undefined) {
-    return _isSupported;
-  }
-
-  WebRTC.MediaStream = environment.MediaStream;
-  WebRTC.getUserMedia = environment.getUserMedia;
-  WebRTC.RTCPeerConnection = environment.RTCPeerConnection;
-  WebRTC.RTCSessionDescription = environment.RTCSessionDescription;
-
-  if (WebRTC.RTCPeerConnection && WebRTC.RTCSessionDescription) {
-    if (WebRTC.getUserMedia) {
-      WebRTC.getUserMedia = SIP.Utils.promisify(environment, 'getUserMedia');
-    }
-    _isSupported = true;
-  }
-  else {
-    _isSupported = false;
-  }
-  return _isSupported;
-};
-
-return WebRTC;
-};
-
-},{"./WebRTC/MediaHandler":54,"./WebRTC/MediaStreamManager":55}],54:[function(require,module,exports){
-"use strict";
-/**
- * @fileoverview MediaHandler
- */
-
-/* MediaHandler
- * @class PeerConnection helper Class.
- * @param {SIP.Session} session
- * @param {Object} [options]
- * @param {SIP.WebRTC.MediaStreamManager} [options.mediaStreamManager]
- *        The MediaStreamManager to acquire/release streams from/to.
- *        If not provided, a default MediaStreamManager will be used.
- */
-module.exports = function (SIP) {
-
-var MediaHandler = function(session, options) {
-  options = options || {};
-
-  this.logger = session.ua.getLogger('sip.invitecontext.mediahandler', session.id);
-  this.session = session;
-  this.localMedia = null;
-  this.ready = true;
-  this.mediaStreamManager = options.mediaStreamManager || new SIP.WebRTC.MediaStreamManager(this.logger);
-  this.audioMuted = false;
-  this.videoMuted = false;
-  this.local_hold = false;
-  this.remote_hold = false;
-
-  // old init() from here on
-  var servers = this.prepareIceServers(options.stunServers, options.turnServers);
-  this.RTCConstraints = options.RTCConstraints || {};
-
-  this.initPeerConnection(servers);
-
-  function selfEmit(mh, event) {
-    if (mh.mediaStreamManager.on) {
-      mh.mediaStreamManager.on(event, function () {
-        mh.emit.apply(mh, [event].concat(Array.prototype.slice.call(arguments)));
-      });
-    }
-  }
-
-  selfEmit(this, 'userMediaRequest');
-  selfEmit(this, 'userMedia');
-  selfEmit(this, 'userMediaFailed');
-};
-
-MediaHandler.defaultFactory = function defaultFactory (session, options) {
-  return new MediaHandler(session, options);
-};
-MediaHandler.defaultFactory.isSupported = function () {
-  return SIP.WebRTC.isSupported();
-};
-
-MediaHandler.prototype = Object.create(SIP.MediaHandler.prototype, {
-// Functions the session can use
-  isReady: {writable: true, value: function isReady () {
-    return this.ready;
-  }},
-
-  close: {writable: true, value: function close () {
-    this.logger.log('closing PeerConnection');
-    this._remoteStreams = [];
-    // have to check signalingState since this.close() gets called multiple times
-    // TODO figure out why that happens
-    if(this.peerConnection && this.peerConnection.signalingState !== 'closed') {
-      this.peerConnection.close();
-
-      if(this.localMedia) {
-        this.mediaStreamManager.release(this.localMedia);
-      }
-    }
-  }},
-
-  /**
-   * @param {SIP.WebRTC.MediaStream | (getUserMedia constraints)} [mediaHint]
-   *        the MediaStream (or the constraints describing it) to be used for the session
-   */
-  getDescription: {writable: true, value: function getDescription (mediaHint) {
-    var self = this;
-    var acquire = self.mediaStreamManager.acquire;
-    if (acquire.length > 1) {
-      acquire = SIP.Utils.promisify(this.mediaStreamManager, 'acquire', true);
-    }
-    mediaHint = mediaHint || {};
-    if (mediaHint.dataChannel === true) {
-      mediaHint.dataChannel = {};
-    }
-    this.mediaHint = mediaHint;
-
-    /*
-     * 1. acquire streams (skip if MediaStreams passed in)
-     * 2. addStreams
-     * 3. createOffer/createAnswer
-     */
-
-    var streamPromise;
-    if (self.localMedia) {
-      self.logger.log('already have local media');
-      streamPromise = SIP.Utils.Promise.resolve(self.localMedia);
-    }
-    else {
-      self.logger.log('acquiring local media');
-      streamPromise = acquire.call(self.mediaStreamManager, mediaHint)
-        .then(function acquireSucceeded(streams) {
-          self.logger.log('acquired local media streams');
-          self.localMedia = streams;
-          self.session.connecting();
-          return streams;
-        }, function acquireFailed(err) {
-          self.logger.error('unable to acquire streams');
-          self.logger.error(err);
-          self.session.connecting();
-          throw err;
-        })
-        .then(this.addStreams.bind(this))
-      ;
-    }
-
-    return streamPromise
-      .then(function streamAdditionSucceeded() {
-        if (self.hasOffer('remote')) {
-          self.peerConnection.ondatachannel = function (evt) {
-            self.dataChannel = evt.channel;
-            self.emit('dataChannel', self.dataChannel);
-          };
-        } else if (mediaHint.dataChannel &&
-                   self.peerConnection.createDataChannel) {
-          self.dataChannel = self.peerConnection.createDataChannel(
-            'sipjs',
-            mediaHint.dataChannel
-          );
-          self.emit('dataChannel', self.dataChannel);
-        }
-
-        self.render();
-        return self.createOfferOrAnswer(self.RTCConstraints);
-      })
-      .then(function(sdp) {
-        sdp = SIP.Hacks.Firefox.hasMissingCLineInSDP(sdp);
-
-        if (self.local_hold) {
-          // Don't receive media
-          // TODO - This will break for media streams with different directions.
-          if (!(/a=(sendrecv|sendonly|recvonly|inactive)/).test(sdp)) {
-            sdp = sdp.replace(/(m=[^\r]*\r\n)/g, '$1a=sendonly\r\n');
-          } else {
-            sdp = sdp.replace(/a=sendrecv\r\n/g, 'a=sendonly\r\n');
-            sdp = sdp.replace(/a=recvonly\r\n/g, 'a=inactive\r\n');
-          }
-        }
-
-        return {
-          body: sdp,
-          contentType: 'application/sdp'
-        };
-      })
-    ;
-  }},
-
-  /**
-   * Check if a SIP message contains a session description.
-   * @param {SIP.SIPMessage} message
-   * @returns {boolean}
-   */
-  hasDescription: {writeable: true, value: function hasDescription (message) {
-    return message.getHeader('Content-Type') === 'application/sdp' && !!message.body;
-  }},
-
-  /**
-   * Set the session description contained in a SIP message.
-   * @param {SIP.SIPMessage} message
-   * @returns {Promise}
-   */
-  setDescription: {writable: true, value: function setDescription (message) {
-    var sdp = message.body;
-
-    this.remote_hold = /a=(sendonly|inactive)/.test(sdp);
-
-    sdp = SIP.Hacks.Firefox.cannotHandleExtraWhitespace(sdp);
-    sdp = SIP.Hacks.AllBrowsers.maskDtls(sdp);
-
-    var rawDescription = {
-      type: this.hasOffer('local') ? 'answer' : 'offer',
-      sdp: sdp
-    };
-
-    this.emit('setDescription', rawDescription);
-
-    var description = new SIP.WebRTC.RTCSessionDescription(rawDescription);
-    return SIP.Utils.promisify(this.peerConnection, 'setRemoteDescription')(description);
-  }},
-
-  /**
-   * If the Session associated with this MediaHandler were to be referred,
-   * what mediaHint should be provided to the UA's invite method?
-   */
-  getReferMedia: {writable: true, value: function getReferMedia () {
-    function hasTracks (trackGetter, stream) {
-      return stream[trackGetter]().length > 0;
-    }
-
-    function bothHaveTracks (trackGetter) {
-      /* jshint validthis:true */
-      return this.getLocalStreams().some(hasTracks.bind(null, trackGetter)) &&
-             this.getRemoteStreams().some(hasTracks.bind(null, trackGetter));
-    }
-
-    return {
-      constraints: {
-        audio: bothHaveTracks.call(this, 'getAudioTracks'),
-        video: bothHaveTracks.call(this, 'getVideoTracks')
-      }
-    };
-  }},
-
-  updateIceServers: {writeable:true, value: function (options) {
-    var servers = this.prepareIceServers(options.stunServers, options.turnServers);
-    this.RTCConstraints = options.RTCConstraints || this.RTCConstraints;
-
-    this.initPeerConnection(servers);
-
-    /* once updateIce is implemented correctly, this is better than above
-    //no op if browser does not support this
-    if (!this.peerConnection.updateIce) {
-      return;
-    }
-
-    this.peerConnection.updateIce({'iceServers': servers}, this.RTCConstraints);
-    */
-  }},
-
-// Functions the session can use, but only because it's convenient for the application
-  isMuted: {writable: true, value: function isMuted () {
-    return {
-      audio: this.audioMuted,
-      video: this.videoMuted
-    };
-  }},
-
-  mute: {writable: true, value: function mute (options) {
-    if (this.getLocalStreams().length === 0) {
-      return;
-    }
-
-    options = options || {
-      audio: this.getLocalStreams()[0].getAudioTracks().length > 0,
-      video: this.getLocalStreams()[0].getVideoTracks().length > 0
-    };
-
-    var audioMuted = false,
-        videoMuted = false;
-
-    if (options.audio && !this.audioMuted) {
-      audioMuted = true;
-      this.audioMuted = true;
-      this.toggleMuteAudio(true);
-    }
-
-    if (options.video && !this.videoMuted) {
-      videoMuted = true;
-      this.videoMuted = true;
-      this.toggleMuteVideo(true);
-    }
-
-    //REVISIT
-    if (audioMuted || videoMuted) {
-      return {
-        audio: audioMuted,
-        video: videoMuted
-      };
-      /*this.session.onmute({
-        audio: audioMuted,
-        video: videoMuted
-      });*/
-    }
-  }},
-
-  unmute: {writable: true, value: function unmute (options) {
-    if (this.getLocalStreams().length === 0) {
-      return;
-    }
-
-    options = options || {
-      audio: this.getLocalStreams()[0].getAudioTracks().length > 0,
-      video: this.getLocalStreams()[0].getVideoTracks().length > 0
-    };
-
-    var audioUnMuted = false,
-        videoUnMuted = false;
-
-    if (options.audio && this.audioMuted) {
-      audioUnMuted = true;
-      this.audioMuted = false;
-      this.toggleMuteAudio(false);
-    }
-
-    if (options.video && this.videoMuted) {
-      videoUnMuted = true;
-      this.videoMuted = false;
-      this.toggleMuteVideo(false);
-    }
-
-    //REVISIT
-    if (audioUnMuted || videoUnMuted) {
-      return {
-        audio: audioUnMuted,
-        video: videoUnMuted
-      };
-      /*this.session.onunmute({
-        audio: audioUnMuted,
-        video: videoUnMuted
-      });*/
-    }
-  }},
-
-  hold: {writable: true, value: function hold () {
-    this.local_hold = true;
-    this.toggleMuteAudio(true);
-    this.toggleMuteVideo(true);
-  }},
-
-  unhold: {writable: true, value: function unhold () {
-    this.local_hold = false;
-
-    if (!this.audioMuted) {
-      this.toggleMuteAudio(false);
-    }
-
-    if (!this.videoMuted) {
-      this.toggleMuteVideo(false);
-    }
-  }},
-
-// Functions the application can use, but not the session
-  getLocalStreams: {writable: true, value: function getLocalStreams () {
-    var pc = this.peerConnection;
-    if (pc && pc.signalingState === 'closed') {
-      this.logger.warn('peerConnection is closed, getLocalStreams returning []');
-      return [];
-    }
-    return (pc.getLocalStreams && pc.getLocalStreams()) ||
-      pc.localStreams || [];
-  }},
-
-  getRemoteStreams: {writable: true, value: function getRemoteStreams () {
-    var pc = this.peerConnection;
-    if (pc && pc.signalingState === 'closed') {
-      this.logger.warn('peerConnection is closed, getRemoteStreams returning this._remoteStreams');
-      return this._remoteStreams;
-    }
-    return(pc.getRemoteStreams && pc.getRemoteStreams()) ||
-      pc.remoteStreams || [];
-  }},
-
-  render: {writable: true, value: function render (renderHint) {
-    renderHint = renderHint || (this.mediaHint && this.mediaHint.render);
-    if (!renderHint) {
-      return false;
-    }
-    var streamGetters = {
-      local: 'getLocalStreams',
-      remote: 'getRemoteStreams'
-    };
-    Object.keys(streamGetters).forEach(function (loc) {
-      var streamGetter = streamGetters[loc];
-      var streams = this[streamGetter]();
-      SIP.WebRTC.MediaStreamManager.render(streams, renderHint[loc]);
-    }.bind(this));
-  }},
-
-// Internal functions
-  hasOffer: {writable: true, value: function hasOffer (where) {
-    var offerState = 'have-' + where + '-offer';
-    return this.peerConnection.signalingState === offerState;
-    // TODO consider signalingStates with 'pranswer'?
-  }},
-
-  prepareIceServers: {writable: true, value: function prepareIceServers (stunServers, turnServers) {
-    var servers = [],
-      config = this.session.ua.configuration;
-
-    stunServers = stunServers || config.stunServers;
-    turnServers = turnServers || config.turnServers;
-
-    [].concat(stunServers).forEach(function (server) {
-      servers.push({'urls': server});
-    });
-
-    [].concat(turnServers).forEach(function (server) {
-      servers.push({
-        'urls': server.urls,
-        'username': server.username,
-        'credential': server.password
-      });
-    });
-
-    return servers;
-  }},
-
-  initPeerConnection: {writable: true, value: function initPeerConnection(servers) {
-    var self = this,
-      config = this.session.ua.configuration;
-
-    this.onIceCompleted = SIP.Utils.defer();
-    this.onIceCompleted.promise.then(function(pc) {
-      self.emit('iceGatheringComplete', pc);
-      if (self.iceCheckingTimer) {
-        SIP.Timers.clearTimeout(self.iceCheckingTimer);
-        self.iceCheckingTimer = null;
-      }
-    });
-
-    if (this.peerConnection) {
-      this.peerConnection.close();
-    }
-
-    this.peerConnection = new SIP.WebRTC.RTCPeerConnection({'iceServers': servers});
-
-    // Firefox (35.0.1) sometimes throws on calls to peerConnection.getRemoteStreams
-    // even if peerConnection.onaddstream was just called. In order to make
-    // MediaHandler.prototype.getRemoteStreams work, keep track of them manually
-    this._remoteStreams = [];
-
-    this.peerConnection.onaddstream = function(e) {
-      self.logger.log('stream added: '+ e.stream.id);
-      self._remoteStreams.push(e.stream);
-      self.render();
-      self.emit('addStream', e);
-    };
-
-    this.peerConnection.onremovestream = function(e) {
-      self.logger.log('stream removed: '+ e.stream.id);
-    };
-
-    this.startIceCheckingTimer = function () {
-      if (!self.iceCheckingTimer) {
-        self.iceCheckingTimer = SIP.Timers.setTimeout(function() {
-          self.logger.log('RTCIceChecking Timeout Triggered after '+config.iceCheckingTimeout+' milliseconds');
-          self.onIceCompleted.resolve(this);
-        }.bind(this.peerConnection), config.iceCheckingTimeout);
-      }
-    };
-
-    this.peerConnection.onicecandidate = function(e) {
-      self.emit('iceCandidate', e);
-      if (e.candidate) {
-        self.logger.log('ICE candidate received: '+ (e.candidate.candidate === null ? null : e.candidate.candidate.trim()));
-        self.startIceCheckingTimer();
-      } else {
-        self.onIceCompleted.resolve(this);
-      }
-    };
-
-    this.peerConnection.onicegatheringstatechange = function () {
-      self.logger.log('RTCIceGatheringState changed: ' + this.iceGatheringState);
-      if (this.iceGatheringState === 'gathering') {
-        self.emit('iceGathering', this);
-      }
-      if (this.iceGatheringState === 'complete') {
-        self.onIceCompleted.resolve(this);
-      }
-    };
-
-    this.peerConnection.oniceconnectionstatechange = function() {  //need e for commented out case
-      var stateEvent;
-
-      if (this.iceConnectionState === 'checking') {
-        self.startIceCheckingTimer();
-      }
-
-      switch (this.iceConnectionState) {
-      case 'new':
-        stateEvent = 'iceConnection';
-        break;
-      case 'checking':
-        stateEvent = 'iceConnectionChecking';
-        break;
-      case 'connected':
-        stateEvent = 'iceConnectionConnected';
-        break;
-      case 'completed':
-        stateEvent = 'iceConnectionCompleted';
-        break;
-      case 'failed':
-        stateEvent = 'iceConnectionFailed';
-        break;
-      case 'disconnected':
-        stateEvent = 'iceConnectionDisconnected';
-        break;
-      case 'closed':
-        stateEvent = 'iceConnectionClosed';
-        break;
-      default:
-        self.logger.warn('Unknown iceConnection state:', this.iceConnectionState);
-        return;
-      }
-      self.emit(stateEvent, this);
-
-      //Bria state changes are always connected -> disconnected -> connected on accept, so session gets terminated
-      //normal calls switch from failed to connected in some cases, so checking for failed and terminated
-      /*if (this.iceConnectionState === 'failed') {
-        self.session.terminate({
-        cause: SIP.C.causes.RTP_TIMEOUT,
-        status_code: 200,
-        reason_phrase: SIP.C.causes.RTP_TIMEOUT
-      });
-      } else if (e.currentTarget.iceGatheringState === 'complete' && this.iceConnectionState !== 'closed') {
-      self.onIceCompleted(this);
-      }*/
-    };
-
-    this.peerConnection.onstatechange = function() {
-      self.logger.log('PeerConnection state changed to "'+ this.readyState +'"');
-    };
-  }},
-
-  createOfferOrAnswer: {writable: true, value: function createOfferOrAnswer (constraints) {
-    var self = this;
-    var methodName;
-    var pc = self.peerConnection;
-
-    self.ready = false;
-    methodName = self.hasOffer('remote') ? 'createAnswer' : 'createOffer';
-
-    return SIP.Utils.promisify(pc, methodName, true)(constraints)
-      .then(SIP.Utils.promisify(pc, 'setLocalDescription'))
-      .then(function onSetLocalDescriptionSuccess() {
-        var deferred = SIP.Utils.defer();
-        if (pc.iceConnectionState === 'complete' || pc.iceConnectionState === 'completed') {
-          deferred.resolve();
-        } else {
-          self.onIceCompleted.promise.then(deferred.resolve);
-        }
-        return deferred.promise;
-      })
-      .then(function readySuccess () {
-        var sdp = pc.localDescription.sdp;
-
-        sdp = SIP.Hacks.Chrome.needsExplicitlyInactiveSDP(sdp);
-        sdp = SIP.Hacks.AllBrowsers.unmaskDtls(sdp);
-
-        var sdpWrapper = {
-          type: methodName === 'createOffer' ? 'offer' : 'answer',
-          sdp: sdp
-        };
-
-        self.emit('getDescription', sdpWrapper);
-
-        if (self.session.ua.configuration.hackStripTcp) {
-          sdpWrapper.sdp = sdpWrapper.sdp.replace(/^a=candidate:\d+ \d+ tcp .*?\r\n/img, "");
-        }
-
-        self.ready = true;
-        return sdpWrapper.sdp;
-      })
-      .catch(function methodFailed (e) {
-        self.logger.error(e);
-        self.ready = true;
-        throw new SIP.Exceptions.GetDescriptionError(e);
-      })
-    ;
-  }},
-
-  addStreams: {writable: true, value: function addStreams (streams) {
-    try {
-      streams = [].concat(streams);
-      streams.forEach(function (stream) {
-        this.peerConnection.addStream(stream);
-      }, this);
-    } catch(e) {
-      this.logger.error('error adding stream');
-      this.logger.error(e);
-      return SIP.Utils.Promise.reject(e);
-    }
-
-    return SIP.Utils.Promise.resolve();
-  }},
-
-  toggleMuteHelper: {writable: true, value: function toggleMuteHelper (trackGetter, mute) {
-    this.getLocalStreams().forEach(function (stream) {
-      stream[trackGetter]().forEach(function (track) {
-        track.enabled = !mute;
-      });
-    });
-  }},
-
-  toggleMuteAudio: {writable: true, value: function toggleMuteAudio (mute) {
-    this.toggleMuteHelper('getAudioTracks', mute);
-  }},
-
-  toggleMuteVideo: {writable: true, value: function toggleMuteVideo (mute) {
-    this.toggleMuteHelper('getVideoTracks', mute);
-  }}
-});
-
-// Return since it will be assigned to a variable.
-return MediaHandler;
-};
-
-},{}],55:[function(require,module,exports){
-"use strict";
-/**
- * @fileoverview MediaStreamManager
- */
-
-/* MediaStreamManager
- * @class Manages the acquisition and release of MediaStreams.
- * @param {mediaHint} [defaultMediaHint] The mediaHint to use if none is provided to acquire()
- */
-module.exports = function (SIP, environment) {
-
-// Default MediaStreamManager provides single-use streams created with getUserMedia
-var MediaStreamManager = function MediaStreamManager (logger, defaultMediaHint) {
-  if (!SIP.WebRTC.isSupported()) {
-    throw new SIP.Exceptions.NotSupportedError('Media not supported');
-  }
-
-  this.mediaHint = defaultMediaHint || {
-    constraints: {audio: true, video: true}
-  };
-
-  // map of streams to acquisition manner:
-  // true -> passed in as mediaHint.stream
-  // false -> getUserMedia
-  this.acquisitions = {};
-};
-MediaStreamManager.streamId = function (stream) {
-  return stream.getAudioTracks().concat(stream.getVideoTracks())
-    .map(function trackId (track) {
-      return track.id;
-    })
-    .join('');
-};
-
-/**
- * @param {(Array of) MediaStream} streams - The streams to render
- *
- * @param {(Array of) HTMLMediaElement} elements
- *        - The <audio>/<video> element(s) that should render the streams
- *
- * Each stream in streams renders to the corresponding element in elements,
- * wrapping around elements if needed.
- */
-MediaStreamManager.render = function render (streams, elements) {
-  if (!elements) {
-    return false;
-  }
-  if (Array.isArray(elements) && !elements.length) {
-    throw new TypeError('elements must not be empty');
-  }
-
-  function attachMediaStream(element, stream) {
-    element.srcObject = stream;
-  }
-
-  function ensureMediaPlaying (mediaElement) {
-    var interval = 100;
-    mediaElement.ensurePlayingIntervalId = SIP.Timers.setInterval(function () {
-      if (mediaElement.paused && mediaElement.srcObject) {
-        mediaElement.play();
-      }
-      else {
-        SIP.Timers.clearInterval(mediaElement.ensurePlayingIntervalId);
-      }
-    }, interval);
-  }
-
-  function attachAndPlay (elements, stream, index) {
-    var element = elements[index % elements.length];
-    if (typeof element === 'function') {
-      element = element();
-    }
-    (environment.attachMediaStream || attachMediaStream)(element, stream);
-    ensureMediaPlaying(element);
-  }
-
-  // [].concat "casts" `elements` into an array
-  // so forEach works even if `elements` was a single element
-  elements = [].concat(elements);
-  [].concat(streams).forEach(attachAndPlay.bind(null, elements));
-};
-
-MediaStreamManager.prototype = Object.create(SIP.EventEmitter.prototype, {
-  'acquire': {writable: true, value: function acquire (mediaHint) {
-    mediaHint = Object.keys(mediaHint || {}).length ? mediaHint : this.mediaHint;
-
-    var saveSuccess = function (isHintStream, streams) {
-      streams = [].concat(streams);
-      streams.forEach(function (stream) {
-        var streamId = MediaStreamManager.streamId(stream);
-        this.acquisitions[streamId] = !!isHintStream;
-      }, this);
-      return SIP.Utils.Promise.resolve(streams);
-    }.bind(this);
-
-    if (mediaHint.stream) {
-      return saveSuccess(true, mediaHint.stream);
-    } else {
-      // Fallback to audio/video enabled if no mediaHint can be found.
-      var constraints = mediaHint.constraints ||
-        (this.mediaHint && this.mediaHint.constraints) ||
-        {audio: true, video: true};
-
-      var deferred = SIP.Utils.defer();
-
-      /*
-       * Make the call asynchronous, so that ICCs have a chance
-       * to define callbacks to `userMediaRequest`
-       */
-      SIP.Timers.setTimeout(function () {
-        this.emit('userMediaRequest', constraints);
-
-        var emitThenCall = function (eventName, callback) {
-          var callbackArgs = Array.prototype.slice.call(arguments, 2);
-          // Emit with all of the arguments from the real callback.
-          var newArgs = [eventName].concat(callbackArgs);
-
-          this.emit.apply(this, newArgs);
-
-          return callback.apply(null, callbackArgs);
-        }.bind(this);
-
-        if (constraints.audio || constraints.video) {
-          deferred.resolve(
-            SIP.WebRTC.getUserMedia(constraints)
-            .then(
-              emitThenCall.bind(this, 'userMedia', saveSuccess.bind(null, false)),
-              emitThenCall.bind(this, 'userMediaFailed', function(e){throw e;})
-            )
-          );
-        } else {
-          // Local streams were explicitly excluded.
-          deferred.resolve([]);
-        }
-      }.bind(this), 0);
-
-      return deferred.promise;
-    }
-  }},
-
-  'release': {writable: true, value: function release (streams) {
-    streams = [].concat(streams);
-    streams.forEach(function (stream) {
-      var streamId = MediaStreamManager.streamId(stream);
-      if (this.acquisitions[streamId] === false) {
-        stream.getTracks().forEach(function (track) {
-          track.stop();
-        });
-      }
-      delete this.acquisitions[streamId];
-    }, this);
-  }},
-});
-
-// Return since it will be assigned to a variable.
-return MediaStreamManager;
-};
-
-},{}],56:[function(require,module,exports){
 'use strict';
 
 var flatMap = require('./util').flatMap;
@@ -14195,11 +2627,12 @@ var guess = guessBrowser();
 var isChrome = guess === 'chrome';
 var isFirefox = guess === 'firefox';
 var isSafari = guess === 'safari';
-var sdpFormat = getSdpFormat();
 
 var chromeMajorVersion = isChrome
   ? parseInt(navigator.userAgent.match(/Chrome\/([0-9]+)/)[1], 10)
   : null;
+
+var CHROME_LEGACY_MAX_AUDIO_LEVEL = 32767;
 
 /**
  * Get the standardized {@link RTCPeerConnection} statistics.
@@ -14503,7 +2936,7 @@ function getTrackStats(peerConnection, track, options) {
     return firefoxGetTrackStats(peerConnection, track, options.isRemote);
   }
   if (typeof options.testForSafari  !== 'undefined' || isSafari) {
-    if (typeof options.testForSafari  !== 'undefined' || sdpFormat === 'unified') {
+    if (typeof options.testForSafari  !== 'undefined' || getSdpFormat() === 'unified') {
       return chromeOrSafariGetTrackStats(peerConnection, track);
     }
     // NOTE(syerrapragada): getStats() is not supported on
@@ -14751,6 +3184,7 @@ function standardizeChromeOrSafariStats(response) {
 
   var audioLevel = getStatValue('audioLevel');
   if (typeof audioLevel === 'number') {
+    audioLevel = Math.round(audioLevel * CHROME_LEGACY_MAX_AUDIO_LEVEL);
     if (isRemote) {
       standardizedStats.audioOutputLevel = audioLevel;
     } else {
@@ -14924,10 +3358,10 @@ function standardizeFirefoxStats(response, isRemote) {
  * Standardized {@link RTCPeerConnection} statistics.
  * @typedef {Object} StandardizedStatsResponse
  * @property {StandardizedActiveIceCandidatePairStatsReport} activeIceCandidatePair - Stats for active ICE candidate pair
- * @property Array<StandardizedTrackStatsReport> localAudioTracks - Stats for local audio MediaStreamTracks
- * @property Array<StandardizedTrackStatsReport> localVideoTracks - Stats for local video MediaStreamTracks
- * @property Array<StandardizedTrackStatsReport> remoteAudioTracks - Stats for remote audio MediaStreamTracks
- * @property Array<StandardizedTrackStatsReport> remoteVideoTracks - Stats for remote video MediaStreamTracks
+ * @property Array<StandardizedTrackStatsReport> localAudioTrackStats - Stats for local audio MediaStreamTracks
+ * @property Array<StandardizedTrackStatsReport> localVideoTrackStats - Stats for local video MediaStreamTracks
+ * @property Array<StandardizedTrackStatsReport> remoteAudioTrackStats - Stats for remote audio MediaStreamTracks
+ * @property Array<StandardizedTrackStatsReport> remoteVideoTrackStats - Stats for remote video MediaStreamTracks
  */
 
 /**
@@ -14959,7 +3393,7 @@ function standardizeFirefoxStats(response, isRemote) {
 
 module.exports = getStats;
 
-},{"./util":71,"./util/sdp":73}],57:[function(require,module,exports){
+},{"./util":37,"./util/sdp":39}],23:[function(require,module,exports){
 'use strict';
 
 /**
@@ -14996,7 +3430,7 @@ function _getUserMedia(constraints, onSuccess, onFailure) {
 
 module.exports = getUserMedia;
 
-},{}],58:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 'use strict';
 
 var WebRTC = {};
@@ -15038,7 +3472,7 @@ Object.defineProperties(WebRTC, {
 
 module.exports = WebRTC;
 
-},{"../package.json":74,"./getstats":56,"./getusermedia":57,"./mediastream":59,"./mediastreamtrack":60,"./rtcicecandidate":61,"./rtcpeerconnection":64,"./rtcsessiondescription":69}],59:[function(require,module,exports){
+},{"../package.json":40,"./getstats":22,"./getusermedia":23,"./mediastream":25,"./mediastreamtrack":26,"./rtcicecandidate":27,"./rtcpeerconnection":30,"./rtcsessiondescription":35}],25:[function(require,module,exports){
 /* globals MediaStream */
 'use strict';
 
@@ -15050,7 +3484,7 @@ if (typeof MediaStream !== 'undefined') {
   };
 }
 
-},{}],60:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 /* global MediaStreamTrack */
 'use strict';
 
@@ -15062,7 +3496,7 @@ if (typeof MediaStreamTrack !== 'undefined') {
   };
 }
 
-},{}],61:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 /* global mozRTCIceCandidate, RTCIceCandidate */
 'use strict';
 
@@ -15076,7 +3510,7 @@ if (typeof RTCIceCandidate !== 'undefined') {
   };
 }
 
-},{}],62:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 /* globals RTCDataChannel, RTCPeerConnection, RTCSessionDescription */
 'use strict';
 
@@ -15088,8 +3522,6 @@ var MediaStream = require('../mediastream');
 var RTCRtpSenderShim = require('../rtcrtpsender');
 var sdpUtils = require('../util/sdp');
 var util = require('../util');
-
-var sdpFormat = sdpUtils.getSdpFormat();
 
 // NOTE(mroberts): This class wraps Chrome's RTCPeerConnection implementation.
 // It provides some functionality not currently present in Chrome, namely the
@@ -15112,14 +3544,19 @@ function ChromeRTCPeerConnection(configuration, constraints) {
   configuration = configuration || {};
   var newConfiguration = Object.assign(configuration.iceTransportPolicy
     ? { iceTransports: configuration.iceTransportPolicy }
-    : {}, { sdpSemantics: 'plan-b' }, configuration);
+    : {}, configuration);
 
   util.interceptEvent(this, 'datachannel');
   util.interceptEvent(this, 'signalingstatechange');
 
+  var sdpFormat = sdpUtils.getSdpFormat(newConfiguration.sdpSemantics);
   var peerConnection = new RTCPeerConnection(newConfiguration, constraints);
 
   Object.defineProperties(this, {
+    _appliedTracksToSSRCs: {
+      value: new Map(),
+      writable: true
+    },
     _localStream: {
       value: new MediaStream()
     },
@@ -15134,6 +3571,13 @@ function ChromeRTCPeerConnection(configuration, constraints) {
       value: null,
       writable: true
     },
+    _rolledBackTracksToSSRCs: {
+      value: new Map(),
+      writable: true
+    },
+    _sdpFormat: {
+      value: sdpFormat
+    },
     _senders: {
       value: new Map()
     },
@@ -15141,7 +3585,8 @@ function ChromeRTCPeerConnection(configuration, constraints) {
       value: new Latch()
     },
     _tracksToSSRCs: {
-      value: new Map()
+      value: new Map(),
+      writable: true
     },
     localDescription: {
       enumerable: true,
@@ -15176,6 +3621,9 @@ function ChromeRTCPeerConnection(configuration, constraints) {
   });
 
   peerConnection.addEventListener('signalingstatechange', function onsignalingstatechange() {
+    if (peerConnection.signalingState === 'stable') {
+      self._appliedTracksToSSRCs = new Map(self._tracksToSSRCs);
+    }
     if (!self._pendingLocalOffer && !self._pendingRemoteOffer) {
       self.dispatchEvent.apply(self, arguments);
     }
@@ -15315,9 +3763,14 @@ ChromeRTCPeerConnection.prototype.createAnswer = function createAnswer() {
       return self._peerConnection.createAnswer();
     }).then(function createAnswerSucceeded(answer) {
       self._pendingRemoteOffer = null;
+
+      // NOTE(mmalavalli): If createAnswer() is called immediately after rolling back, then we no
+      // longer need to retain the rolled back tracks to SSRCs Map.
+      self._rolledBackTracksToSSRCs.clear();
+
       return new ChromeRTCSessionDescription({
         type: 'answer',
-        sdp: updateTrackIdsToSSRCs(sdpFormat, self._tracksToSSRCs, answer.sdp)
+        sdp: updateTrackIdsToSSRCs(self._sdpFormat, self._tracksToSSRCs, answer.sdp)
       });
     }, function setRemoteDescriptionOrCreateAnswerFailed(error) {
       self._pendingRemoteOffer = null;
@@ -15325,9 +3778,13 @@ ChromeRTCPeerConnection.prototype.createAnswer = function createAnswer() {
     });
   } else {
     promise = this._peerConnection.createAnswer().then(function(answer) {
+      // NOTE(mmalavalli): If createAnswer() is called immediately after rolling back, then we no
+      // longer need to retain the rolled back tracks to SSRCs Map.
+      self._rolledBackTracksToSSRCs.clear();
+
       return new ChromeRTCSessionDescription({
         type: 'answer',
-        sdp: updateTrackIdsToSSRCs(sdpFormat, self._tracksToSSRCs, answer.sdp)
+        sdp: updateTrackIdsToSSRCs(self._sdpFormat, self._tracksToSSRCs, answer.sdp)
       });
     });
   }
@@ -15343,9 +3800,13 @@ ChromeRTCPeerConnection.prototype.createOffer = function createOffer() {
   var self = this;
 
   var promise = this._peerConnection.createOffer(options).then(function(offer) {
+    // NOTE(mmalavalli): If createOffer() is called immediately after rolling back, then we no
+    // longer need to retain the rolled back tracks to SSRCs Map.
+    self._rolledBackTracksToSSRCs.clear();
+
     return new ChromeRTCSessionDescription({
       type: offer.type,
-      sdp: updateTrackIdsToSSRCs(sdpFormat, self._tracksToSSRCs, offer.sdp)
+      sdp: updateTrackIdsToSSRCs(self._sdpFormat, self._tracksToSSRCs, offer.sdp)
     });
   });
 
@@ -15364,6 +3825,14 @@ ChromeRTCPeerConnection.prototype.createDataChannel = function createDataChannel
 ChromeRTCPeerConnection.prototype.setLocalDescription = function setLocalDescription() {
   var args = [].slice.call(arguments);
   var description = args[0];
+
+  // NOTE(mmalavalli): If setLocalDescription() is called immediately after rolling back,
+  // then we need to restore the rolled back tracks to SSRCs Map.
+  if (this._rolledBackTracksToSSRCs.size > 0) {
+    this._tracksToSSRCs = new Map(this._rolledBackTracksToSSRCs);
+    this._rolledBackTracksToSSRCs.clear();
+  }
+
   var promise = setDescription(this, true, description);
   return args.length > 1
     ? util.legacyPromise(promise, args[1], args[2])
@@ -15373,6 +3842,11 @@ ChromeRTCPeerConnection.prototype.setLocalDescription = function setLocalDescrip
 ChromeRTCPeerConnection.prototype.setRemoteDescription = function setRemoteDescription() {
   var args = [].slice.call(arguments);
   var description = args[0];
+
+  // NOTE(mmalavalli): If setRemoteDescription() is called immediately after rolling back,
+  // then we no longer need to retain the rolled back tracks to SSRCs Map.
+  this._rolledBackTracksToSSRCs.clear();
+
   var promise = setDescription(this, false, description);
   return args.length > 1
     ? util.legacyPromise(promise, args[1], args[2])
@@ -15415,7 +3889,6 @@ function setDescription(peerConnection, local, description) {
 
   if (!local && pendingRemoteOffer && description.type === 'answer') {
     promise = setRemoteAnswer(peerConnection, description);
-
   } else if (description.type === 'offer') {
     if (peerConnection.signalingState !== intermediateState && peerConnection.signalingState !== 'stable') {
       // NOTE(mroberts): Error message copied from Firefox.
@@ -15449,6 +3922,14 @@ function setDescription(peerConnection, local, description) {
     } else {
       // Reset the pending offer.
       clearPendingLocalOffer();
+
+      // NOTE(mmalavalli): We store the rolled back tracks to SSRCs Map here in case
+      // setLocalDescription() is called immediately after a rollback (without calling
+      // createOffer() or createAnswer()), in which case this roll back is not due to a
+      // glare scenario and this Map should be restored.
+      peerConnection._rolledBackTracksToSSRCs = new Map(peerConnection._tracksToSSRCs);
+      peerConnection._tracksToSSRCs = new Map(peerConnection._appliedTracksToSSRCs);
+
       promise = Promise.resolve();
       promise.then(function dispatchSignalingStateChangeEvent() {
         peerConnection.dispatchEvent(new Event('signalingstatechange'));
@@ -15552,7 +4033,7 @@ function updateTrackIdsToSSRCs(sdpFormat, tracksToSSRCs, sdp) {
 
 module.exports = ChromeRTCPeerConnection;
 
-},{"../mediastream":59,"../rtcrtpsender":66,"../rtcsessiondescription/chrome":67,"../util":71,"../util/eventtarget":70,"../util/latch":72,"../util/sdp":73,"util":258}],63:[function(require,module,exports){
+},{"../mediastream":25,"../rtcrtpsender":32,"../rtcsessiondescription/chrome":33,"../util":37,"../util/eventtarget":36,"../util/latch":38,"../util/sdp":39,"util":227}],29:[function(require,module,exports){
 /* globals RTCPeerConnection */
 'use strict';
 
@@ -15885,29 +4366,27 @@ function overwriteWithInitiallyNegotiatedDtlsRole(description, dtlsRole) {
 
 module.exports = FirefoxRTCPeerConnection;
 
-},{"../rtcsessiondescription/firefox":68,"../util":71,"../util/eventtarget":70,"../util/sdp":73,"util":258}],64:[function(require,module,exports){
+},{"../rtcsessiondescription/firefox":34,"../util":37,"../util/eventtarget":36,"../util/sdp":39,"util":227}],30:[function(require,module,exports){
 'use strict';
 
-var guessBrowser = require('../util').guessBrowser;
-
-switch (guessBrowser()) {
-  case 'chrome':
-    module.exports = require('./chrome');
-    break;
-  case 'firefox':
-    module.exports = require('./firefox');
-    break;
-  case 'safari':
-    module.exports = require('./safari');
-    break;
-  default:
-    if (typeof RTCPeerConnection === 'undefined') {
+if (typeof RTCPeerConnection !== 'undefined') {
+  var guessBrowser = require('../util').guessBrowser;
+  switch (guessBrowser()) {
+    case 'chrome':
+      module.exports = require('./chrome');
       break;
-    }
-    module.exports = RTCPeerConnection;
+    case 'firefox':
+      module.exports = require('./firefox');
+      break;
+    case 'safari':
+      module.exports = require('./safari');
+      break;
+    default:
+      module.exports = RTCPeerConnection;
+  }
 }
 
-},{"../util":71,"./chrome":62,"./firefox":63,"./safari":65}],65:[function(require,module,exports){
+},{"../util":37,"./chrome":28,"./firefox":29,"./safari":31}],31:[function(require,module,exports){
 /* globals RTCPeerConnection, RTCSessionDescription */
 'use strict';
 
@@ -15938,6 +4417,10 @@ function SafariRTCPeerConnection(configuration) {
   var peerConnection = new RTCPeerConnection(configuration);
 
   Object.defineProperties(this, {
+    _appliedTracksToSSRCs: {
+      value: new Map(),
+      writable: true
+    },
     _audioTransceiver: {
       value: null,
       writable: true
@@ -15957,11 +4440,16 @@ function SafariRTCPeerConnection(configuration) {
       value: null,
       writable: true
     },
+    _rolledBackTracksToSSRCs: {
+      value: new Map(),
+      writable: true
+    },
     _signalingStateLatch: {
       value: new Latch()
     },
     _tracksToSSRCs: {
-      value: new Map()
+      value: new Map(),
+      writable: true
     },
     _videoTransceiver: {
       value: null,
@@ -16024,6 +4512,9 @@ function SafariRTCPeerConnection(configuration) {
     if (self._isClosed) {
       return;
     }
+    if (peerConnection.signalingState === 'stable') {
+      self._appliedTracksToSSRCs = new Map(self._tracksToSSRCs);
+    }
     if (!self._pendingLocalOffer && !self._pendingRemoteOffer) {
       self.dispatchEvent.apply(self, arguments);
     }
@@ -16082,6 +4573,10 @@ SafariRTCPeerConnection.prototype.createOffer = function createOffer(options) {
   }
 
   return this._peerConnection.createOffer(options).then(function(offer) {
+    // NOTE(mmalavalli): If createOffer() is called immediately after rolling back,
+    // then we no longer need to retain the rolled back tracks to SSRCs Map.
+    self._rolledBackTracksToSSRCs.clear();
+
     return new RTCSessionDescription({
       type: offer.type,
       sdp: updateTrackIdsToSSRCs(self._tracksToSSRCs, offer.sdp)
@@ -16098,6 +4593,11 @@ SafariRTCPeerConnection.prototype.createAnswer = function createAnswer(options) 
       return self._peerConnection.createAnswer();
     }).then(function createAnswerSucceeded(answer) {
       self._pendingRemoteOffer = null;
+
+      // NOTE(mmalavalli): If createAnswer() is called immediately after rolling back, then we no
+      // longer need to retain the rolled back tracks to SSRCs Map.
+      self._rolledBackTracksToSSRCs.clear();
+
       return isUnifiedPlan ? new RTCSessionDescription({
         type: answer.type,
         sdp: updateTrackIdsToSSRCs(self._tracksToSSRCs, answer.sdp)
@@ -16109,6 +4609,10 @@ SafariRTCPeerConnection.prototype.createAnswer = function createAnswer(options) 
   }
 
   return this._peerConnection.createAnswer(options).then(function createAnswerSucceeded(answer) {
+    // NOTE(mmalavalli): If createAnswer() is called immediately after rolling back, then we no
+    // longer need to retain the rolled back tracks to SSRCs Map.
+    self._rolledBackTracksToSSRCs.clear();
+
     return isUnifiedPlan ? new RTCSessionDescription({
       type: answer.type,
       sdp: updateTrackIdsToSSRCs(self._tracksToSSRCs, answer.sdp)
@@ -16128,10 +4632,19 @@ SafariRTCPeerConnection.prototype.removeTrack = function removeTrack(sender) {
 };
 
 SafariRTCPeerConnection.prototype.setLocalDescription = function setLocalDescription(description) {
+  // NOTE(mmalavalli): If setLocalDescription() is called immediately after rolling back,
+  // then we need to restore the rolled back tracks to SSRCs Map.
+  if (this._rolledBackTracksToSSRCs.size > 0) {
+    this._tracksToSSRCs = new Map(this._rolledBackTracksToSSRCs);
+    this._rolledBackTracksToSSRCs.clear();
+  }
   return setDescription(this, true, description);
 };
 
 SafariRTCPeerConnection.prototype.setRemoteDescription = function setRemoteDescription(description) {
+  // NOTE(mmalavalli): If setRemoteDescription() is called immediately after rolling back,
+  // then we no longer need to retain the rolled back tracks to SSRCs Map.
+  this._rolledBackTracksToSSRCs.clear();
   return setDescription(this, false, description);
 };
 
@@ -16203,6 +4716,14 @@ function setDescription(peerConnection, local, description) {
         (local ? 'local' : 'remote') + ' description in ' + peerConnection.signalingState));
     }
     clearPendingLocalOffer();
+
+    // NOTE(mmalavalli): We store the rolled back tracks to SSRCs Map here in case
+    // setLocalDescription() is called immediately aftera rollback (without calling
+    // createOffer() or createAnswer()), in which case this roll back is not due to
+    // a glare scenario and this Map should be restored.
+    peerConnection._rolledBackTracksToSSRCs = new Map(peerConnection._tracksToSSRCs);
+    peerConnection._tracksToSSRCs = new Map(peerConnection._appliedTracksToSSRCs);
+
     return Promise.resolve().then(function dispatchSignalingStateChangeEvent() {
       peerConnection.dispatchEvent(new Event('signalingstatechange'));
     });
@@ -16256,7 +4777,7 @@ function shimDataChannel(dataChannel) {
 
 module.exports = SafariRTCPeerConnection;
 
-},{"../util":71,"../util/eventtarget":70,"../util/latch":72,"../util/sdp":73,"util":258}],66:[function(require,module,exports){
+},{"../util":37,"../util/eventtarget":36,"../util/latch":38,"../util/sdp":39,"util":227}],32:[function(require,module,exports){
 'use strict';
 
 /**
@@ -16297,7 +4818,7 @@ function RTCRtpSenderShim(track) {
 
 module.exports = RTCRtpSenderShim;
 
-},{}],67:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 /* globals RTCSessionDescription */
 'use strict';
 
@@ -16338,15 +4859,14 @@ function ChromeRTCSessionDescription(descriptionInitDict) {
 
 module.exports = ChromeRTCSessionDescription;
 
-},{}],68:[function(require,module,exports){
-/* globals mozRTCSessionDescription, RTCSessionDescription */
+},{}],34:[function(require,module,exports){
+/* globals RTCSessionDescription */
 'use strict';
-
 module.exports = typeof RTCSessionDescription !== 'undefined'
   ? RTCSessionDescription
-  : mozRTCSessionDescription;
+  : window.mozRTCSessionDescription;
 
-},{}],69:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 'use strict';
 
 var guessBrowser = require('../util').guessBrowser;
@@ -16365,7 +4885,7 @@ switch (guessBrowser()) {
     module.exports = RTCSessionDescription;
 }
 
-},{"../util":71,"./chrome":67,"./firefox":68}],70:[function(require,module,exports){
+},{"../util":37,"./chrome":33,"./firefox":34}],36:[function(require,module,exports){
 'use strict';
 
 var EventEmitter = require('events').EventEmitter;
@@ -16406,7 +4926,7 @@ EventTarget.prototype.removeEventListener = function removeEventListener() {
 
 module.exports = EventTarget;
 
-},{"events":100}],71:[function(require,module,exports){
+},{"events":66}],37:[function(require,module,exports){
 'use strict';
 
 /**
@@ -16655,7 +5175,7 @@ exports.legacyPromise = legacyPromise;
 exports.makeUUID = makeUUID;
 exports.proxyProperties = proxyProperties;
 
-},{}],72:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 'use strict';
 
 var defer = require('./').defer;
@@ -16770,7 +5290,7 @@ function createUnreachableStateError(from, to) {
 
 module.exports = Latch;
 
-},{"./":71}],73:[function(require,module,exports){
+},{"./":37}],39:[function(require,module,exports){
 /* globals RTCPeerConnection, RTCRtpTransceiver */
 
 'use strict';
@@ -16778,10 +5298,9 @@ module.exports = Latch;
 var flatMap = require('./').flatMap;
 var guessBrowser = require('./').guessBrowser;
 
-
 // NOTE(mmalavalli): We cache Chrome's sdpSemantics support in order to prevent
 // instantiation of more than one RTCPeerConnection.
-var isSdpSemanticsSupported;
+var isSdpSemanticsSupported = null;
 
 /**
  * Check if Chrome supports specifying sdpSemantics for an RTCPeerConnection.
@@ -16806,25 +5325,42 @@ function checkIfSdpSemanticsIsSupported() {
 
 // NOTE(mmalavalli): We cache Chrome's SDP format in order to prevent
 // instantiation of more than one RTCPeerConnection.
-var chromeSdpFormat;
+var chromeSdpFormat = null;
 
 /**
  * Get Chrome's default SDP format.
  * @returns {'planb'|'unified'}
  */
-function getChromeSdpFormat() {
-  if (typeof chromeSdpFormat === 'string') {
-    return chromeSdpFormat;
+function getChromeDefaultSdpFormat() {
+  if (!chromeSdpFormat) {
+    if (typeof RTCPeerConnection !== 'undefined'
+      && 'addTransceiver' in RTCPeerConnection.prototype) {
+      try {
+        new RTCPeerConnection().addTransceiver('audio');
+        chromeSdpFormat = 'unified';
+      } catch (e) {
+        chromeSdpFormat = 'planb';
+      }
+    } else {
+      chromeSdpFormat = 'planb';
+    }
   }
-  if (checkIfSdpSemanticsIsSupported()) {
-    chromeSdpFormat = 'planb';
-    return chromeSdpFormat;
-  }
-  chromeSdpFormat = typeof RTCPeerConnection !== 'undefined'
-    && 'addStream' in RTCPeerConnection.prototype
-      ? 'planb'
-      : 'unified';
   return chromeSdpFormat;
+}
+
+/**
+ * Get Chrome's SDP format.
+ * @param {'plan-b'|'unified-plan'} [sdpSemantics]
+ * @returns {'planb'|'unified'}
+ */
+function getChromeSdpFormat(sdpSemantics) {
+  if (!sdpSemantics || !checkIfSdpSemanticsIsSupported()) {
+    return getChromeDefaultSdpFormat();
+  }
+  return {
+    'plan-b': 'planb',
+    'unified-plan': 'unified'
+  }[sdpSemantics];
 }
 
 /**
@@ -16840,11 +5376,12 @@ function getSafariSdpFormat() {
 
 /**
  * Get the browser's default SDP format.
+ * @param {'plan-b'|'unified-plan'} [sdpSemantics]
  * @returns {'planb'|'unified'}
  */
-function getSdpFormat() {
+function getSdpFormat(sdpSemantics) {
   return {
-    chrome: getChromeSdpFormat(),
+    chrome: getChromeSdpFormat(sdpSemantics),
     firefox: 'unified',
     safari: getSafariSdpFormat()
   }[guessBrowser()] || null;
@@ -17063,63 +5600,52 @@ exports.getUnifiedPlanSSRCs = getUnifiedPlanSSRCs;
 exports.updatePlanBTrackIdsToSSRCs = updatePlanBTrackIdsToSSRCs;
 exports.updateUnifiedPlanTrackIdsToSSRCs = updateUnifiedPlanTrackIdsToSSRCs;
 
-},{"./":71}],74:[function(require,module,exports){
+},{"./":37}],40:[function(require,module,exports){
 module.exports={
-  "_args": [
-    [
-      "@twilio/webrtc@4.0.0",
-      "/var/www/xyzies/xys-vsp-be-video"
-    ]
-  ],
-  "_from": "@twilio/webrtc@4.0.0",
-  "_id": "@twilio/webrtc@4.0.0",
-  "_inBundle": false,
-  "_integrity": "sha512-ZKAJ7g2dMhfbfmtSjFI7+u00NG1vbLUYD51vQzLy03MlO1pWM2JCtH8vdu6p6ejyoZBB7AE8dy0d6Oo/agpYsw==",
-  "_location": "/@twilio/webrtc",
-  "_phantomChildren": {},
-  "_requested": {
-    "type": "version",
-    "registry": true,
-    "raw": "@twilio/webrtc@4.0.0",
-    "name": "@twilio/webrtc",
-    "escapedName": "@twilio%2fwebrtc",
-    "scope": "@twilio",
-    "rawSpec": "4.0.0",
-    "saveSpec": null,
-    "fetchSpec": "4.0.0"
+  "name": "@twilio/webrtc",
+  "version": "4.1.3",
+  "description": "WebRTC-related APIs and shims used by twilio-video.js",
+  "scripts": {
+    "build": "npm-run-all clean lint test",
+    "clean": "rimraf coverage",
+    "lint": "eslint ./lib",
+    "test:unit": "istanbul cover node_modules/mocha/bin/_mocha -- ./test/unit/index.js",
+    "test:integration:native": "karma start karma/integration.conf.js",
+    "test:integration:adapter": "karma start karma/integration.adapter.conf.js",
+    "test:integration": "npm-run-all test:integration:*",
+    "test": "npm-run-all test:*"
   },
-  "_requiredBy": [
-    "/twilio-video"
-  ],
-  "_resolved": "https://registry.npmjs.org/@twilio/webrtc/-/webrtc-4.0.0.tgz",
-  "_spec": "4.0.0",
-  "_where": "/var/www/xyzies/xys-vsp-be-video",
-  "author": {
-    "name": "Manjesh Malavalli",
-    "email": "mmalavalli@twilio.com"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/twilio/twilio-webrtc.js.git"
   },
+  "keywords": [
+    "shim",
+    "twilio",
+    "video",
+    "webrtc"
+  ],
+  "author": "Manjesh Malavalli <mmalavalli@twilio.com>",
+  "contributors": [
+    "Mark Roberts <mroberts@twilio.com>",
+    "Ryan Rowland <rrowland@twilio.com>"
+  ],
+  "license": "BSD-3-Clause",
+  "main": "./lib/index.js",
   "bugs": {
     "url": "https://github.com/twilio/twilio-webrtc.js/issues"
   },
-  "contributors": [
-    {
-      "name": "Mark Roberts",
-      "email": "mroberts@twilio.com"
-    },
-    {
-      "name": "Ryan Rowland",
-      "email": "rrowland@twilio.com"
-    }
-  ],
-  "description": "WebRTC-related APIs and shims used by twilio-video.js",
+  "homepage": "https://github.com/twilio/twilio-webrtc.js#readme",
   "devDependencies": {
     "browserify": "^14.4.0",
+    "electron": "^5.0.0",
     "envify": "^4.1.0",
     "eslint": "^4.4.1",
     "istanbul": "^0.4.5",
     "karma": "^1.7.0",
     "karma-browserify": "^5.1.1",
     "karma-chrome-launcher": "^2.2.0",
+    "karma-electron": "^6.1.0",
     "karma-firefox-launcher": "^1.0.1",
     "karma-mocha": "^1.3.0",
     "karma-safari-launcher": "~0.1",
@@ -17131,35 +5657,10 @@ module.exports={
     "travis-multirunner": "^4.2.3",
     "watchify": "^3.9.0",
     "webrtc-adapter": "^6.4.8"
-  },
-  "homepage": "https://github.com/twilio/twilio-webrtc.js#readme",
-  "keywords": [
-    "shim",
-    "twilio",
-    "video",
-    "webrtc"
-  ],
-  "license": "BSD-3-Clause",
-  "main": "./lib/index.js",
-  "name": "@twilio/webrtc",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/twilio/twilio-webrtc.js.git"
-  },
-  "scripts": {
-    "build": "npm-run-all clean lint test",
-    "clean": "rimraf coverage",
-    "lint": "eslint ./lib",
-    "test": "npm-run-all test:*",
-    "test:integration": "npm-run-all test:integration:*",
-    "test:integration:adapter": "karma start karma/integration.adapter.conf.js",
-    "test:integration:native": "karma start karma/integration.conf.js",
-    "test:unit": "istanbul cover node_modules/mocha/bin/_mocha -- ./test/unit/index.js"
-  },
-  "version": "4.0.0"
+  }
 }
 
-},{}],75:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 module.exports = after
 
 function after(count, callback, err_cb) {
@@ -17189,7 +5690,7 @@ function after(count, callback, err_cb) {
 
 function noop() {}
 
-},{}],76:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 /**
  * An abstraction for slicing an arraybuffer even when
  * ArrayBuffer.prototype.slice is not supported
@@ -17220,7 +5721,7 @@ module.exports = function(arraybuffer, start, end) {
   return result.buffer;
 };
 
-},{}],77:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 
 /**
  * Expose `Backoff`.
@@ -17307,7 +5808,7 @@ Backoff.prototype.setJitter = function(jitter){
 };
 
 
-},{}],78:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 /*
  * base64-arraybuffer
  * https://github.com/niklasvh/base64-arraybuffer
@@ -17376,7 +5877,7 @@ Backoff.prototype.setJitter = function(jitter){
   };
 })();
 
-},{}],79:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength
@@ -17444,7 +5945,8 @@ function toByteArray (b64) {
     ? validLen - 4
     : validLen
 
-  for (var i = 0; i < len; i += 4) {
+  var i
+  for (i = 0; i < len; i += 4) {
     tmp =
       (revLookup[b64.charCodeAt(i)] << 18) |
       (revLookup[b64.charCodeAt(i + 1)] << 12) |
@@ -17529,7 +6031,7 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-},{}],80:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 /**
  * Create a blob builder even when vendor prefixes exist
  */
@@ -17631,9 +6133,10 @@ module.exports = (function() {
   }
 })();
 
-},{}],81:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 
-},{}],82:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
+(function (Buffer){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -17646,6 +6149,10 @@ module.exports = (function() {
 
 var base64 = require('base64-js')
 var ieee754 = require('ieee754')
+var customInspectSymbol =
+  (typeof Symbol === 'function' && typeof Symbol.for === 'function')
+    ? Symbol.for('nodejs.util.inspect.custom')
+    : null
 
 exports.Buffer = Buffer
 exports.SlowBuffer = SlowBuffer
@@ -17682,7 +6189,9 @@ function typedArraySupport () {
   // Can typed array instances can be augmented?
   try {
     var arr = new Uint8Array(1)
-    arr.__proto__ = { __proto__: Uint8Array.prototype, foo: function () { return 42 } }
+    var proto = { foo: function () { return 42 } }
+    Object.setPrototypeOf(proto, Uint8Array.prototype)
+    Object.setPrototypeOf(arr, proto)
     return arr.foo() === 42
   } catch (e) {
     return false
@@ -17711,7 +6220,7 @@ function createBuffer (length) {
   }
   // Return an augmented `Uint8Array` instance
   var buf = new Uint8Array(length)
-  buf.__proto__ = Buffer.prototype
+  Object.setPrototypeOf(buf, Buffer.prototype)
   return buf
 }
 
@@ -17761,7 +6270,7 @@ function from (value, encodingOrOffset, length) {
   }
 
   if (value == null) {
-    throw TypeError(
+    throw new TypeError(
       'The first argument must be one of type string, Buffer, ArrayBuffer, Array, ' +
       'or Array-like Object. Received type ' + (typeof value)
     )
@@ -17813,8 +6322,8 @@ Buffer.from = function (value, encodingOrOffset, length) {
 
 // Note: Change prototype *after* Buffer.from is defined to workaround Chrome bug:
 // https://github.com/feross/buffer/pull/148
-Buffer.prototype.__proto__ = Uint8Array.prototype
-Buffer.__proto__ = Uint8Array
+Object.setPrototypeOf(Buffer.prototype, Uint8Array.prototype)
+Object.setPrototypeOf(Buffer, Uint8Array)
 
 function assertSize (size) {
   if (typeof size !== 'number') {
@@ -17918,7 +6427,8 @@ function fromArrayBuffer (array, byteOffset, length) {
   }
 
   // Return an augmented `Uint8Array` instance
-  buf.__proto__ = Buffer.prototype
+  Object.setPrototypeOf(buf, Buffer.prototype)
+
   return buf
 }
 
@@ -18240,6 +6750,9 @@ Buffer.prototype.inspect = function inspect () {
   if (this.length > max) str += ' ... '
   return '<Buffer ' + str + '>'
 }
+if (customInspectSymbol) {
+  Buffer.prototype[customInspectSymbol] = Buffer.prototype.inspect
+}
 
 Buffer.prototype.compare = function compare (target, start, end, thisStart, thisEnd) {
   if (isInstance(target, Uint8Array)) {
@@ -18365,7 +6878,7 @@ function bidirectionalIndexOf (buffer, val, byteOffset, encoding, dir) {
         return Uint8Array.prototype.lastIndexOf.call(buffer, val, byteOffset)
       }
     }
-    return arrayIndexOf(buffer, [ val ], byteOffset, encoding, dir)
+    return arrayIndexOf(buffer, [val], byteOffset, encoding, dir)
   }
 
   throw new TypeError('val must be string, number or Buffer')
@@ -18694,7 +7207,7 @@ function hexSlice (buf, start, end) {
 
   var out = ''
   for (var i = start; i < end; ++i) {
-    out += toHex(buf[i])
+    out += hexSliceLookupTable[buf[i]]
   }
   return out
 }
@@ -18731,7 +7244,8 @@ Buffer.prototype.slice = function slice (start, end) {
 
   var newBuf = this.subarray(start, end)
   // Return an augmented `Uint8Array` instance
-  newBuf.__proto__ = Buffer.prototype
+  Object.setPrototypeOf(newBuf, Buffer.prototype)
+
   return newBuf
 }
 
@@ -19220,6 +7734,8 @@ Buffer.prototype.fill = function fill (val, start, end, encoding) {
     }
   } else if (typeof val === 'number') {
     val = val & 255
+  } else if (typeof val === 'boolean') {
+    val = Number(val)
   }
 
   // Invalid ranges are not set to a default, so can range check early.
@@ -19275,11 +7791,6 @@ function base64clean (str) {
     str = str + '='
   }
   return str
-}
-
-function toHex (n) {
-  if (n < 16) return '0' + n.toString(16)
-  return n.toString(16)
 }
 
 function utf8ToBytes (string, units) {
@@ -19412,7 +7923,22 @@ function numberIsNaN (obj) {
   return obj !== obj // eslint-disable-line no-self-compare
 }
 
-},{"base64-js":79,"ieee754":103}],83:[function(require,module,exports){
+// Create lookup table for `toString('hex')`
+// See: https://github.com/feross/buffer/issues/219
+var hexSliceLookupTable = (function () {
+  var alphabet = '0123456789abcdef'
+  var table = new Array(256)
+  for (var i = 0; i < 16; ++i) {
+    var i16 = i * 16
+    for (var j = 0; j < 16; ++j) {
+      table[i16 + j] = alphabet[i] + alphabet[j]
+    }
+  }
+  return table
+})()
+
+}).call(this,require("buffer").Buffer)
+},{"base64-js":45,"buffer":48,"ieee754":70}],49:[function(require,module,exports){
 /**
  * Slice reference.
  */
@@ -19437,7 +7963,7 @@ module.exports = function(obj, fn){
   }
 };
 
-},{}],84:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -19602,7 +8128,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],85:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 
 module.exports = function(a, b){
   var fn = function(){};
@@ -19610,7 +8136,7 @@ module.exports = function(a, b){
   a.prototype = new fn;
   a.prototype.constructor = a;
 };
-},{}],86:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 
 module.exports = require('./socket');
 
@@ -19622,8 +8148,7 @@ module.exports = require('./socket');
  */
 module.exports.parser = require('engine.io-parser');
 
-},{"./socket":87,"engine.io-parser":97}],87:[function(require,module,exports){
-(function (global){
+},{"./socket":53,"engine.io-parser":63}],53:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -19671,7 +8196,7 @@ function Socket (uri, opts) {
   }
 
   this.secure = null != opts.secure ? opts.secure
-    : (global.location && 'https:' === location.protocol);
+    : (typeof location !== 'undefined' && 'https:' === location.protocol);
 
   if (opts.hostname && !opts.port) {
     // if no port is specified manually, use the protocol default
@@ -19680,8 +8205,8 @@ function Socket (uri, opts) {
 
   this.agent = opts.agent || false;
   this.hostname = opts.hostname ||
-    (global.location ? location.hostname : 'localhost');
-  this.port = opts.port || (global.location && location.port
+    (typeof location !== 'undefined' ? location.hostname : 'localhost');
+  this.port = opts.port || (typeof location !== 'undefined' && location.port
       ? location.port
       : (this.secure ? 443 : 80));
   this.query = opts.query || {};
@@ -19692,6 +8217,7 @@ function Socket (uri, opts) {
   this.jsonp = false !== opts.jsonp;
   this.forceBase64 = !!opts.forceBase64;
   this.enablesXDR = !!opts.enablesXDR;
+  this.withCredentials = false !== opts.withCredentials;
   this.timestampParam = opts.timestampParam || 't';
   this.timestampRequests = opts.timestampRequests;
   this.transports = opts.transports || ['polling', 'websocket'];
@@ -19720,9 +8246,11 @@ function Socket (uri, opts) {
   this.rejectUnauthorized = opts.rejectUnauthorized === undefined ? true : opts.rejectUnauthorized;
   this.forceNode = !!opts.forceNode;
 
-  // other options for Node.js client
-  var freeGlobal = typeof global === 'object' && global;
-  if (freeGlobal.global === freeGlobal) {
+  // detect ReactNative environment
+  this.isReactNative = (typeof navigator !== 'undefined' && typeof navigator.product === 'string' && navigator.product.toLowerCase() === 'reactnative');
+
+  // other options for Node.js or ReactNative client
+  if (typeof self === 'undefined' || this.isReactNative) {
     if (opts.extraHeaders && Object.keys(opts.extraHeaders).length > 0) {
       this.extraHeaders = opts.extraHeaders;
     }
@@ -19807,6 +8335,7 @@ Socket.prototype.createTransport = function (name) {
     jsonp: options.jsonp || this.jsonp,
     forceBase64: options.forceBase64 || this.forceBase64,
     enablesXDR: options.enablesXDR || this.enablesXDR,
+    withCredentials: options.withCredentials || this.withCredentials,
     timestampRequests: options.timestampRequests || this.timestampRequests,
     timestampParam: options.timestampParam || this.timestampParam,
     policyPort: options.policyPort || this.policyPort,
@@ -19822,7 +8351,8 @@ Socket.prototype.createTransport = function (name) {
     forceNode: options.forceNode || this.forceNode,
     localAddress: options.localAddress || this.localAddress,
     requestTimeout: options.requestTimeout || this.requestTimeout,
-    protocols: options.protocols || void (0)
+    protocols: options.protocols || void (0),
+    isReactNative: this.isReactNative
   });
 
   return transport;
@@ -20368,8 +8898,7 @@ Socket.prototype.filterUpgrades = function (upgrades) {
   return filteredUpgrades;
 };
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./transport":88,"./transports/index":89,"component-emitter":84,"debug":95,"engine.io-parser":97,"indexof":104,"parseqs":108,"parseuri":109}],88:[function(require,module,exports){
+},{"./transport":54,"./transports/index":55,"component-emitter":50,"debug":61,"engine.io-parser":63,"indexof":71,"parseqs":73,"parseuri":74}],54:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -20402,6 +8931,7 @@ function Transport (opts) {
   this.agent = opts.agent || false;
   this.socket = opts.socket;
   this.enablesXDR = opts.enablesXDR;
+  this.withCredentials = opts.withCredentials;
 
   // SSL options for Node.js client
   this.pfx = opts.pfx;
@@ -20412,6 +8942,9 @@ function Transport (opts) {
   this.ciphers = opts.ciphers;
   this.rejectUnauthorized = opts.rejectUnauthorized;
   this.forceNode = opts.forceNode;
+
+  // results of ReactNative environment detection
+  this.isReactNative = opts.isReactNative;
 
   // other options for Node.js client
   this.extraHeaders = opts.extraHeaders;
@@ -20528,8 +9061,7 @@ Transport.prototype.onClose = function () {
   this.emit('close');
 };
 
-},{"component-emitter":84,"engine.io-parser":97}],89:[function(require,module,exports){
-(function (global){
+},{"component-emitter":50,"engine.io-parser":63}],55:[function(require,module,exports){
 /**
  * Module dependencies
  */
@@ -20559,7 +9091,7 @@ function polling (opts) {
   var xs = false;
   var jsonp = false !== opts.jsonp;
 
-  if (global.location) {
+  if (typeof location !== 'undefined') {
     var isSSL = 'https:' === location.protocol;
     var port = location.port;
 
@@ -20584,10 +9116,8 @@ function polling (opts) {
   }
 }
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./polling-jsonp":90,"./polling-xhr":91,"./websocket":93,"xmlhttprequest-ssl":94}],90:[function(require,module,exports){
+},{"./polling-jsonp":56,"./polling-xhr":57,"./websocket":59,"xmlhttprequest-ssl":60}],56:[function(require,module,exports){
 (function (global){
-
 /**
  * Module requirements.
  */
@@ -20621,6 +9151,15 @@ var callbacks;
 function empty () { }
 
 /**
+ * Until https://github.com/tc39/proposal-global is shipped.
+ */
+function glob () {
+  return typeof self !== 'undefined' ? self
+      : typeof window !== 'undefined' ? window
+      : typeof global !== 'undefined' ? global : {};
+}
+
+/**
  * JSONP Polling constructor.
  *
  * @param {Object} opts.
@@ -20636,8 +9175,8 @@ function JSONPPolling (opts) {
   // we do this here (lazily) to avoid unneeded global pollution
   if (!callbacks) {
     // we need to consider multiple engines in the same page
-    if (!global.___eio) global.___eio = [];
-    callbacks = global.___eio;
+    var global = glob();
+    callbacks = global.___eio = (global.___eio || []);
   }
 
   // callback identifier
@@ -20653,8 +9192,8 @@ function JSONPPolling (opts) {
   this.query.j = this.index;
 
   // prevent spurious errors from being emitted when the window is unloaded
-  if (global.document && global.addEventListener) {
-    global.addEventListener('beforeunload', function () {
+  if (typeof addEventListener === 'function') {
+    addEventListener('beforeunload', function () {
       if (self.script) self.script.onerror = empty;
     }, false);
   }
@@ -20820,8 +9359,9 @@ JSONPPolling.prototype.doWrite = function (data, fn) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./polling":92,"component-inherit":85}],91:[function(require,module,exports){
-(function (global){
+},{"./polling":58,"component-inherit":51}],57:[function(require,module,exports){
+/* global attachEvent */
+
 /**
  * Module requirements.
  */
@@ -20857,7 +9397,7 @@ function XHR (opts) {
   this.requestTimeout = opts.requestTimeout;
   this.extraHeaders = opts.extraHeaders;
 
-  if (global.location) {
+  if (typeof location !== 'undefined') {
     var isSSL = 'https:' === location.protocol;
     var port = location.port;
 
@@ -20866,7 +9406,7 @@ function XHR (opts) {
       port = isSSL ? 443 : 80;
     }
 
-    this.xd = opts.hostname !== global.location.hostname ||
+    this.xd = (typeof location !== 'undefined' && opts.hostname !== location.hostname) ||
       port !== opts.port;
     this.xs = opts.secure !== isSSL;
   }
@@ -20899,6 +9439,7 @@ XHR.prototype.request = function (opts) {
   opts.agent = this.agent || false;
   opts.supportsBinary = this.supportsBinary;
   opts.enablesXDR = this.enablesXDR;
+  opts.withCredentials = this.withCredentials;
 
   // SSL options for Node.js client
   opts.pfx = this.pfx;
@@ -20972,6 +9513,7 @@ function Request (opts) {
   this.isBinary = opts.isBinary;
   this.supportsBinary = opts.supportsBinary;
   this.enablesXDR = opts.enablesXDR;
+  this.withCredentials = opts.withCredentials;
   this.requestTimeout = opts.requestTimeout;
 
   // SSL options for Node.js client
@@ -21046,7 +9588,7 @@ Request.prototype.create = function () {
 
     // ie6 check
     if ('withCredentials' in xhr) {
-      xhr.withCredentials = true;
+      xhr.withCredentials = this.withCredentials;
     }
 
     if (this.requestTimeout) {
@@ -21065,7 +9607,7 @@ Request.prototype.create = function () {
         if (xhr.readyState === 2) {
           try {
             var contentType = xhr.getResponseHeader('Content-Type');
-            if (self.supportsBinary && contentType === 'application/octet-stream') {
+            if (self.supportsBinary && contentType === 'application/octet-stream' || contentType === 'application/octet-stream; charset=UTF-8') {
               xhr.responseType = 'arraybuffer';
             }
           } catch (e) {}
@@ -21077,7 +9619,7 @@ Request.prototype.create = function () {
           // make sure the `error` event handler that's user-set
           // does not throw in the same tick and gets caught here
           setTimeout(function () {
-            self.onError(xhr.status);
+            self.onError(typeof xhr.status === 'number' ? xhr.status : 0);
           }, 0);
         }
       };
@@ -21095,7 +9637,7 @@ Request.prototype.create = function () {
     return;
   }
 
-  if (global.document) {
+  if (typeof document !== 'undefined') {
     this.index = Request.requestsCount++;
     Request.requests[this.index] = this;
   }
@@ -21157,7 +9699,7 @@ Request.prototype.cleanup = function (fromError) {
     } catch (e) {}
   }
 
-  if (global.document) {
+  if (typeof document !== 'undefined') {
     delete Request.requests[this.index];
   }
 
@@ -21177,7 +9719,7 @@ Request.prototype.onLoad = function () {
     try {
       contentType = this.xhr.getResponseHeader('Content-Type');
     } catch (e) {}
-    if (contentType === 'application/octet-stream') {
+    if (contentType === 'application/octet-stream' || contentType === 'application/octet-stream; charset=UTF-8') {
       data = this.xhr.response || this.xhr.responseText;
     } else {
       data = this.xhr.responseText;
@@ -21197,7 +9739,7 @@ Request.prototype.onLoad = function () {
  */
 
 Request.prototype.hasXDR = function () {
-  return 'undefined' !== typeof global.XDomainRequest && !this.xs && this.enablesXDR;
+  return typeof XDomainRequest !== 'undefined' && !this.xs && this.enablesXDR;
 };
 
 /**
@@ -21219,11 +9761,12 @@ Request.prototype.abort = function () {
 Request.requestsCount = 0;
 Request.requests = {};
 
-if (global.document) {
-  if (global.attachEvent) {
-    global.attachEvent('onunload', unloadHandler);
-  } else if (global.addEventListener) {
-    global.addEventListener('beforeunload', unloadHandler, false);
+if (typeof document !== 'undefined') {
+  if (typeof attachEvent === 'function') {
+    attachEvent('onunload', unloadHandler);
+  } else if (typeof addEventListener === 'function') {
+    var terminationEvent = 'onpagehide' in self ? 'pagehide' : 'unload';
+    addEventListener(terminationEvent, unloadHandler, false);
   }
 }
 
@@ -21235,8 +9778,7 @@ function unloadHandler () {
   }
 }
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./polling":92,"component-emitter":84,"component-inherit":85,"debug":95,"xmlhttprequest-ssl":94}],92:[function(require,module,exports){
+},{"./polling":58,"component-emitter":50,"component-inherit":51,"debug":61,"xmlhttprequest-ssl":60}],58:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -21483,8 +10025,8 @@ Polling.prototype.uri = function () {
   return schema + '://' + (ipv6 ? '[' + this.hostname + ']' : this.hostname) + port + this.path + query;
 };
 
-},{"../transport":88,"component-inherit":85,"debug":95,"engine.io-parser":97,"parseqs":108,"xmlhttprequest-ssl":94,"yeast":259}],93:[function(require,module,exports){
-(function (global){
+},{"../transport":54,"component-inherit":51,"debug":61,"engine.io-parser":63,"parseqs":73,"xmlhttprequest-ssl":60,"yeast":228}],59:[function(require,module,exports){
+(function (Buffer){
 /**
  * Module dependencies.
  */
@@ -21495,8 +10037,15 @@ var parseqs = require('parseqs');
 var inherit = require('component-inherit');
 var yeast = require('yeast');
 var debug = require('debug')('engine.io-client:websocket');
-var BrowserWebSocket = global.WebSocket || global.MozWebSocket;
-var NodeWebSocket;
+
+var BrowserWebSocket, NodeWebSocket;
+
+if (typeof WebSocket !== 'undefined') {
+  BrowserWebSocket = WebSocket;
+} else if (typeof self !== 'undefined') {
+  BrowserWebSocket = self.WebSocket || self.MozWebSocket;
+}
+
 if (typeof window === 'undefined') {
   try {
     NodeWebSocket = require('ws');
@@ -21509,10 +10058,7 @@ if (typeof window === 'undefined') {
  * interface exposed by `ws` for Node-like environment.
  */
 
-var WebSocket = BrowserWebSocket;
-if (!WebSocket && typeof window === 'undefined') {
-  WebSocket = NodeWebSocket;
-}
+var WebSocketImpl = BrowserWebSocket || NodeWebSocket;
 
 /**
  * Module exports.
@@ -21536,7 +10082,7 @@ function WS (opts) {
   this.usingBrowserWebSocket = BrowserWebSocket && !opts.forceNode;
   this.protocols = opts.protocols;
   if (!this.usingBrowserWebSocket) {
-    WebSocket = NodeWebSocket;
+    WebSocketImpl = NodeWebSocket;
   }
   Transport.call(this, opts);
 }
@@ -21596,7 +10142,12 @@ WS.prototype.doOpen = function () {
   }
 
   try {
-    this.ws = this.usingBrowserWebSocket ? (protocols ? new WebSocket(uri, protocols) : new WebSocket(uri)) : new WebSocket(uri, protocols, opts);
+    this.ws =
+      this.usingBrowserWebSocket && !this.isReactNative
+        ? protocols
+          ? new WebSocketImpl(uri, protocols)
+          : new WebSocketImpl(uri)
+        : new WebSocketImpl(uri, protocols, opts);
   } catch (err) {
     return this.emit('error', err);
   }
@@ -21663,7 +10214,7 @@ WS.prototype.write = function (packets) {
           }
 
           if (self.perMessageDeflate) {
-            var len = 'string' === typeof data ? global.Buffer.byteLength(data) : data.length;
+            var len = 'string' === typeof data ? Buffer.byteLength(data) : data.length;
             if (len < self.perMessageDeflate.threshold) {
               opts.compress = false;
             }
@@ -21769,12 +10320,11 @@ WS.prototype.uri = function () {
  */
 
 WS.prototype.check = function () {
-  return !!WebSocket && !('__initialize' in WebSocket && this.name === WS.prototype.name);
+  return !!WebSocketImpl && !('__initialize' in WebSocketImpl && this.name === WS.prototype.name);
 };
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../transport":88,"component-inherit":85,"debug":95,"engine.io-parser":97,"parseqs":108,"ws":81,"yeast":259}],94:[function(require,module,exports){
-(function (global){
+}).call(this,require("buffer").Buffer)
+},{"../transport":54,"buffer":48,"component-inherit":51,"debug":61,"engine.io-parser":63,"parseqs":73,"ws":47,"yeast":228}],60:[function(require,module,exports){
 // browser shim for xmlhttprequest module
 
 var hasCORS = require('has-cors');
@@ -21808,47 +10358,107 @@ module.exports = function (opts) {
 
   if (!xdomain) {
     try {
-      return new global[['Active'].concat('Object').join('X')]('Microsoft.XMLHTTP');
+      return new self[['Active'].concat('Object').join('X')]('Microsoft.XMLHTTP');
     } catch (e) { }
   }
 };
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"has-cors":102}],95:[function(require,module,exports){
+},{"has-cors":69}],61:[function(require,module,exports){
 (function (process){
+/* eslint-env browser */
+
 /**
  * This is the web browser implementation of `debug()`.
- *
- * Expose `debug()` as the module.
  */
 
-exports = module.exports = require('./debug');
 exports.log = log;
 exports.formatArgs = formatArgs;
 exports.save = save;
 exports.load = load;
 exports.useColors = useColors;
-exports.storage = 'undefined' != typeof chrome
-               && 'undefined' != typeof chrome.storage
-                  ? chrome.storage.local
-                  : localstorage();
+exports.storage = localstorage();
 
 /**
  * Colors.
  */
 
 exports.colors = [
-  '#0000CC', '#0000FF', '#0033CC', '#0033FF', '#0066CC', '#0066FF', '#0099CC',
-  '#0099FF', '#00CC00', '#00CC33', '#00CC66', '#00CC99', '#00CCCC', '#00CCFF',
-  '#3300CC', '#3300FF', '#3333CC', '#3333FF', '#3366CC', '#3366FF', '#3399CC',
-  '#3399FF', '#33CC00', '#33CC33', '#33CC66', '#33CC99', '#33CCCC', '#33CCFF',
-  '#6600CC', '#6600FF', '#6633CC', '#6633FF', '#66CC00', '#66CC33', '#9900CC',
-  '#9900FF', '#9933CC', '#9933FF', '#99CC00', '#99CC33', '#CC0000', '#CC0033',
-  '#CC0066', '#CC0099', '#CC00CC', '#CC00FF', '#CC3300', '#CC3333', '#CC3366',
-  '#CC3399', '#CC33CC', '#CC33FF', '#CC6600', '#CC6633', '#CC9900', '#CC9933',
-  '#CCCC00', '#CCCC33', '#FF0000', '#FF0033', '#FF0066', '#FF0099', '#FF00CC',
-  '#FF00FF', '#FF3300', '#FF3333', '#FF3366', '#FF3399', '#FF33CC', '#FF33FF',
-  '#FF6600', '#FF6633', '#FF9900', '#FF9933', '#FFCC00', '#FFCC33'
+	'#0000CC',
+	'#0000FF',
+	'#0033CC',
+	'#0033FF',
+	'#0066CC',
+	'#0066FF',
+	'#0099CC',
+	'#0099FF',
+	'#00CC00',
+	'#00CC33',
+	'#00CC66',
+	'#00CC99',
+	'#00CCCC',
+	'#00CCFF',
+	'#3300CC',
+	'#3300FF',
+	'#3333CC',
+	'#3333FF',
+	'#3366CC',
+	'#3366FF',
+	'#3399CC',
+	'#3399FF',
+	'#33CC00',
+	'#33CC33',
+	'#33CC66',
+	'#33CC99',
+	'#33CCCC',
+	'#33CCFF',
+	'#6600CC',
+	'#6600FF',
+	'#6633CC',
+	'#6633FF',
+	'#66CC00',
+	'#66CC33',
+	'#9900CC',
+	'#9900FF',
+	'#9933CC',
+	'#9933FF',
+	'#99CC00',
+	'#99CC33',
+	'#CC0000',
+	'#CC0033',
+	'#CC0066',
+	'#CC0099',
+	'#CC00CC',
+	'#CC00FF',
+	'#CC3300',
+	'#CC3333',
+	'#CC3366',
+	'#CC3399',
+	'#CC33CC',
+	'#CC33FF',
+	'#CC6600',
+	'#CC6633',
+	'#CC9900',
+	'#CC9933',
+	'#CCCC00',
+	'#CCCC33',
+	'#FF0000',
+	'#FF0033',
+	'#FF0066',
+	'#FF0099',
+	'#FF00CC',
+	'#FF00FF',
+	'#FF3300',
+	'#FF3333',
+	'#FF3366',
+	'#FF3399',
+	'#FF33CC',
+	'#FF33FF',
+	'#FF6600',
+	'#FF6633',
+	'#FF9900',
+	'#FF9933',
+	'#FFCC00',
+	'#FFCC33'
 ];
 
 /**
@@ -21859,43 +10469,31 @@ exports.colors = [
  * TODO: add a `localStorage` variable to explicitly enable/disable colors
  */
 
+// eslint-disable-next-line complexity
 function useColors() {
-  // NB: In an Electron preload script, document will be defined but not fully
-  // initialized. Since we know we're in Chrome, we'll just detect this case
-  // explicitly
-  if (typeof window !== 'undefined' && window.process && window.process.type === 'renderer') {
-    return true;
-  }
+	// NB: In an Electron preload script, document will be defined but not fully
+	// initialized. Since we know we're in Chrome, we'll just detect this case
+	// explicitly
+	if (typeof window !== 'undefined' && window.process && (window.process.type === 'renderer' || window.process.__nwjs)) {
+		return true;
+	}
 
-  // Internet Explorer and Edge do not support colors.
-  if (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/(edge|trident)\/(\d+)/)) {
-    return false;
-  }
+	// Internet Explorer and Edge do not support colors.
+	if (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/(edge|trident)\/(\d+)/)) {
+		return false;
+	}
 
-  // is webkit? http://stackoverflow.com/a/16459606/376773
-  // document is undefined in react-native: https://github.com/facebook/react-native/pull/1632
-  return (typeof document !== 'undefined' && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance) ||
-    // is firebug? http://stackoverflow.com/a/398120/376773
-    (typeof window !== 'undefined' && window.console && (window.console.firebug || (window.console.exception && window.console.table))) ||
-    // is firefox >= v31?
-    // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
-    (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31) ||
-    // double check webkit in userAgent just in case we are in a worker
-    (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/));
+	// Is webkit? http://stackoverflow.com/a/16459606/376773
+	// document is undefined in react-native: https://github.com/facebook/react-native/pull/1632
+	return (typeof document !== 'undefined' && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance) ||
+		// Is firebug? http://stackoverflow.com/a/398120/376773
+		(typeof window !== 'undefined' && window.console && (window.console.firebug || (window.console.exception && window.console.table))) ||
+		// Is firefox >= v31?
+		// https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
+		(typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31) ||
+		// Double check webkit in userAgent just in case we are in a worker
+		(typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/));
 }
-
-/**
- * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
- */
-
-exports.formatters.j = function(v) {
-  try {
-    return JSON.stringify(v);
-  } catch (err) {
-    return '[UnexpectedJSONParseError]: ' + err.message;
-  }
-};
-
 
 /**
  * Colorize log arguments if enabled.
@@ -21904,36 +10502,38 @@ exports.formatters.j = function(v) {
  */
 
 function formatArgs(args) {
-  var useColors = this.useColors;
+	args[0] = (this.useColors ? '%c' : '') +
+		this.namespace +
+		(this.useColors ? ' %c' : ' ') +
+		args[0] +
+		(this.useColors ? '%c ' : ' ') +
+		'+' + module.exports.humanize(this.diff);
 
-  args[0] = (useColors ? '%c' : '')
-    + this.namespace
-    + (useColors ? ' %c' : ' ')
-    + args[0]
-    + (useColors ? '%c ' : ' ')
-    + '+' + exports.humanize(this.diff);
+	if (!this.useColors) {
+		return;
+	}
 
-  if (!useColors) return;
+	const c = 'color: ' + this.color;
+	args.splice(1, 0, c, 'color: inherit');
 
-  var c = 'color: ' + this.color;
-  args.splice(1, 0, c, 'color: inherit')
+	// The final "%c" is somewhat tricky, because there could be other
+	// arguments passed either before or after the %c, so we need to
+	// figure out the correct index to insert the CSS into
+	let index = 0;
+	let lastC = 0;
+	args[0].replace(/%[a-zA-Z%]/g, match => {
+		if (match === '%%') {
+			return;
+		}
+		index++;
+		if (match === '%c') {
+			// We only are interested in the *last* %c
+			// (the user may have provided their own)
+			lastC = index;
+		}
+	});
 
-  // the final "%c" is somewhat tricky, because there could be other
-  // arguments passed either before or after the %c, so we need to
-  // figure out the correct index to insert the CSS into
-  var index = 0;
-  var lastC = 0;
-  args[0].replace(/%[a-zA-Z%]/g, function(match) {
-    if ('%%' === match) return;
-    index++;
-    if ('%c' === match) {
-      // we only are interested in the *last* %c
-      // (the user may have provided their own)
-      lastC = index;
-    }
-  });
-
-  args.splice(lastC, 0, c);
+	args.splice(lastC, 0, c);
 }
 
 /**
@@ -21942,13 +10542,12 @@ function formatArgs(args) {
  *
  * @api public
  */
-
-function log() {
-  // this hackery is required for IE8/9, where
-  // the `console.log` function doesn't have 'apply'
-  return 'object' === typeof console
-    && console.log
-    && Function.prototype.apply.call(console.log, console, arguments);
+function log(...args) {
+	// This hackery is required for IE8/9, where
+	// the `console.log` function doesn't have 'apply'
+	return typeof console === 'object' &&
+		console.log &&
+		console.log(...args);
 }
 
 /**
@@ -21957,15 +10556,17 @@ function log() {
  * @param {String} namespaces
  * @api private
  */
-
 function save(namespaces) {
-  try {
-    if (null == namespaces) {
-      exports.storage.removeItem('debug');
-    } else {
-      exports.storage.debug = namespaces;
-    }
-  } catch(e) {}
+	try {
+		if (namespaces) {
+			exports.storage.setItem('debug', namespaces);
+		} else {
+			exports.storage.removeItem('debug');
+		}
+	} catch (error) {
+		// Swallow
+		// XXX (@Qix-) should we be logging these?
+	}
 }
 
 /**
@@ -21974,26 +10575,22 @@ function save(namespaces) {
  * @return {String} returns the previously persisted debug modes
  * @api private
  */
-
 function load() {
-  var r;
-  try {
-    r = exports.storage.debug;
-  } catch(e) {}
+	let r;
+	try {
+		r = exports.storage.getItem('debug');
+	} catch (error) {
+		// Swallow
+		// XXX (@Qix-) should we be logging these?
+	}
 
-  // If debug isn't set in LS, and we're in Electron, try to load $DEBUG
-  if (!r && typeof process !== 'undefined' && 'env' in process) {
-    r = process.env.DEBUG;
-  }
+	// If debug isn't set in LS, and we're in Electron, try to load $DEBUG
+	if (!r && typeof process !== 'undefined' && 'env' in process) {
+		r = process.env.DEBUG;
+	}
 
-  return r;
+	return r;
 }
-
-/**
- * Enable namespaces listed in `localStorage.debug` initially.
- */
-
-exports.enable(load());
 
 /**
  * Localstorage attempts to return the localstorage.
@@ -22007,240 +10604,302 @@ exports.enable(load());
  */
 
 function localstorage() {
-  try {
-    return window.localStorage;
-  } catch (e) {}
+	try {
+		// TVMLKit (Apple TV JS Runtime) does not have a window object, just localStorage in the global context
+		// The Browser also has localStorage in the global context.
+		return localStorage;
+	} catch (error) {
+		// Swallow
+		// XXX (@Qix-) should we be logging these?
+	}
 }
 
+module.exports = require('./common')(exports);
+
+const {formatters} = module.exports;
+
+/**
+ * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
+ */
+
+formatters.j = function (v) {
+	try {
+		return JSON.stringify(v);
+	} catch (error) {
+		return '[UnexpectedJSONParseError]: ' + error.message;
+	}
+};
+
 }).call(this,require('_process'))
-},{"./debug":96,"_process":110}],96:[function(require,module,exports){
+},{"./common":62,"_process":75}],62:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
  * implementations of `debug()`.
- *
- * Expose `debug()` as the module.
  */
 
-exports = module.exports = createDebug.debug = createDebug['default'] = createDebug;
-exports.coerce = coerce;
-exports.disable = disable;
-exports.enable = enable;
-exports.enabled = enabled;
-exports.humanize = require('ms');
+function setup(env) {
+	createDebug.debug = createDebug;
+	createDebug.default = createDebug;
+	createDebug.coerce = coerce;
+	createDebug.disable = disable;
+	createDebug.enable = enable;
+	createDebug.enabled = enabled;
+	createDebug.humanize = require('ms');
 
-/**
- * Active `debug` instances.
- */
-exports.instances = [];
+	Object.keys(env).forEach(key => {
+		createDebug[key] = env[key];
+	});
 
-/**
- * The currently active debug mode names, and names to skip.
- */
+	/**
+	* Active `debug` instances.
+	*/
+	createDebug.instances = [];
 
-exports.names = [];
-exports.skips = [];
+	/**
+	* The currently active debug mode names, and names to skip.
+	*/
 
-/**
- * Map of special "%n" handling functions, for the debug "format" argument.
- *
- * Valid key names are a single, lower or upper-case letter, i.e. "n" and "N".
- */
+	createDebug.names = [];
+	createDebug.skips = [];
 
-exports.formatters = {};
+	/**
+	* Map of special "%n" handling functions, for the debug "format" argument.
+	*
+	* Valid key names are a single, lower or upper-case letter, i.e. "n" and "N".
+	*/
+	createDebug.formatters = {};
 
-/**
- * Select a color.
- * @param {String} namespace
- * @return {Number}
- * @api private
- */
+	/**
+	* Selects a color for a debug namespace
+	* @param {String} namespace The namespace string for the for the debug instance to be colored
+	* @return {Number|String} An ANSI color code for the given namespace
+	* @api private
+	*/
+	function selectColor(namespace) {
+		let hash = 0;
 
-function selectColor(namespace) {
-  var hash = 0, i;
+		for (let i = 0; i < namespace.length; i++) {
+			hash = ((hash << 5) - hash) + namespace.charCodeAt(i);
+			hash |= 0; // Convert to 32bit integer
+		}
 
-  for (i in namespace) {
-    hash  = ((hash << 5) - hash) + namespace.charCodeAt(i);
-    hash |= 0; // Convert to 32bit integer
-  }
+		return createDebug.colors[Math.abs(hash) % createDebug.colors.length];
+	}
+	createDebug.selectColor = selectColor;
 
-  return exports.colors[Math.abs(hash) % exports.colors.length];
+	/**
+	* Create a debugger with the given `namespace`.
+	*
+	* @param {String} namespace
+	* @return {Function}
+	* @api public
+	*/
+	function createDebug(namespace) {
+		let prevTime;
+
+		function debug(...args) {
+			// Disabled?
+			if (!debug.enabled) {
+				return;
+			}
+
+			const self = debug;
+
+			// Set `diff` timestamp
+			const curr = Number(new Date());
+			const ms = curr - (prevTime || curr);
+			self.diff = ms;
+			self.prev = prevTime;
+			self.curr = curr;
+			prevTime = curr;
+
+			args[0] = createDebug.coerce(args[0]);
+
+			if (typeof args[0] !== 'string') {
+				// Anything else let's inspect with %O
+				args.unshift('%O');
+			}
+
+			// Apply any `formatters` transformations
+			let index = 0;
+			args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format) => {
+				// If we encounter an escaped % then don't increase the array index
+				if (match === '%%') {
+					return match;
+				}
+				index++;
+				const formatter = createDebug.formatters[format];
+				if (typeof formatter === 'function') {
+					const val = args[index];
+					match = formatter.call(self, val);
+
+					// Now we need to remove `args[index]` since it's inlined in the `format`
+					args.splice(index, 1);
+					index--;
+				}
+				return match;
+			});
+
+			// Apply env-specific formatting (colors, etc.)
+			createDebug.formatArgs.call(self, args);
+
+			const logFn = self.log || createDebug.log;
+			logFn.apply(self, args);
+		}
+
+		debug.namespace = namespace;
+		debug.enabled = createDebug.enabled(namespace);
+		debug.useColors = createDebug.useColors();
+		debug.color = selectColor(namespace);
+		debug.destroy = destroy;
+		debug.extend = extend;
+		// Debug.formatArgs = formatArgs;
+		// debug.rawLog = rawLog;
+
+		// env-specific initialization logic for debug instances
+		if (typeof createDebug.init === 'function') {
+			createDebug.init(debug);
+		}
+
+		createDebug.instances.push(debug);
+
+		return debug;
+	}
+
+	function destroy() {
+		const index = createDebug.instances.indexOf(this);
+		if (index !== -1) {
+			createDebug.instances.splice(index, 1);
+			return true;
+		}
+		return false;
+	}
+
+	function extend(namespace, delimiter) {
+		const newDebug = createDebug(this.namespace + (typeof delimiter === 'undefined' ? ':' : delimiter) + namespace);
+		newDebug.log = this.log;
+		return newDebug;
+	}
+
+	/**
+	* Enables a debug mode by namespaces. This can include modes
+	* separated by a colon and wildcards.
+	*
+	* @param {String} namespaces
+	* @api public
+	*/
+	function enable(namespaces) {
+		createDebug.save(namespaces);
+
+		createDebug.names = [];
+		createDebug.skips = [];
+
+		let i;
+		const split = (typeof namespaces === 'string' ? namespaces : '').split(/[\s,]+/);
+		const len = split.length;
+
+		for (i = 0; i < len; i++) {
+			if (!split[i]) {
+				// ignore empty strings
+				continue;
+			}
+
+			namespaces = split[i].replace(/\*/g, '.*?');
+
+			if (namespaces[0] === '-') {
+				createDebug.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
+			} else {
+				createDebug.names.push(new RegExp('^' + namespaces + '$'));
+			}
+		}
+
+		for (i = 0; i < createDebug.instances.length; i++) {
+			const instance = createDebug.instances[i];
+			instance.enabled = createDebug.enabled(instance.namespace);
+		}
+	}
+
+	/**
+	* Disable debug output.
+	*
+	* @return {String} namespaces
+	* @api public
+	*/
+	function disable() {
+		const namespaces = [
+			...createDebug.names.map(toNamespace),
+			...createDebug.skips.map(toNamespace).map(namespace => '-' + namespace)
+		].join(',');
+		createDebug.enable('');
+		return namespaces;
+	}
+
+	/**
+	* Returns true if the given mode name is enabled, false otherwise.
+	*
+	* @param {String} name
+	* @return {Boolean}
+	* @api public
+	*/
+	function enabled(name) {
+		if (name[name.length - 1] === '*') {
+			return true;
+		}
+
+		let i;
+		let len;
+
+		for (i = 0, len = createDebug.skips.length; i < len; i++) {
+			if (createDebug.skips[i].test(name)) {
+				return false;
+			}
+		}
+
+		for (i = 0, len = createDebug.names.length; i < len; i++) {
+			if (createDebug.names[i].test(name)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	* Convert regexp to namespace
+	*
+	* @param {RegExp} regxep
+	* @return {String} namespace
+	* @api private
+	*/
+	function toNamespace(regexp) {
+		return regexp.toString()
+			.substring(2, regexp.toString().length - 2)
+			.replace(/\.\*\?$/, '*');
+	}
+
+	/**
+	* Coerce `val`.
+	*
+	* @param {Mixed} val
+	* @return {Mixed}
+	* @api private
+	*/
+	function coerce(val) {
+		if (val instanceof Error) {
+			return val.stack || val.message;
+		}
+		return val;
+	}
+
+	createDebug.enable(createDebug.load());
+
+	return createDebug;
 }
 
-/**
- * Create a debugger with the given `namespace`.
- *
- * @param {String} namespace
- * @return {Function}
- * @api public
- */
+module.exports = setup;
 
-function createDebug(namespace) {
-
-  var prevTime;
-
-  function debug() {
-    // disabled?
-    if (!debug.enabled) return;
-
-    var self = debug;
-
-    // set `diff` timestamp
-    var curr = +new Date();
-    var ms = curr - (prevTime || curr);
-    self.diff = ms;
-    self.prev = prevTime;
-    self.curr = curr;
-    prevTime = curr;
-
-    // turn the `arguments` into a proper Array
-    var args = new Array(arguments.length);
-    for (var i = 0; i < args.length; i++) {
-      args[i] = arguments[i];
-    }
-
-    args[0] = exports.coerce(args[0]);
-
-    if ('string' !== typeof args[0]) {
-      // anything else let's inspect with %O
-      args.unshift('%O');
-    }
-
-    // apply any `formatters` transformations
-    var index = 0;
-    args[0] = args[0].replace(/%([a-zA-Z%])/g, function(match, format) {
-      // if we encounter an escaped % then don't increase the array index
-      if (match === '%%') return match;
-      index++;
-      var formatter = exports.formatters[format];
-      if ('function' === typeof formatter) {
-        var val = args[index];
-        match = formatter.call(self, val);
-
-        // now we need to remove `args[index]` since it's inlined in the `format`
-        args.splice(index, 1);
-        index--;
-      }
-      return match;
-    });
-
-    // apply env-specific formatting (colors, etc.)
-    exports.formatArgs.call(self, args);
-
-    var logFn = debug.log || exports.log || console.log.bind(console);
-    logFn.apply(self, args);
-  }
-
-  debug.namespace = namespace;
-  debug.enabled = exports.enabled(namespace);
-  debug.useColors = exports.useColors();
-  debug.color = selectColor(namespace);
-  debug.destroy = destroy;
-
-  // env-specific initialization logic for debug instances
-  if ('function' === typeof exports.init) {
-    exports.init(debug);
-  }
-
-  exports.instances.push(debug);
-
-  return debug;
-}
-
-function destroy () {
-  var index = exports.instances.indexOf(this);
-  if (index !== -1) {
-    exports.instances.splice(index, 1);
-    return true;
-  } else {
-    return false;
-  }
-}
-
-/**
- * Enables a debug mode by namespaces. This can include modes
- * separated by a colon and wildcards.
- *
- * @param {String} namespaces
- * @api public
- */
-
-function enable(namespaces) {
-  exports.save(namespaces);
-
-  exports.names = [];
-  exports.skips = [];
-
-  var i;
-  var split = (typeof namespaces === 'string' ? namespaces : '').split(/[\s,]+/);
-  var len = split.length;
-
-  for (i = 0; i < len; i++) {
-    if (!split[i]) continue; // ignore empty strings
-    namespaces = split[i].replace(/\*/g, '.*?');
-    if (namespaces[0] === '-') {
-      exports.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
-    } else {
-      exports.names.push(new RegExp('^' + namespaces + '$'));
-    }
-  }
-
-  for (i = 0; i < exports.instances.length; i++) {
-    var instance = exports.instances[i];
-    instance.enabled = exports.enabled(instance.namespace);
-  }
-}
-
-/**
- * Disable debug output.
- *
- * @api public
- */
-
-function disable() {
-  exports.enable('');
-}
-
-/**
- * Returns true if the given mode name is enabled, false otherwise.
- *
- * @param {String} name
- * @return {Boolean}
- * @api public
- */
-
-function enabled(name) {
-  if (name[name.length - 1] === '*') {
-    return true;
-  }
-  var i, len;
-  for (i = 0, len = exports.skips.length; i < len; i++) {
-    if (exports.skips[i].test(name)) {
-      return false;
-    }
-  }
-  for (i = 0, len = exports.names.length; i < len; i++) {
-    if (exports.names[i].test(name)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/**
- * Coerce `val`.
- *
- * @param {Mixed} val
- * @return {Mixed}
- * @api private
- */
-
-function coerce(val) {
-  if (val instanceof Error) return val.stack || val.message;
-  return val;
-}
-
-},{"ms":107}],97:[function(require,module,exports){
+},{"ms":72}],63:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -22847,7 +11506,7 @@ exports.decodePayloadAsBinary = function (data, binaryType, callback) {
   });
 };
 
-},{"./keys":98,"./utf8":99,"after":75,"arraybuffer.slice":76,"base64-arraybuffer":78,"blob":80,"has-binary2":101}],98:[function(require,module,exports){
+},{"./keys":64,"./utf8":65,"after":41,"arraybuffer.slice":42,"base64-arraybuffer":44,"blob":46,"has-binary2":67}],64:[function(require,module,exports){
 
 /**
  * Gets the keys for an object.
@@ -22868,7 +11527,7 @@ module.exports = Object.keys || function keys (obj){
   return arr;
 };
 
-},{}],99:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 /*! https://mths.be/utf8js v2.1.2 by @mathias */
 
 var stringFromCharCode = String.fromCharCode;
@@ -23080,7 +11739,7 @@ module.exports = {
 	decode: utf8decode
 };
 
-},{}],100:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -23605,7 +12264,7 @@ function functionBindPolyfill(context) {
   };
 }
 
-},{}],101:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 (function (Buffer){
 /* global Blob File */
 
@@ -23673,7 +12332,14 @@ function hasBinary (obj) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":82,"isarray":106}],102:[function(require,module,exports){
+},{"buffer":48,"isarray":68}],68:[function(require,module,exports){
+var toString = {}.toString;
+
+module.exports = Array.isArray || function (arr) {
+  return toString.call(arr) == '[object Array]';
+};
+
+},{}],69:[function(require,module,exports){
 
 /**
  * Module exports.
@@ -23692,7 +12358,7 @@ try {
   module.exports = false;
 }
 
-},{}],103:[function(require,module,exports){
+},{}],70:[function(require,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = (nBytes * 8) - mLen - 1
@@ -23778,7 +12444,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],104:[function(require,module,exports){
+},{}],71:[function(require,module,exports){
 
 var indexOf = [].indexOf;
 
@@ -23789,39 +12455,7 @@ module.exports = function(arr, obj){
   }
   return -1;
 };
-},{}],105:[function(require,module,exports){
-if (typeof Object.create === 'function') {
-  // implementation from standard node.js 'util' module
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    ctor.prototype = Object.create(superCtor.prototype, {
-      constructor: {
-        value: ctor,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }
-    });
-  };
-} else {
-  // old school shim for old browsers
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    var TempCtor = function () {}
-    TempCtor.prototype = superCtor.prototype
-    ctor.prototype = new TempCtor()
-    ctor.prototype.constructor = ctor
-  }
-}
-
-},{}],106:[function(require,module,exports){
-var toString = {}.toString;
-
-module.exports = Array.isArray || function (arr) {
-  return toString.call(arr) == '[object Array]';
-};
-
-},{}],107:[function(require,module,exports){
+},{}],72:[function(require,module,exports){
 /**
  * Helpers.
  */
@@ -23830,6 +12464,7 @@ var s = 1000;
 var m = s * 60;
 var h = m * 60;
 var d = h * 24;
+var w = d * 7;
 var y = d * 365.25;
 
 /**
@@ -23851,7 +12486,7 @@ module.exports = function(val, options) {
   var type = typeof val;
   if (type === 'string' && val.length > 0) {
     return parse(val);
-  } else if (type === 'number' && isNaN(val) === false) {
+  } else if (type === 'number' && isFinite(val)) {
     return options.long ? fmtLong(val) : fmtShort(val);
   }
   throw new Error(
@@ -23873,7 +12508,7 @@ function parse(str) {
   if (str.length > 100) {
     return;
   }
-  var match = /^((?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|years?|yrs?|y)?$/i.exec(
+  var match = /^(-?(?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|weeks?|w|years?|yrs?|y)?$/i.exec(
     str
   );
   if (!match) {
@@ -23888,6 +12523,10 @@ function parse(str) {
     case 'yr':
     case 'y':
       return n * y;
+    case 'weeks':
+    case 'week':
+    case 'w':
+      return n * w;
     case 'days':
     case 'day':
     case 'd':
@@ -23930,16 +12569,17 @@ function parse(str) {
  */
 
 function fmtShort(ms) {
-  if (ms >= d) {
+  var msAbs = Math.abs(ms);
+  if (msAbs >= d) {
     return Math.round(ms / d) + 'd';
   }
-  if (ms >= h) {
+  if (msAbs >= h) {
     return Math.round(ms / h) + 'h';
   }
-  if (ms >= m) {
+  if (msAbs >= m) {
     return Math.round(ms / m) + 'm';
   }
-  if (ms >= s) {
+  if (msAbs >= s) {
     return Math.round(ms / s) + 's';
   }
   return ms + 'ms';
@@ -23954,28 +12594,32 @@ function fmtShort(ms) {
  */
 
 function fmtLong(ms) {
-  return plural(ms, d, 'day') ||
-    plural(ms, h, 'hour') ||
-    plural(ms, m, 'minute') ||
-    plural(ms, s, 'second') ||
-    ms + ' ms';
+  var msAbs = Math.abs(ms);
+  if (msAbs >= d) {
+    return plural(ms, msAbs, d, 'day');
+  }
+  if (msAbs >= h) {
+    return plural(ms, msAbs, h, 'hour');
+  }
+  if (msAbs >= m) {
+    return plural(ms, msAbs, m, 'minute');
+  }
+  if (msAbs >= s) {
+    return plural(ms, msAbs, s, 'second');
+  }
+  return ms + ' ms';
 }
 
 /**
  * Pluralization helper.
  */
 
-function plural(ms, n, name) {
-  if (ms < n) {
-    return;
-  }
-  if (ms < n * 1.5) {
-    return Math.floor(ms / n) + ' ' + name;
-  }
-  return Math.ceil(ms / n) + ' ' + name + 's';
+function plural(ms, msAbs, n, name) {
+  var isPlural = msAbs >= n * 1.5;
+  return Math.round(ms / n) + ' ' + name + (isPlural ? 's' : '');
 }
 
-},{}],108:[function(require,module,exports){
+},{}],73:[function(require,module,exports){
 /**
  * Compiles a querystring
  * Returns string representation of the object
@@ -24014,7 +12658,7 @@ exports.decode = function(qs){
   return qry;
 };
 
-},{}],109:[function(require,module,exports){
+},{}],74:[function(require,module,exports){
 /**
  * Parses an URI
  *
@@ -24055,7 +12699,7 @@ module.exports = function parseuri(str) {
     return uri;
 };
 
-},{}],110:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -24241,7 +12885,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],111:[function(require,module,exports){
+},{}],76:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -24337,7 +12981,7 @@ exports.connect = lookup;
 exports.Manager = require('./manager');
 exports.Socket = require('./socket');
 
-},{"./manager":112,"./socket":114,"./url":115,"debug":116,"socket.io-parser":119}],112:[function(require,module,exports){
+},{"./manager":77,"./socket":79,"./url":80,"debug":81,"socket.io-parser":85}],77:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -24912,7 +13556,7 @@ Manager.prototype.onreconnect = function () {
   this.emitAll('reconnect', attempt);
 };
 
-},{"./on":113,"./socket":114,"backo2":77,"component-bind":83,"component-emitter":84,"debug":116,"engine.io-client":86,"indexof":104,"socket.io-parser":119}],113:[function(require,module,exports){
+},{"./on":78,"./socket":79,"backo2":43,"component-bind":49,"component-emitter":50,"debug":81,"engine.io-client":52,"indexof":71,"socket.io-parser":85}],78:[function(require,module,exports){
 
 /**
  * Module exports.
@@ -24938,7 +13582,7 @@ function on (obj, ev, fn) {
   };
 }
 
-},{}],114:[function(require,module,exports){
+},{}],79:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -25378,8 +14022,7 @@ Socket.prototype.binary = function (binary) {
   return this;
 };
 
-},{"./on":113,"component-bind":83,"component-emitter":84,"debug":116,"has-binary2":101,"parseqs":108,"socket.io-parser":119,"to-array":123}],115:[function(require,module,exports){
-(function (global){
+},{"./on":78,"component-bind":49,"component-emitter":50,"debug":81,"has-binary2":67,"parseqs":73,"socket.io-parser":85,"to-array":90}],80:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -25407,7 +14050,7 @@ function url (uri, loc) {
   var obj = uri;
 
   // default to window.location
-  loc = loc || global.location;
+  loc = loc || (typeof location !== 'undefined' && location);
   if (null == uri) uri = loc.protocol + '//' + loc.host;
 
   // relative path support
@@ -25456,13 +14099,13 @@ function url (uri, loc) {
   return obj;
 }
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"debug":116,"parseuri":109}],116:[function(require,module,exports){
-arguments[4][95][0].apply(exports,arguments)
-},{"./debug":117,"_process":110,"dup":95}],117:[function(require,module,exports){
-arguments[4][96][0].apply(exports,arguments)
-},{"dup":96,"ms":107}],118:[function(require,module,exports){
-(function (global){
+},{"debug":81,"parseuri":74}],81:[function(require,module,exports){
+arguments[4][61][0].apply(exports,arguments)
+},{"./common":82,"_process":75,"dup":61}],82:[function(require,module,exports){
+arguments[4][62][0].apply(exports,arguments)
+},{"dup":62,"ms":72}],83:[function(require,module,exports){
+arguments[4][68][0].apply(exports,arguments)
+},{"dup":68}],84:[function(require,module,exports){
 /*global Blob,File*/
 
 /**
@@ -25472,8 +14115,8 @@ arguments[4][96][0].apply(exports,arguments)
 var isArray = require('isarray');
 var isBuf = require('./is-buffer');
 var toString = Object.prototype.toString;
-var withNativeBlob = typeof global.Blob === 'function' || toString.call(global.Blob) === '[object BlobConstructor]';
-var withNativeFile = typeof global.File === 'function' || toString.call(global.File) === '[object FileConstructor]';
+var withNativeBlob = typeof Blob === 'function' || (typeof Blob !== 'undefined' && toString.call(Blob) === '[object BlobConstructor]');
+var withNativeFile = typeof File === 'function' || (typeof File !== 'undefined' && toString.call(File) === '[object FileConstructor]');
 
 /**
  * Replaces every Buffer | ArrayBuffer in packet with a numbered placeholder.
@@ -25605,8 +14248,7 @@ exports.removeBlobs = function(data, callback) {
   }
 };
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./is-buffer":120,"isarray":106}],119:[function(require,module,exports){
+},{"./is-buffer":86,"isarray":83}],85:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -25838,7 +14480,7 @@ function Decoder() {
 Emitter(Decoder.prototype);
 
 /**
- * Decodes an ecoded packet string into packet JSON.
+ * Decodes an encoded packet string into packet JSON.
  *
  * @param {String} obj - encoded packet
  * @return {Object} packet
@@ -25859,8 +14501,7 @@ Decoder.prototype.add = function(obj) {
     } else { // non-binary full packet
       this.emit('decoded', packet);
     }
-  }
-  else if (isBuf(obj) || obj.base64) { // raw binary data
+  } else if (isBuf(obj) || obj.base64) { // raw binary data
     if (!this.reconstructor) {
       throw new Error('got binary data when not reconstructing a packet');
     } else {
@@ -25870,8 +14511,7 @@ Decoder.prototype.add = function(obj) {
         this.emit('decoded', packet);
       }
     }
-  }
-  else {
+  } else {
     throw new Error('Unknown type: ' + obj);
   }
 };
@@ -26025,21 +14665,17 @@ function error(msg) {
   };
 }
 
-},{"./binary":118,"./is-buffer":120,"component-emitter":84,"debug":121,"isarray":106}],120:[function(require,module,exports){
-(function (global){
+},{"./binary":84,"./is-buffer":86,"component-emitter":50,"debug":87,"isarray":83}],86:[function(require,module,exports){
+(function (Buffer){
 
 module.exports = isBuf;
 
-var withNativeBuffer = typeof global.Buffer === 'function' && typeof global.Buffer.isBuffer === 'function';
-var withNativeArrayBuffer = typeof global.ArrayBuffer === 'function';
+var withNativeBuffer = typeof Buffer === 'function' && typeof Buffer.isBuffer === 'function';
+var withNativeArrayBuffer = typeof ArrayBuffer === 'function';
 
-var isView = (function () {
-  if (withNativeArrayBuffer && typeof global.ArrayBuffer.isView === 'function') {
-    return global.ArrayBuffer.isView;
-  } else {
-    return function (obj) { return obj.buffer instanceof global.ArrayBuffer; };
-  }
-})();
+var isView = function (obj) {
+  return typeof ArrayBuffer.isView === 'function' ? ArrayBuffer.isView(obj) : (obj.buffer instanceof ArrayBuffer);
+};
 
 /**
  * Returns true if obj is a buffer or an arraybuffer.
@@ -26048,16 +14684,592 @@ var isView = (function () {
  */
 
 function isBuf(obj) {
-  return (withNativeBuffer && global.Buffer.isBuffer(obj)) ||
-          (withNativeArrayBuffer && (obj instanceof global.ArrayBuffer || isView(obj)));
+  return (withNativeBuffer && Buffer.isBuffer(obj)) ||
+          (withNativeArrayBuffer && (obj instanceof ArrayBuffer || isView(obj)));
 }
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],121:[function(require,module,exports){
-arguments[4][95][0].apply(exports,arguments)
-},{"./debug":122,"_process":110,"dup":95}],122:[function(require,module,exports){
-arguments[4][96][0].apply(exports,arguments)
-},{"dup":96,"ms":107}],123:[function(require,module,exports){
+}).call(this,require("buffer").Buffer)
+},{"buffer":48}],87:[function(require,module,exports){
+(function (process){
+/**
+ * This is the web browser implementation of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = require('./debug');
+exports.log = log;
+exports.formatArgs = formatArgs;
+exports.save = save;
+exports.load = load;
+exports.useColors = useColors;
+exports.storage = 'undefined' != typeof chrome
+               && 'undefined' != typeof chrome.storage
+                  ? chrome.storage.local
+                  : localstorage();
+
+/**
+ * Colors.
+ */
+
+exports.colors = [
+  '#0000CC', '#0000FF', '#0033CC', '#0033FF', '#0066CC', '#0066FF', '#0099CC',
+  '#0099FF', '#00CC00', '#00CC33', '#00CC66', '#00CC99', '#00CCCC', '#00CCFF',
+  '#3300CC', '#3300FF', '#3333CC', '#3333FF', '#3366CC', '#3366FF', '#3399CC',
+  '#3399FF', '#33CC00', '#33CC33', '#33CC66', '#33CC99', '#33CCCC', '#33CCFF',
+  '#6600CC', '#6600FF', '#6633CC', '#6633FF', '#66CC00', '#66CC33', '#9900CC',
+  '#9900FF', '#9933CC', '#9933FF', '#99CC00', '#99CC33', '#CC0000', '#CC0033',
+  '#CC0066', '#CC0099', '#CC00CC', '#CC00FF', '#CC3300', '#CC3333', '#CC3366',
+  '#CC3399', '#CC33CC', '#CC33FF', '#CC6600', '#CC6633', '#CC9900', '#CC9933',
+  '#CCCC00', '#CCCC33', '#FF0000', '#FF0033', '#FF0066', '#FF0099', '#FF00CC',
+  '#FF00FF', '#FF3300', '#FF3333', '#FF3366', '#FF3399', '#FF33CC', '#FF33FF',
+  '#FF6600', '#FF6633', '#FF9900', '#FF9933', '#FFCC00', '#FFCC33'
+];
+
+/**
+ * Currently only WebKit-based Web Inspectors, Firefox >= v31,
+ * and the Firebug extension (any Firefox version) are known
+ * to support "%c" CSS customizations.
+ *
+ * TODO: add a `localStorage` variable to explicitly enable/disable colors
+ */
+
+function useColors() {
+  // NB: In an Electron preload script, document will be defined but not fully
+  // initialized. Since we know we're in Chrome, we'll just detect this case
+  // explicitly
+  if (typeof window !== 'undefined' && window.process && window.process.type === 'renderer') {
+    return true;
+  }
+
+  // Internet Explorer and Edge do not support colors.
+  if (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/(edge|trident)\/(\d+)/)) {
+    return false;
+  }
+
+  // is webkit? http://stackoverflow.com/a/16459606/376773
+  // document is undefined in react-native: https://github.com/facebook/react-native/pull/1632
+  return (typeof document !== 'undefined' && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance) ||
+    // is firebug? http://stackoverflow.com/a/398120/376773
+    (typeof window !== 'undefined' && window.console && (window.console.firebug || (window.console.exception && window.console.table))) ||
+    // is firefox >= v31?
+    // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
+    (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31) ||
+    // double check webkit in userAgent just in case we are in a worker
+    (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/));
+}
+
+/**
+ * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
+ */
+
+exports.formatters.j = function(v) {
+  try {
+    return JSON.stringify(v);
+  } catch (err) {
+    return '[UnexpectedJSONParseError]: ' + err.message;
+  }
+};
+
+
+/**
+ * Colorize log arguments if enabled.
+ *
+ * @api public
+ */
+
+function formatArgs(args) {
+  var useColors = this.useColors;
+
+  args[0] = (useColors ? '%c' : '')
+    + this.namespace
+    + (useColors ? ' %c' : ' ')
+    + args[0]
+    + (useColors ? '%c ' : ' ')
+    + '+' + exports.humanize(this.diff);
+
+  if (!useColors) return;
+
+  var c = 'color: ' + this.color;
+  args.splice(1, 0, c, 'color: inherit')
+
+  // the final "%c" is somewhat tricky, because there could be other
+  // arguments passed either before or after the %c, so we need to
+  // figure out the correct index to insert the CSS into
+  var index = 0;
+  var lastC = 0;
+  args[0].replace(/%[a-zA-Z%]/g, function(match) {
+    if ('%%' === match) return;
+    index++;
+    if ('%c' === match) {
+      // we only are interested in the *last* %c
+      // (the user may have provided their own)
+      lastC = index;
+    }
+  });
+
+  args.splice(lastC, 0, c);
+}
+
+/**
+ * Invokes `console.log()` when available.
+ * No-op when `console.log` is not a "function".
+ *
+ * @api public
+ */
+
+function log() {
+  // this hackery is required for IE8/9, where
+  // the `console.log` function doesn't have 'apply'
+  return 'object' === typeof console
+    && console.log
+    && Function.prototype.apply.call(console.log, console, arguments);
+}
+
+/**
+ * Save `namespaces`.
+ *
+ * @param {String} namespaces
+ * @api private
+ */
+
+function save(namespaces) {
+  try {
+    if (null == namespaces) {
+      exports.storage.removeItem('debug');
+    } else {
+      exports.storage.debug = namespaces;
+    }
+  } catch(e) {}
+}
+
+/**
+ * Load `namespaces`.
+ *
+ * @return {String} returns the previously persisted debug modes
+ * @api private
+ */
+
+function load() {
+  var r;
+  try {
+    r = exports.storage.debug;
+  } catch(e) {}
+
+  // If debug isn't set in LS, and we're in Electron, try to load $DEBUG
+  if (!r && typeof process !== 'undefined' && 'env' in process) {
+    r = process.env.DEBUG;
+  }
+
+  return r;
+}
+
+/**
+ * Enable namespaces listed in `localStorage.debug` initially.
+ */
+
+exports.enable(load());
+
+/**
+ * Localstorage attempts to return the localstorage.
+ *
+ * This is necessary because safari throws
+ * when a user disables cookies/localstorage
+ * and you attempt to access it.
+ *
+ * @return {LocalStorage}
+ * @api private
+ */
+
+function localstorage() {
+  try {
+    return window.localStorage;
+  } catch (e) {}
+}
+
+}).call(this,require('_process'))
+},{"./debug":88,"_process":75}],88:[function(require,module,exports){
+
+/**
+ * This is the common logic for both the Node.js and web browser
+ * implementations of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = createDebug.debug = createDebug['default'] = createDebug;
+exports.coerce = coerce;
+exports.disable = disable;
+exports.enable = enable;
+exports.enabled = enabled;
+exports.humanize = require('ms');
+
+/**
+ * Active `debug` instances.
+ */
+exports.instances = [];
+
+/**
+ * The currently active debug mode names, and names to skip.
+ */
+
+exports.names = [];
+exports.skips = [];
+
+/**
+ * Map of special "%n" handling functions, for the debug "format" argument.
+ *
+ * Valid key names are a single, lower or upper-case letter, i.e. "n" and "N".
+ */
+
+exports.formatters = {};
+
+/**
+ * Select a color.
+ * @param {String} namespace
+ * @return {Number}
+ * @api private
+ */
+
+function selectColor(namespace) {
+  var hash = 0, i;
+
+  for (i in namespace) {
+    hash  = ((hash << 5) - hash) + namespace.charCodeAt(i);
+    hash |= 0; // Convert to 32bit integer
+  }
+
+  return exports.colors[Math.abs(hash) % exports.colors.length];
+}
+
+/**
+ * Create a debugger with the given `namespace`.
+ *
+ * @param {String} namespace
+ * @return {Function}
+ * @api public
+ */
+
+function createDebug(namespace) {
+
+  var prevTime;
+
+  function debug() {
+    // disabled?
+    if (!debug.enabled) return;
+
+    var self = debug;
+
+    // set `diff` timestamp
+    var curr = +new Date();
+    var ms = curr - (prevTime || curr);
+    self.diff = ms;
+    self.prev = prevTime;
+    self.curr = curr;
+    prevTime = curr;
+
+    // turn the `arguments` into a proper Array
+    var args = new Array(arguments.length);
+    for (var i = 0; i < args.length; i++) {
+      args[i] = arguments[i];
+    }
+
+    args[0] = exports.coerce(args[0]);
+
+    if ('string' !== typeof args[0]) {
+      // anything else let's inspect with %O
+      args.unshift('%O');
+    }
+
+    // apply any `formatters` transformations
+    var index = 0;
+    args[0] = args[0].replace(/%([a-zA-Z%])/g, function(match, format) {
+      // if we encounter an escaped % then don't increase the array index
+      if (match === '%%') return match;
+      index++;
+      var formatter = exports.formatters[format];
+      if ('function' === typeof formatter) {
+        var val = args[index];
+        match = formatter.call(self, val);
+
+        // now we need to remove `args[index]` since it's inlined in the `format`
+        args.splice(index, 1);
+        index--;
+      }
+      return match;
+    });
+
+    // apply env-specific formatting (colors, etc.)
+    exports.formatArgs.call(self, args);
+
+    var logFn = debug.log || exports.log || console.log.bind(console);
+    logFn.apply(self, args);
+  }
+
+  debug.namespace = namespace;
+  debug.enabled = exports.enabled(namespace);
+  debug.useColors = exports.useColors();
+  debug.color = selectColor(namespace);
+  debug.destroy = destroy;
+
+  // env-specific initialization logic for debug instances
+  if ('function' === typeof exports.init) {
+    exports.init(debug);
+  }
+
+  exports.instances.push(debug);
+
+  return debug;
+}
+
+function destroy () {
+  var index = exports.instances.indexOf(this);
+  if (index !== -1) {
+    exports.instances.splice(index, 1);
+    return true;
+  } else {
+    return false;
+  }
+}
+
+/**
+ * Enables a debug mode by namespaces. This can include modes
+ * separated by a colon and wildcards.
+ *
+ * @param {String} namespaces
+ * @api public
+ */
+
+function enable(namespaces) {
+  exports.save(namespaces);
+
+  exports.names = [];
+  exports.skips = [];
+
+  var i;
+  var split = (typeof namespaces === 'string' ? namespaces : '').split(/[\s,]+/);
+  var len = split.length;
+
+  for (i = 0; i < len; i++) {
+    if (!split[i]) continue; // ignore empty strings
+    namespaces = split[i].replace(/\*/g, '.*?');
+    if (namespaces[0] === '-') {
+      exports.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
+    } else {
+      exports.names.push(new RegExp('^' + namespaces + '$'));
+    }
+  }
+
+  for (i = 0; i < exports.instances.length; i++) {
+    var instance = exports.instances[i];
+    instance.enabled = exports.enabled(instance.namespace);
+  }
+}
+
+/**
+ * Disable debug output.
+ *
+ * @api public
+ */
+
+function disable() {
+  exports.enable('');
+}
+
+/**
+ * Returns true if the given mode name is enabled, false otherwise.
+ *
+ * @param {String} name
+ * @return {Boolean}
+ * @api public
+ */
+
+function enabled(name) {
+  if (name[name.length - 1] === '*') {
+    return true;
+  }
+  var i, len;
+  for (i = 0, len = exports.skips.length; i < len; i++) {
+    if (exports.skips[i].test(name)) {
+      return false;
+    }
+  }
+  for (i = 0, len = exports.names.length; i < len; i++) {
+    if (exports.names[i].test(name)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Coerce `val`.
+ *
+ * @param {Mixed} val
+ * @return {Mixed}
+ * @api private
+ */
+
+function coerce(val) {
+  if (val instanceof Error) return val.stack || val.message;
+  return val;
+}
+
+},{"ms":89}],89:[function(require,module,exports){
+/**
+ * Helpers.
+ */
+
+var s = 1000;
+var m = s * 60;
+var h = m * 60;
+var d = h * 24;
+var y = d * 365.25;
+
+/**
+ * Parse or format the given `val`.
+ *
+ * Options:
+ *
+ *  - `long` verbose formatting [false]
+ *
+ * @param {String|Number} val
+ * @param {Object} [options]
+ * @throws {Error} throw an error if val is not a non-empty string or a number
+ * @return {String|Number}
+ * @api public
+ */
+
+module.exports = function(val, options) {
+  options = options || {};
+  var type = typeof val;
+  if (type === 'string' && val.length > 0) {
+    return parse(val);
+  } else if (type === 'number' && isNaN(val) === false) {
+    return options.long ? fmtLong(val) : fmtShort(val);
+  }
+  throw new Error(
+    'val is not a non-empty string or a valid number. val=' +
+      JSON.stringify(val)
+  );
+};
+
+/**
+ * Parse the given `str` and return milliseconds.
+ *
+ * @param {String} str
+ * @return {Number}
+ * @api private
+ */
+
+function parse(str) {
+  str = String(str);
+  if (str.length > 100) {
+    return;
+  }
+  var match = /^((?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|years?|yrs?|y)?$/i.exec(
+    str
+  );
+  if (!match) {
+    return;
+  }
+  var n = parseFloat(match[1]);
+  var type = (match[2] || 'ms').toLowerCase();
+  switch (type) {
+    case 'years':
+    case 'year':
+    case 'yrs':
+    case 'yr':
+    case 'y':
+      return n * y;
+    case 'days':
+    case 'day':
+    case 'd':
+      return n * d;
+    case 'hours':
+    case 'hour':
+    case 'hrs':
+    case 'hr':
+    case 'h':
+      return n * h;
+    case 'minutes':
+    case 'minute':
+    case 'mins':
+    case 'min':
+    case 'm':
+      return n * m;
+    case 'seconds':
+    case 'second':
+    case 'secs':
+    case 'sec':
+    case 's':
+      return n * s;
+    case 'milliseconds':
+    case 'millisecond':
+    case 'msecs':
+    case 'msec':
+    case 'ms':
+      return n;
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * Short format for `ms`.
+ *
+ * @param {Number} ms
+ * @return {String}
+ * @api private
+ */
+
+function fmtShort(ms) {
+  if (ms >= d) {
+    return Math.round(ms / d) + 'd';
+  }
+  if (ms >= h) {
+    return Math.round(ms / h) + 'h';
+  }
+  if (ms >= m) {
+    return Math.round(ms / m) + 'm';
+  }
+  if (ms >= s) {
+    return Math.round(ms / s) + 's';
+  }
+  return ms + 'ms';
+}
+
+/**
+ * Long format for `ms`.
+ *
+ * @param {Number} ms
+ * @return {String}
+ * @api private
+ */
+
+function fmtLong(ms) {
+  return plural(ms, d, 'day') ||
+    plural(ms, h, 'hour') ||
+    plural(ms, m, 'minute') ||
+    plural(ms, s, 'second') ||
+    ms + ' ms';
+}
+
+/**
+ * Pluralization helper.
+ */
+
+function plural(ms, n, name) {
+  if (ms < n) {
+    return;
+  }
+  if (ms < n * 1.5) {
+    return Math.floor(ms / n) + ' ' + name;
+  }
+  return Math.ceil(ms / n) + ' ' + name + 's';
+}
+
+},{}],90:[function(require,module,exports){
 module.exports = toArray
 
 function toArray(list, index) {
@@ -26072,7 +15284,7 @@ function toArray(list, index) {
     return array
 }
 
-},{}],124:[function(require,module,exports){
+},{}],91:[function(require,module,exports){
 'use strict';
 
 var CancelablePromise = require('./util/cancelablepromise');
@@ -26121,38 +15333,71 @@ function createCancelableRoomPromise(getLocalTracks, createLocalParticipant, cre
 }
 
 module.exports = createCancelableRoomPromise;
-},{"./util/cancelablepromise":233}],125:[function(require,module,exports){
+},{"./util/cancelablepromise":200}],92:[function(require,module,exports){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var _require = require('@twilio/webrtc/lib/util'),
-    guessBrowser = _require.guessBrowser;
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-var CancelablePromise = require('./util/cancelablepromise');
+var _require = require('@twilio/webrtc'),
+    MediaStreamTrack = _require.MediaStreamTrack;
+
+var _require2 = require('@twilio/webrtc/lib/util'),
+    guessBrowser = _require2.guessBrowser;
+
 var createCancelableRoomPromise = require('./cancelableroompromise');
 var createLocalTracks = require('./createlocaltracks');
-var ConstantIceServerSource = require('./iceserversource/constant');
-var constants = require('./util/constants');
-var Room = require('./room');
-var E = require('./util/constants').typeErrors;
 var EncodingParametersImpl = require('./encodingparameters');
+var ConstantIceServerSource = require('./iceserversource/constant');
+var NTSIceServerSource = require('./iceserversource/nts');
+var LocalParticipant = require('./localparticipant');
 var LocalAudioTrack = require('./media/track/es5/localaudiotrack');
 var LocalDataTrack = require('./media/track/es5/localdatatrack');
-var LocalParticipant = require('./localparticipant');
 var LocalVideoTrack = require('./media/track/es5/localvideotrack');
-var Log = require('./util/log');
-var MediaStreamTrack = require('@twilio/webrtc').MediaStreamTrack;
-var NTSIceServerSource = require('./iceserversource/nts');
-var SignalingV2 = require('./signaling/v2');
-var util = require('./util');
 var NetworkQualityConfigurationImpl = require('./networkqualityconfiguration');
+var Room = require('./room');
+var SignalingV2 = require('./signaling/v2');
+
+var _require3 = require('./util'),
+    asLocalTrack = _require3.asLocalTrack,
+    buildLogLevels = _require3.buildLogLevels,
+    filterObject = _require3.filterObject,
+    isNonArrayObject = _require3.isNonArrayObject;
+
+var _require4 = require('./util/constants'),
+    DEFAULT_ENVIRONMENT = _require4.DEFAULT_ENVIRONMENT,
+    DEFAULT_LOG_LEVEL = _require4.DEFAULT_LOG_LEVEL,
+    DEFAULT_REALM = _require4.DEFAULT_REALM,
+    DEFAULT_REGION = _require4.DEFAULT_REGION,
+    ICE_SERVERS_TIMEOUT_MS = _require4.ICE_SERVERS_TIMEOUT_MS,
+    WS_SERVER = _require4.WS_SERVER,
+    E = _require4.typeErrors;
+
+var CancelablePromise = require('./util/cancelablepromise');
+var Log = require('./util/log');
+
+var _require5 = require('./util/validate'),
+    validateBandwidthProfile = _require5.validateBandwidthProfile;
+
+var safariVersion = guessBrowser() === 'safari' && navigator.userAgent.match(/Version\/([^\s]+)/)[1];
 
 // This is used to make out which connect() call a particular Log statement
 // belongs to. Each call to connect() increments this counter.
 var connectCalls = 0;
 
 var didPrintSafariWarning = false;
+var didPrintDscpTaggingWarning = false;
+var isSafariWithoutVP8Support = false;
+
+if (safariVersion) {
+  var _safariVersion$split$ = safariVersion.split('.').map(Number),
+      _safariVersion$split$2 = _slicedToArray(_safariVersion$split$, 2),
+      safariMajorVersion = _safariVersion$split$2[0],
+      safariMinorVersion = _safariVersion$split$2[1];
+
+  isSafariWithoutVP8Support = safariMajorVersion < 12 || safariMajorVersion === 12 && safariMinorVersion < 1;
+}
 
 /**
  * Connect to a {@link Room}.
@@ -26167,6 +15412,7 @@ var didPrintSafariWarning = false;
  *   {@link LocalAudioTrack} and {@link LocalVideoTrack} automatically, you can
  *   pass your own array which you can stop yourself. See {@link ConnectOptions}
  *   for more information.
+ * @alias module:twilio-video.connect
  * @param {string} token - The Access Token string
  * @param {ConnectOptions} [options] - Options to override the default behavior
  * @returns {CancelablePromise<Room>}
@@ -26186,6 +15432,8 @@ var didPrintSafariWarning = false;
  *   room.once('disconnected', function() {
  *     console.log('You left the Room:', room.name);
  *   });
+ * }).catch(error => {
+ *   console.log('Could not connect to the Room:', error.message);
  * });
  * @example
  * var Video = require('twilio-video');
@@ -26203,6 +15451,8 @@ var didPrintSafariWarning = false;
  *   room.once('disconnected', function() {
  *     console.log('You left the Room:', room.name);
  *   });
+ * }).catch(error => {
+ *   console.log('Could not connect to the Room:', error.message);
  * });
  * @example
  * var Video = require('twilio-video');
@@ -26225,6 +15475,8 @@ var didPrintSafariWarning = false;
  *   room.once('disconnected', function() {
  *     console.log('You left the Room:', room.name);
  *   });
+ * }).catch(error => {
+ *   console.log('Could not connect to the Room:', error.message);
  * });
  * @example
  * var Video = require('twilio-video');
@@ -26239,61 +15491,83 @@ var didPrintSafariWarning = false;
  *   room.localParticipants.trackPublications.forEach(function(publication) {
  *     console.log('The LocalTrack "' + publication.trackName + '" was successfully published');
  *   });
+ * }).catch(error => {
+ *   console.log('Could not connect to the Room:', error.message);
  * });
  */
 function connect(token, options) {
   if (typeof options === 'undefined') {
     options = {};
   }
-  if ((typeof options === 'undefined' ? 'undefined' : _typeof(options)) !== 'object' || Array.isArray(options)) {
+  if (!isNonArrayObject(options)) {
     return CancelablePromise.reject(E.INVALID_TYPE('options', 'object'));
+  }
+
+  var shouldPrintDscpTaggingWarning = false;
+  if ('dscpTagging' in options) {
+    options = Object.assign({
+      enableDscp: options.dscpTagging
+    }, options);
+    delete options.dscpTagging;
+    shouldPrintDscpTaggingWarning = !didPrintDscpTaggingWarning;
   }
 
   options = Object.assign({
     abortOnIceServersTimeout: false,
+    automaticSubscription: true,
     createLocalTracks: createLocalTracks,
     dominantSpeaker: false,
-    networkQuality: false,
-    environment: constants.DEFAULT_ENVIRONMENT,
-    iceServersTimeout: constants.ICE_SERVERS_TIMEOUT_MS,
+    enableDscp: false,
+    environment: DEFAULT_ENVIRONMENT,
+    iceServersTimeout: ICE_SERVERS_TIMEOUT_MS,
     insights: true,
     LocalAudioTrack: LocalAudioTrack,
     LocalDataTrack: LocalDataTrack,
     LocalParticipant: LocalParticipant,
     LocalVideoTrack: LocalVideoTrack,
+    Log: Log,
     MediaStreamTrack: MediaStreamTrack,
-    logLevel: constants.DEFAULT_LOG_LEVEL,
+    logLevel: DEFAULT_LOG_LEVEL,
     maxAudioBitrate: null,
     maxVideoBitrate: null,
     name: null,
+    networkQuality: false,
     preferredAudioCodecs: [],
     preferredVideoCodecs: [],
-    realm: constants.DEFAULT_REALM,
-    signaling: SignalingV2,
-    _useTwilioConnection: false
-  }, util.filterObject(options));
+    realm: DEFAULT_REALM,
+    region: DEFAULT_REGION,
+    signaling: SignalingV2
+  }, filterObject(options));
 
   /* eslint new-cap:0 */
-  var wsServer = options._useTwilioConnection ? constants.WS_SERVER_TWILIOCONNECTION(options.environment) : constants.WS_SERVER(options.environment, options.realm);
+  var wsServer = WS_SERVER(options.environment, options.region);
 
   options = Object.assign({ wsServer: wsServer }, options);
 
-  var logLevels = util.buildLogLevels(options.logLevel);
+  var logLevels = buildLogLevels(options.logLevel);
   var logComponentName = '[connect #' + ++connectCalls + ']';
 
   var log = void 0;
   try {
-    log = new Log('default', logComponentName, logLevels);
+    log = new options.Log('default', logComponentName, logLevels);
   } catch (error) {
     return CancelablePromise.reject(error);
   }
   options.log = log;
 
+  // NOTE(mmalavalli): Print the "dscpTagging" deprecation warning once if the log-level
+  // is at least "warn", i.e. neither "error" nor "off".
+  if (shouldPrintDscpTaggingWarning && log.level !== 'error' && log.level !== 'off') {
+    didPrintDscpTaggingWarning = true;
+    log.warn(['The ConnectOptions flag "dscpTagging" is deprecated and scheduled for removal.', 'Please use "enableDscp" instead.'].join(' '));
+  }
+
   // NOTE(mroberts): Print the Safari warning once if the log-level is at least
   // "warn", i.e. neither "error" nor "off".
-  if (guessBrowser() === 'safari' && !didPrintSafariWarning && log.logLevel !== 'error' && log.logLevel !== 'off') {
+  // NOTE(mmalavalli): Print the Safari warning only for versions 12.0 and below.
+  if (isSafariWithoutVP8Support && !didPrintSafariWarning && log.logLevel !== 'error' && log.logLevel !== 'off') {
     didPrintSafariWarning = true;
-    log.warn(['This release of twilio-video.js includes experimental support for', 'Safari 11 and newer. Support for Safari is "experimental" because,', 'at the time of writing, Safari does not support VP8. This means you', 'may experience codec issues in Group Rooms. You may also experience', 'codec issues in Peer-to-Peer (P2P) Rooms containing Android- or', 'iOS-based Participants who do not support H.264. However, P2P Rooms', 'with browser-based Participants should work. Please test this release', 'and report any issues to https://github.com/twilio/twilio-video.js'].join(' '));
+    log.warn(['Support for Safari 12.0 and below is limited because it does not support VP8.', 'This means you may experience codec issues in Group Rooms. You may also', 'experience codec issues in Peer-to-Peer (P2P) Rooms containing Android- or', 'iOS-based Participants who do not support H.264. However, P2P Rooms', 'with browser-based Participants should work. For more information, please', 'refer to this guide: https://www.twilio.com/docs/video/javascript-v2-developing-safari-11'].join(' '));
   }
 
   if (typeof token !== 'string') {
@@ -26312,11 +15586,16 @@ function connect(token, options) {
     }
     try {
       options.tracks = options.tracks.map(function (track) {
-        return util.asLocalTrack(track, localTrackOptions);
+        return asLocalTrack(track, localTrackOptions);
       });
     } catch (error) {
       return CancelablePromise.reject(error);
     }
+  }
+
+  var error = validateBandwidthProfile(options.bandwidthProfile);
+  if (error) {
+    return CancelablePromise.reject(error);
   }
 
   var Signaling = options.signaling;
@@ -26342,10 +15621,10 @@ function connect(token, options) {
     video: options.preferredVideoCodecs.map(normalizeVideoCodecSettings)
   };
 
-  var networkQualityConfiguration = new NetworkQualityConfigurationImpl(_typeof(options.networkQuality) === 'object' ? options.networkQuality : {});
+  var networkQualityConfiguration = new NetworkQualityConfigurationImpl(isNonArrayObject(options.networkQuality) ? options.networkQuality : {});
 
   // Convert options.networkQuality to boolean to configure Media Signaling
-  options.networkQuality = _typeof(options.networkQuality) === 'object' || options.networkQuality;
+  options.networkQuality = isNonArrayObject(options.networkQuality) || options.networkQuality;
 
   // Create a CancelableRoomPromise<Room> that resolves after these steps:
   // 1 - Get the LocalTracks.
@@ -26386,8 +15665,32 @@ function connect(token, options) {
  * @property {boolean|CreateLocalTrackOptions} [audio=true] - Whether or not to
  *   get local audio with <code>getUserMedia</code> when <code>tracks</code>
  *   are not provided.
+ * @property {boolean} [automaticSubscription=true] - By default, you will subscribe
+ *   to all RemoteTracks shared by other Participants in a Room. You can now override this
+ *   behavior by setting this flag to <code>false</code>. It will make sure that you will
+ *   not subscribe to any RemoteTrack in a Group or Small Group Room. Setting it to
+ *   <code>true</code>, or not setting it at all preserves the default behavior. This
+ *   flag does not have any effect in a Peer-to-Peer Room.
+ * @property {BandwidthProfileOptions} [bandwidthProfile] - You can optionally configure
+ *   how your available downlink bandwidth is shared among the RemoteTracks you have subscribed
+ *   to in a Group Room. By default, bandwidth is shared equally among the RemoteTracks.
+ *   This has no effect in Peer-to-Peer Rooms.
  * @property {boolean} [dominantSpeaker=false] - Whether to enable the Dominant
  *   Speaker API or not. This only takes effect in Group Rooms.
+ * @property {boolean} [dscpTagging=false] - <code>(deprecated: use "enableDscp" instead)</code>
+ *   DSCP tagging allows you to request enhanced QoS treatment for RTP media packets from any
+ *   firewall that the client may be behind. Setting this option to <code>true</code> will
+ *   request DSCP tagging for media packets on supported browsers (only Chrome supports this
+ *   as of now). Audio packets will be sent with DSCP header value set to 0xb8 which corresponds
+ *   to Expedited Forwarding (EF). Video packets will be sent with DSCP header value set to 0x88
+ *   which corresponds to Assured Forwarding (AF41).
+ * @property {boolean} [enableDscp=false] - DSCP tagging allows you to request enhanced
+ *   QoS treatment for RTP media packets from any firewall that the client may be behind.
+ *   Setting this option to <code>true</code> will request DSCP tagging for media packets
+ *   on supported browsers (only Chrome supports this as of now). Audio packets will be
+ *   sent with DSCP header value set to 0xb8 which corresponds to Expedited Forwarding (EF).
+ *   Video packets will be sent with DSCP header value set to 0x88 which corresponds to
+ *   Assured Forwarding (AF41).
  * @property {Array<RTCIceServer>} iceServers - Override the STUN and TURN
  *   servers used when connecting to {@link Room}s
  * @property {number} [iceServersTimeout=3000] - Override the amount of time, in
@@ -26397,13 +15700,17 @@ function connect(token, options) {
  * @property {boolean} [insights=true] - Whether publishing events
  *   to the Insights gateway is enabled or not
  * @property {?number} [maxAudioBitrate=null] - Max outgoing audio bitrate (bps);
- *   A <code>null</code> value does not set any bitrate limit; This value is set
- *   as a hint for variable bitrate codecs, but will not take effect for fixed
- *   bitrate codecs
+ *   A <code>null</code> or a <code>0</code> value does not set any bitrate limit;
+ *   This value is set as a hint for variable bitrate codecs, but will not take
+ *   effect for fixed bitrate codecs; Based on our tests, Chrome, Firefox and Safari
+ *   support a bitrate range of 12000 bps to 256000 bps for Opus codec; This parameter
+ *   has no effect on iSAC, PCMU and PCMA codecs
  * @property {?number} [maxVideoBitrate=null] - Max outgoing video bitrate (bps);
- *   A <code>null</code> value does not set any bitrate limit; This value is set
- *   as a hint for variable bitrate codecs, but will not take effect for fixed
- *   bitrate codecs
+ *   A <code>null</code> or <code>0</code> value does not set any bitrate limit;
+ *   This value is set as a hint for variable bitrate codecs, but will not take
+ *   effect for fixed bitrate codecs; Based on our tests, Chrome, Firefox and Safari
+ *   all seem to support an average bitrate range of 20000 bps (20 kbps) to
+ *   8000000 bps (8 mbps) for a 720p VideoTrack
  * @property {?string} [name=null] - Set to connect to a {@link Room} by name
  * @property {boolean|NetworkQualityConfiguration} [networkQuality=false] - Whether to enable the Network
  *   Quality API or not. This only takes effect in Group Rooms. Pass a {@link NetworkQualityConfiguration}
@@ -26412,6 +15719,11 @@ function connect(token, options) {
  *   for the {@link LocalParticipant} to {@link NetworkQualityVerbosity}<code style="padding:0 0">#minimal</code>
  *   and the {@link NetworkQualityVerbosity} for {@link RemoteParticipant}s to
  *   {@link NetworkQualityVerbosity}<code style="padding:0 0">#none</code>.
+ * @property {string} [region='gll'] - Preferred signaling region; By default, you will be connected to the
+ *   nearest signaling server determined by latency based routing. Setting a value other
+ *   than <code style="padding:0 0">gll</code> bypasses routing and guarantees that signaling traffic will be
+ *   terminated in the region that you prefer. Please refer to this <a href="https://www.twilio.com/docs/video/ip-address-whitelisting#signaling-communication" target="_blank">table</a>
+ *   for the list of supported signaling regions.
  * @property {Array<AudioCodec>} [preferredAudioCodecs=[]] - Preferred audio codecs;
  *  An empty array preserves the current audio codec preference order.
  * @property {Array<VideoCodec|VideoCodecSettings>} [preferredVideoCodecs=[]] -
@@ -26436,6 +15748,59 @@ function connect(token, options) {
  */
 
 /**
+ * {@link BandwidthProfileOptions} allows you to configure how your available downlink
+ * bandwidth is shared among the RemoteTracks you have subscribed to in a Group Room.
+ * @typedef {object} BandwidthProfileOptions
+ * @property {VideoBandwidthProfileOptions} [video] - Optional parameter to configure
+ *   how your available downlink bandwidth is shared among the {@link RemoteVideoTrack}s you
+ *   have subscribed to in a Group Room.
+ */
+
+/**
+ * {@link VideoBandwidthProfileOptions} allows you to configure how your available downlink
+ * bandwidth is shared among the {@link RemoteVideoTrack}s you have subscribed to in a Group Room.
+ * @typedef {object} VideoBandwidthProfileOptions
+ * @property {Track.Priority} [dominantSpeakerPriority="standard"] - Optional parameter to
+ *   specify the minimum subscribe {@link Track.Priority} of the Dominant Speaker's {@link RemoteVideoTrack}s.
+ *   This means that the Dominant Speaker's {@link RemoteVideoTrack}s that are published with
+ *   lower {@link Track.Priority} will be subscribed to with the {@link Track.Priority} specified here.
+ *   This has no effect on {@link RemoteVideoTrack}s published with higher {@link Track.Priority}, which will
+ *   still be subscribed to with with the same {@link Track.Priority}. If not specified, this defaults to "standard".
+ * @property {number} [maxSubscriptionBitrate] - Optional parameter to specify the maximum
+ *   downlink video bandwidth in bits per second (bps). By default, there are no limits on
+ *   the downlink video bandwidth.
+ * @property {number} [maxTracks] - Optional parameter to specify the maximum number of visible
+ *   {@link RemoteVideoTrack}s, which will be selected based on {@link Track.Priority} and an N-Loudest
+ *   policy. By default there are no limits on the number of visible {@link RemoteVideoTrack}s.
+ *   0 or a negative value will remove any limit on the maximum number of visible {@link RemoteVideoTrack}s.
+ * @property {BandwidthProfileMode} [mode="grid"] - Optional parameter to specify how the {@link RemoteVideoTrack}s'
+ *   TrackPriority values are mapped to bandwidth allocation in Group Rooms. This defaults to "grid",
+ *   which results in equal bandwidth share allocation to all {@link RemoteVideoTrack}s.
+ * @property {VideoRenderDimensions} [renderDimensions] - Optional parameter to specify the desired
+ *   render dimensions of {@link RemoteVideoTrack}s based on {@link Track.Priority} and the
+ *   {@link RemoteVideoTrack}s of the Dominant Speaker.
+ * @property {TrackSwitchOffMode} [trackSwitchOffMode="predicted"] - Optional parameter to configure
+ *   how {@link RemoteVideoTrack}s are switched off in response to bandwidth pressure. Defaults to "predicted".
+ */
+
+/**
+ * {@link VideoRenderDimensions} allows you to specify the desired render dimensions of {@link RemoteVideoTrack}s
+ * based on {@link Track.Priority}. The bandwidth allocation algorithm will distribute the available downlink bandwidth
+ * proportional to the requested render dimensions. This is just an input for calculating the bandwidth to be allocated
+ * and does not affect the actual resolution of the {@link RemoteVideoTrack}s.
+ * @typedef {object} VideoRenderDimensions
+ * @property {VideoTrack.Dimensions} [high] - Optional parameter to specify the desired rendering dimensions of
+ *   {@link RemoteVideoTrack} whose {@link Track.Priority} is "high". 0 or a negative value will result in the lowest
+ *   possible resolution. This defaults to 1280 x 720 (HD).
+ * @property {VideoTrack.Dimensions} [low] - Optional parameter to specify the desired rendering dimensions of
+ *   {@link RemoteVideoTrack} whose {@link Track.Priority} is "low". 0 or a negative value will result in the lowest
+ *   possible resolution. This defaults to 176 x 144 (QCIF).
+ * @property {VideoTrack.Dimensions} [standard] - Optional parameter to specify the desired rendering dimensions of
+ *   {@link RemoteVideoTrack} whose {@link Track.Priority} is "standard". 0 or a negative value will result in the lowest
+ *   possible resolution. This defaults to 640 x 480 (VGA).
+ */
+
+/**
  * Configure verbosity levels for network quality information for
  * {@link LocalParticipant} and {@link RemoteParticipant}s.
  * @typedef {object} NetworkQualityConfiguration
@@ -26445,7 +15810,7 @@ function connect(token, options) {
 
 /**
  * You may pass these levels to {@link ConnectOptions} to override
- *   log levels for individual components.
+ * log levels for individual components.
  * @typedef {object} LogLevels
  * @property {LogLevel} [default='warn'] - Log level for 'default' modules.
  * @property {LogLevel} [media='warn'] - Log level for 'media' modules.
@@ -26535,6 +15900,67 @@ var NetworkQualityVerbosity = {
   detailed: 3
 };
 
+/**
+ * {@link TrackSwitchOffMode} specifies when {@link RemoteVideoTrack}s' are switched off.
+ * @enum {string}
+ */
+// eslint-disable-next-line
+var TrackSwitchOffMode = {
+  /**
+   * In this mode, {@link RemoteVideoTrack}s are switched off only when network congestion
+   * is detected.
+   */
+  detected: 'detected',
+
+  /**
+   * In this mode, {@link RemoteVideoTrack}s are pro-actively switched off when network
+   * congestion is predicted by the bandwidth estimation mechanism.
+   */
+  predicted: 'predicted',
+
+  /**
+   * In this mode, {@link RemoteVideoTrack}s are not switched off. Instead in response to network
+   * congestion, tracks will be adjusted to lower quality.
+   */
+  disabled: 'disabled'
+};
+
+/**
+ * {@link BandwidthProfileMode} specifies how {@link RemoteVideoTrack}s' {@link Track.Priority} values
+ * are mapped to bandwidth allocation in Group Rooms.
+ * @enum {string}
+ */
+// eslint-disable-next-line
+var BandwidthProfileMode = {
+  /**
+   * This mode is for use cases where all the subscribed {@link RemoteVideoTrack}s are
+   * equally important. The bandwidth allocation algorithm will share the available
+   * downlink bandwidth equally among the subscribed {@link RemoteVideoTrack}s, irrespective
+   * of their {@link Track.Priority}. In case of insufficient downlink bandwidth, the lower
+   * priority {@link RemoteVideoTrack}s are switched off.
+   */
+  grid: 'grid',
+  /**
+   * This mode is for use cases where some {@link RemoteVideoTrack}s are prioritized more than
+   * others. However, the lower priority {@link RemoteVideoTrack}s still need to be visible.
+   * The bandwidth allocation algorithm will share the available downlink bandwidth proportional
+   * to the requested {@link VideoRenderDimensions} corresponding to their {@link Track.Priority}.
+   * In case of insufficient downlink bandwidth, the quality of higher priority {@link RemoteVideoTrack}s
+   * may be degraded to avoid switching off lower priority {@link RemoteVideoTrack}s.
+   */
+  collaboration: 'collaboration',
+  /**
+   * This mode is for use cases where some {@link RemoteVideoTrack}s are deemed critical and must
+   * be preserved at any cost over the other {@link RemoteVideoTrack}s. The bandwidth allocation
+   * algorithm will allocate as big a share of the available downlink bandwidth as it possibly
+   * can to the higher priority {@link RemoteVideoTrack}s, and only then consider the lower priority
+   * {@link RemoteVideoTrack}s. In case of insufficient downlink bandwidth, the lower priority
+   * {@link RemoteVideoTrack}s are switched off in order to preserve the quality of the higher
+   * priority {@link RemoteVideoTrack}s.
+   */
+  presentation: 'presentation'
+};
+
 function createLocalParticipant(signaling, log, encodingParameters, networkQualityConfiguration, options, localTracks) {
   var localParticipantSignaling = signaling.createLocalParticipantSignaling(encodingParameters, networkQualityConfiguration);
   log.debug('Creating a new LocalParticipant:', localParticipantSignaling);
@@ -26619,7 +16045,7 @@ function normalizeVideoCodecSettings(nameOrSettings) {
 }
 
 module.exports = connect;
-},{"./cancelableroompromise":124,"./createlocaltracks":127,"./encodingparameters":133,"./iceserversource/constant":135,"./iceserversource/nts":136,"./localparticipant":138,"./media/track/es5/localaudiotrack":140,"./media/track/es5/localdatatrack":141,"./media/track/es5/localvideotrack":142,"./networkqualityconfiguration":166,"./room":171,"./signaling/v2":184,"./util":236,"./util/cancelablepromise":233,"./util/constants":234,"./util/log":239,"@twilio/webrtc":58,"@twilio/webrtc/lib/util":71}],126:[function(require,module,exports){
+},{"./cancelableroompromise":91,"./createlocaltracks":94,"./encodingparameters":100,"./iceserversource/constant":102,"./iceserversource/nts":103,"./localparticipant":105,"./media/track/es5/localaudiotrack":107,"./media/track/es5/localdatatrack":108,"./media/track/es5/localvideotrack":109,"./networkqualityconfiguration":133,"./room":138,"./signaling/v2":152,"./util":203,"./util/cancelablepromise":200,"./util/constants":201,"./util/log":206,"./util/validate":218,"@twilio/webrtc":24,"@twilio/webrtc/lib/util":37}],93:[function(require,module,exports){
 'use strict';
 
 var defaultCreateLocalTracks = require('./createlocaltracks');
@@ -26653,6 +16079,7 @@ function createLocalTrack(kind, options) {
 
 /**
  * Request a {@link LocalAudioTrack}.
+ * @alias module:twilio-video.createLocalAudioTrack
  * @param {CreateLocalTrackOptions} [options] - Options for requesting a {@link LocalAudioTrack}
  * @returns {Promise<LocalAudioTrack>}
  * @example
@@ -26682,6 +16109,7 @@ function createLocalAudioTrack(options) {
 
 /**
  * Request a {@link LocalVideoTrack}.
+ * @alias module:twilio-video.createLocalVideoTrack
  * @param {CreateLocalTrackOptions} [options] - Options for requesting a {@link LocalVideoTrack}
  * @returns {Promise<LocalVideoTrack>}
  * @example
@@ -26710,7 +16138,9 @@ function createLocalVideoTrack(options) {
 }
 
 /**
- * Create {@link LocalTrack} options.
+ * Create {@link LocalTrack} options. Apart from the properties listed here, you can
+ * also specify any of the <a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints" target="_blank">MediaTrackConstraints</a>
+ * properties.
  * @typedef {MediaTrackConstraints} CreateLocalTrackOptions
  * @property {LogLevel|LogLevels} logLevel
  * @property {string} [name] - The {@link LocalTrack}'s name; by default,
@@ -26725,7 +16155,7 @@ module.exports = {
   audio: createLocalAudioTrack,
   video: createLocalVideoTrack
 };
-},{"./createlocaltracks":127,"./util/constants":234}],127:[function(require,module,exports){
+},{"./createlocaltracks":94,"./util/constants":201}],94:[function(require,module,exports){
 'use strict';
 
 var asLocalTrack = require('./util').asLocalTrack;
@@ -26747,6 +16177,7 @@ var createLocalTrackCalls = 0;
 /**
  * Request {@link LocalTrack}s. By default, it requests a
  * {@link LocalAudioTrack} and a {@link LocalVideoTrack}.
+ * @alias module:twilio-video.createLocalTracks
  * @param {CreateLocalTracksOptions} [options]
  * @returns {Promise<Array<LocalTrack>>}
  * @example
@@ -26866,7 +16297,7 @@ function createLocalTracks(options) {
  */
 
 module.exports = createLocalTracks;
-},{"./media/track/es5/localaudiotrack":140,"./media/track/es5/localdatatrack":141,"./media/track/es5/localvideotrack":142,"./util":236,"./util/constants":234,"./util/log":239,"./webaudio/workaround180748":253,"@twilio/webrtc":58}],128:[function(require,module,exports){
+},{"./media/track/es5/localaudiotrack":107,"./media/track/es5/localdatatrack":108,"./media/track/es5/localvideotrack":109,"./util":203,"./util/constants":201,"./util/log":206,"./webaudio/workaround180748":221,"@twilio/webrtc":24}],95:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -26888,6 +16319,7 @@ var DataTransport = require('./transport');
  * receive data.
  * @extends DataTrackTransceiver
  * @emits DataTrackReceiver#message
+ * @emits DataTrackReceiver#close
  */
 
 var DataTrackReceiver = function (_DataTrackTransceiver) {
@@ -26915,6 +16347,10 @@ var DataTrackReceiver = function (_DataTrackTransceiver) {
 
     dataChannel.addEventListener('message', function (event) {
       _this.emit('message', event.data);
+    });
+
+    dataChannel.addEventListener('close', function () {
+      _this.emit('close');
     });
     return _this;
   }
@@ -26946,8 +16382,12 @@ var DataTrackReceiver = function (_DataTrackTransceiver) {
  * @param {string|ArrayBuffer} data
  */
 
+/**
+ * @event DataTrackReceiver#close
+ */
+
 module.exports = DataTrackReceiver;
-},{"./transceiver":130,"./transport":131}],129:[function(require,module,exports){
+},{"./transceiver":97,"./transport":98}],96:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -27084,7 +16524,11 @@ var DataTrackSender = function (_DataTrackTransceiver) {
         }
       });
       this._clones.forEach(function (clone) {
-        clone.send(data);
+        try {
+          clone.send(data);
+        } catch (error) {
+          // Do nothing.
+        }
       });
       return this;
     }
@@ -27105,7 +16549,7 @@ var DataTrackSender = function (_DataTrackTransceiver) {
 }(DataTrackTransceiver);
 
 module.exports = DataTrackSender;
-},{"../util":236,"./transceiver":130}],130:[function(require,module,exports){
+},{"../util":203,"./transceiver":97}],97:[function(require,module,exports){
 'use strict';
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -27164,7 +16608,7 @@ var DataTrackTransceiver = function (_TrackTransceiver) {
 }(TrackTransceiver);
 
 module.exports = DataTrackTransceiver;
-},{"../transceiver":230}],131:[function(require,module,exports){
+},{"../transceiver":197}],98:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -27239,7 +16683,11 @@ var DataTransport = function (_EventEmitter) {
     key: '_publish',
     value: function _publish(message) {
       var data = JSON.stringify(message);
-      this._dataChannel.send(data);
+      try {
+        this._dataChannel.send(data);
+      } catch (error) {
+        // Do nothing.
+      }
     }
 
     /**
@@ -27275,7 +16723,7 @@ var DataTransport = function (_EventEmitter) {
  */
 
 module.exports = DataTransport;
-},{"events":100}],132:[function(require,module,exports){
+},{"events":66}],99:[function(require,module,exports){
 'use strict';
 
 var request = require('./request');
@@ -27344,7 +16792,7 @@ function toQueryString(params) {
 }
 
 module.exports.getConfiguration = getConfiguration;
-},{"./request":170,"./util/twilio-video-errors":249}],133:[function(require,module,exports){
+},{"./request":137,"./util/twilio-video-errors":216}],100:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -27451,7 +16899,7 @@ var EncodingParametersImpl = function (_EventEmitter) {
  */
 
 module.exports = EncodingParametersImpl;
-},{"events":100}],134:[function(require,module,exports){
+},{"events":66}],101:[function(require,module,exports){
 'use strict';
 
 var _require = require('events'),
@@ -27461,7 +16909,7 @@ var _require2 = require('./util'),
     hidePrivateAndCertainPublicPropertiesInClass = _require2.hidePrivateAndCertainPublicPropertiesInClass;
 
 module.exports = hidePrivateAndCertainPublicPropertiesInClass(EventEmitter, ['domain']);
-},{"./util":236,"events":100}],135:[function(require,module,exports){
+},{"./util":203,"events":66}],102:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -27544,7 +16992,7 @@ var ConstantIceServerSource = function (_EventEmitter) {
 }(EventEmitter);
 
 module.exports = ConstantIceServerSource;
-},{"events":100}],136:[function(require,module,exports){
+},{"events":66}],103:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -27827,8 +17275,13 @@ function poll(client) {
 }
 
 module.exports = NTSIceServerSource;
-},{"../../package.json":254,"../ecs":132,"../util":236,"../util/constants":234,"../util/log":239,"../util/timeoutpromise":248,"../util/twilio-video-errors":249,"events":100}],137:[function(require,module,exports){
+},{"../../package.json":222,"../ecs":99,"../util":203,"../util/constants":201,"../util/log":206,"../util/timeoutpromise":215,"../util/twilio-video-errors":216,"events":66}],104:[function(require,module,exports){
 'use strict';
+/**
+ * @module twilio-video
+ * @property {boolean} isSupported - true if the current browser is officially supported by twilio-video.js.
+ * @property {string} version - current version of twilio-video.js.
+ */
 
 var version = require('../package.json').version;
 var Video = {};
@@ -27873,7 +17326,7 @@ Object.defineProperties(Video, {
 });
 
 module.exports = Video;
-},{"../package.json":254,"./connect":125,"./createlocaltrack":126,"./createlocaltracks":127,"./media/track/es5/localaudiotrack":140,"./media/track/es5/localdatatrack":141,"./media/track/es5/localvideotrack":142,"./util/support":246}],138:[function(require,module,exports){
+},{"../package.json":222,"./connect":92,"./createlocaltrack":93,"./createlocaltracks":94,"./media/track/es5/localaudiotrack":107,"./media/track/es5/localdatatrack":108,"./media/track/es5/localvideotrack":109,"./util/support":213}],105:[function(require,module,exports){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -27888,16 +17341,28 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var util = require('./util');
-var E = require('./util/constants').typeErrors;
+var _require = require('@twilio/webrtc'),
+    MediaStreamTrack = _require.MediaStreamTrack;
+
+var _require2 = require('./util'),
+    asLocalTrack = _require2.asLocalTrack,
+    asLocalTrackPublication = _require2.asLocalTrackPublication,
+    trackClass = _require2.trackClass;
+
+var _require3 = require('./util/constants'),
+    E = _require3.typeErrors,
+    trackPriority = _require3.trackPriority;
+
+var _require4 = require('./util/validate'),
+    validateLocalTrack = _require4.validateLocalTrack;
+
 var LocalAudioTrack = require('./media/track/es5/localaudiotrack');
 var LocalDataTrack = require('./media/track/es5/localdatatrack');
 var LocalVideoTrack = require('./media/track/es5/localvideotrack');
-var MediaStreamTrack = require('@twilio/webrtc').MediaStreamTrack;
-var Participant = require('./participant');
 var LocalAudioTrackPublication = require('./media/track/localaudiotrackpublication');
 var LocalDataTrackPublication = require('./media/track/localdatatrackpublication');
 var LocalVideoTrackPublication = require('./media/track/localvideotrackpublication');
+var Participant = require('./participant');
 
 /**
  * A {@link LocalParticipant} represents the local {@link Participant} in a
@@ -27985,16 +17450,17 @@ var LocalParticipant = function (_Participant) {
    * @private
    * @param {LocalTrack} track
    * @param {Track.ID} id
+   * @param {Track.Priority} priority
    * @returns {?LocalTrack}
    */
 
 
   _createClass(LocalParticipant, [{
     key: '_addTrack',
-    value: function _addTrack(track, id) {
+    value: function _addTrack(track, id, priority) {
       var addedTrack = _get(LocalParticipant.prototype.__proto__ || Object.getPrototypeOf(LocalParticipant.prototype), '_addTrack', this).call(this, track, id);
       if (addedTrack && this.state !== 'disconnected') {
-        this._addLocalTrack(track);
+        this._addLocalTrack(track, priority);
       }
       return addedTrack;
     }
@@ -28002,15 +17468,16 @@ var LocalParticipant = function (_Participant) {
     /**
      * @private
      * @param {LocalTrack} track
+     * @param {Track.Priority} priority
      * @returns {void}
      */
 
   }, {
     key: '_addLocalTrack',
-    value: function _addLocalTrack(track) {
-      this._signaling.addTrack(track._trackSender, track.name);
-      this._log.info('Added a new ' + util.trackClass(track, true) + ':', track.id);
-      this._log.debug(util.trackClass(track, true) + ':', track);
+    value: function _addLocalTrack(track, priority) {
+      this._signaling.addTrack(track._trackSender, track.name, priority);
+      this._log.info('Added a new ' + trackClass(track, true) + ':', track.id);
+      this._log.debug(trackClass(track, true) + ':', track);
     }
 
     /**
@@ -28026,8 +17493,8 @@ var LocalParticipant = function (_Participant) {
       var removedTrack = _get(LocalParticipant.prototype.__proto__ || Object.getPrototypeOf(LocalParticipant.prototype), '_removeTrack', this).call(this, track, id);
       if (removedTrack && this.state !== 'disconnected') {
         this._signaling.removeTrack(track._trackSender);
-        this._log.info('Removed a ' + util.trackClass(track, true) + ':', track.id);
-        this._log.debug(util.trackClass(track, true) + ':', track);
+        this._log.info('Removed a ' + trackClass(track, true) + ':', track.id);
+        this._log.debug(trackClass(track, true) + ':', track);
       }
       return removedTrack;
     }
@@ -28070,7 +17537,7 @@ var LocalParticipant = function (_Participant) {
         var trackSignaling = signaling.getPublication(localTrack._trackSender);
         if (trackSignaling) {
           trackSignaling.disable();
-          log.debug('Disabled the ' + util.trackClass(localTrack, true) + ':', localTrack.id);
+          log.debug('Disabled the ' + trackClass(localTrack, true) + ':', localTrack.id);
         }
       }
 
@@ -28078,7 +17545,7 @@ var LocalParticipant = function (_Participant) {
         var trackSignaling = signaling.getPublication(localTrack._trackSender);
         if (trackSignaling) {
           trackSignaling.enable();
-          log.debug('Enabled the ' + util.trackClass(localTrack, true) + ':', localTrack.id);
+          log.debug('Enabled the ' + trackClass(localTrack, true) + ':', localTrack.id);
         }
       }
 
@@ -28096,9 +17563,10 @@ var LocalParticipant = function (_Participant) {
       this.on('trackStopped', localTrackStopped);
 
       this._tracks.forEach(function (track) {
-        _this2._addLocalTrack(track);
-        _this2._getOrCreateLocalTrackPublication(track).catch(function () {
-          // Do nothing for now.
+        _this2._addLocalTrack(track, trackPriority.PRIORITY_STANDARD);
+        _this2._getOrCreateLocalTrackPublication(track).catch(function (error) {
+          // Just log a warning for now.
+          log.warn('Failed to get or create LocalTrackPublication for ' + track + ':', error);
         });
       });
 
@@ -28152,7 +17620,7 @@ var LocalParticipant = function (_Participant) {
           var error = trackSignaling.error;
           if (error) {
             trackSignaling.removeListener('updated', updated);
-            log.warn('Failed to publish the ' + util.trackClass(localTrack, true) + ': ' + error.message);
+            log.warn('Failed to publish the ' + trackClass(localTrack, true) + ': ' + error.message);
             self._removeTrack(localTrack, localTrack.id);
             setTimeout(function () {
               self.emit('trackPublicationFailed', error, localTrack);
@@ -28184,7 +17652,7 @@ var LocalParticipant = function (_Participant) {
           localTrackPublication = getTrackPublication(self.tracks, localTrack);
 
           if (!localTrackPublication) {
-            localTrackPublication = util.asLocalTrackPublication(localTrack, sid, unpublish, options);
+            localTrackPublication = asLocalTrackPublication(localTrack, trackSignaling, unpublish, options);
             self._addTrackPublication(localTrackPublication);
           }
 
@@ -28203,19 +17671,43 @@ var LocalParticipant = function (_Participant) {
     /**
      * Publishes a {@link LocalTrack} to the {@link Room}.
      * @param {LocalTrack} localTrack - The {@link LocalTrack} to publish
+     * @param {LocalTrackPublishOptions} [options] - The {@link LocalTrackPublishOptions}
+     *   for publishing the {@link LocalTrack}
      * @returns {Promise<LocalTrackPublication>} - Resolves with the corresponding
      *   {@link LocalTrackPublication} if successful
+     * @throws {TypeError}
+     * @throws {RangeError}
+     * @example
+     * var Video = require('twilio-video');
+     *
+     * Video.connect(token, {
+     *   name: 'my-cool-room',
+     *   audio: true
+     * }).then(function(room) {
+     *   return Video.createLocalVideoTrack({
+     *     name: 'camera'
+     *   }).then(function(localVideoTrack) {
+     *     return room.localParticipant.publishTrack(localVideoTrack, {
+     *       priority: 'high'
+     *     });
+     *   });
+     * }).then(function(publication) {
+     *   console.log('The LocalTrack "' + publication.trackName
+     *     + '" was successfully published with priority "'
+     *     * publication.priority + '"');
+     * });
     */ /**
        * Publishes a MediaStreamTrack to the {@link Room}.
        * @param {MediaStreamTrack} mediaStreamTrack - The MediaStreamTrack
        *   to publish; if a corresponding {@link LocalAudioTrack} or
        *   {@link LocalVideoTrack} has not yet been published, this method will
        *   construct one
-       * @param {LocalTrackOptions} [options] - The {@link LocalTrackOptions} for
-       *   constructing the  MediaStreamTrack's corresponding {@link LocalAudioTrack}
-       *   or {@link LocalVideoTrack}
+       * @param {MediaStreamTrackPublishOptions} [options] - The options for publishing
+       *   the MediaStreamTrack
        * @returns {Promise<LocalTrackPublication>} - Resolves with the corresponding
        *   {@link LocalTrackPublication} if successful
+       * @throws {TypeError}
+       * @throws {RangeError}
        * @example
        * var Video = require('twilio-video');
        *
@@ -28223,12 +17715,19 @@ var LocalParticipant = function (_Participant) {
        *   name: 'my-cool-room',
        *   audio: true
        * }).then(function(room) {
-       *   // Publish a video MediaStreamTrack with a custom name
-       *   return room.localParticipant.publishTrack(mediaStreamTrack, {
-       *     name: 'camera'
+       *   return navigator.mediaDevices.getUserMedia({
+       *     video: true
+       *   }).then(function(mediaStream) {
+       *     var mediaStreamTrack = mediaStream.getTracks()[0];
+       *     return room.localParticipant.publishTrack(mediaStreamTrack, {
+       *       name: 'camera',
+       *       priority: 'high'
+       *     });
        *   });
        * }).then(function(publication) {
-       *   console.log('The LocalTrack "' + publication.trackName + '" was successfully published');
+       *   console.log('The LocalTrack "' + publication.trackName
+       *     + '" was successfully published with priority "'
+       *     * publication.priority + '"');
        * });
        */
 
@@ -28242,6 +17741,7 @@ var LocalParticipant = function (_Participant) {
 
       options = Object.assign({
         log: this._log,
+        priority: trackPriority.PRIORITY_STANDARD,
         LocalAudioTrack: this._LocalAudioTrack,
         LocalDataTrack: this._LocalDataTrack,
         LocalVideoTrack: this._LocalVideoTrack,
@@ -28250,12 +17750,18 @@ var LocalParticipant = function (_Participant) {
 
       var localTrack = void 0;
       try {
-        localTrack = util.asLocalTrack(localTrackOrMediaStreamTrack, options);
+        localTrack = asLocalTrack(localTrackOrMediaStreamTrack, options);
       } catch (error) {
         return Promise.reject(error);
       }
 
-      var addedLocalTrack = this._addTrack(localTrack, localTrack.id) || this._tracks.get(localTrack.id);
+      var priorityValues = Object.values(trackPriority);
+      if (!priorityValues.includes(options.priority)) {
+        // eslint-disable-next-line new-cap
+        return Promise.reject(E.INVALID_VALUE('LocalTrackPublishOptions.priority', priorityValues));
+      }
+
+      var addedLocalTrack = this._addTrack(localTrack, localTrack.id, options.priority) || this._tracks.get(localTrack.id);
 
       return this._getOrCreateLocalTrackPublication(addedLocalTrack);
     }
@@ -28279,6 +17785,11 @@ var LocalParticipant = function (_Participant) {
         throw E.INVALID_TYPE('tracks', 'Array of LocalAudioTrack, LocalVideoTrack, LocalDataTrack, or MediaStreamTrack');
       }
       return Promise.all(tracks.map(this.publishTrack, this));
+    }
+  }, {
+    key: 'setBandwidthProfile',
+    value: function setBandwidthProfile() {
+      this._log.warn('setBandwidthProfile is not implemented yet and may be available in future versions of twilio-video.js');
     }
 
     /**
@@ -28316,7 +17827,7 @@ var LocalParticipant = function (_Participant) {
         throw E.INVALID_TYPE('networkQualityConfiguration', 'NetworkQualityConfiguration');
       }
       ['local', 'remote'].forEach(function (prop) {
-        if (prop in networkQualityConfiguration && typeof networkQualityConfiguration[prop] !== 'number') {
+        if (prop in networkQualityConfiguration && (typeof networkQualityConfiguration[prop] !== 'number' || isNaN(networkQualityConfiguration[prop]))) {
           // eslint-disable-next-line new-cap
           throw E.INVALID_TYPE('networkQualityConfiguration.' + prop, 'number');
         }
@@ -28372,7 +17883,7 @@ var LocalParticipant = function (_Participant) {
   }, {
     key: 'unpublishTrack',
     value: function unpublishTrack(track) {
-      util.validateLocalTrack(track, {
+      validateLocalTrack(track, {
         LocalAudioTrack: this._LocalAudioTrack,
         LocalDataTrack: this._LocalDataTrack,
         LocalVideoTrack: this._LocalVideoTrack,
@@ -28483,11 +17994,38 @@ var LocalParticipant = function (_Participant) {
  * Outgoing media encoding parameters.
  * @typedef {object} EncodingParameters
  * @property {?number} [maxAudioBitrate] - Max outgoing audio bitrate (bps);
- *   If not specified, retains the existing bitrate limit; A <code>null</code>
- *   value removes any previously set bitrate limit
+ *   If not specified, retains the existing bitrate limit; A <code>null</code> or a
+ *   <code>0</code> value removes any previously set bitrate limit; This value is set
+ *   as a hint for variable bitrate codecs, but will not take effect for fixed bitrate
+ *   codecs; Based on our tests, Chrome, Firefox and Safari support a bitrate range of
+ *   12000 bps to 256000 bps for Opus codec; This parameter has no effect on iSAC, PCMU
+ *   and PCMA codecs
  * @property {?number} [maxVideoBitrate] - Max outgoing video bitrate (bps);
- *   If not specified, retains the existing bitrate limit; A <code>null</code>
- *   value removes any previously set bitrate limit
+ *   If not specified, retains the existing bitrate limit; A <code>null</code> or
+ *   a <code>0</code> value removes any previously set bitrate limit; This value is
+ *   set as a hint for variable bitrate codecs, but will not take effect for fixed
+ *   bitrate codecs; Based on our tests, Chrome, Firefox and Safari all seem to support
+ *   an average bitrate range of 20000 bps (20 kbps) to 8000000 bps (8 mbps) for a
+ *   720p VideoTrack.
+ *   Note: this limit is not applied for screen share tracks published on Chrome.
+ */
+
+/**
+ * Options for publishing a {@link LocalTrack}.
+ * @typedef {object} LocalTrackPublishOptions
+ * @property {Track.Priority} [priority='standard'] - The priority with which the {@link LocalTrack}
+ *   is to be published; In Group or Small Group Rooms, the appropriate bandwidth is
+ *   allocated to the {@link LocalTrack} based on its {@link Track.Priority}; It has no
+ *   effect in Peer-to-Peer Rooms; It defaults to "standard" when not provided
+ */
+
+/**
+ * Options for publishing a {@link MediaStreamTrack}.
+ * @typedef {LocalTrackOptions} MediaStreamTrackPublishOptions
+ * @property {Track.Priority} [priority='standard'] - The priority with which the {@link LocalTrack}
+ *   is to be published; In Group or Small Group Rooms, the appropriate bandwidth is
+ *   allocated to the {@link LocalTrack} based on its {@link Track.Priority}; It has no
+ *   effect in Peer-to-Peer Rooms; It defaults to "standard" when not provided
  */
 
 /**
@@ -28505,7 +18043,7 @@ function getTrackPublication(trackPublications, track) {
 }
 
 module.exports = LocalParticipant;
-},{"./media/track/es5/localaudiotrack":140,"./media/track/es5/localdatatrack":141,"./media/track/es5/localvideotrack":142,"./media/track/localaudiotrackpublication":145,"./media/track/localdatatrackpublication":147,"./media/track/localvideotrackpublication":151,"./participant":167,"./util":236,"./util/constants":234,"@twilio/webrtc":58}],139:[function(require,module,exports){
+},{"./media/track/es5/localaudiotrack":107,"./media/track/es5/localdatatrack":108,"./media/track/es5/localvideotrack":109,"./media/track/localaudiotrackpublication":112,"./media/track/localdatatrackpublication":114,"./media/track/localvideotrackpublication":118,"./participant":134,"./util":203,"./util/constants":201,"./util/validate":218,"@twilio/webrtc":24}],106:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -28686,7 +18224,8 @@ var AudioTrack = function (_MediaTrack) {
  */
 
 module.exports = AudioTrack;
-},{"./mediatrack":152}],140:[function(require,module,exports){
+},{"./mediatrack":119}],107:[function(require,module,exports){
+// eslint-disable-next-line no-warning-comments
 // TODO(mroberts): Remove this when we go to the next major version. This is
 // only in place so that we can support ES6 classes without requiring `new`.
 'use strict';
@@ -28705,7 +18244,8 @@ function LocalAudioTrack(mediaStreamTrack, options) {
 inherits(LocalAudioTrack, LocalAudioTrackClass);
 
 module.exports = LocalAudioTrack;
-},{"../localaudiotrack":144,"util":258}],141:[function(require,module,exports){
+},{"../localaudiotrack":111,"util":227}],108:[function(require,module,exports){
+// eslint-disable-next-line no-warning-comments
 // TODO(mroberts): Remove this when we go to the next major version. This is
 // only in place so that we can support ES6 classes without requiring `new`.
 'use strict';
@@ -28724,7 +18264,8 @@ function LocalDataTrack(options) {
 inherits(LocalDataTrack, LocalDataTrackClass);
 
 module.exports = LocalDataTrack;
-},{"../localdatatrack":146,"util":258}],142:[function(require,module,exports){
+},{"../localdatatrack":113,"util":227}],109:[function(require,module,exports){
+// eslint-disable-next-line no-warning-comments
 // TODO(mroberts): Remove this when we go to the next major version. This is
 // only in place so that we can support ES6 classes without requiring `new`.
 'use strict';
@@ -28743,7 +18284,7 @@ function LocalVideoTrack(mediaStreamTrack, options) {
 inherits(LocalVideoTrack, LocalVideoTrackClass);
 
 module.exports = LocalVideoTrack;
-},{"../localvideotrack":150,"util":258}],143:[function(require,module,exports){
+},{"../localvideotrack":117,"util":227}],110:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -28837,6 +18378,11 @@ var Track = function (_EventEmitter) {
  */
 
 /**
+ * The {@link Track}'s priority can be "low", "standard", or "high".
+ * @typedef {string} Track.Priority
+ */
+
+/**
  * The {@link Track} SID is a unique string identifier for the {@link Track}
  * that is published to a {@link Room}.
  * @typedef {string} Track.SID
@@ -28868,7 +18414,7 @@ var Track = function (_EventEmitter) {
  */
 
 module.exports = Track;
-},{"../../eventemitter":134,"../../util":236,"../../util/constants":234,"../../util/log":239}],144:[function(require,module,exports){
+},{"../../eventemitter":101,"../../util":203,"../../util/constants":201,"../../util/log":206}],111:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -29017,7 +18563,7 @@ var LocalAudioTrack = function (_LocalMediaAudioTrack) {
  */
 
 module.exports = LocalAudioTrack;
-},{"./audiotrack":139,"./localmediatrack":148}],145:[function(require,module,exports){
+},{"./audiotrack":106,"./localmediatrack":115}],112:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -29043,16 +18589,17 @@ var LocalAudioTrackPublication = function (_LocalTrackPublicatio) {
 
   /**
    * Construct a {@link LocalAudioTrackPublication}.
-   * @param {Track.SID} trackSid - SID assigned to the published {@link LocalAudioTrack}
+   * @param {LocalTrackPublicationSignaling} signaling - The corresponding
+   *   {@link LocalTrackPublicationSignaling}
    * @param {LocalAudioTrack} track - the {@link LocalAudioTrack}
    * @param {function(LocalTrackPublication): void} unpublish - The callback
    *    that unpublishes the {@link LocalTrackPublication}
    * @param {TrackPublicationOptions} options - {@link LocalTrackPublication} options
    */
-  function LocalAudioTrackPublication(trackSid, track, unpublish, options) {
+  function LocalAudioTrackPublication(signaling, track, unpublish, options) {
     _classCallCheck(this, LocalAudioTrackPublication);
 
-    return _possibleConstructorReturn(this, (LocalAudioTrackPublication.__proto__ || Object.getPrototypeOf(LocalAudioTrackPublication)).call(this, trackSid, track, unpublish, options));
+    return _possibleConstructorReturn(this, (LocalAudioTrackPublication.__proto__ || Object.getPrototypeOf(LocalAudioTrackPublication)).call(this, signaling, track, unpublish, options));
   }
 
   _createClass(LocalAudioTrackPublication, [{
@@ -29066,7 +18613,7 @@ var LocalAudioTrackPublication = function (_LocalTrackPublicatio) {
 }(LocalTrackPublication);
 
 module.exports = LocalAudioTrackPublication;
-},{"./localtrackpublication":149}],146:[function(require,module,exports){
+},{"./localtrackpublication":116}],113:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -29212,7 +18759,7 @@ var LocalDataTrack = function (_Track) {
  */
 
 module.exports = LocalDataTrack;
-},{"../../data/sender":129,"./":143}],147:[function(require,module,exports){
+},{"../../data/sender":96,"./":110}],114:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -29238,16 +18785,17 @@ var LocalDataTrackPublication = function (_LocalTrackPublicatio) {
 
   /**
    * Construct a {@link LocalDataTrackPublication}.
-   * @param {Track.SID} trackSid - SID assigned to the published {@link LocalDataTrack}
+   * @param {LocalTrackPublicationSignaling} signaling - The corresponding
+   *   {@link LocalTrackPublicationSignaling}
    * @param {LocalDataTrack} track - the {@link LocalDataTrack}
    * @param {function(LocalTrackPublication): void} unpublish - The callback
    *    that unpublishes the {@link LocalTrackPublication}
    * @param {TrackPublicationOptions} options - {@link LocalTrackPublication} options
    */
-  function LocalDataTrackPublication(trackSid, track, unpublish, options) {
+  function LocalDataTrackPublication(signaling, track, unpublish, options) {
     _classCallCheck(this, LocalDataTrackPublication);
 
-    return _possibleConstructorReturn(this, (LocalDataTrackPublication.__proto__ || Object.getPrototypeOf(LocalDataTrackPublication)).call(this, trackSid, track, unpublish, options));
+    return _possibleConstructorReturn(this, (LocalDataTrackPublication.__proto__ || Object.getPrototypeOf(LocalDataTrackPublication)).call(this, signaling, track, unpublish, options));
   }
 
   _createClass(LocalDataTrackPublication, [{
@@ -29261,7 +18809,7 @@ var LocalDataTrackPublication = function (_LocalTrackPublicatio) {
 }(LocalTrackPublication);
 
 module.exports = LocalDataTrackPublication;
-},{"./localtrackpublication":149}],148:[function(require,module,exports){
+},{"./localtrackpublication":116}],115:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -29376,7 +18924,8 @@ function mixinLocalMediaTrack(AudioOrVideoTrack) {
 }
 
 module.exports = mixinLocalMediaTrack;
-},{"./sender":162}],149:[function(require,module,exports){
+},{"./sender":129}],116:[function(require,module,exports){
+/* eslint new-cap:0 */
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -29389,37 +18938,48 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var TrackPublication = require('./trackpublication');
 
+var _require = require('../../util/constants'),
+    E = _require.typeErrors,
+    trackPriority = _require.trackPriority;
+
 /**
  * A {@link LocalTrackPublication} is a {@link LocalTrack} that has been
  * published to a {@link Room}.
+ * @extends TrackPublication
  * @property {boolean} isTrackEnabled - whether the published {@link LocalTrack}
  *   is enabled
  * @property {Track.Kind} kind - kind of the published {@link LocalTrack}
+ * @property {Track.Priority} priority - the publish priority of the {@link LocalTrack}
  * @property {LocalTrack} track - the {@link LocalTrack}
  */
+
 
 var LocalTrackPublication = function (_TrackPublication) {
   _inherits(LocalTrackPublication, _TrackPublication);
 
   /**
    * Construct a {@link LocalTrackPublication}.
-   * @param {Track.SID} trackSid - SID assigned to the published {@link LocalTrack}
-   * @param {LocalTrack} track - the {@link LocalTrack}
+   * @param {LocalTrackPublicationSignaling} signaling - The corresponding
+   *   {@link LocalTrackPublicationSignaling}
+   * @param {LocalTrack} track - The {@link LocalTrack}
    * @param {function(LocalTrackPublication): void} unpublish - The callback
    *   that unpublishes the {@link LocalTrackPublication}
    * @param {TrackPublicationOptions} options - {@link LocalTrackPublication}
    *   options
    */
-  function LocalTrackPublication(trackSid, track, unpublish, options) {
+  function LocalTrackPublication(signaling, track, unpublish, options) {
     _classCallCheck(this, LocalTrackPublication);
 
-    var _this = _possibleConstructorReturn(this, (LocalTrackPublication.__proto__ || Object.getPrototypeOf(LocalTrackPublication)).call(this, track.name, trackSid, options));
+    var _this = _possibleConstructorReturn(this, (LocalTrackPublication.__proto__ || Object.getPrototypeOf(LocalTrackPublication)).call(this, track.name, signaling.sid, options));
 
     Object.defineProperties(_this, {
       _reemitTrackEvent: {
         value: function value() {
           return _this.emit(_this.isTrackEnabled ? 'trackEnabled' : 'trackDisabled');
         }
+      },
+      _signaling: {
+        value: signaling
       },
       _unpublish: {
         value: unpublish
@@ -29433,6 +18993,12 @@ var LocalTrackPublication = function (_TrackPublication) {
       kind: {
         enumerable: true,
         value: track.kind
+      },
+      priority: {
+        enumerable: true,
+        get: function get() {
+          return signaling.updatedPriority;
+        }
       },
       track: {
         enumerable: true,
@@ -29449,6 +19015,24 @@ var LocalTrackPublication = function (_TrackPublication) {
     key: 'toString',
     value: function toString() {
       return '[LocalTrackPublication #' + this._instanceId + ': ' + this.trackSid + ']';
+    }
+
+    /**
+     * Update the {@link Track.Priority} of the published {@link LocalTrack}.
+     * @param {Track.Priority} priority - the new {@link Track.priority}
+     * @returns {this}
+     * @throws {RangeError}
+     */
+
+  }, {
+    key: 'setPriority',
+    value: function setPriority(priority) {
+      var priorityValues = Object.values(trackPriority);
+      if (!priorityValues.includes(priority)) {
+        throw E.INVALID_VALUE('priority', priorityValues);
+      }
+      this._signaling.setPriority(priority);
+      return this;
     }
 
     /**
@@ -29472,7 +19056,7 @@ var LocalTrackPublication = function (_TrackPublication) {
 }(TrackPublication);
 
 module.exports = LocalTrackPublication;
-},{"./trackpublication":163}],150:[function(require,module,exports){
+},{"../../util/constants":201,"./trackpublication":130}],117:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -29500,6 +19084,9 @@ var LocalMediaVideoTrack = mixinLocalMediaTrack(VideoTrack);
  * @property {Track.ID} id - The {@link LocalVideoTrack}'s ID
  * @property {boolean} isStopped - Whether or not the {@link LocalVideoTrack} is
  *   stopped
+ * @emits LocalVideoTrack#disabled
+ * @emits LocalVideoTrack#enabled
+ * @emits LocalVideoTrack#started
  * @emits LocalVideoTrack#stopped
  */
 
@@ -29611,7 +19198,7 @@ var LocalVideoTrack = function (_LocalMediaVideoTrack) {
  */
 
 module.exports = LocalVideoTrack;
-},{"./localmediatrack":148,"./videotrack":165}],151:[function(require,module,exports){
+},{"./localmediatrack":115,"./videotrack":132}],118:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -29637,16 +19224,17 @@ var LocalVideoTrackPublication = function (_LocalTrackPublicatio) {
 
   /**
    * Construct a {@link LocalVideoTrackPublication}.
-   * @param {Track.SID} trackSid - SID assigned to the published {@link LocalVideoTrack}
+   * @param {LocalTrackPublicationSignaling} signaling - The corresponding
+   *   {@link LocalTrackPublicationSignaling}
    * @param {LocalVideoTrack} track - the {@link LocalVideoTrack}
    * @param {function(LocalTrackPublication): void} unpublish - The callback
    *    that unpublishes the {@link LocalTrackPublication}
    * @param {TrackPublicationOptions} options - {@link LocalTrackPublication} options
    */
-  function LocalVideoTrackPublication(trackSid, track, unpublish, options) {
+  function LocalVideoTrackPublication(signaling, track, unpublish, options) {
     _classCallCheck(this, LocalVideoTrackPublication);
 
-    return _possibleConstructorReturn(this, (LocalVideoTrackPublication.__proto__ || Object.getPrototypeOf(LocalVideoTrackPublication)).call(this, trackSid, track, unpublish, options));
+    return _possibleConstructorReturn(this, (LocalVideoTrackPublication.__proto__ || Object.getPrototypeOf(LocalVideoTrackPublication)).call(this, signaling, track, unpublish, options));
   }
 
   _createClass(LocalVideoTrackPublication, [{
@@ -29660,7 +19248,7 @@ var LocalVideoTrackPublication = function (_LocalTrackPublicatio) {
 }(LocalTrackPublication);
 
 module.exports = LocalVideoTrackPublication;
-},{"./localtrackpublication":149}],152:[function(require,module,exports){
+},{"./localtrackpublication":116}],119:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -29919,14 +19507,6 @@ var MediaTrack = function (_Track) {
       var mediaStream = el.srcObject;
       if (mediaStream instanceof this._MediaStream) {
         mediaStream.removeTrack(this.mediaStreamTrack);
-        // NOTE(mroberts): It's as if, in Chrome and Safari, the <audio> element's
-        // `srcObject` setter is taking a "snapshot" of the MediaStream's
-        // MediaStreamTracks in order to playback; hence, calls to `removeTrack`
-        // don't take effect unless you set the <audio> element's `srcObject` again.
-        //
-        //   https://bugs.chromium.org/p/chromium/issues/detail?id=749928
-        //
-        el.srcObject = mediaStream;
       }
 
       this._attachments.delete(el);
@@ -29954,7 +19534,7 @@ var MediaTrack = function (_Track) {
 }(Track);
 
 module.exports = MediaTrack;
-},{"./":143,"@twilio/webrtc":58}],153:[function(require,module,exports){
+},{"./":110,"@twilio/webrtc":24}],120:[function(require,module,exports){
 'use strict';
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -29988,10 +19568,12 @@ var MediaTrackReceiver = function (_MediaTrackTransceive) {
 }(MediaTrackTransceiver);
 
 module.exports = MediaTrackReceiver;
-},{"./transceiver":164}],154:[function(require,module,exports){
+},{"./transceiver":131}],121:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -30008,10 +19590,15 @@ var RemoteMediaAudioTrack = mixinRemoteMediaTrack(AudioTrack);
  * A {@link RemoteAudioTrack} represents an {@link AudioTrack} published to a
  * {@link Room} by a {@link RemoteParticipant}.
  * @extends AudioTrack
+ * @property {boolean} isEnabled - Whether the {@link RemoteAudioTrack} is enabled
+ * @property {boolean} isSwitchedOff - Whether the {@link RemoteAudioTrack} is switched off
  * @property {Track.SID} sid - The {@link RemoteAudioTrack}'s SID
+ * @property {?Track.Priority} priority - The subscribe priority of the {@link RemoteAudioTrack}
  * @emits RemoteAudioTrack#disabled
  * @emits RemoteAudioTrack#enabled
  * @emits RemoteAudioTrack#started
+ * @emits RemoteAudioTrack#switchedOff
+ * @emits RemoteAudioTrack#switchedOn
  */
 
 var RemoteAudioTrack = function (_RemoteMediaAudioTrac) {
@@ -30022,18 +19609,34 @@ var RemoteAudioTrack = function (_RemoteMediaAudioTrac) {
    * @param {Track.SID} sid - The {@link RemoteAudioTrack}'s SID
    * @param {MediaTrackReceiver} mediaTrackReceiver - An audio MediaStreamTrack container
    * @param {boolean} isEnabled - Whether the {@link RemoteAudioTrack} is enabled
+   * @param {function(?Track.Priority): void} setPriority - Set or clear the subscribe
+   *  {@link Track.Priority} of the {@link RemoteAudioTrack}
    * @param {{log: Log}} options - The {@link RemoteTrack} options
    */
-  function RemoteAudioTrack(sid, mediaTrackReceiver, isEnabled, options) {
+  function RemoteAudioTrack(sid, mediaTrackReceiver, isEnabled, setPriority, options) {
     _classCallCheck(this, RemoteAudioTrack);
 
-    return _possibleConstructorReturn(this, (RemoteAudioTrack.__proto__ || Object.getPrototypeOf(RemoteAudioTrack)).call(this, sid, mediaTrackReceiver, isEnabled, options));
+    return _possibleConstructorReturn(this, (RemoteAudioTrack.__proto__ || Object.getPrototypeOf(RemoteAudioTrack)).call(this, sid, mediaTrackReceiver, isEnabled, setPriority, options));
   }
 
   _createClass(RemoteAudioTrack, [{
     key: 'toString',
     value: function toString() {
       return '[RemoteAudioTrack #' + this._instanceId + ': ' + this.sid + ']';
+    }
+
+    /**
+     * Update the subscribe {@link Track.Priority} of the {@link RemoteAudioTrack}.
+     * @param {?Track.Priority} priority - the new subscribe {@link Track.Priority};
+     *   Currently setPriority has no effect on audio tracks.
+     * @returns {this}
+     * @throws {RangeError}
+     */
+
+  }, {
+    key: 'setPriority',
+    value: function setPriority(priority) {
+      return _get(RemoteAudioTrack.prototype.__proto__ || Object.getPrototypeOf(RemoteAudioTrack.prototype), 'setPriority', this).call(this, priority);
     }
   }]);
 
@@ -30061,8 +19664,22 @@ var RemoteAudioTrack = function (_RemoteMediaAudioTrac) {
  * @event RemoteAudioTrack#started
  */
 
+/**
+ * A {@link RemoteAudioTrack} was switched off.
+ * @param {RemoteAudioTrack} track - The {@link RemoteAudioTrack} that was
+ *   switched off
+ * @event RemoteAudioTrack#switchedOff
+ */
+
+/**
+ * A {@link RemoteAudioTrack} was switched on.
+ * @param {RemoteAudioTrack} track - The {@link RemoteAudioTrack} that was
+ *   switched on
+ * @event RemoteAudioTrack#switchedOn
+ */
+
 module.exports = RemoteAudioTrack;
-},{"./audiotrack":139,"./remotemediatrack":158}],155:[function(require,module,exports){
+},{"./audiotrack":106,"./remotemediatrack":125}],122:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -30120,7 +19737,7 @@ var RemoteAudioTrackPublication = function (_RemoteTrackPublicati) {
  */
 
 /**
- * Your {@link LocalParticipant failed to subscribe to the {@link RemoteAudioTrack}.
+ * Your {@link LocalParticipant} failed to subscribe to the {@link RemoteAudioTrack}.
  * @param {TwilioError} error - the reason the {@link RemoteAudioTrack} could not be
  *   subscribed to
  * @event RemoteAudioTrackPublication#subscriptionFailed
@@ -30143,10 +19760,12 @@ var RemoteAudioTrackPublication = function (_RemoteTrackPublicati) {
  */
 
 module.exports = RemoteAudioTrackPublication;
-},{"./remotetrackpublication":159}],156:[function(require,module,exports){
+},{"./remotetrackpublication":126}],123:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -30156,6 +19775,10 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var Track = require('./');
 
+var _require = require('../../util/constants'),
+    E = _require.typeErrors,
+    trackPriority = _require.trackPriority;
+
 /**
  * A {@link RemoteDataTrack} represents data published to a {@link Room} by a
  * {@link RemoteParticipant}.
@@ -30163,6 +19786,8 @@ var Track = require('./');
  * @property {boolean} isEnabled - true
  * @property {boolean} isSubscribed - Whether the {@link RemoteDataTrack} is
  *   subscribed to
+ * @property {boolean} isSwitchedOff - Whether the {@link RemoteDataTrack} is
+ *   switched off
  * @property {Track.Kind} kind - "data"
  * @property {?number} maxPacketLifeTime - If non-null, this represents a time
  *   limit (in milliseconds) during which data will be transmitted or
@@ -30172,6 +19797,7 @@ var Track = require('./');
  *   underlying RTCDataChannel.
  * @property {boolean} ordered - true if data on the {@link RemoteDataTrack} can
  *   be received out-of-order.
+ * @property {?Track.Priority} priority - The subscribe priority of the {@link RemoteDataTrack}
  * @property {boolean} reliable - This is true if both
  *   <code>maxPacketLifeTime</code> and <code>maxRetransmits</code> are set to
  *   null. In other words, if this is true, there is no bound on packet lifetime
@@ -30179,7 +19805,10 @@ var Track = require('./');
  *   transmission.
  * @property {Track.SID} sid - The SID assigned to the {@link RemoteDataTrack}
  * @emits RemoteDataTrack#message
+ * @emits RemoteDataTrack#switchedOff
+ * @emits RemoteDataTrack#switchedOn
  */
+
 
 var RemoteDataTrack = function (_Track) {
   _inherits(RemoteDataTrack, _Track);
@@ -30196,9 +19825,23 @@ var RemoteDataTrack = function (_Track) {
     var _this = _possibleConstructorReturn(this, (RemoteDataTrack.__proto__ || Object.getPrototypeOf(RemoteDataTrack)).call(this, dataTrackReceiver.id, 'data', options));
 
     Object.defineProperties(_this, {
+      _isSwitchedOff: {
+        value: false,
+        writable: true
+      },
+      _priority: {
+        value: null,
+        writable: true
+      },
       isEnabled: {
         enumerable: true,
         value: true
+      },
+      isSwitchedOff: {
+        enumerable: true,
+        get: function get() {
+          return this._isSwitchedOff;
+        }
       },
       maxPacketLifeTime: {
         enumerable: true,
@@ -30211,6 +19854,12 @@ var RemoteDataTrack = function (_Track) {
       ordered: {
         enumerable: true,
         value: dataTrackReceiver.ordered
+      },
+      priority: {
+        enumerable: true,
+        get: function get() {
+          return this._priority;
+        }
       },
       reliable: {
         enumerable: true,
@@ -30229,14 +19878,50 @@ var RemoteDataTrack = function (_Track) {
   }
 
   /**
-   * @private
+   * Update the subscriber {@link Track.Priority} of the {@link RemoteDataTrack}.
+   * @param {?Track.Priority} priority - the new {@link Track.priority};
+   *   Currently setPriority has no effect on data tracks.
+   * @returns {this}
+   * @throws {RangeError}
    */
 
 
   _createClass(RemoteDataTrack, [{
+    key: 'setPriority',
+    value: function setPriority(priority) {
+      var priorityValues = [null].concat(_toConsumableArray(Object.values(trackPriority)));
+      if (!priorityValues.includes(priority)) {
+        // eslint-disable-next-line new-cap
+        throw E.INVALID_VALUE('priority', priorityValues);
+      }
+
+      // Note: priority has no real effect on the data tracks.
+      this._priority = priority;
+      return this;
+    }
+
+    /**
+     * @private
+     */
+
+  }, {
     key: '_setEnabled',
-    value: function _setEnabled() {
-      // Do nothing.
+    value: function _setEnabled() {}
+    // Do nothing.
+
+
+    /**
+     * @private
+     * @param {boolean} isSwitchedOff
+     */
+
+  }, {
+    key: '_setSwitchedOff',
+    value: function _setSwitchedOff(isSwitchedOff) {
+      if (this._isSwitchedOff !== isSwitchedOff) {
+        this._isSwitchedOff = isSwitchedOff;
+        this.emit(isSwitchedOff ? 'switchedOff' : 'switchedOn', this);
+      }
     }
   }]);
 
@@ -30251,8 +19936,22 @@ var RemoteDataTrack = function (_Track) {
  *   the message
  */
 
+/**
+ * A {@link RemoteDataTrack} was switched off.
+ * @param {RemoteDataTrack} track - The {@link RemoteDataTrack} that was
+ *   switched off
+ * @event RemoteDataTrack#switchedOff
+ */
+
+/**
+ * A {@link RemoteDataTrack} was switched on.
+ * @param {RemoteDataTrack} track - The {@link RemoteDataTrack} that was
+ *   switched on
+ * @event RemoteDataTrack#switchedOn
+ */
+
 module.exports = RemoteDataTrack;
-},{"./":143}],157:[function(require,module,exports){
+},{"../../util/constants":201,"./":110}],124:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -30308,7 +20007,7 @@ var RemoteDataTrackPublication = function (_RemoteTrackPublicati) {
  */
 
 /**
- * Your {@link LocalParticipant failed to subscribe to the {@link RemoteDataTrack}.
+ * Your {@link LocalParticipant} failed to subscribe to the {@link RemoteDataTrack}.
  * @param {TwilioError} error - the reason the {@link RemoteDataTrack} could not be
  *   subscribed to
  * @event RemoteDataTrackPublication#subscriptionFailed
@@ -30321,10 +20020,14 @@ var RemoteDataTrackPublication = function (_RemoteTrackPublicati) {
  */
 
 module.exports = RemoteDataTrackPublication;
-},{"./remotetrackpublication":159}],158:[function(require,module,exports){
+},{"./remotetrackpublication":126}],125:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -30332,13 +20035,22 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+var _require = require('../../util/constants'),
+    E = _require.typeErrors,
+    trackPriority = _require.trackPriority;
+
 function mixinRemoteMediaTrack(AudioOrVideoTrack) {
   /**
    * A {@link RemoteMediaTrack} represents a {@link MediaTrack} published to a
    * {@link Room} by a {@link RemoteParticipant}.
+   * @property {boolean} isEnabled - Whether the {@link RemoteMediaTrack} is enabled
+   * @property {boolean} isSwitchedOff - Whether the {@link RemoteMediaTrack} is switched off
    * @property {Track.SID} sid - The SID assigned to the {@link RemoteMediaTrack}
+   * @property {?Track.Priority} priority - The subscribe priority of the {@link RemoteMediaTrack}
    * @emits RemoteMediaTrack#disabled
    * @emits RemoteMediaTrack#enabled
+   * @emits RemoteMediaTrack#switchedOff
+   * @emits RemoteMediaTrack#switchedOn
    */
   return function (_AudioOrVideoTrack) {
     _inherits(RemoteMediaTrack, _AudioOrVideoTrack);
@@ -30348,9 +20060,11 @@ function mixinRemoteMediaTrack(AudioOrVideoTrack) {
      * @param {Track.SID} sid
      * @param {MediaTrackReceiver} mediaTrackReceiver
      * @param {boolean} isEnabled
+     * @param {function(?Track.Priority): void} setPriority - Set or clear the subscribe
+     *  {@link Track.Priority} of the {@link RemoteMediaTrack}
      * @param {{log: Log, name: ?string}} options
      */
-    function RemoteMediaTrack(sid, mediaTrackReceiver, isEnabled, options) {
+    function RemoteMediaTrack(sid, mediaTrackReceiver, isEnabled, setPriority, options) {
       _classCallCheck(this, RemoteMediaTrack);
 
       var _this = _possibleConstructorReturn(this, (RemoteMediaTrack.__proto__ || Object.getPrototypeOf(RemoteMediaTrack)).call(this, mediaTrackReceiver, options));
@@ -30360,10 +20074,33 @@ function mixinRemoteMediaTrack(AudioOrVideoTrack) {
           value: isEnabled,
           writable: true
         },
+        _isSwitchedOff: {
+          value: false,
+          writable: true
+        },
+        _priority: {
+          value: null,
+          writable: true
+        },
+        _setPriority: {
+          value: setPriority
+        },
         isEnabled: {
           enumerable: true,
           get: function get() {
             return this._isEnabled;
+          }
+        },
+        isSwitchedOff: {
+          enumerable: true,
+          get: function get() {
+            return this._isSwitchedOff;
+          }
+        },
+        priority: {
+          enumerable: true,
+          get: function get() {
+            return this._priority;
           }
         },
         sid: {
@@ -30375,18 +20112,82 @@ function mixinRemoteMediaTrack(AudioOrVideoTrack) {
     }
 
     /**
-     * @private
-     * @param {boolean} isEnabled
+     * Update the subscribe {@link Track.Priority} of the {@link RemoteMediaTrack}.
+     * @param {?Track.Priority} priority - the new subscribe {@link Track.Priority};
+     *   If <code>null</code>, then the subscribe {@link Track.Priority} is cleared, which
+     *   means the {@link Track.Priority} set by the publisher is now the effective priority.
+     * @returns {this}
+     * @throws {RangeError}
      */
 
 
     _createClass(RemoteMediaTrack, [{
+      key: 'setPriority',
+      value: function setPriority(priority) {
+        var priorityValues = [null].concat(_toConsumableArray(Object.values(trackPriority)));
+        if (!priorityValues.includes(priority)) {
+          // eslint-disable-next-line new-cap
+          throw E.INVALID_VALUE('priority', priorityValues);
+        }
+        if (this._priority !== priority) {
+          this._priority = priority;
+          this._setPriority(priority);
+        }
+        return this;
+      }
+
+      /**
+       * @private
+       * @param {boolean} isEnabled
+       */
+
+    }, {
       key: '_setEnabled',
       value: function _setEnabled(isEnabled) {
         if (this._isEnabled !== isEnabled) {
           this._isEnabled = isEnabled;
           this.emit(this._isEnabled ? 'enabled' : 'disabled', this);
         }
+      }
+
+      /**
+       * @private
+       * @param {boolean} isSwitchedOff
+       */
+
+    }, {
+      key: '_setSwitchedOff',
+      value: function _setSwitchedOff(isSwitchedOff) {
+        if (this._isSwitchedOff !== isSwitchedOff) {
+          this._isSwitchedOff = isSwitchedOff;
+          this.emit(isSwitchedOff ? 'switchedOff' : 'switchedOn', this);
+        }
+      }
+    }, {
+      key: 'attach',
+      value: function attach(el) {
+        var result = _get(RemoteMediaTrack.prototype.__proto__ || Object.getPrototypeOf(RemoteMediaTrack.prototype), 'attach', this).call(this, el);
+        if (this.mediaStreamTrack.enabled !== true) {
+          // NOTE(mpatwardhan): we disable mediaStreamTrack when there
+          // are no attchments to it (see notes below). Now that there
+          // are attachments reenable the track.
+          this.mediaStreamTrack.enabled = true;
+        }
+        return result;
+      }
+    }, {
+      key: 'detach',
+      value: function detach(el) {
+        var result = _get(RemoteMediaTrack.prototype.__proto__ || Object.getPrototypeOf(RemoteMediaTrack.prototype), 'detach', this).call(this, el);
+        if (this._attachments.size === 0) {
+          // NOTE(mpatwardhan): chrome continues playing webrtc audio
+          // track even after audio element is removed from the DOM.
+          // https://bugs.chromium.org/p/chromium/issues/detail?id=749928
+          // to workaround: here disable the track when
+          // there are no elements attached to it.
+          this.mediaStreamTrack.enabled = false;
+        }
+        return result;
       }
     }]);
 
@@ -30408,8 +20209,22 @@ function mixinRemoteMediaTrack(AudioOrVideoTrack) {
  * @event RemoteMediaTrack#enabled
  */
 
+/**
+ * A {@link RemoteMediaTrack} was switched off.
+ * @param {RemoteMediaTrack} track - The {@link RemoteMediaTrack} that was
+ *   switched off
+ * @event RemoteMediaTrack#switchedOff
+ */
+
+/**
+ * A {@link RemoteMediaTrack} was switched on.
+ * @param {RemoteMediaTrack} track - The {@link RemoteMediaTrack} that was
+ *   switched on
+ * @event RemoteMediaTrack#switchedOn
+ */
+
 module.exports = mixinRemoteMediaTrack;
-},{}],159:[function(require,module,exports){
+},{"../../util/constants":201}],126:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -30425,18 +20240,25 @@ var TrackPublication = require('./trackpublication');
 /**
  * A {@link RemoteTrackPublication} represents a {@link RemoteTrack} that has
  * been published to a {@link Room}.
+ * @extends TrackPublication
  * @property {boolean} isSubscribed - whether the published {@link RemoteTrack}
  *   is subscribed to
  * @property {boolean} isTrackEnabled - whether the published
  *   {@link RemoteTrack} is enabled
  * @property {Track.Kind} kind - kind of the published {@link RemoteTrack}
+ * @property {Track.Priority} publishPriority - the {@link Track.Priority} of the published
+ *   {@link RemoteTrack} set by the {@link RemoteParticipant}
  * @property {?RemoteTrack} track - Unless you have subscribed to the
  *   {@link RemoteTrack}, this property is null
+ * @emits RemoteTrackPublication#publishPriorityChanged
  * @emits RemoteTrackPublication#subscribed
  * @emits RemoteTrackPublication#subscriptionFailed
  * @emits RemoteTrackPublication#trackDisabled
  * @emits RemoteTrackPublication#trackEnabled
+ * @emits RemoteTrackPublication#trackSwitchedOff
+ * @emits RemoteTrackPublication#trackSwitchedOn
  * @emits RemoteTrackPublication#unsubscribed
+ *
  */
 
 var RemoteTrackPublication = function (_TrackPublication) {
@@ -30470,12 +20292,18 @@ var RemoteTrackPublication = function (_TrackPublication) {
       isTrackEnabled: {
         enumerable: true,
         get: function get() {
-          return this._signaling.isEnabled;
+          return signaling.isEnabled;
         }
       },
       kind: {
         enumerable: true,
         value: signaling.kind
+      },
+      publishPriority: {
+        enumerable: true,
+        get: function get() {
+          return signaling.priority;
+        }
       },
       track: {
         enumerable: true,
@@ -30485,15 +20313,37 @@ var RemoteTrackPublication = function (_TrackPublication) {
       }
     });
 
+    // remember original state, and fire events only on change.
+    var error = signaling.error,
+        isEnabled = signaling.isEnabled,
+        isSwitchedOff = signaling.isSwitchedOff,
+        priority = signaling.priority;
+
+
     signaling.on('updated', function () {
-      if (signaling.error) {
+      if (error !== signaling.error) {
+        error = signaling.error;
         _this.emit('subscriptionFailed', signaling.error);
         return;
       }
-      if (_this.track) {
-        _this.track._setEnabled(signaling.isEnabled);
+      if (isEnabled !== signaling.isEnabled) {
+        isEnabled = signaling.isEnabled;
+        if (_this.track) {
+          _this.track._setEnabled(signaling.isEnabled);
+        }
+        _this.emit(signaling.isEnabled ? 'trackEnabled' : 'trackDisabled');
       }
-      _this.emit(signaling.isEnabled ? 'trackEnabled' : 'trackDisabled');
+      if (isSwitchedOff !== signaling.isSwitchedOff) {
+        isSwitchedOff = signaling.isSwitchedOff;
+        if (_this.track) {
+          _this.track._setSwitchedOff(signaling.isSwitchedOff);
+          _this.emit(signaling.isSwitchedOff ? 'trackSwitchedOff' : 'trackSwitchedOn', _this.track);
+        }
+      }
+      if (priority !== signaling.priority) {
+        priority = signaling.priority;
+        _this.emit('publishPriorityChanged', priority);
+      }
     });
     return _this;
   }
@@ -30537,13 +20387,22 @@ var RemoteTrackPublication = function (_TrackPublication) {
 }(TrackPublication);
 
 /**
+ * The {@link RemoteTrack}'s publish {@link Track.Priority} was changed by the
+ * {@link RemoteParticipant}.
+ * @param {Track.Priority} priority - the {@link RemoteTrack}'s new publish
+ *   {@link Track.Priority}; RemoteTrackPublication#publishPriority is also
+ *   updated accordingly
+ * @event RemoteTrackPublication#publishPriorityChanged
+ */
+
+/**
  * Your {@link LocalParticipant} subscribed to the {@link RemoteTrack}.
  * @param {RemoteTrack} track - the {@link RemoteTrack} that was subscribed to
  * @event RemoteTrackPublication#subscribed
  */
 
 /**
- * Your {@link LocalParticipant failed to subscribe to the {@link RemoteTrack}.
+ * Your {@link LocalParticipant} failed to subscribe to the {@link RemoteTrack}.
  * @param {TwilioError} error - the reason the {@link RemoteTrack} could not be
  *   subscribed to
  * @event RemoteTrackPublication#subscriptionFailed
@@ -30560,6 +20419,18 @@ var RemoteTrackPublication = function (_TrackPublication) {
  */
 
 /**
+ * The {@link RemoteTrack} was switched off.
+ * @param {RemoteTrack} track - the {@link RemoteTrack} that was switched off
+ * @event RemoteTrackPublication#trackSwitchedOff
+ */
+
+/**
+ * The {@link RemoteTrack} was switched on.
+ * @param {RemoteTrack} track - the {@link RemoteTrack} that was switched on
+ * @event RemoteTrackPublication#trackSwitchedOn
+ */
+
+/**
  * Your {@link LocalParticipant} unsubscribed from the {@link RemoteTrack}.
  * @param {RemoteTrack} track - the {@link RemoteTrack} that was unsubscribed from
  * @event RemoteTrackPublication#unsubscribed
@@ -30572,10 +20443,12 @@ var RemoteTrackPublication = function (_TrackPublication) {
  */
 
 module.exports = RemoteTrackPublication;
-},{"./trackpublication":163}],160:[function(require,module,exports){
+},{"./trackpublication":130}],127:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -30592,11 +20465,16 @@ var RemoteMediaVideoTrack = mixinRemoteMediaTrack(VideoTrack);
  * A {@link RemoteVideoTrack} represents a {@link VideoTrack} published to a
  * {@link Room} by a {@link RemoteParticipant}.
  * @extends VideoTrack
+ * @property {boolean} isEnabled - Whether the {@link RemoteVideoTrack} is enabled
+ * @property {boolean} isSwitchedOff - Whether the {@link RemoteVideoTrack} is switched off
  * @property {Track.SID} sid - The {@link RemoteVideoTrack}'s SID
+ * @property {?Track.Priority} priority - The subscribe priority of the {@link RemoteVideoTrack}
  * @emits RemoteVideoTrack#dimensionsChanged
  * @emits RemoteVideoTrack#disabled
  * @emits RemoteVideoTrack#enabled
  * @emits RemoteVideoTrack#started
+ * @emits RemoteVideoTrack#switchedOff
+ * @emits RemoteVideoTrack#switchedOn
  */
 
 var RemoteVideoTrack = function (_RemoteMediaVideoTrac) {
@@ -30606,19 +20484,36 @@ var RemoteVideoTrack = function (_RemoteMediaVideoTrac) {
    * Construct a {@link RemoteVideoTrack}.
    * @param {Track.SID} sid - The {@link RemoteVideoTrack}'s SID
    * @param {MediaTrackReceiver} mediaTrackReceiver - A video MediaStreamTrack container
-   * @param {boolean} isEnabled - whether the {@link RemoteAudioTrack} is enabled
+   * @param {boolean} isEnabled - whether the {@link RemoteVideoTrack} is enabled
+   * @param {function(?Track.Priority): void} setPriority - Set or clear the subscribe
+   *  {@link Track.Priority} of the {@link RemoteVideoTrack}
    * @param {{log: Log}} options - The {@link RemoteTrack} options
    */
-  function RemoteVideoTrack(sid, mediaTrackReceiver, isEnabled, options) {
+  function RemoteVideoTrack(sid, mediaTrackReceiver, isEnabled, setPriority, options) {
     _classCallCheck(this, RemoteVideoTrack);
 
-    return _possibleConstructorReturn(this, (RemoteVideoTrack.__proto__ || Object.getPrototypeOf(RemoteVideoTrack)).call(this, sid, mediaTrackReceiver, isEnabled, options));
+    return _possibleConstructorReturn(this, (RemoteVideoTrack.__proto__ || Object.getPrototypeOf(RemoteVideoTrack)).call(this, sid, mediaTrackReceiver, isEnabled, setPriority, options));
   }
 
   _createClass(RemoteVideoTrack, [{
     key: 'toString',
     value: function toString() {
       return '[RemoteVideoTrack #' + this._instanceId + ': ' + this.sid + ']';
+    }
+
+    /**
+     * Update the subscribe {@link Track.Priority} of the {@link RemoteVideoTrack}.
+     * @param {?Track.Priority} priority - the new subscribe {@link Track.Priority};
+     *   If <code>null</code>, then the subscribe {@link Track.Priority} is cleared, which
+     *   means the {@link Track.Priority} set by the publisher is now the effective priority.
+     * @returns {this}
+     * @throws {RangeError}
+     */
+
+  }, {
+    key: 'setPriority',
+    value: function setPriority(priority) {
+      return _get(RemoteVideoTrack.prototype.__proto__ || Object.getPrototypeOf(RemoteVideoTrack.prototype), 'setPriority', this).call(this, priority);
     }
   }]);
 
@@ -30640,14 +20535,35 @@ var RemoteVideoTrack = function (_RemoteMediaVideoTrac) {
  */
 
 /**
- * The {@link RemoteVideoTrack} was enabled, i.e. "unpaused".
+ * The {@link RemoteVideoTrack} was enabled, i.e. "resumed".
  * @param {RemoteVideoTrack} track - The {@link RemoteVideoTrack} that was
  *   enabled
  * @event RemoteVideoTrack#enabled
  */
 
+/**
+ * The {@link RemoteVideoTrack} started. This means there is enough video data
+ * to begin playback.
+ * @param {RemoteVideoTrack} track - The {@link RemoteVideoTrack} that started
+ * @event RemoteVideoTrack#started
+ */
+
+/**
+ * A {@link RemoteVideoTrack} was switched off.
+ * @param {RemoteVideoTrack} track - The {@link RemoteVideoTrack} that was
+ *   switched off
+ * @event RemoteVideoTrack#switchedOff
+ */
+
+/**
+ * A {@link RemoteVideoTrack} was switched on.
+ * @param {RemoteVideoTrack} track - The {@link RemoteVideoTrack} that was
+ *   switched on
+ * @event RemoteVideoTrack#switchedOn
+ */
+
 module.exports = RemoteVideoTrack;
-},{"./remotemediatrack":158,"./videotrack":165}],161:[function(require,module,exports){
+},{"./remotemediatrack":125,"./videotrack":132}],128:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -30705,7 +20621,7 @@ var RemoteVideoTrackPublication = function (_RemoteTrackPublicati) {
  */
 
 /**
- * Your {@link LocalParticipant failed to subscribe to the {@link RemoteVideoTrack}.
+ * Your {@link LocalParticipant} failed to subscribe to the {@link RemoteVideoTrack}.
  * @param {TwilioError} error - the reason the {@link RemoteVideoTrack} could not be
  *   subscribed to
  * @event RemoteVideoTrackPublication#subscriptionFailed
@@ -30728,7 +20644,7 @@ var RemoteVideoTrackPublication = function (_RemoteTrackPublicati) {
  */
 
 module.exports = RemoteVideoTrackPublication;
-},{"./remotetrackpublication":159}],162:[function(require,module,exports){
+},{"./remotetrackpublication":126}],129:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -30810,7 +20726,7 @@ var MediaTrackSender = function (_MediaTrackTransceive) {
 }(MediaTrackTransceiver);
 
 module.exports = MediaTrackSender;
-},{"./transceiver":164}],163:[function(require,module,exports){
+},{"./transceiver":131}],130:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -30928,7 +20844,7 @@ var TrackPublication = function (_EventEmitter) {
  */
 
 module.exports = TrackPublication;
-},{"../../eventemitter":134,"../../util":236,"../../util/constants":234,"../../util/log":239}],164:[function(require,module,exports){
+},{"../../eventemitter":101,"../../util":203,"../../util/constants":201,"../../util/log":206}],131:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -30990,7 +20906,7 @@ var MediaTrackTransceiver = function (_TrackTransceiver) {
 }(TrackTransceiver);
 
 module.exports = MediaTrackTransceiver;
-},{"../../transceiver":230}],165:[function(require,module,exports){
+},{"../../transceiver":197}],132:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -31239,7 +21155,7 @@ function dimensionsChanged(track, elem) {
  */
 
 module.exports = VideoTrack;
-},{"./mediatrack":152}],166:[function(require,module,exports){
+},{"./mediatrack":119}],133:[function(require,module,exports){
 'use strict';
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
@@ -31336,7 +21252,7 @@ var NetworkQualityConfigurationImpl = function (_EventEmitter) {
 }(EventEmitter);
 
 module.exports = NetworkQualityConfigurationImpl;
-},{"./util":236,"./util/constants":234,"events":100}],167:[function(require,module,exports){
+},{"./util":203,"./util/constants":201,"events":66}],134:[function(require,module,exports){
 'use strict';
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
@@ -31386,7 +21302,7 @@ var nInstances = 0;
  * @property {Map<Track.SID, VideoTrackPublication>} videoTracks -
  *    The {@link Participant}'s {@link VideoTrackPublication}s
  * @emits Participant#disconnected
- * @emits Particiapnt#networkQualityLevelChanged
+ * @emits Participant#networkQualityLevelChanged
  * @emits Participant#trackDimensionsChanged
  * @emits Participant#trackStarted
  */
@@ -31633,7 +21549,7 @@ var Participant = function (_EventEmitter) {
       var RemoteVideoTrackPublication = this._RemoteVideoTrackPublication;
       var RemoteDataTrack = this._RemoteDataTrack;
       var RemoteDataTrackPublication = this._RemoteDataTrackPublication;
-      var signaling = this._signaling;
+      var participantSignaling = this._signaling;
 
       function trackSignalingAdded(signaling) {
         var RemoteTrackPublication = {
@@ -31700,7 +21616,11 @@ var Participant = function (_EventEmitter) {
           return;
         }
 
-        var track = kind === 'data' ? new RemoteTrack(sid, trackTransceiver, { log: log, name: name }) : new RemoteTrack(sid, trackTransceiver, isEnabled, { log: log, name: name });
+        var options = { log: log, name: name };
+        var setPriority = function setPriority(newPriority) {
+          return participantSignaling.updateSubscriberTrackPriority(sid, newPriority);
+        };
+        var track = kind === 'data' ? new RemoteTrack(sid, trackTransceiver, options) : new RemoteTrack(sid, trackTransceiver, isEnabled, setPriority, options);
 
         self._addTrack(track, publication, trackTransceiver.id);
       }
@@ -31722,17 +21642,17 @@ var Participant = function (_EventEmitter) {
         }
       }
 
-      signaling.on('trackAdded', trackSignalingAdded);
-      signaling.on('trackRemoved', trackSignalingRemoved);
+      participantSignaling.on('trackAdded', trackSignalingAdded);
+      participantSignaling.on('trackRemoved', trackSignalingRemoved);
 
-      signaling.tracks.forEach(trackSignalingAdded);
+      participantSignaling.tracks.forEach(trackSignalingAdded);
 
-      signaling.on('stateChanged', function stateChanged(state) {
+      participantSignaling.on('stateChanged', function stateChanged(state) {
         if (state === 'disconnected') {
           log.debug('Removing event listeners');
-          signaling.removeListener('stateChanged', stateChanged);
-          signaling.removeListener('trackAdded', trackSignalingAdded);
-          signaling.removeListener('trackRemoved', trackSignalingRemoved);
+          participantSignaling.removeListener('stateChanged', stateChanged);
+          participantSignaling.removeListener('trackAdded', trackSignalingAdded);
+          participantSignaling.removeListener('trackRemoved', trackSignalingRemoved);
         }
       });
     }
@@ -31998,7 +21918,7 @@ function reemitTrackPublicationEvents(participant, publication) {
 }
 
 module.exports = Participant;
-},{"./eventemitter":134,"./media/track/remoteaudiotrack":154,"./media/track/remoteaudiotrackpublication":155,"./media/track/remotedatatrack":156,"./media/track/remotedatatrackpublication":157,"./media/track/remotevideotrack":160,"./media/track/remotevideotrackpublication":161,"./util":236}],168:[function(require,module,exports){
+},{"./eventemitter":101,"./media/track/remoteaudiotrack":121,"./media/track/remoteaudiotrackpublication":122,"./media/track/remotedatatrack":123,"./media/track/remotedatatrackpublication":124,"./media/track/remotevideotrack":127,"./media/track/remotevideotrackpublication":128,"./util":203}],135:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -32094,7 +22014,7 @@ var QueueingEventEmitter = function (_EventEmitter) {
 }(EventEmitter);
 
 module.exports = QueueingEventEmitter;
-},{"events":100}],169:[function(require,module,exports){
+},{"events":66}],136:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -32128,9 +22048,12 @@ var Participant = require('./participant');
  * @emits RemoteParticipant#trackEnabled
  * @emits RemoteParticipant#trackMessage
  * @emits RemoteParticipant#trackPublished
+ * @emits RemoteParticipant#trackPublishPriorityChanged
  * @emits RemoteParticipant#trackStarted
  * @emits RemoteParticipant#trackSubscribed
  * @emits RemoteParticipant#trackSubscriptionFailed
+ * @emits RemoteParticipant#trackSwitchedOff
+ * @emits RemoteParticipant#trackSwitchedOn
  * @emits RemoteParticipant#trackUnpublished
  * @emits RemoteParticipant#trackUnsubscribed
  */
@@ -32201,7 +22124,7 @@ var RemoteParticipant = function (_Participant) {
   }, {
     key: '_getTrackPublicationEvents',
     value: function _getTrackPublicationEvents() {
-      return [].concat(_toConsumableArray(_get(RemoteParticipant.prototype.__proto__ || Object.getPrototypeOf(RemoteParticipant.prototype), '_getTrackPublicationEvents', this).call(this)), [['subscriptionFailed', 'trackSubscriptionFailed'], ['trackDisabled', 'trackDisabled'], ['trackEnabled', 'trackEnabled']]);
+      return [].concat(_toConsumableArray(_get(RemoteParticipant.prototype.__proto__ || Object.getPrototypeOf(RemoteParticipant.prototype), '_getTrackPublicationEvents', this).call(this)), [['subscriptionFailed', 'trackSubscriptionFailed'], ['trackDisabled', 'trackDisabled'], ['trackEnabled', 'trackEnabled'], ['publishPriorityChanged', 'trackPublishPriorityChanged'], ['trackSwitchedOff', 'trackSwitchedOff'], ['trackSwitchedOn', 'trackSwitchedOn']]);
     }
 
     /**
@@ -32339,6 +22262,32 @@ var RemoteParticipant = function (_Participant) {
  */
 
 /**
+ * The {@link RemoteTrackPublication}'s publish {@link Track.Priority} was changed by the
+ * {@link RemoteParticipant}.
+ * @param {Track.Priority} priority - the {@link RemoteTrack}'s new publish
+ *   {@link Track.Priority};
+ * @param {RemoteTrackPublication} publication - The
+ *   {@link RemoteTrackPublication} for the {@link RemoteTrack} that changed priority
+ * @event RemoteParticipant#trackPublishPriorityChanged
+ */
+
+/**
+ * A {@link RemoteParticipant}'s {@link RemoteTrack} was subscribed to.
+ * @param {RemoteTrack} track - The {@link RemoteTrack} that was switched off
+ * @param {RemoteTrackPublication} publication - The {@link RemoteTrackPublication}
+ *   for the {@link RemoteTrack} that was switched off
+ * @event RemoteParticipant#trackSwitchedOff
+ */
+
+/**
+ * A {@link RemoteParticipant}'s {@link RemoteTrack} was switched on.
+ * @param {RemoteTrack} track - The {@link RemoteTrack} that was switched on.
+ * @param {RemoteTrackPublication} publication - The {@link RemoteTrackPublication}
+ *   for the {@link RemoteTrack} that was switched on
+ * @event RemoteParticipant#trackSwitchedOn
+ */
+
+/**
  * A {@link RemoteTrack} was unpublished by the {@link RemoteParticipant}.
  * @event RemoteParticipant#trackUnpublished
  * @param {RemoteTrackPublication} publication - The {@link RemoteTrackPublication}
@@ -32354,7 +22303,7 @@ var RemoteParticipant = function (_Participant) {
  */
 
 module.exports = RemoteParticipant;
-},{"./participant":167}],170:[function(require,module,exports){
+},{"./participant":134}],137:[function(require,module,exports){
 'use strict';
 
 var XHR = require('xmlhttprequest').XMLHttpRequest;
@@ -32407,7 +22356,7 @@ request.get = request.bind(null, 'GET');
 request.post = request.bind(null, 'POST');
 
 module.exports = request;
-},{"xmlhttprequest":256}],171:[function(require,module,exports){
+},{"xmlhttprequest":224}],138:[function(require,module,exports){
 'use strict';
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
@@ -32462,8 +22411,11 @@ var nInstances = 0;
  * @emits Room#trackEnabled
  * @emits Room#trackMessage
  * @emits Room#trackPublished
+ * @emits Room#trackPublishPriorityChanged
  * @emits Room#trackStarted
  * @emits Room#trackSubscribed
+ * @emits Room#trackSwitchedOff
+ * @emits Room#trackSwitchedOn
  * @emits Room#trackUnpublished
  * @emits Room#trackUnsubscribed
  */
@@ -32598,13 +22550,6 @@ var Room = function (_EventEmitter) {
 
   return Room;
 }(EventEmitter);
-
-/**
- * @param {Room} room
- * @param {Array<LocalTrackStats>} trackStats
- * @returns {Array<LocalTrackStats>}
- */
-
 
 function rewriteLocalTrackIds(room, trackStats) {
   var localParticipantSignaling = room.localParticipant._signaling;
@@ -32786,14 +22731,36 @@ function rewriteLocalTrackIds(room, trackStats) {
 /**
  * A {@link RemoteParticipant}'s {@link RemoteTrack} was subscribed to.
  * @param {RemoteTrack} track - The {@link RemoteTrack} that was subscribed
+ * @param {RemoteTrackPublication} publication - The {@link RemoteTrackPublication}
+ *   for the {@link RemoteTrack} that was subscribed to
  * @param {RemoteParticipant} participant - The {@link RemoteParticipant} whose
  *   {@link RemoteTrack} was subscribed
  * @event Room#trackSubscribed
  * @example
- * room.on('trackSubscribed', function(track, participant) {
+ * room.on('trackSubscribed', function(track, publication, participant) {
  *   var participantView = document.getElementById('participant-view-' + participant.identity);
  *   participantView.appendChild(track.attach());
  * });
+ */
+
+/**
+ * A {@link RemoteParticipant}'s {@link RemoteTrack} was switched off.
+ * @param {RemoteTrack} track - The {@link RemoteTrack} that was switched off
+ * @param {RemoteTrackPublication} publication - The {@link RemoteTrackPublication}
+ *   for the {@link RemoteTrack} that was subscribed to
+ * @param {RemoteParticipant} participant - The {@link RemoteParticipant} whose
+ *   {@link RemoteTrack} was switched off
+ * @event Room#trackSwitchedOff
+ */
+
+/**
+ * A {@link RemoteParticipant}'s {@link RemoteTrack} was switched on.
+ * @param {RemoteTrack} track - The {@link RemoteTrack} that was switched on
+ * @param {RemoteTrackPublication} publication - The {@link RemoteTrackPublication}
+ *   for the {@link RemoteTrack} that was subscribed to
+ * @param {RemoteParticipant} participant - The {@link RemoteParticipant} whose
+ *   {@link RemoteTrack} was switched on
+ * @event Room#trackSwitchedOn
  */
 
 /**
@@ -32809,6 +22776,18 @@ function rewriteLocalTrackIds(room, trackStats) {
  */
 
 /**
+ * The {@link RemoteTrack}'s publish {@link Track.Priority} was changed by the
+ * {@link RemoteParticipant}.
+ * @param {Track.Priority} priority - the {@link RemoteTrack}'s new publish
+ *   {@link Track.Priority};
+ * @param {RemoteTrackPublication} publication - The
+ *   {@link RemoteTrackPublication} for the {@link RemoteTrack} that changed priority
+ * @param {RemoteParticipant} participant - The {@link RemoteParticipant} whose
+ *   {@link RemoteTrack} changed priority
+ * @event Room#trackPublishPriorityChanged
+ */
+
+/**
  * A {@link RemoteTrack} was unpublished by a {@link RemoteParticipant} to the {@link Room}.
  * @event Room#trackUnpublished
  * @param {RemoteTrackPublication} publication - The {@link RemoteTrackPublication}
@@ -32820,11 +22799,13 @@ function rewriteLocalTrackIds(room, trackStats) {
 /**
  * A {@link RemoteParticipant}'s {@link RemoteTrack} was unsubscribed from.
  * @param {RemoteTrack} track - The {@link RemoteTrack} that was unsubscribed
+ * @param {RemoteTrackPublication} publication - The {@link RemoteTrackPublication}
+ *   for the {@link RemoteTrack} that was unsubscribed from
  * @param {RemoteParticipant} participant - The {@link RemoteParticipant} whose
  *   {@link RemoteTrack} was unsubscribed
  * @event Room#trackUnsubscribed
  * @example
- * room.on('trackUnsubscribed', function(track, participant) {
+ * room.on('trackUnsubscribed', function(track, publication, participant) {
  *   track.detach().forEach(function(mediaElement) {
  *     mediaElement.remove();
  *   });
@@ -32840,7 +22821,7 @@ function connectParticipant(room, participantSignaling) {
   room.emit('participantConnected', participant);
 
   // Reemit Track events from the RemoteParticipant.
-  var eventListeners = ['trackDimensionsChanged', 'trackDisabled', 'trackEnabled', 'trackMessage', 'trackPublished', 'trackStarted', 'trackSubscribed', 'trackSubscriptionFailed', 'trackUnpublished', 'trackUnsubscribed'].map(function (event) {
+  var eventListeners = ['trackDimensionsChanged', 'trackDisabled', 'trackEnabled', 'trackMessage', 'trackPublished', 'trackPublishPriorityChanged', 'trackStarted', 'trackSubscribed', 'trackSubscriptionFailed', 'trackSwitchedOff', 'trackSwitchedOn', 'trackUnpublished', 'trackUnsubscribed'].map(function (event) {
     function reemit() {
       var args = [].slice.call(arguments);
       args.unshift(event);
@@ -32908,7 +22889,7 @@ function handleSignalingEvents(room, signaling) {
 }
 
 module.exports = Room;
-},{"./eventemitter":134,"./remoteparticipant":169,"./stats/statsreport":227,"./util":236}],172:[function(require,module,exports){
+},{"./eventemitter":101,"./remoteparticipant":136,"./stats/statsreport":194,"./util":203}],139:[function(require,module,exports){
 /* eslint consistent-return:0 */
 'use strict';
 
@@ -33102,7 +23083,7 @@ var Signaling = function (_StateMachine) {
 }(StateMachine);
 
 module.exports = Signaling;
-},{"../statemachine":199,"./participant":175,"./room":179}],173:[function(require,module,exports){
+},{"../statemachine":166,"./participant":142,"./room":146}],140:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -33138,14 +23119,16 @@ var LocalParticipantSignaling = function (_ParticipantSignaling) {
 
   /**
    * @param {DataTrackSender|MediaTrackSender} trackSender
+   * @param {string} name
+   * @param {Track.Priority} priority
    * @returns {LocalTrackPublicationSignaling} publication
    */
 
 
   _createClass(LocalParticipantSignaling, [{
     key: 'addTrack',
-    value: function addTrack(trackSender, name) {
-      var publication = this._createLocalTrackPublicationSignaling(trackSender, name);
+    value: function addTrack(trackSender, name, priority) {
+      var publication = this._createLocalTrackPublicationSignaling(trackSender, name, priority);
       this._trackSendersToPublications.set(trackSender, publication);
       this._publicationsToTrackSenders.set(publication, trackSender);
       _get(LocalParticipantSignaling.prototype.__proto__ || Object.getPrototypeOf(LocalParticipantSignaling.prototype), 'addTrack', this).call(this, publication);
@@ -33164,7 +23147,7 @@ var LocalParticipantSignaling = function (_ParticipantSignaling) {
     }
 
     /**
-     * @param {LocalTrackPublicationSignaling} publication
+     * @param {LocalTrackPublicationSignaling} trackPublication
      * @returns {?DataTrackSender|MediaTrackSender}
      */
 
@@ -33200,7 +23183,7 @@ var LocalParticipantSignaling = function (_ParticipantSignaling) {
 }(ParticipantSignaling);
 
 module.exports = LocalParticipantSignaling;
-},{"./participant":175}],174:[function(require,module,exports){
+},{"./participant":142}],141:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -33218,7 +23201,6 @@ var TrackSignaling = require('./track');
 /**
  * A {@link LocalTrackPublication} implementation
  * @extends TrackSignaling
- * @property {?Error} error - non-null if publication failed
  * @property {Track.ID} id
  */
 
@@ -33228,28 +23210,24 @@ var LocalTrackPublicationSignaling = function (_TrackSignaling) {
   /**
    * Construct a {@link LocalTrackPublicationSignaling}. {@link TrackSenders}
    * are always cloned.
-   * @param {DataTrackSender|MediaTrackSender} trackSender
-   * @param {string} name
+   * @param {DataTrackSender|MediaTrackSender} trackSender - the {@link TrackSender}
+   *   of the {@link LocalTrack} to be published
+   * @param {string} name - the name of the {@link LocalTrack} to be published
+   * @param {Track.Priority} priority - initial {@link Track.Priority}
    */
-  function LocalTrackPublicationSignaling(trackSender, name) {
+  function LocalTrackPublicationSignaling(trackSender, name, priority) {
     _classCallCheck(this, LocalTrackPublicationSignaling);
 
     trackSender = trackSender.clone();
     var enabled = trackSender.kind === 'data' ? true : trackSender.track.enabled;
 
-    var _this = _possibleConstructorReturn(this, (LocalTrackPublicationSignaling.__proto__ || Object.getPrototypeOf(LocalTrackPublicationSignaling)).call(this, name, trackSender.kind, enabled));
+    var _this = _possibleConstructorReturn(this, (LocalTrackPublicationSignaling.__proto__ || Object.getPrototypeOf(LocalTrackPublicationSignaling)).call(this, name, trackSender.kind, enabled, priority));
 
     _this.setTrackTransceiver(trackSender);
     Object.defineProperties(_this, {
-      _error: {
-        value: null,
+      _updatedPriority: {
+        value: priority,
         writable: true
-      },
-      error: {
-        enumerable: true,
-        get: function get() {
-          return this._error;
-        }
       },
       id: {
         enumerable: true,
@@ -33260,16 +23238,22 @@ var LocalTrackPublicationSignaling = function (_TrackSignaling) {
   }
 
   /**
-   * Enable (or disable) the {@link LocalTrackPublicationSignaling} if it is not
-   * already enabled (or disabled). This also updates the cloned
-   * {@link MediaTrackSender}'s MediaStreamTracks `enabled` state.
-   * @param {boolean} [enabled=true]
-   * @return {this}
+   * The updated {@link Track.Priority} of the {@link LocalTrack}.
+   * @property {Track.priority}
    */
 
 
   _createClass(LocalTrackPublicationSignaling, [{
     key: 'enable',
+
+
+    /**
+     * Enable (or disable) the {@link LocalTrackPublicationSignaling} if it is not
+     * already enabled (or disabled). This also updates the cloned
+     * {@link MediaTrackSender}'s MediaStreamTracks `enabled` state.
+     * @param {boolean} [enabled=true]
+     * @return {this}
+     */
     value: function enable(enabled) {
       enabled = typeof enabled === 'boolean' ? enabled : true;
       this.trackTransceiver.track.enabled = enabled;
@@ -33290,6 +23274,29 @@ var LocalTrackPublicationSignaling = function (_TrackSignaling) {
       }
       return this;
     }
+
+    /**
+     * Update the {@link Track.Priority} of the published {@link LocalTrack}.
+     * @param {Track.priority} priority
+     * @returns {this}
+     */
+
+  }, {
+    key: 'setPriority',
+    value: function setPriority(priority) {
+      if (this._updatedPriority !== priority) {
+        this._updatedPriority = priority;
+        this.emit('updated');
+      }
+      return this;
+    }
+
+    /**
+     * Set the published {@link LocalTrack}'s {@link Track.SID}.
+     * @param {Track.SID} sid
+     * @returns {this}
+     */
+
   }, {
     key: 'setSid',
     value: function setSid(sid) {
@@ -33308,6 +23315,11 @@ var LocalTrackPublicationSignaling = function (_TrackSignaling) {
     key: 'stop',
     value: function stop() {
       this.trackTransceiver.stop();
+    }
+  }, {
+    key: 'updatedPriority',
+    get: function get() {
+      return this._updatedPriority;
     }
   }]);
 
@@ -33330,7 +23342,7 @@ function setError(publication, error) {
 }
 
 module.exports = LocalTrackPublicationSignaling;
-},{"./track":180}],175:[function(require,module,exports){
+},{"./track":147}],142:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -33386,6 +23398,9 @@ var ParticipantSignaling = function (_StateMachine) {
     var _this = _possibleConstructorReturn(this, (ParticipantSignaling.__proto__ || Object.getPrototypeOf(ParticipantSignaling)).call(this, 'connecting', states));
 
     Object.defineProperties(_this, {
+      _enqueuedPriorityUpdates: {
+        value: new Map()
+      },
       _identity: {
         writable: true,
         value: null
@@ -33401,6 +23416,10 @@ var ParticipantSignaling = function (_StateMachine) {
       _sid: {
         writable: true,
         value: null
+      },
+      _trackPrioritySignaling: {
+        value: null,
+        writable: true
       },
       identity: {
         enumerable: true,
@@ -33496,6 +23515,46 @@ var ParticipantSignaling = function (_StateMachine) {
     }
 
     /**
+     * updates the subscriber priority for the given track.
+     * @param {Track.SID} trackSid
+     * @param {?Track.Priority} priority
+     * @returns {void}
+     */
+
+  }, {
+    key: 'updateSubscriberTrackPriority',
+    value: function updateSubscriberTrackPriority(trackSid, priority) {
+      // note the most recent priority update for the track.
+      this._enqueuedPriorityUpdates.set(trackSid, priority);
+      if (this._trackPrioritySignaling) {
+        this._trackPrioritySignaling.sendTrackPriorityUpdate(trackSid, 'subscribe', priority);
+      }
+    }
+
+    /**
+     * Set the {@link TrackPrioritySignaling}.
+     * @param {TrackPrioritySignaling} trackPrioritySignaling
+     * @returns {this}
+     */
+
+  }, {
+    key: 'setTrackPrioritySignaling',
+    value: function setTrackPrioritySignaling(trackPrioritySignaling) {
+      var _this2 = this;
+
+      this._trackPrioritySignaling = trackPrioritySignaling;
+      if (trackPrioritySignaling) {
+        this._enqueuedPriorityUpdates.forEach(function (priority, trackSid) {
+          _this2._trackPrioritySignaling.sendTrackPriorityUpdate(trackSid, 'subscribe', priority);
+        });
+
+        // NOTE(mpatwardhan)- we intentionally do not clear _enqueuedPriorityUpdates,
+        // this cache will be used to re-send the priorities in case of VMS-FailOver.
+      }
+      return this;
+    }
+
+    /**
      * Connect the {@link ParticipantSignaling}.
      * @param {Participant.SID} sid
      * @param {string} identity
@@ -33551,7 +23610,7 @@ var ParticipantSignaling = function (_StateMachine) {
  */
 
 module.exports = ParticipantSignaling;
-},{"../statemachine":199,"../stats/networkqualitystats":214}],176:[function(require,module,exports){
+},{"../statemachine":166,"../stats/networkqualitystats":181}],143:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -33636,7 +23695,7 @@ var RecordingSignaling = function (_EventEmitter) {
  */
 
 module.exports = RecordingSignaling;
-},{"events":100}],177:[function(require,module,exports){
+},{"events":66}],144:[function(require,module,exports){
 'use strict';
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -33675,7 +23734,7 @@ var RemoteParticipantSignaling = function (_ParticipantSignaling) {
 }(ParticipantSignaling);
 
 module.exports = RemoteParticipantSignaling;
-},{"./participant":175}],178:[function(require,module,exports){
+},{"./participant":142}],145:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -33702,15 +23761,16 @@ var RemoteTrackPublicationSignaling = function (_TrackSignaling) {
    * @param {string} name
    * @param {Track.Kind} kind
    * @param {boolean} isEnabled
+   * @param {Track.Priority} priority
    */
-  function RemoteTrackPublicationSignaling(sid, name, kind, isEnabled) {
+  function RemoteTrackPublicationSignaling(sid, name, kind, isEnabled, priority) {
     _classCallCheck(this, RemoteTrackPublicationSignaling);
 
-    var _this = _possibleConstructorReturn(this, (RemoteTrackPublicationSignaling.__proto__ || Object.getPrototypeOf(RemoteTrackPublicationSignaling)).call(this, name, kind, isEnabled));
+    var _this = _possibleConstructorReturn(this, (RemoteTrackPublicationSignaling.__proto__ || Object.getPrototypeOf(RemoteTrackPublicationSignaling)).call(this, name, kind, isEnabled, priority));
 
     Object.defineProperties(_this, {
-      _error: {
-        value: null,
+      _isSwitchedOff: {
+        value: false,
         writable: true
       }
     });
@@ -33719,8 +23779,8 @@ var RemoteTrackPublicationSignaling = function (_TrackSignaling) {
   }
 
   /**
-   * Non-null if subscription failed.
-   * @property {?Error}
+   * Whether the {@link RemoteTrackPublicationSignaling} is subscribed to.
+   * @property {boolean}
    */
 
 
@@ -33739,21 +23799,53 @@ var RemoteTrackPublicationSignaling = function (_TrackSignaling) {
       }
       return this;
     }
+
+    /**
+     * Update the publish {@link Track.Priority}.
+     * @param {Track.Priority} priority
+     * @returns {this}
+     */
+
   }, {
-    key: 'error',
-    get: function get() {
-      return this._error;
+    key: 'setPriority',
+    value: function setPriority(priority) {
+      if (this._priority !== priority) {
+        this._priority = priority;
+        this.emit('updated');
+      }
+      return this;
     }
 
     /**
-     * Whether the {@link RemoteTrackPublicationSignaling} is subscribed to.
-     * @property {boolean}
+     * Updates track switch on/off state.
+     * @param {boolean} isSwitchedOff
+     * @returns {this}
      */
 
+  }, {
+    key: 'setSwitchedOff',
+    value: function setSwitchedOff(isSwitchedOff) {
+      if (this._isSwitchedOff !== isSwitchedOff) {
+        this._isSwitchedOff = isSwitchedOff;
+        this.emit('updated');
+      }
+      return this;
+    }
   }, {
     key: 'isSubscribed',
     get: function get() {
       return !!this.trackTransceiver;
+    }
+
+    /**
+     * Whether the {@link RemoteTrackPublicationSignaling} is switched off.
+     * @property {boolean}
+     */
+
+  }, {
+    key: 'isSwitchedOff',
+    get: function get() {
+      return this._isSwitchedOff;
     }
   }]);
 
@@ -33761,7 +23853,7 @@ var RemoteTrackPublicationSignaling = function (_TrackSignaling) {
 }(TrackSignaling);
 
 module.exports = RemoteTrackPublicationSignaling;
-},{"./track":180}],179:[function(require,module,exports){
+},{"./track":147}],146:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -34026,7 +24118,7 @@ function maybeUpdateState(roomSignaling) {
 }
 
 module.exports = RoomSignaling;
-},{"../statemachine":199,"../util/twilio-video-errors":249,"./recording":176}],180:[function(require,module,exports){
+},{"../statemachine":166,"../util/twilio-video-errors":216,"./recording":143}],147:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -34056,16 +24148,25 @@ var TrackSignaling = function (_EventEmitter) {
    * @param {string} name
    * @param {Track.Kind} kind
    * @param {boolean} isEnabled
+   * @param {Track.Priority} priority
    */
-  function TrackSignaling(name, kind, isEnabled) {
+  function TrackSignaling(name, kind, isEnabled, priority) {
     _classCallCheck(this, TrackSignaling);
 
     var _this = _possibleConstructorReturn(this, (TrackSignaling.__proto__ || Object.getPrototypeOf(TrackSignaling)).call(this));
 
     var sid = null;
     Object.defineProperties(_this, {
+      _error: {
+        value: null,
+        writable: true
+      },
       _isEnabled: {
         value: isEnabled,
+        writable: true
+      },
+      _priority: {
+        value: priority,
         writable: true
       },
       _trackTransceiver: {
@@ -34095,8 +24196,8 @@ var TrackSignaling = function (_EventEmitter) {
   }
 
   /**
-   * Whether the {@link TrackSignaling} is enabled.
-   * @property {boolean}
+   * Non-null if publication or subscription failed.
+   * @property {?Error} error
    */
 
 
@@ -34163,9 +24264,31 @@ var TrackSignaling = function (_EventEmitter) {
       return this;
     }
   }, {
+    key: 'error',
+    get: function get() {
+      return this._error;
+    }
+
+    /**
+     * Whether the {@link TrackSignaling} is enabled.
+     * @property {boolean}
+     */
+
+  }, {
     key: 'isEnabled',
     get: function get() {
       return this._isEnabled;
+    }
+
+    /**
+     * The {@link TrackSignaling}'s priority.
+     * @property {Track.Priority}
+     */
+
+  }, {
+    key: 'priority',
+    get: function get() {
+      return this._priority;
     }
 
     /**
@@ -34200,23 +24323,22 @@ var TrackSignaling = function (_EventEmitter) {
  */
 
 module.exports = TrackSignaling;
-},{"events":100}],181:[function(require,module,exports){
+},{"events":66}],148:[function(require,module,exports){
 'use strict';
 
 var CancelablePromise = require('../../util/cancelablepromise');
 var DefaultPeerConnectionManager = require('./peerconnectionmanager');
 var DefaultRoomV2 = require('./room');
-var DefaultTransport = require('./transport');
-var TwilioConnectionTransport = require('./twilioconnectiontransport');
+var DefaultTransport = require('./twilioconnectiontransport');
 var SignalingConnectionDisconnectedError = require('../../util/twilio-video-errors').SignalingConnectionDisconnectedError;
 var SignalingIncomingMessageInvalidError = require('../../util/twilio-video-errors').SignalingIncomingMessageInvalidError;
 var flatMap = require('../../util').flatMap;
 
-function createCancelableRoomSignalingPromise(token, uaOrWsServer, localParticipant, iceServerSource, encodingParameters, preferredCodecs, options) {
+function createCancelableRoomSignalingPromise(token, wsServer, localParticipant, iceServerSource, encodingParameters, preferredCodecs, options) {
   options = Object.assign({
     PeerConnectionManager: DefaultPeerConnectionManager,
     RoomV2: DefaultRoomV2,
-    Transport: options._useTwilioConnection ? TwilioConnectionTransport : DefaultTransport
+    Transport: DefaultTransport
   }, options);
 
   var transport = void 0;
@@ -34259,18 +24381,24 @@ function createCancelableRoomSignalingPromise(token, uaOrWsServer, localParticip
           transportOptions.NullInsightsPublisher = options.NullInsightsPublisher;
         }
 
+        if (options.bandwidthProfile) {
+          transportOptions.bandwidthProfile = options.bandwidthProfile;
+        }
+
         transportOptions = Object.assign({
+          automaticSubscription: options.automaticSubscription,
           dominantSpeaker: options.dominantSpeaker,
           environment: options.environment,
           logLevel: options.logLevel,
           networkQuality: options.networkQuality,
           iceServerSourceStatus: iceServerSource.status,
           insights: options.insights,
-          realm: options.realm
+          realm: options.realm,
+          sdpSemantics: options.sdpSemantics
         }, transportOptions);
 
         var Transport = options.Transport;
-        transport = new Transport(options.name, token, localParticipant, peerConnectionManager, uaOrWsServer, transportOptions);
+        transport = new Transport(options.name, token, localParticipant, peerConnectionManager, wsServer, transportOptions);
 
         transport.once('connected', function connected(initialState) {
           if (isCanceled()) {
@@ -34320,7 +24448,7 @@ function createCancelableRoomSignalingPromise(token, uaOrWsServer, localParticip
 }
 
 module.exports = createCancelableRoomSignalingPromise;
-},{"../../util":236,"../../util/cancelablepromise":233,"../../util/twilio-video-errors":249,"./peerconnectionmanager":190,"./room":194,"./transport":196,"./twilioconnectiontransport":197}],182:[function(require,module,exports){
+},{"../../util":203,"../../util/cancelablepromise":200,"../../util/twilio-video-errors":216,"./peerconnectionmanager":158,"./room":162,"./twilioconnectiontransport":165}],149:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -34408,7 +24536,7 @@ var DominantSpeakerSignaling = function (_EventEmitter) {
  */
 
 module.exports = DominantSpeakerSignaling;
-},{"events":100}],183:[function(require,module,exports){
+},{"events":66}],150:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -34494,7 +24622,127 @@ var IceBox = function () {
 }();
 
 module.exports = IceBox;
-},{"../../util/filter":235}],184:[function(require,module,exports){
+},{"../../util/filter":202}],151:[function(require,module,exports){
+'use strict';
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var _require = require('../../util/constants'),
+    ICE_ACTIVITY_CHECK_PERIOD_MS = _require.ICE_ACTIVITY_CHECK_PERIOD_MS,
+    ICE_INACTIVITY_THRESHOLD_MS = _require.ICE_INACTIVITY_THRESHOLD_MS;
+
+/**
+ * Monitors a {@link RTCPeerConnection}'s stats and notifies
+ * caller when inactivity is detected.
+ */
+
+
+var IceConnectionMonitor = function () {
+  /**
+   * Construct an {@link IceConnectionMonitor}.
+   * @param {RTCPeerConnection} peerConnection
+   * @param {object} [options]
+   */
+  function IceConnectionMonitor(peerConnection, options) {
+    _classCallCheck(this, IceConnectionMonitor);
+
+    options = Object.assign({
+      activityCheckPeriodMs: ICE_ACTIVITY_CHECK_PERIOD_MS,
+      inactivityThresholdMs: ICE_INACTIVITY_THRESHOLD_MS
+    }, options);
+
+    Object.defineProperties(this, {
+      _activityCheckPeriodMs: {
+        value: options.activityCheckPeriodMs
+      },
+      _inactivityThresholdMs: {
+        value: options.inactivityThresholdMs
+      },
+      _lastActiveStats: {
+        value: null,
+        writable: true
+      },
+      _peerConnection: {
+        value: peerConnection
+      },
+      _timer: {
+        value: null,
+        writable: true
+      }
+    });
+  }
+
+  /**
+   * Get ICE connection stats, and extract received and send bytes.
+   * @returns Promise<?RTCIceCandidatePairStats>
+   */
+
+
+  _createClass(IceConnectionMonitor, [{
+    key: '_getIceConnectionStats',
+    value: function _getIceConnectionStats() {
+      return this._peerConnection.getStats().then(function (stats) {
+        return Array.from(stats.values()).find(function (stat) {
+          return stat.type === 'candidate-pair' && stat.nominated;
+        });
+      }).catch(function () {
+        return null;
+      });
+    }
+
+    /**
+     * Start monitoring the ICE connection.
+     * Monitors bytes received on active ice connection pair,
+     * invokes onIceConnectionInactive when inactivity is detected.
+     * @param {function} onIceConnectionInactive
+     */
+
+  }, {
+    key: 'start',
+    value: function start(onIceConnectionInactive) {
+      var _this = this;
+
+      this.stop();
+      this._timer = setInterval(function () {
+        _this._getIceConnectionStats().then(function (iceStats) {
+          if (!iceStats) {
+            return;
+          }
+
+          if (!_this._lastActivity || _this._lastActivity.bytesReceived !== iceStats.bytesReceived) {
+            _this._lastActivity = iceStats;
+          }
+
+          if (iceStats.timestamp - _this._lastActivity.timestamp >= _this._inactivityThresholdMs) {
+            onIceConnectionInactive();
+          }
+        });
+      }, this._activityCheckPeriodMs);
+    }
+
+    /**
+     * Stop monitoring the ICE connection state.
+     * @returns {void}
+     */
+
+  }, {
+    key: 'stop',
+    value: function stop() {
+      if (this._timer !== null) {
+        clearInterval(this._timer);
+        this._timer = null;
+        this._lastActivity = null;
+      }
+    }
+  }]);
+
+  return IceConnectionMonitor;
+}();
+
+module.exports = IceConnectionMonitor;
+},{"../../util/constants":201}],152:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -34505,13 +24753,9 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var constants = require('../../util/constants');
 var defaultCreateCancelableRoomSignalingPromise = require('./cancelableroomsignalingpromise');
 var LocalParticipantV2 = require('./localparticipant');
 var Signaling = require('../');
-var SIP = require('../../sip');
-var SIPJSMediaHandler = require('./sipjsmediahandler');
-var util = require('../../util');
 
 /**
  * {@link SignalingV2} implements version 2 of our signaling protocol.
@@ -34529,35 +24773,10 @@ var SignalingV2 = function (_Signaling) {
   function SignalingV2(wsServer, options) {
     _classCallCheck(this, SignalingV2);
 
-    var uri = util.makeClientSIPURI();
-
     /* eslint new-cap:0 */
     options = Object.assign({
-      createCancelableRoomSignalingPromise: defaultCreateCancelableRoomSignalingPromise,
-      registrarServer: constants.REGISTRAR_SERVER,
-      UA: SIP.UA
+      createCancelableRoomSignalingPromise: defaultCreateCancelableRoomSignalingPromise
     }, options);
-
-    var debug = options.logLevel === 'debug';
-    var useWssHack = wsServer.startsWith('wss://');
-
-    var UA = options.UA;
-    var ua = options._useTwilioConnection ? null : new UA({
-      autostart: false,
-      log: {
-        builtinEnabled: debug
-      },
-      extraSupported: ['room-signaling', 'timer'],
-      hackAllowUnregisteredOptionTags: true,
-      keepAliveInterval: 30,
-      mediaHandlerFactory: SIPJSMediaHandler.defaultFactory,
-      register: false,
-      registrarServer: options.registrarServer,
-      traceSip: debug,
-      uri: uri,
-      wsServers: wsServer,
-      hackWssInTransport: useWssHack
-    });
 
     var _this = _possibleConstructorReturn(this, (SignalingV2.__proto__ || Object.getPrototypeOf(SignalingV2)).call(this));
 
@@ -34567,9 +24786,6 @@ var SignalingV2 = function (_Signaling) {
       },
       _options: {
         value: options
-      },
-      _ua: {
-        value: ua
       },
       _wsServer: {
         value: wsServer
@@ -34584,63 +24800,10 @@ var SignalingV2 = function (_Signaling) {
 
 
   _createClass(SignalingV2, [{
-    key: '_close',
-    value: function _close(key) {
-      if (!this._ua) {
-        this.transition('closing', key);
-        this.transition('closed', key);
-        return Promise.resolve(this);
-      }
-      this.transition('closing', key);
-      this._ua.stop();
-      this._ua.transport.disconnect();
-      this.transition('closed', key);
-      return Promise.resolve(this);
-    }
-
-    /**
-     * @private
-     */
-
-  }, {
-    key: '_open',
-    value: function _open(key) {
-      var _this2 = this;
-
-      if (!this._ua) {
-        this.transition('opening', key);
-        this.transition('open', key);
-        return Promise.resolve(this);
-      }
-      var ua = this._ua;
-
-      function startUA() {
-        ua.start();
-      }
-
-      this.transition('opening', key);
-      return util.promiseFromEvents(startUA, ua, 'connected', 'disconnected').then(function () {
-        _this2.transition('open', key);
-        return _this2;
-      }, function () {
-        _this2.transition('closed', key);
-        throw new Error('Open failed');
-      });
-    }
-
-    /**
-     * @private
-     */
-
-  }, {
     key: '_connect',
     value: function _connect(localParticipant, token, iceServerSource, encodingParameters, preferredCodecs, options) {
       options = Object.assign({}, this._options, options);
-
-      var ua = this._ua;
-      var wsServer = this._wsServer;
-
-      return this._createCancelableRoomSignalingPromise.bind(null, token, ua || wsServer, localParticipant, iceServerSource, encodingParameters, preferredCodecs, options);
+      return this._createCancelableRoomSignalingPromise.bind(null, token, this._wsServer, localParticipant, iceServerSource, encodingParameters, preferredCodecs, options);
     }
   }, {
     key: 'createLocalParticipantSignaling',
@@ -34653,7 +24816,7 @@ var SignalingV2 = function (_Signaling) {
 }(Signaling);
 
 module.exports = SignalingV2;
-},{"../":172,"../../sip":198,"../../util":236,"../../util/constants":234,"./cancelableroomsignalingpromise":181,"./localparticipant":185,"./sipjsmediahandler":195}],185:[function(require,module,exports){
+},{"../":139,"./cancelableroomsignalingpromise":148,"./localparticipant":153}],153:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -34669,12 +24832,17 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var LocalParticipantSignaling = require('../localparticipant');
 var LocalTrackPublicationV2 = require('./localtrackpublication');
 
+var _require = require('../../util'),
+    isDeepEqual = _require.isDeepEqual;
+
 /**
  * @extends ParticipantSignaling
+ * @property {BandwidthProfileOptions} bandwidthProfile
  * @property {NetworkQualityConfigurationImpl} networkQualityConfiguration
  * @property {number} revision
  * @emits LocalParticipantV2#updated
  */
+
 
 var LocalParticipantV2 = function (_LocalParticipantSign) {
   _inherits(LocalParticipantV2, _LocalParticipantSign);
@@ -34695,6 +24863,14 @@ var LocalParticipantV2 = function (_LocalParticipantSign) {
     var _this = _possibleConstructorReturn(this, (LocalParticipantV2.__proto__ || Object.getPrototypeOf(LocalParticipantV2)).call(this));
 
     Object.defineProperties(_this, {
+      _bandwidthProfile: {
+        value: null,
+        writable: true
+      },
+      _bandwidthProfileRevision: {
+        value: 0,
+        writable: true
+      },
       _encodingParameters: {
         value: encodingParameters
       },
@@ -34712,6 +24888,18 @@ var LocalParticipantV2 = function (_LocalParticipantSign) {
         writable: true,
         value: 1
       },
+      bandwidthProfile: {
+        enumerable: true,
+        get: function get() {
+          return this._bandwidthProfile;
+        }
+      },
+      bandwidthProfileRevision: {
+        enumerable: true,
+        get: function get() {
+          return this._bandwidthProfileRevision;
+        }
+      },
       networkQualityConfiguration: {
         enumerable: true,
         value: networkQualityConfiguration
@@ -34727,13 +24915,31 @@ var LocalParticipantV2 = function (_LocalParticipantSign) {
   }
 
   /**
-   * Set the {@link EncodingParameters}.
-   * @param {?EncodingParameters} encodingParameters
-   * @returns {this}
+   * Update the {@link BandwidthProfileOptions}.
+   * @param {BandwidthProfileOptions} bandwidthProfile
    */
 
 
   _createClass(LocalParticipantV2, [{
+    key: 'setBandwidthProfile',
+    value: function setBandwidthProfile(bandwidthProfile) {
+      if (!isDeepEqual(this._bandwidthProfile, bandwidthProfile)) {
+        // NOTE(mmalavalli): Object.assign() copies the values of only
+        // the top level properties. In order to deep copy the object, we
+        // stringify and parse the object.
+        this._bandwidthProfile = JSON.parse(JSON.stringify(bandwidthProfile));
+        this._bandwidthProfileRevision++;
+        this.didUpdate();
+      }
+    }
+
+    /**
+     * Set the {@link EncodingParameters}.
+     * @param {?EncodingParameters} encodingParameters
+     * @returns {this}
+     */
+
+  }, {
     key: 'setParameters',
     value: function setParameters(encodingParameters) {
       this._encodingParameters.update(encodingParameters);
@@ -34769,13 +24975,14 @@ var LocalParticipantV2 = function (_LocalParticipantSign) {
      * @protected
      * @param {DataTrackSender|MediaTrackSender} trackSender
      * @param {string} name
+     * @param {Track.Priority} priority
      * @returns {LocalTrackPublicationV2}
      */
 
   }, {
     key: '_createLocalTrackPublicationSignaling',
-    value: function _createLocalTrackPublicationSignaling(trackSender, name) {
-      return new this._LocalTrackPublicationV2(trackSender, name);
+    value: function _createLocalTrackPublicationSignaling(trackSender, name, priority) {
+      return new this._LocalTrackPublicationV2(trackSender, name, priority);
     }
 
     /**
@@ -34783,30 +24990,32 @@ var LocalParticipantV2 = function (_LocalParticipantSign) {
      * or {@link MediaTrackSender} to the {@link LocalParticipantV2}.
      * @param {DataTrackSender|MediaTrackSender} trackSender
      * @param {string} name
+     * @param {Track.Priority} priority
      * @returns {this}
      */
 
   }, {
     key: 'addTrack',
-    value: function addTrack(trackSender, name) {
+    value: function addTrack(trackSender, name, priority) {
       var _this2 = this;
 
-      _get(LocalParticipantV2.prototype.__proto__ || Object.getPrototypeOf(LocalParticipantV2.prototype), 'addTrack', this).call(this, trackSender, name);
+      _get(LocalParticipantV2.prototype.__proto__ || Object.getPrototypeOf(LocalParticipantV2.prototype), 'addTrack', this).call(this, trackSender, name, priority);
       var publication = this.getPublication(trackSender);
 
-      var sid = publication.sid;
+      var isEnabled = publication.isEnabled,
+          updatedPriority = publication.updatedPriority;
 
 
       var updated = function updated() {
         // NOTE(mmalavalli): The LocalParticipantV2's state is only published if
         // the "updated" event is emitted due to LocalTrackPublicationV2's
-        // .isEnabled being toggled. We do not publish if it is fired due to the
+        // .isEnabled or .updatedPriority being changed. We do not publish if it is fired due to the
         // LocalTrackPublicationV2's .sid being set.
-        if (sid === publication.sid) {
+        if (isEnabled !== publication.isEnabled || updatedPriority !== publication.updatedPriority) {
           _this2.didUpdate();
-          return;
+          isEnabled = publication.isEnabled;
+          updatedPriority = publication.updatedPriority;
         }
-        sid = publication.sid;
       };
 
       publication.on('updated', updated);
@@ -34940,7 +25149,7 @@ var LocalParticipantV2 = function (_LocalParticipantSign) {
  */
 
 module.exports = LocalParticipantV2;
-},{"../localparticipant":173,"./localtrackpublication":186}],186:[function(require,module,exports){
+},{"../../util":203,"../localparticipant":140,"./localtrackpublication":154}],154:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -34965,11 +25174,12 @@ var LocalTrackPublicationV2 = function (_LocalTrackPublicatio) {
    * Construct a {@link LocalTrackPublicationV2}.
    * @param {DataTrackSender|MediaTrackSender} trackSender
    * @param {string} name
+   * @param {Track.Priority} priority
    */
-  function LocalTrackPublicationV2(trackSender, name) {
+  function LocalTrackPublicationV2(trackSender, name, priority) {
     _classCallCheck(this, LocalTrackPublicationV2);
 
-    return _possibleConstructorReturn(this, (LocalTrackPublicationV2.__proto__ || Object.getPrototypeOf(LocalTrackPublicationV2)).call(this, trackSender, name));
+    return _possibleConstructorReturn(this, (LocalTrackPublicationV2.__proto__ || Object.getPrototypeOf(LocalTrackPublicationV2)).call(this, trackSender, name, priority));
   }
 
   /**
@@ -34985,7 +25195,8 @@ var LocalTrackPublicationV2 = function (_LocalTrackPublicatio) {
         enabled: this.isEnabled,
         id: this.id,
         kind: this.kind,
-        name: this.name
+        name: this.name,
+        priority: this.updatedPriority
       };
     }
 
@@ -35028,11 +25239,12 @@ var LocalTrackPublicationV2 = function (_LocalTrackPublicatio) {
  * @property {Track.ID} id
  * @property {Track.Kind} kind
  * @property {string} name
+ * @priority {Track.Priority} priority
  * @property {Track.SID} sid
  */
 
 module.exports = LocalTrackPublicationV2;
-},{"../../util/twilio-video-errors":249,"../localtrackpublication":174}],187:[function(require,module,exports){
+},{"../../util/twilio-video-errors":216,"../localtrackpublication":141}],155:[function(require,module,exports){
 /* eslint callback-return:0 */
 'use strict';
 
@@ -35210,7 +25422,7 @@ function next(monitor) {
  */
 
 module.exports = NetworkQualityMonitor;
-},{"../../stats/peerconnectionreportfactory":217,"events":100}],188:[function(require,module,exports){
+},{"../../stats/peerconnectionreportfactory":184,"events":66}],156:[function(require,module,exports){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -35490,7 +25702,7 @@ function createNetworkQualityInputsMessage(networkQualityInputs, networkQualityR
 }
 
 module.exports = NetworkQualitySignaling;
-},{"../../util/asyncvar":232,"events":100}],189:[function(require,module,exports){
+},{"../../util/asyncvar":199,"events":66}],157:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -35503,38 +25715,47 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var WebRTC = require('@twilio/webrtc');
+var _require = require('@twilio/webrtc'),
+    DefaultMediaStream = _require.MediaStream,
+    DefaultRTCIceCandidate = _require.RTCIceCandidate,
+    DefaultRTCPeerConnection = _require.RTCPeerConnection,
+    DefaultRTCSessionDescription = _require.RTCSessionDescription,
+    getStatistics = _require.getStats;
 
-var _require = require('@twilio/webrtc/lib/util'),
-    guessBrowser = _require.guessBrowser;
+var _require2 = require('@twilio/webrtc/lib/util'),
+    guessBrowser = _require2.guessBrowser;
 
-var _require2 = require('@twilio/webrtc/lib/util/sdp'),
-    getSdpFormat = _require2.getSdpFormat;
-
-var DefaultMediaStream = WebRTC.MediaStream;
-var DefaultRTCIceCandidate = WebRTC.RTCIceCandidate;
-var DefaultRTCPeerConnection = WebRTC.RTCPeerConnection;
-var DefaultRTCSessionDescription = WebRTC.RTCSessionDescription;
-var getStatistics = WebRTC.getStats;
-var getMediaSections = require('../../util/sdp').getMediaSections;
-var oncePerTick = require('../../util').oncePerTick;
-var setBitrateParameters = require('../../util/sdp').setBitrateParameters;
-var setCodecPreferences = require('../../util/sdp').setCodecPreferences;
-var setSimulcast = require('../../util/sdp').setSimulcast;
-var IceBox = require('./icebox');
-var MediaClientLocalDescFailedError = require('../../util/twilio-video-errors').MediaClientLocalDescFailedError;
-var MediaClientRemoteDescFailedError = require('../../util/twilio-video-errors').MediaClientRemoteDescFailedError;
-var DataTrackReceiver = require('../../data/receiver');
-var MediaTrackReceiver = require('../../media/track/receiver');
-var StateMachine = require('../../statemachine');
-
-var _require3 = require('../../util'),
-    buildLogLevels = _require3.buildLogLevels,
-    makeUUID = _require3.makeUUID;
+var _require3 = require('@twilio/webrtc/lib/util/sdp'),
+    getSdpFormat = _require3.getSdpFormat;
 
 var _require4 = require('../../util/constants'),
     DEFAULT_LOG_LEVEL = _require4.DEFAULT_LOG_LEVEL;
 
+var _require5 = require('../../util/sdp'),
+    createCodecMapForMediaSection = _require5.createCodecMapForMediaSection,
+    getMediaSections = _require5.getMediaSections,
+    revertSimulcastForNonVP8MediaSections = _require5.revertSimulcastForNonVP8MediaSections,
+    setBitrateParameters = _require5.setBitrateParameters,
+    setCodecPreferences = _require5.setCodecPreferences,
+    setSimulcast = _require5.setSimulcast,
+    unifiedPlanAddOrRewriteNewTrackIds = _require5.unifiedPlanAddOrRewriteNewTrackIds,
+    unifiedPlanAddOrRewriteTrackIds = _require5.unifiedPlanAddOrRewriteTrackIds,
+    unifiedPlanFilterLocalCodecs = _require5.unifiedPlanFilterLocalCodecs;
+
+var _require6 = require('../../util/twilio-video-errors'),
+    MediaClientLocalDescFailedError = _require6.MediaClientLocalDescFailedError,
+    MediaClientRemoteDescFailedError = _require6.MediaClientRemoteDescFailedError;
+
+var utils = require('../../util');
+var buildLogLevels = utils.buildLogLevels,
+    oncePerTick = utils.oncePerTick;
+
+
+var IceBox = require('./icebox');
+var DefaultIceConnectionMonitor = require('./iceconnectionmonitor.js');
+var DataTrackReceiver = require('../../data/receiver');
+var MediaTrackReceiver = require('../../media/track/receiver');
+var StateMachine = require('../../statemachine');
 var Log = require('../../util/log');
 var IdentityTrackMatcher = require('../../util/sdp/trackmatcher/identity');
 var OrderedTrackMatcher = require('../../util/sdp/trackmatcher/ordered');
@@ -35545,10 +25766,10 @@ var guess = guessBrowser();
 var isChrome = guess === 'chrome';
 var isFirefox = guess === 'firefox';
 var isSafari = guess === 'safari';
-var sdpFormat = getSdpFormat();
-var isUnifiedPlan = sdpFormat === 'unified';
 
-var firefoxMajorVersion = isFirefox ? parseInt(navigator.userAgent.match(/Firefox\/(\d+)/)[1], 10) : null;
+var isRTCRtpSenderParamsSupported = typeof RTCRtpSender !== 'undefined' && typeof RTCRtpSender.prototype.getParameters === 'function' && typeof RTCRtpSender.prototype.setParameters === 'function';
+
+var nInstances = 0;
 
 /*
 PeerConnectionV2 States
@@ -35601,13 +25822,17 @@ var PeerConnectionV2 = function (_StateMachine) {
     var _this = _possibleConstructorReturn(this, (PeerConnectionV2.__proto__ || Object.getPrototypeOf(PeerConnectionV2)).call(this, 'open', states));
 
     options = Object.assign({
+      enableDscp: false,
       dummyAudioMediaStreamTrack: null,
       iceServers: [],
+      isRTCRtpSenderParamsSupported: isRTCRtpSenderParamsSupported,
       logLevel: DEFAULT_LOG_LEVEL,
       offerOptions: {},
+      revertSimulcastForNonVP8MediaSections: revertSimulcastForNonVP8MediaSections,
       setBitrateParameters: setBitrateParameters,
       setCodecPreferences: setCodecPreferences,
       setSimulcast: setSimulcast,
+      IceConnectionMonitor: DefaultIceConnectionMonitor,
       MediaStream: DefaultMediaStream,
       RTCIceCandidate: DefaultRTCIceCandidate,
       RTCPeerConnection: DefaultRTCPeerConnection,
@@ -35615,25 +25840,30 @@ var PeerConnectionV2 = function (_StateMachine) {
     }, options);
 
     var configuration = getConfiguration(options);
+    var sdpFormat = getSdpFormat(configuration.sdpSemantics);
+    var isUnifiedPlan = sdpFormat === 'unified';
+
+    var localMediaStream = isUnifiedPlan ? null : new options.MediaStream();
     var logLevels = buildLogLevels(options.logLevel);
     var RTCPeerConnection = options.RTCPeerConnection;
-    var peerConnection = new RTCPeerConnection(configuration, options.chromeSpecificConstraints);
 
-    var localMediaStream = isUnifiedPlan && RTCPeerConnection.prototype.addTransceiver ? null : new options.MediaStream();
+    if (options.enableDscp === true) {
+      options.chromeSpecificConstraints = options.chromeSpecificConstraints || {};
+      options.chromeSpecificConstraints.optional = options.chromeSpecificConstraints.optional || [];
+      options.chromeSpecificConstraints.optional.push({ googDscp: true });
+    }
+
+    var peerConnection = new RTCPeerConnection(configuration, options.chromeSpecificConstraints);
 
     if (options.dummyAudioMediaStreamTrack) {
       peerConnection.addTrack(options.dummyAudioMediaStreamTrack, localMediaStream || new options.MediaStream());
     }
 
-    // NOTE(mroberts): We do this to workaround the following bug:
-    //
-    //   https://bugzilla.mozilla.org/show_bug.cgi?id=1481335
-    //
-    if (isFirefox && firefoxMajorVersion < 65) {
-      peerConnection.createDataChannel(makeUUID());
-    }
-
     Object.defineProperties(_this, {
+      _appliedTrackIdsToAttributes: {
+        value: new Map(),
+        writable: true
+      },
       _dataChannels: {
         value: new Map()
       },
@@ -35644,12 +25874,32 @@ var PeerConnectionV2 = function (_StateMachine) {
         writable: true,
         value: 0
       },
+      _enableDscp: {
+        value: options.enableDscp
+      },
       _encodingParameters: {
         value: encodingParameters
+      },
+      _instanceId: {
+        value: ++nInstances
+      },
+      _isIceConnectionInactive: {
+        writable: true,
+        value: false
+      },
+      _isIceLite: {
+        writable: true,
+        value: false
       },
       _isRestartingIce: {
         writable: true,
         value: false
+      },
+      _isUnifiedPlan: {
+        value: isUnifiedPlan
+      },
+      _isRTCRtpSenderParamsSupported: {
+        value: options.isRTCRtpSenderParamsSupported
       },
       _lastIceConnectionState: {
         writable: true,
@@ -35663,9 +25913,16 @@ var PeerConnectionV2 = function (_StateMachine) {
         writable: true,
         value: []
       },
+      _localCodecs: {
+        value: new Set()
+      },
       _localCandidatesRevision: {
         writable: true,
         value: 1
+      },
+      _localDescriptionWithoutSimulcast: {
+        writable: true,
+        value: null
       },
       _localDescription: {
         writable: true,
@@ -35681,8 +25938,14 @@ var PeerConnectionV2 = function (_StateMachine) {
       _log: {
         value: options.log ? options.log.createLog('signaling', _this) : new Log('webrtc', _this, logLevels)
       },
+      _remoteCodecMaps: {
+        value: new Map()
+      },
       _rtpSenders: {
         value: new Map()
+      },
+      _iceConnectionMonitor: {
+        value: new options.IceConnectionMonitor(peerConnection)
       },
       _mediaTrackReceivers: {
         value: new Set()
@@ -35708,13 +25971,30 @@ var PeerConnectionV2 = function (_StateMachine) {
       _preferredVideoCodecs: {
         value: preferredCodecs.video
       },
+      _shouldApplySimulcast: {
+        value: (isChrome || isSafari) && preferredCodecs.video.some(function (codecSettings) {
+          return codecSettings.codec.toLowerCase() === 'vp8' && codecSettings.simulcast;
+        })
+      },
       _queuedDescription: {
         writable: true,
         value: null
       },
+      _recycledTransceivers: {
+        value: {
+          audio: [],
+          video: []
+        }
+      },
+      _replaceTrackPromises: {
+        value: new Map()
+      },
       _remoteCandidates: {
         writable: true,
         value: new IceBox()
+      },
+      _sdpFormat: {
+        value: sdpFormat
       },
       _setBitrateParameters: {
         value: options.setBitrateParameters
@@ -35724,6 +26004,9 @@ var PeerConnectionV2 = function (_StateMachine) {
       },
       _setSimulcast: {
         value: options.setSimulcast
+      },
+      _revertSimulcastForNonVP8MediaSections: {
+        value: options.revertSimulcastForNonVP8MediaSections
       },
       _RTCIceCandidate: {
         value: options.RTCIceCandidate
@@ -35743,7 +26026,8 @@ var PeerConnectionV2 = function (_StateMachine) {
         value: false
       },
       _trackIdsToAttributes: {
-        value: new Map()
+        value: new Map(),
+        writable: true
       },
       _trackMatcher: {
         writable: true,
@@ -35755,7 +26039,16 @@ var PeerConnectionV2 = function (_StateMachine) {
       }
     });
 
-    encodingParameters.on('changed', oncePerTick(_this.offer.bind(_this)));
+    encodingParameters.on('changed', oncePerTick(function () {
+      if (_this._isRTCRtpSenderParamsSupported) {
+        if (!_this._needsAnswer) {
+          updateEncodingParameters(_this);
+        }
+        return;
+      }
+      _this.offer();
+    }));
+
     peerConnection.addEventListener('datachannel', _this._handleDataChannelEvent.bind(_this));
     peerConnection.addEventListener('icecandidate', _this._handleIceCandidateEvent.bind(_this));
     peerConnection.addEventListener('iceconnectionstatechange', _this._handleIceConnectionStateChange.bind(_this));
@@ -35775,14 +26068,19 @@ var PeerConnectionV2 = function (_StateMachine) {
     return _this;
   }
 
-  /**
-   * The {@link PeerConnectionV2}'s underlying RTCPeerConnection's
-   * RTCIceConnectionState.
-   * @property {RTCIceConnectionState}
-   */
-
-
   _createClass(PeerConnectionV2, [{
+    key: 'toString',
+    value: function toString() {
+      return '[PeerConnectionV2 #' + this._instanceId + ': ' + this.id + ']';
+    }
+
+    /**
+     * The {@link PeerConnectionV2}'s underlying RTCPeerConnection's
+     * RTCIceConnectionState.
+     * @property {RTCIceConnectionState}
+     */
+
+  }, {
     key: '_addIceCandidate',
 
 
@@ -35798,6 +26096,16 @@ var PeerConnectionV2 = function (_StateMachine) {
       return Promise.resolve().then(function () {
         candidate = new _this2._RTCIceCandidate(candidate);
         return _this2._peerConnection.addIceCandidate(candidate);
+      }).catch(function (error) {
+        // NOTE(mmalavalli): Firefox 68+ now generates an RTCIceCandidate with an
+        // empty candidate string to signal end-of-candidates, followed by a null
+        // candidate. As of now, Chrome and Safari reject this RTCIceCandidate. Since
+        // this does not affect the media connection between Firefox 68+ and Chrome/Safari
+        // in Peer-to-Peer Rooms, we suppress the Error and log a warning message.
+        //
+        // Chrome bug: https://bugs.chromium.org/p/chromium/issues/detail?id=978582
+        //
+        _this2._log.warn('Failed to add RTCIceCandidate ' + (candidate ? '"' + candidate.candidate + '"' : 'null') + ': ' + error.message);
       });
     }
 
@@ -35812,6 +26120,40 @@ var PeerConnectionV2 = function (_StateMachine) {
     key: '_addIceCandidates',
     value: function _addIceCandidates(candidates) {
       return Promise.all(candidates.map(this._addIceCandidate, this)).then(function () {});
+    }
+
+    /**
+     * Add a new RTCRtpTransceiver or update an existing RTCRtpTransceiver for the
+     * given MediaStreamTrack.
+     * @private
+     * @param {MediaStreamTrack} track
+     * @returns {RTCRtpTransceiver}
+     */
+
+  }, {
+    key: '_addOrUpdateTransceiver',
+    value: function _addOrUpdateTransceiver(track) {
+      var _this3 = this;
+
+      var transceiver = takeRecycledTransceiver(this, track.kind);
+      if (transceiver && transceiver.sender) {
+        var oldTrackId = transceiver.sender.track ? transceiver.sender.track.id : null;
+        if (oldTrackId) {
+          this._log.warn('Reusing transceiver: ' + transceiver.mid + '] ' + oldTrackId + ' => ' + track.id);
+        }
+        // NOTE(mpatwardhan):remember this transceiver while we replace track.
+        // we recycle transceivers that are not in use after 'negotiationCompleted', but we want to prevent
+        // this one from getting recycled while replaceTrack is pending.
+        this._replaceTrackPromises.set(transceiver, transceiver.sender.replaceTrack(track).then(function () {
+          transceiver.direction = 'sendrecv';
+        }, function () {
+          // Do nothing.
+        }).finally(function () {
+          _this3._replaceTrackPromises.delete(transceiver);
+        }));
+        return transceiver;
+      }
+      return this._peerConnection.addTransceiver(track);
     }
 
     /**
@@ -35842,29 +26184,42 @@ var PeerConnectionV2 = function (_StateMachine) {
   }, {
     key: '_answer',
     value: function _answer(offer) {
-      var _this3 = this;
+      var _this4 = this;
 
       return Promise.resolve().then(function () {
-        if (!_this3._negotiationRole) {
-          _this3._negotiationRole = 'answerer';
+        if (!_this4._negotiationRole) {
+          _this4._negotiationRole = 'answerer';
         }
-        return _this3._setRemoteDescription(offer);
+        return _this4._setRemoteDescription(offer);
       }).catch(function () {
         throw new MediaClientRemoteDescFailedError();
       }).then(function () {
-        return _this3._peerConnection.createAnswer();
+        return _this4._peerConnection.createAnswer();
       }).then(function (answer) {
         if (!isFirefox) {
           answer = workaroundIssue8329(answer);
         }
-        return _this3._setLocalDescription(answer);
+
+        var description = answer;
+        if (_this4._shouldApplySimulcast) {
+          var updatedSdp = _this4._setSimulcast(answer.sdp, _this4._sdpFormat, _this4._trackIdsToAttributes);
+          // NOTE(syerrapragada): VMS does not support H264 simulcast. So,
+          // unset simulcast for sections in local offer where corresponding
+          // sections in answer doesn't have vp8 as preferred codec and reapply offer.
+          updatedSdp = _this4._revertSimulcastForNonVP8MediaSections(updatedSdp, answer.sdp, offer.sdp);
+          description = {
+            type: description.type,
+            sdp: updatedSdp
+          };
+        }
+        return _this4._setLocalDescription(description);
       }).then(function () {
-        return _this3._checkIceBox(offer);
+        return _this4._checkIceBox(offer);
       }).then(function () {
-        return _this3._queuedDescription && _this3._updateDescription(_this3._queuedDescription);
+        return _this4._queuedDescription && _this4._updateDescription(_this4._queuedDescription);
       }).then(function () {
-        _this3._queuedDescription = null;
-        return _this3._maybeReoffer(_this3._peerConnection.localDescription);
+        _this4._queuedDescription = null;
+        return _this4._maybeReoffer(_this4._peerConnection.localDescription);
       }).catch(function (error) {
         throw error instanceof MediaClientRemoteDescFailedError ? error : new MediaClientLocalDescFailedError();
       });
@@ -35882,6 +26237,7 @@ var PeerConnectionV2 = function (_StateMachine) {
     value: function _close() {
       if (this._peerConnection.signalingState !== 'closed') {
         this._peerConnection.close();
+        this.preempt('closed');
         return true;
       }
       return false;
@@ -35897,14 +26253,14 @@ var PeerConnectionV2 = function (_StateMachine) {
   }, {
     key: '_handleDataChannelEvent',
     value: function _handleDataChannelEvent(event) {
-      var _this4 = this;
+      var _this5 = this;
 
       var dataChannel = event.channel;
       var dataTrackReceiver = new DataTrackReceiver(dataChannel);
       this._dataTrackReceivers.add(dataTrackReceiver);
 
       dataChannel.addEventListener('close', function () {
-        _this4._dataTrackReceivers.delete(dataTrackReceiver);
+        _this5._dataTrackReceivers.delete(dataTrackReceiver);
       });
 
       this.emit('trackAdded', dataTrackReceiver);
@@ -35920,7 +26276,7 @@ var PeerConnectionV2 = function (_StateMachine) {
   }, {
     key: '_handleGlare',
     value: function _handleGlare(offer) {
-      var _this5 = this;
+      var _this6 = this;
 
       this._log.debug('Glare detected; rolling back');
       if (this._isRestartingIce) {
@@ -35929,12 +26285,13 @@ var PeerConnectionV2 = function (_StateMachine) {
         this._shouldRestartIce = true;
       }
       return Promise.resolve().then(function () {
-        return _this5._setLocalDescription({ type: 'rollback' });
+        _this6._trackIdsToAttributes = new Map(_this6._appliedTrackIdsToAttributes);
+        return _this6._setLocalDescription({ type: 'rollback' });
       }).then(function () {
-        _this5._needsAnswer = false;
-        return _this5._answer(offer);
+        _this6._needsAnswer = false;
+        return _this6._answer(offer);
       }).then(function (didReoffer) {
-        return didReoffer ? Promise.resolve() : _this5._offer();
+        return didReoffer ? Promise.resolve() : _this6._offer();
       });
     }
 
@@ -35953,8 +26310,7 @@ var PeerConnectionV2 = function (_StateMachine) {
       }
       var peerConnectionState = {
         ice: {
-          candidates: this._localCandidates.slice(),
-          revision: this._localCandidatesRevision++,
+          candidates: this._isIceLite ? [] : this._localCandidates.slice(),
           ufrag: this._localUfrag
         },
         id: this.id
@@ -35962,7 +26318,10 @@ var PeerConnectionV2 = function (_StateMachine) {
       if (!event.candidate) {
         peerConnectionState.ice.complete = true;
       }
-      this.emit('candidates', peerConnectionState);
+      if (!(this._isIceLite && event.candidate)) {
+        peerConnectionState.ice.revision = this._localCandidatesRevision++;
+        this.emit('candidates', peerConnectionState);
+      }
     }
 
     /**
@@ -35974,6 +26333,8 @@ var PeerConnectionV2 = function (_StateMachine) {
   }, {
     key: '_handleIceConnectionStateChange',
     value: function _handleIceConnectionStateChange() {
+      var _this7 = this;
+
       var iceConnectionState = this._peerConnection.iceConnectionState;
 
 
@@ -35984,12 +26345,29 @@ var PeerConnectionV2 = function (_StateMachine) {
         this._log.warn('ICE failed; attempting to restart ICE');
         this._shouldRestartIce = true;
         this.offer();
+        // eslint-disable-next-line brace-style
       }
 
       // Case 2: Transition from "failed".
       else if (this._lastIceConnectionState === 'failed' && (iceConnectionState === 'connected' || iceConnectionState === 'completed')) {
           this._log.info('ICE reconnected');
         }
+
+      this._isIceConnectionInactive = false;
+      if (iceConnectionState === 'disconnected') {
+        this._iceConnectionMonitor.start(function () {
+          _this7._iceConnectionMonitor.stop();
+          if (!_this7._shouldRestartIce && !_this7._isRestartingIce) {
+            _this7._log.warn('ICE Connection Monitor detected inactivity; attempting to restart ICE');
+            _this7._shouldRestartIce = true;
+            _this7._isIceConnectionInactive = true;
+            _this7.offer();
+            _this7.emit('iceConnectionStateChanged');
+          }
+        });
+      } else {
+        this._iceConnectionMonitor.stop();
+      }
 
       this._lastIceConnectionState = iceConnectionState;
       this.emit('iceConnectionStateChanged');
@@ -36004,8 +26382,8 @@ var PeerConnectionV2 = function (_StateMachine) {
   }, {
     key: '_handleSignalingStateChange',
     value: function _handleSignalingStateChange() {
-      if (this._peerConnection.signalingState === 'closed' && this.state !== 'closed') {
-        this.preempt('closed');
+      if (this._peerConnection.signalingState === 'stable') {
+        this._appliedTrackIdsToAttributes = new Map(this._trackIdsToAttributes);
       }
     }
 
@@ -36019,7 +26397,7 @@ var PeerConnectionV2 = function (_StateMachine) {
   }, {
     key: '_handleTrackEvent',
     value: function _handleTrackEvent(event) {
-      var _this6 = this;
+      var _this8 = this;
 
       var sdp = this._peerConnection.remoteDescription ? this._peerConnection.remoteDescription.sdp : null;
 
@@ -36029,19 +26407,29 @@ var PeerConnectionV2 = function (_StateMachine) {
         // support, we have to use the same hacky solution as Safari. Revisit
         // this when RTCRtpTransceivers and MIDs land. We should be able to use
         // the same technique as Firefox.
-        : isSafari || isUnifiedPlan ? new OrderedTrackMatcher() : new IdentityTrackMatcher();
+        : isSafari || this._isUnifiedPlan ? new OrderedTrackMatcher() : new IdentityTrackMatcher();
       }
       this._trackMatcher.update(sdp);
 
       var mediaStreamTrack = event.track;
       var signaledTrackId = this._trackMatcher.match(event) || mediaStreamTrack.id;
       var mediaTrackReceiver = new MediaTrackReceiver(signaledTrackId, mediaStreamTrack);
-      this._mediaTrackReceivers.add(mediaTrackReceiver);
 
-      mediaStreamTrack.addEventListener('ended', function () {
-        _this6._mediaTrackReceivers.delete(mediaTrackReceiver);
+      // NOTE(mmalavalli): In unified plan mode, "ended" is not fired on the remote
+      // MediaStreamTrack when the remote peer removes a track. So, when this
+      // MediaStreamTrack is re-used for a different track due to the remote peer
+      // calling RTCRtpSender.replaceTrack(), we delete the previous MediaTrackReceiver
+      // that owned this MediaStreamTrack before adding the new MediaTrackReceiver.
+      this._mediaTrackReceivers.forEach(function (trackReceiver) {
+        if (trackReceiver.track.id === mediaTrackReceiver.track.id) {
+          _this8._mediaTrackReceivers.delete(trackReceiver);
+        }
       });
 
+      this._mediaTrackReceivers.add(mediaTrackReceiver);
+      mediaStreamTrack.addEventListener('ended', function () {
+        return _this8._mediaTrackReceivers.delete(mediaTrackReceiver);
+      });
       this.emit('trackAdded', mediaTrackReceiver);
     }
 
@@ -36071,7 +26459,7 @@ var PeerConnectionV2 = function (_StateMachine) {
         // We can reduce the number of cases where renegotiation is needed by
         // re-introducing 'offerToReceiveAudio' to the default RTCOfferOptions with a
         // value > 1.
-        if (isUnifiedPlan && localDescription.type === 'answer') {
+        if (this._isUnifiedPlan && localDescription.type === 'answer') {
           var senders = this._peerConnection.getSenders().filter(function (sender) {
             return sender.track;
           });
@@ -36105,7 +26493,7 @@ var PeerConnectionV2 = function (_StateMachine) {
   }, {
     key: '_offer',
     value: function _offer() {
-      var _this7 = this;
+      var _this9 = this;
 
       var offerOptions = Object.assign({}, this._offerOptions);
       this._needsAnswer = true;
@@ -36114,8 +26502,9 @@ var PeerConnectionV2 = function (_StateMachine) {
         this._isRestartingIce = true;
         offerOptions.iceRestart = true;
       }
-      return Promise.resolve().then(function () {
-        return _this7._peerConnection.createOffer(offerOptions);
+
+      return Promise.all(this._replaceTrackPromises.values()).then(function () {
+        return _this9._peerConnection.createOffer(offerOptions);
       }).catch(function () {
         throw new MediaClientLocalDescFailedError();
       }).then(function (offer) {
@@ -36123,16 +26512,98 @@ var PeerConnectionV2 = function (_StateMachine) {
           offer = workaroundIssue8329(offer);
         }
 
-        var updatedSdp = _this7._setCodecPreferences(offer.sdp, _this7._preferredAudioCodecs, _this7._preferredVideoCodecs);
+        var sdp = _this9._isUnifiedPlan && _this9._peerConnection.remoteDescription ? unifiedPlanFilterLocalCodecs(offer.sdp, _this9._peerConnection.remoteDescription.sdp) : offer.sdp;
 
-        _this7._shouldOffer = false;
-        if (!_this7._negotiationRole) {
-          _this7._negotiationRole = 'offerer';
+        var updatedSdp = _this9._setCodecPreferences(sdp, _this9._preferredAudioCodecs, _this9._preferredVideoCodecs);
+
+        _this9._shouldOffer = false;
+        if (!_this9._negotiationRole) {
+          _this9._negotiationRole = 'offerer';
         }
-        return _this7._setLocalDescription({
+
+        if (_this9._shouldApplySimulcast) {
+          _this9._localDescriptionWithoutSimulcast = {
+            type: 'offer',
+            sdp: updatedSdp
+          };
+          updatedSdp = _this9._setSimulcast(updatedSdp, _this9._sdpFormat, _this9._trackIdsToAttributes);
+        }
+        return _this9._setLocalDescription({
           type: 'offer',
           sdp: updatedSdp
         });
+      });
+    }
+
+    /**
+     * Add or rewrite local MediaStreamTrack IDs in the given Unified Plan RTCSessionDescription.
+     * @private
+     * @param {RTCSessionDescription} description
+     * @return {RTCSessionDescription}
+     */
+
+  }, {
+    key: '_addOrRewriteLocalTrackIds',
+    value: function _addOrRewriteLocalTrackIds(description) {
+      var transceivers = this._peerConnection.getTransceivers();
+      var activeTransceivers = transceivers.filter(function (_ref) {
+        var sender = _ref.sender,
+            stopped = _ref.stopped;
+        return !stopped && sender && sender.track;
+      });
+
+      // NOTE(mmalavalli): There is no guarantee that MediaStreamTrack IDs will be present in
+      // SDPs, and even if they are, there is no guarantee that they will be the same as the
+      // actual MediaStreamTrack IDs. So, we add or re-write the actual MediaStreamTrack IDs
+      // to the assigned m= sections here.
+      var assignedTransceivers = activeTransceivers.filter(function (_ref2) {
+        var mid = _ref2.mid;
+        return mid;
+      });
+      var midsToTrackIds = new Map(assignedTransceivers.map(function (_ref3) {
+        var mid = _ref3.mid,
+            sender = _ref3.sender;
+        return [mid, sender.track.id];
+      }));
+      var sdp1 = unifiedPlanAddOrRewriteTrackIds(description.sdp, midsToTrackIds);
+
+      // NOTE(mmalavalli): Chrome and Safari do not apply the offer until they get an answer.
+      // So, we add or re-write the actual MediaStreamTrack IDs to the unassigned m= sections here.
+      var unassignedTransceivers = activeTransceivers.filter(function (_ref4) {
+        var mid = _ref4.mid;
+        return !mid;
+      });
+      var newTrackIdsByKind = new Map(['audio', 'video'].map(function (kind) {
+        return [kind, unassignedTransceivers.filter(function (_ref5) {
+          var sender = _ref5.sender;
+          return sender.track.kind === kind;
+        }).map(function (_ref6) {
+          var sender = _ref6.sender;
+          return sender.track.id;
+        })];
+      }));
+      var sdp2 = unifiedPlanAddOrRewriteNewTrackIds(sdp1, midsToTrackIds, newTrackIdsByKind);
+
+      return new this._RTCSessionDescription({
+        sdp: sdp2,
+        type: description.type
+      });
+    }
+
+    /**
+     * Rollback and apply the given offer.
+     * @private
+     * @param {RTCSessionDescriptionInit} offer
+     * @returns {Promise<void>}
+     */
+
+  }, {
+    key: '_rollbackAndApplyOffer',
+    value: function _rollbackAndApplyOffer(offer) {
+      var _this10 = this;
+
+      return this._setLocalDescription({ type: 'rollback' }).then(function () {
+        return _this10._setLocalDescription(offer);
       });
     }
 
@@ -36146,41 +26617,26 @@ var PeerConnectionV2 = function (_StateMachine) {
   }, {
     key: '_setLocalDescription',
     value: function _setLocalDescription(description) {
-      var _this8 = this;
+      var _this11 = this;
 
-      var vp8SimulcastRequested = this._preferredVideoCodecs.some(function (codecSettings) {
-        return codecSettings.codec.toLowerCase() === 'vp8' && codecSettings.simulcast;
-      });
-
-      return Promise.resolve().then(function () {
+      return this._peerConnection.setLocalDescription(description).catch(function (error) {
+        _this11._log.warn('Calling setLocalDescription with an RTCSessionDescription of type "' + description.type + '" failed with the error "' + error.message + '".');
         if (description.sdp) {
-          // NOTE(mmalavalli): We do not directly modify "description.sdp" here as
-          // "description" might be an RTCSessionDescription, in which case its
-          // properties are immutable.
-          description = {
-            type: description.type,
-            sdp: (isChrome || isSafari) && vp8SimulcastRequested ? _this8._setSimulcast(description.sdp, sdpFormat, _this8._trackIdsToAttributes) : description.sdp
-          };
-        }
-        description = new _this8._RTCSessionDescription(description);
-        return _this8._peerConnection.setLocalDescription(description);
-      }).catch(function (error) {
-        _this8._log.warn('Calling setLocalDescription with an RTCSessionDescription of type "' + description.type + '" failed with the error "' + error.message + '".');
-        if (description.sdp) {
-          _this8._log.warn('The SDP was ' + description.sdp);
+          _this11._log.warn('The SDP was ' + description.sdp);
         }
         throw new MediaClientLocalDescFailedError();
       }).then(function () {
         if (description.type !== 'rollback') {
-          _this8._localDescription = description;
-          _this8._localCandidates = [];
+          _this11._localDescription = _this11._isUnifiedPlan ? _this11._addOrRewriteLocalTrackIds(description) : description;
+          _this11._localCandidates = [];
           if (description.type === 'offer') {
-            _this8._descriptionRevision++;
+            _this11._descriptionRevision++;
           } else if (description.type === 'answer') {
-            _this8._lastStableDescriptionRevision = _this8._descriptionRevision;
+            _this11._lastStableDescriptionRevision = _this11._descriptionRevision;
+            negotiationCompleted(_this11);
           }
-          _this8._localUfrag = getUfrag(description);
-          _this8.emit('description', _this8.getState());
+          _this11._localUfrag = getUfrag(description);
+          _this11.emit('description', _this11.getState());
         }
       });
     }
@@ -36195,10 +26651,12 @@ var PeerConnectionV2 = function (_StateMachine) {
   }, {
     key: '_setRemoteDescription',
     value: function _setRemoteDescription(description) {
-      var _this9 = this;
+      var _this12 = this;
 
       if (description.sdp) {
-        description.sdp = this._setBitrateParameters(description.sdp, isFirefox ? 'TIAS' : 'AS', this._encodingParameters.maxAudioBitrate, this._encodingParameters.maxVideoBitrate);
+        if (!this._isRTCRtpSenderParamsSupported) {
+          description.sdp = this._setBitrateParameters(description.sdp, isFirefox ? 'TIAS' : 'AS', this._encodingParameters.maxAudioBitrate, this._encodingParameters.maxVideoBitrate);
+        }
         description.sdp = this._setCodecPreferences(description.sdp, this._preferredAudioCodecs, this._preferredVideoCodecs);
         // NOTE(mroberts): Do this to reduce our MediaStream count in Firefox. By
         // mapping MediaStream IDs in the SDP to "-", we ensure the "track" event
@@ -36207,24 +26665,39 @@ var PeerConnectionV2 = function (_StateMachine) {
         if (isFirefox) {
           description.sdp = filterOutMediaStreamIds(description.sdp);
         }
+        if (!this._peerConnection.remoteDescription) {
+          this._isIceLite = /a=ice-lite/.test(description.sdp);
+        }
       }
       description = new this._RTCSessionDescription(description);
-      return this._peerConnection.setRemoteDescription(description).then(function () {
-        if (description.type === 'answer' && _this9._isRestartingIce) {
-          _this9._log.debug('An ICE restart was in-progress and is now completed');
-          _this9._isRestartingIce = false;
+      // eslint-disable-next-line consistent-return
+      return Promise.resolve().then(function () {
+        // NOTE(syerrapragada): VMS does not support H264 simulcast. So,
+        // unset simulcast for sections in local offer where corresponding
+        // sections in answer doesn't have vp8 as preferred codec and reapply offer.
+        if (description.type === 'answer' && _this12._shouldApplySimulcast) {
+          var sdpWithoutSimulcastForNonVP8MediaSections = _this12._revertSimulcastForNonVP8MediaSections(_this12._localDescription.sdp, _this12._localDescriptionWithoutSimulcast.sdp, description.sdp);
+          if (sdpWithoutSimulcastForNonVP8MediaSections !== _this12._localDescription.sdp) {
+            return _this12._rollbackAndApplyOffer({
+              type: _this12._localDescription.type,
+              sdp: sdpWithoutSimulcastForNonVP8MediaSections
+            });
+          }
         }
-        if (isUnifiedPlan) {
-          _this9._peerConnection.getTransceivers().forEach(function (transceiver) {
-            if (shouldStopTransceiver(description, transceiver)) {
-              transceiver.stop();
-            }
-          });
+      }).then(function () {
+        return _this12._peerConnection.setRemoteDescription(description);
+      }).then(function () {
+        if (description.type === 'answer') {
+          if (_this12._isRestartingIce) {
+            _this12._log.debug('An ICE restart was in-progress and is now completed');
+            _this12._isRestartingIce = false;
+          }
+          negotiationCompleted(_this12);
         }
       }, function (error) {
-        _this9._log.warn('Calling setRemoteDescription with an RTCSessionDescription of type "' + description.type + '" failed with the error "' + error.message + '".');
+        _this12._log.warn('Calling setRemoteDescription with an RTCSessionDescription of type "' + description.type + '" failed with the error "' + error.message + '".');
         if (description.sdp) {
-          _this9._log.warn('The SDP was ' + description.sdp);
+          _this12._log.warn('The SDP was ' + description.sdp);
         }
         throw error;
       });
@@ -36240,7 +26713,7 @@ var PeerConnectionV2 = function (_StateMachine) {
   }, {
     key: '_updateDescription',
     value: function _updateDescription(description) {
-      var _this10 = this;
+      var _this13 = this;
 
       switch (description.type) {
         case 'answer':
@@ -36266,7 +26739,15 @@ var PeerConnectionV2 = function (_StateMachine) {
             return Promise.resolve();
           }
           if (this._peerConnection.signalingState === 'have-local-offer') {
-            if (this._needsAnswer && this._descriptionRevision === 1) {
+            // NOTE(mpatwardhan): For a peer connection
+            // 1) createOffer always generate SDP with `setup:actpass`
+            // 2) when remote description is set `setup:active`  - the answer generated selects the dtls role of setup:passive
+            // 3) when remote description is set `setup:passive` - the answer generated selects the dtls role of setup:active
+            // 4) when remote description is set `setup:actpass` - the answer generated uses the previously negotiated role (if not negotiated previously setup:active is used)
+            // This test shows the  behavior: https://github.com/twilio/twilio-webrtc.js/blob/master/test/integration/spec/rtcpeerconnection.js#L936
+            // with glare handling (if dtls role was not negotiated before ) the generated answer will set setup:active.
+            // we do not want that. lets wait for "initial negotiation" before attempting glare handling.
+            if (this._needsAnswer && this._lastStableDescriptionRevision === 0) {
               this._queuedDescription = description;
               return Promise.resolve();
             }
@@ -36282,18 +26763,18 @@ var PeerConnectionV2 = function (_StateMachine) {
       // Handle answer or pranswer.
       var revision = description.revision;
       return Promise.resolve().then(function () {
-        return _this10._setRemoteDescription(description);
+        return _this13._setRemoteDescription(description);
       }).catch(function () {
         throw new MediaClientRemoteDescFailedError();
       }).then(function () {
-        _this10._lastStableDescriptionRevision = revision;
-        _this10._needsAnswer = false;
-        return _this10._checkIceBox(description);
+        _this13._lastStableDescriptionRevision = revision;
+        _this13._needsAnswer = false;
+        return _this13._checkIceBox(description);
       }).then(function () {
-        return _this10._queuedDescription && _this10._updateDescription(_this10._queuedDescription);
+        return _this13._queuedDescription && _this13._updateDescription(_this13._queuedDescription);
       }).then(function () {
-        _this10._queuedDescription = null;
-        return _this10._maybeReoffer(_this10._peerConnection.localDescription).then(function () {});
+        _this13._queuedDescription = null;
+        return _this13._maybeReoffer(_this13._peerConnection.localDescription).then(function () {});
       });
     }
 
@@ -36337,7 +26818,7 @@ var PeerConnectionV2 = function (_StateMachine) {
         dataTrackSender.addDataChannel(dataChannel);
         this._dataChannels.set(dataTrackSender, dataChannel);
       } catch (error) {
-        // Do nothing.
+        this._log.warn('Error creating an RTCDataChannel for DataTrack "' + dataTrackSender.id + '": ' + error.message);
       }
     }
 
@@ -36358,7 +26839,7 @@ var PeerConnectionV2 = function (_StateMachine) {
         this._localMediaStream.addTrack(mediaTrackSender.track);
         sender = this._peerConnection.addTrack(mediaTrackSender.track, this._localMediaStream);
       } else {
-        var transceiver = this._peerConnection.addTransceiver(mediaTrackSender.track);
+        var transceiver = this._addOrUpdateTransceiver(mediaTrackSender.track);
         sender = transceiver.sender;
       }
       mediaTrackSender.addSender(sender);
@@ -36424,7 +26905,7 @@ var PeerConnectionV2 = function (_StateMachine) {
   }, {
     key: 'offer',
     value: function offer() {
-      var _this11 = this;
+      var _this14 = this;
 
       if (this._needsAnswer || this._isRestartingIce) {
         this._shouldOffer = true;
@@ -36432,12 +26913,12 @@ var PeerConnectionV2 = function (_StateMachine) {
       }
 
       return this.bracket('offering', function (key) {
-        _this11.transition('updating', key);
-        var promise = _this11._needsAnswer || _this11._isRestartingIce ? Promise.resolve() : _this11._offer();
+        _this14.transition('updating', key);
+        var promise = _this14._needsAnswer || _this14._isRestartingIce ? Promise.resolve() : _this14._offer();
         return promise.then(function () {
-          _this11.tryTransition('open', key);
+          _this14.tryTransition('open', key);
         }, function (error) {
-          _this11.tryTransition('open', key);
+          _this14.tryTransition('open', key);
           throw error;
         });
       });
@@ -36504,29 +26985,29 @@ var PeerConnectionV2 = function (_StateMachine) {
   }, {
     key: 'update',
     value: function update(peerConnectionState) {
-      var _this12 = this;
+      var _this15 = this;
 
       return this.bracket('updating', function (key) {
-        if (_this12.state === 'closed') {
+        if (_this15.state === 'closed') {
           return Promise.resolve();
         }
 
-        _this12.transition('updating', key);
+        _this15.transition('updating', key);
 
         var updates = [];
 
         if (peerConnectionState.ice) {
-          updates.push(_this12._updateIce(peerConnectionState.ice));
+          updates.push(_this15._updateIce(peerConnectionState.ice));
         }
 
         if (peerConnectionState.description) {
-          updates.push(_this12._updateDescription(peerConnectionState.description));
+          updates.push(_this15._updateDescription(peerConnectionState.description));
         }
 
         return Promise.all(updates).then(function () {
-          _this12.tryTransition('open', key);
+          _this15.tryTransition('open', key);
         }, function (error) {
-          _this12.tryTransition('open', key);
+          _this15.tryTransition('open', key);
           throw error;
         });
       });
@@ -36540,16 +27021,32 @@ var PeerConnectionV2 = function (_StateMachine) {
   }, {
     key: 'getStats',
     value: function getStats() {
-      var _this13 = this;
+      var _this16 = this;
 
       return getStatistics(this._peerConnection).then(function (response) {
-        return rewriteTrackIds(_this13, response);
+        return rewriteTrackIds(_this16, response);
       });
     }
   }, {
     key: 'iceConnectionState',
     get: function get() {
-      return this._peerConnection.iceConnectionState;
+      return this._isIceConnectionInactive && this._peerConnection.iceConnectionState === 'disconnected' ? 'failed' : this._peerConnection.iceConnectionState;
+    }
+
+    /**
+     * Whether the {@link PeerConnectionV2} has negotiated or is in the process
+     * of negotiating the application m= section.
+     * @returns {boolean}
+     */
+
+  }, {
+    key: 'isApplicationSectionNegotiated',
+    get: function get() {
+      if (this._peerConnection.signalingState !== 'closed') {
+        // accessing .localDescription in 'closed' state causes it throw exceptions.
+        return this._peerConnection.localDescription ? getMediaSections(this._peerConnection.localDescription.sdp, 'application').length > 0 : false;
+      }
+      return true;
     }
   }]);
 
@@ -36636,67 +27133,191 @@ function filterOutMediaStreamIds(sdp) {
 }
 
 /**
- * @param {string} sdp
- * @param {string} mid
- * @returns {?string} direction
- */
-function getTransceiverDirection(sdp, mid) {
-  var section = getMediaSections(sdp).find(function (section) {
-    return section.match('a=mid:' + mid);
-  });
-  if (!section) {
-    return null;
-  }
-  var match = section.match(/a=(sendrecv|sendonly|recvonly|inactive)/);
-  return match ? match[1] : null;
-}
-
-/**
- * @param {string} sdp
- * @returns {{audio: Array<string>, video: Array<string>}} mids
- */
-function getMids(sdp) {
-  return ['audio', 'video'].reduce(function (mids, kind) {
-    mids[kind] = getMediaSections(sdp, kind).map(function (section) {
-      return section.match(/^a=mid:(.+)$/m)[1];
-    });
-    return mids;
-  }, {});
-}
-
-/**
- * @param {RTCSessionDescription} description
+ * Whether an RTCRtpTransceiver can be recycled.
  * @param {RTCRtpTransceiver} transceiver
- * @returns {boolean} shouldStop
+ * @returns {boolean}
  */
-function shouldStopTransceiver(description, transceiver) {
-  if (!transceiver.stop || transceiver.stopped || !transceiver.mid) {
-    return false;
+function shouldRecycleTransceiver(transceiver, pcv2) {
+  return !transceiver.stopped && !pcv2._replaceTrackPromises.has(transceiver) && (transceiver.currentDirection === 'inactive' || transceiver.currentDirection === 'recvonly' || transceiver.direction === 'recvonly');
+}
+
+/**
+ * Take a recycled RTCRtpTransceiver if available.
+ * @param {PeerConnectionV2} pcv2
+ * @param {Track.Kind} kind
+ * @returns {?RTCRtpTransceiver}
+ */
+function takeRecycledTransceiver(pcv2, kind) {
+  var preferredCodecs = {
+    audio: pcv2._preferredAudioCodecs.map(function (codec) {
+      return codec.toLowerCase();
+    }),
+    video: pcv2._preferredVideoCodecs.map(function (_ref7) {
+      var codec = _ref7.codec;
+      return codec.toLowerCase();
+    })
+  }[kind];
+
+  var recycledTransceivers = pcv2._recycledTransceivers[kind];
+  var localCodec = preferredCodecs.find(function (codec) {
+    return pcv2._localCodecs.has(codec);
+  });
+  if (!localCodec) {
+    return recycledTransceivers.shift();
   }
 
-  // NOTE(mroberts): We don't want to stop the initial two audio and video
-  // RTCRtpTransceivers that everyone negotiates with.
-  var mids = getMids(description.sdp);
-  if (transceiver.mid === mids.audio[0] || transceiver.mid === mids.video[0]) {
-    return false;
-  }
+  var transceiver = recycledTransceivers.find(function (transceiver) {
+    var remoteCodecMap = pcv2._remoteCodecMaps.get(transceiver.mid);
+    return remoteCodecMap && remoteCodecMap.has(localCodec);
+  });
 
-  if (transceiver.currentDirection === 'inactive') {
-    return true;
+  if (transceiver) {
+    recycledTransceivers.splice(recycledTransceivers.indexOf(transceiver), 1);
   }
+  return transceiver;
+}
 
-  var direction = getTransceiverDirection(description.sdp, transceiver.mid);
-  if (direction === 'inactive') {
-    return true;
-  } else if (direction === 'recvonly' && !transceiver.sender.track && description.type === 'answer') {
-    return true;
+/**
+ * Update the set of locally supported {@link Codec}s.
+ * @param pcv2
+ * @returns {void}
+ */
+function updateLocalCodecs(pcv2) {
+  var description = pcv2._peerConnection.localDescription;
+  if (!description) {
+    return;
   }
+  getMediaSections(description.sdp).forEach(function (section) {
+    var codecMap = createCodecMapForMediaSection(section);
+    codecMap.forEach(function (pts, codec) {
+      return pcv2._localCodecs.add(codec);
+    });
+  });
+}
 
-  return false;
+/**
+ * Update the {@link Codec} maps for all m= sections in the remote {@link RTCSessionDescription}s.
+ * @param {PeerConnectionV2} pcv2
+ * @returns {void}
+ */
+function updateRemoteCodecMaps(pcv2) {
+  var description = pcv2._peerConnection.remoteDescription;
+  if (!description) {
+    return;
+  }
+  getMediaSections(description.sdp).forEach(function (section) {
+    var mid = section.match(/^a=mid:(.+)$/m)[1];
+    var codecMap = createCodecMapForMediaSection(section);
+    pcv2._remoteCodecMaps.set(mid, codecMap);
+  });
+}
+
+/**
+ * Update the list of recycled RTCRtpTransceivers.
+ * @param {PeerConnectionV2} pcv2
+ */
+function updateRecycledTransceivers(pcv2) {
+  pcv2._recycledTransceivers.audio = [];
+  pcv2._recycledTransceivers.video = [];
+  pcv2._peerConnection.getTransceivers().forEach(function (transceiver) {
+    if (shouldRecycleTransceiver(transceiver, pcv2)) {
+      var track = transceiver.receiver.track;
+      pcv2._recycledTransceivers[track.kind].push(transceiver);
+    }
+  });
+}
+
+/**
+ * Perform certain updates after an SDP negotiation is completed.
+ * @param {PeerConnectionV2} pcv2
+ * @returns {void}
+ */
+function negotiationCompleted(pcv2) {
+  if (pcv2._isUnifiedPlan) {
+    updateRecycledTransceivers(pcv2);
+    updateLocalCodecs(pcv2);
+    updateRemoteCodecMaps(pcv2);
+  }
+  if (pcv2._isRTCRtpSenderParamsSupported) {
+    updateEncodingParameters(pcv2);
+  }
+}
+
+/**
+ * Update the RTCRtpEncodingParameters of all active RTCRtpSenders.
+ * @param {PeerConnectionV2} pcv2
+ * @returns {void}
+ */
+function updateEncodingParameters(pcv2) {
+  var _pcv2$_encodingParame = pcv2._encodingParameters,
+      maxAudioBitrate = _pcv2$_encodingParame.maxAudioBitrate,
+      maxVideoBitrate = _pcv2$_encodingParame.maxVideoBitrate;
+
+
+  var maxBitrates = new Map([['audio', maxAudioBitrate], ['video', maxVideoBitrate]]);
+
+  pcv2._peerConnection.getSenders().filter(function (sender) {
+    return sender.track;
+  }).forEach(function (sender) {
+    var maxBitrate = maxBitrates.get(sender.track.kind);
+    var params = sender.getParameters();
+
+    if (maxBitrate === null || maxBitrate === 0) {
+      removeMaxBitrate(params);
+    } else if (utils.isChromeScreenShareTrack(sender.track)) {
+      // NOTE(mpatwardhan): Sometimes (JSDK-2557) chrome does not send any bytes on screen track if MaxBitRate is set on it via setParameters,
+      // To workaround this issue we will not apply maxBitrate if the track appears to be a screen share track created by chrome
+      pcv2._log.warn('Not setting maxBitrate for ' + sender.track.kind + ' Track ' + sender.track.id + ' because it appears to be screen share track: ' + sender.track.label);
+    } else {
+      setMaxBitrate(params, maxBitrate);
+    }
+
+    if (!isFirefox && pcv2._enableDscp && params.encodings.length > 0) {
+      // NOTE(mmalavalli): "networkPriority" is a per-sender property and not
+      // a per-encoding-layer property. So, we set the value only on the first
+      // encoding layer. Any attempt to set the value on subsequent encoding
+      // layers (in the case of simulcast) will result in the Promise returned
+      // by RTCRtpSender.setParameters() being rejected.
+      params.encodings[0].networkPriority = 'high';
+    }
+
+    sender.setParameters(params).catch(function (error) {
+      pcv2._log.warn('Error while setting encodings parameters for ' + sender.track.kind + ' Track ' + sender.track.id + ': ' + (error.message || error.name));
+    });
+  });
+}
+
+/**
+ * Remove maxBitrate from the RTCRtpSendParameters' encodings.
+ * @param {RTCRtpSendParameters} params
+ * @returns {void}
+ */
+function removeMaxBitrate(params) {
+  if (Array.isArray(params.encodings)) {
+    params.encodings.forEach(function (encoding) {
+      return delete encoding.maxBitrate;
+    });
+  }
+}
+
+/**
+ * Set the given maxBitrate in the RTCRtpSendParameters' encodings.
+ * @param {RTCRtpSendParameters} params
+ * @param {number} maxBitrate
+ * @returns {void}
+ */
+function setMaxBitrate(params, maxBitrate) {
+  if (isFirefox) {
+    params.encodings = [{ maxBitrate: maxBitrate }];
+  } else {
+    params.encodings.forEach(function (encoding) {
+      encoding.maxBitrate = maxBitrate;
+    });
+  }
 }
 
 module.exports = PeerConnectionV2;
-},{"../../data/receiver":128,"../../media/track/receiver":153,"../../statemachine":199,"../../util":236,"../../util/constants":234,"../../util/log":239,"../../util/sdp":240,"../../util/sdp/issue8329":241,"../../util/sdp/trackmatcher/identity":243,"../../util/sdp/trackmatcher/mid":244,"../../util/sdp/trackmatcher/ordered":245,"../../util/twilio-video-errors":249,"./icebox":183,"@twilio/webrtc":58,"@twilio/webrtc/lib/util":71,"@twilio/webrtc/lib/util/sdp":73}],190:[function(require,module,exports){
+},{"../../data/receiver":95,"../../media/track/receiver":120,"../../statemachine":166,"../../util":203,"../../util/constants":201,"../../util/log":206,"../../util/sdp":207,"../../util/sdp/issue8329":208,"../../util/sdp/trackmatcher/identity":210,"../../util/sdp/trackmatcher/mid":211,"../../util/sdp/trackmatcher/ordered":212,"../../util/twilio-video-errors":216,"./icebox":150,"./iceconnectionmonitor.js":151,"@twilio/webrtc":24,"@twilio/webrtc/lib/util":37,"@twilio/webrtc/lib/util/sdp":39}],158:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -37137,7 +27758,9 @@ function applyTrackSenderChanges(peerConnectionManager, changes) {
       changes.media.remove.forEach(peerConnection.removeMediaTrackSender, peerConnection);
       changes.data.add.forEach(peerConnection.addDataTrackSender, peerConnection);
       changes.media.add.forEach(peerConnection.addMediaTrackSender, peerConnection);
-      peerConnection.offer();
+      if (changes.media.add.size || changes.media.remove.size || changes.data.add.size && !peerConnection.isApplicationSectionNegotiated) {
+        peerConnection.offer();
+      }
     });
   }
 }
@@ -37266,7 +27889,7 @@ function updateIceConnectionState(pcm) {
 }
 
 module.exports = PeerConnectionManager;
-},{"../../media/track/sender":162,"../../queueingeventemitter":168,"../../util":236,"../../util/twilio-video-errors":249,"../../webaudio/audiocontext":251,"./peerconnection":189,"@twilio/webrtc/lib/util":71}],191:[function(require,module,exports){
+},{"../../media/track/sender":129,"../../queueingeventemitter":135,"../../util":203,"../../util/twilio-video-errors":216,"../../webaudio/audiocontext":219,"./peerconnection":157,"@twilio/webrtc/lib/util":37}],159:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -37334,7 +27957,7 @@ var RecordingV2 = function (_RecordingSignaling) {
  */
 
 module.exports = RecordingV2;
-},{"../recording":176}],192:[function(require,module,exports){
+},{"../recording":143}],160:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -37454,7 +28077,7 @@ var RemoteParticipantV2 = function (_RemoteParticipantSig) {
 }(RemoteParticipantSignaling);
 
 module.exports = RemoteParticipantV2;
-},{"../remoteparticipant":177,"./remotetrackpublication":193}],193:[function(require,module,exports){
+},{"../remoteparticipant":144,"./remotetrackpublication":161}],161:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -37481,7 +28104,7 @@ var RemoteTrackPublicationV2 = function (_RemoteTrackPublicati) {
   function RemoteTrackPublicationV2(track) {
     _classCallCheck(this, RemoteTrackPublicationV2);
 
-    return _possibleConstructorReturn(this, (RemoteTrackPublicationV2.__proto__ || Object.getPrototypeOf(RemoteTrackPublicationV2)).call(this, track.sid, track.name, track.kind, track.enabled));
+    return _possibleConstructorReturn(this, (RemoteTrackPublicationV2.__proto__ || Object.getPrototypeOf(RemoteTrackPublicationV2)).call(this, track.sid, track.name, track.kind, track.enabled, track.priority));
   }
 
   /**
@@ -37498,6 +28121,7 @@ var RemoteTrackPublicationV2 = function (_RemoteTrackPublicati) {
     key: 'update',
     value: function update(track) {
       this.enable(track.enabled);
+      this.setPriority(track.priority);
       return this;
     }
   }]);
@@ -37508,11 +28132,11 @@ var RemoteTrackPublicationV2 = function (_RemoteTrackPublicati) {
 /**
  * The Room Signaling Protocol (RSP) representation of a {@link RemoteTrackPublicationV2}.
  * @typedef {LocalTrackPublicationV2#Representation} RemoteTrackPublicationV2#Representation
- * @property (boolean} subscribed
+ * @property {boolean} subscribed
  */
 
 module.exports = RemoteTrackPublicationV2;
-},{"../remotetrackpublication":178}],194:[function(require,module,exports){
+},{"../remotetrackpublication":145}],162:[function(require,module,exports){
 'use strict';
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
@@ -37520,6 +28144,8 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -37534,8 +28160,18 @@ var RecordingV2 = require('./recording');
 var RoomSignaling = require('../room');
 var RemoteParticipantV2 = require('./remoteparticipant');
 var StatsReport = require('../../stats/statsreport');
-var util = require('../../util');
-var createTwilioError = require('../../util/twilio-video-errors').createTwilioError;
+var TrackPrioritySignaling = require('./trackprioritysignaling');
+var TrackSwitchOffSignaling = require('./trackswitchoffsignaling');
+
+var _require = require('../../util'),
+    createBandwidthProfilePayload = _require.createBandwidthProfilePayload,
+    defer = _require.defer,
+    filterObject = _require.filterObject,
+    flatMap = _require.flatMap,
+    oncePerTick = _require.oncePerTick;
+
+var _require2 = require('../../util/twilio-video-errors'),
+    createTwilioError = _require2.createTwilioError;
 
 var STATS_PUBLISH_INTERVAL_MS = 1000;
 
@@ -37550,12 +28186,17 @@ var RoomV2 = function (_RoomSignaling) {
     _classCallCheck(this, RoomV2);
 
     options = Object.assign({
+      DominantSpeakerSignaling: DominantSpeakerSignaling,
       NetworkQualityMonitor: NetworkQualityMonitor,
       NetworkQualitySignaling: NetworkQualitySignaling,
       RecordingSignaling: RecordingV2,
       RemoteParticipantV2: RemoteParticipantV2,
+      TrackPrioritySignaling: TrackPrioritySignaling,
+      TrackSwitchOffSignaling: TrackSwitchOffSignaling,
+      bandwidthProfile: null,
       statsPublishIntervalMs: STATS_PUBLISH_INTERVAL_MS
     }, options);
+    localParticipant.setBandwidthProfile(options.bandwidthProfile);
 
     var _this = _possibleConstructorReturn(this, (RoomV2.__proto__ || Object.getPrototypeOf(RoomV2)).call(this, localParticipant, initialState.sid, initialState.name, options));
 
@@ -37563,6 +28204,9 @@ var RoomV2 = function (_RoomSignaling) {
       _dominantSpeakerSignaling: {
         value: null,
         writable: true
+      },
+      _DominantSpeakerSignaling: {
+        value: options.DominantSpeakerSignaling
       },
       _dominantSpeakerSignalingPromise: {
         value: null,
@@ -37576,6 +28220,10 @@ var RoomV2 = function (_RoomSignaling) {
       },
       _NetworkQualitySignaling: {
         value: options.NetworkQualitySignaling
+      },
+      _lastBandwidthProfileRevision: {
+        value: localParticipant.bandwidthProfileRevision,
+        writable: true
       },
       _networkQualityMonitor: {
         value: null,
@@ -37611,6 +28259,28 @@ var RoomV2 = function (_RoomSignaling) {
       _subscriptionFailures: {
         value: new Map()
       },
+      _trackPriorityPromise: {
+        value: null,
+        writable: true
+      },
+      _trackPrioritySignaling: {
+        value: null,
+        writable: true
+      },
+      _trackSwitchOffPromise: {
+        value: null,
+        writable: true
+      },
+      _trackSwitchOffSignaling: {
+        value: null,
+        writable: true
+      },
+      _TrackPrioritySignaling: {
+        value: options.TrackPrioritySignaling
+      },
+      _TrackSwitchOffSignaling: {
+        value: options.TrackSwitchOffSignaling
+      },
       _transport: {
         value: transport
       },
@@ -37622,7 +28292,7 @@ var RoomV2 = function (_RoomSignaling) {
     handleLocalParticipantEvents(_this, localParticipant);
     handlePeerConnectionEvents(_this, peerConnectionManager);
     handleTransportEvents(_this, transport);
-    periodicallyPublishStats(_this, localParticipant, transport, options.statsPublishIntervalMs);
+    periodicallyPublishStats(_this, transport, options.statsPublishIntervalMs);
 
     _this._update(initialState);
     return _this;
@@ -37652,7 +28322,7 @@ var RoomV2 = function (_RoomSignaling) {
   }, {
     key: '_getOrCreateTrackReceiverDeferred',
     value: function _getOrCreateTrackReceiverDeferred(id) {
-      var deferred = this._trackReceiverDeferreds.get(id) || util.defer();
+      var deferred = this._trackReceiverDeferreds.get(id) || defer();
       var trackReceivers = this._peerConnectionManager.getTrackReceivers();
 
       // NOTE(mmalavalli): In Firefox, there can be instances where a MediaStreamTrack
@@ -37728,6 +28398,19 @@ var RoomV2 = function (_RoomSignaling) {
      */
 
   }, {
+    key: '_getTrackSidsToTrackSignalings',
+    value: function _getTrackSidsToTrackSignalings() {
+      var trackSidsToTrackSignalings = flatMap(this.participants, function (participant) {
+        return Array.from(participant.tracks);
+      });
+      return new Map(trackSidsToTrackSignalings);
+    }
+
+    /**
+     * @private
+     */
+
+  }, {
     key: '_getOrCreateRemoteParticipant',
     value: function _getOrCreateRemoteParticipant(participantState) {
       var RemoteParticipantV2 = this._RemoteParticipantV2;
@@ -37743,6 +28426,7 @@ var RoomV2 = function (_RoomSignaling) {
           }
         });
         this.connectParticipant(participant);
+        participant.setTrackPrioritySignaling(this._trackPrioritySignaling);
       }
       return participant;
     }
@@ -37764,9 +28448,28 @@ var RoomV2 = function (_RoomSignaling) {
      */
 
   }, {
+    key: '_maybeAddBandwidthProfile',
+    value: function _maybeAddBandwidthProfile(update) {
+      var _localParticipant = this.localParticipant,
+          bandwidthProfile = _localParticipant.bandwidthProfile,
+          bandwidthProfileRevision = _localParticipant.bandwidthProfileRevision;
+
+      if (bandwidthProfile && this._lastBandwidthProfileRevision < bandwidthProfileRevision) {
+        this._lastBandwidthProfileRevision = bandwidthProfileRevision;
+        return Object.assign({
+          bandwidth_profile: createBandwidthProfilePayload(bandwidthProfile)
+        }, update);
+      }
+      return update;
+    }
+    /**
+     * @private
+     */
+
+  }, {
     key: '_publishNewLocalParticipantState',
     value: function _publishNewLocalParticipantState() {
-      this._transport.publish(this._getState());
+      this._transport.publish(this._maybeAddBandwidthProfile(this._getState()));
     }
 
     /**
@@ -37817,6 +28520,7 @@ var RoomV2 = function (_RoomSignaling) {
 
       var participantsToKeep = new Set();
 
+      // eslint-disable-next-line no-warning-comments
       // TODO(mroberts): Remove me once the Server is fixed.
       (roomState.participants || []).forEach(function (participantState) {
         if (participantState.sid === _this3.localParticipant.sid || _this3._disconnectedParticipantSids.has(participantState.sid)) {
@@ -37837,6 +28541,7 @@ var RoomV2 = function (_RoomSignaling) {
 
       handleSubscriptions(this);
 
+      // eslint-disable-next-line no-warning-comments
       // TODO(mroberts): Remove me once the Server is fixed.
       /* eslint camelcase:0 */
       if (roomState.peer_connections) {
@@ -37869,7 +28574,90 @@ var RoomV2 = function (_RoomSignaling) {
         this._setupDataTransportBackedNetworkQualityMonitor(roomState.media_signaling.network_quality.transport.label);
       }
 
+      if (!this._trackPriorityPromise && roomState.media_signaling && roomState.media_signaling.track_priority && roomState.media_signaling.track_priority.transport && roomState.media_signaling.track_priority.transport.type === 'data-channel') {
+        this._setupTrackPrioritySignaling(roomState.media_signaling.track_priority.transport.label);
+      }
+
+      if (!this._trackSwitchOffPromise && roomState.media_signaling && roomState.media_signaling.track_switch_off && roomState.media_signaling.track_switch_off.transport && roomState.media_signaling.track_switch_off.transport.type === 'data-channel') {
+        this._setupTrackSwitchOffMonitor(roomState.media_signaling.track_switch_off.transport.label);
+      }
+
       return this;
+    }
+
+    // track priority signaling MSP is now used only for subscribe side priority changes.
+    // publisher side priority changes and notifications are handled by RSP.
+
+  }, {
+    key: '_setupTrackPrioritySignaling',
+    value: function _setupTrackPrioritySignaling(id) {
+      var _this4 = this;
+
+      this._teardownTrackPrioritySignaling();
+      var trackPriorityPromise = this._getTrackReceiver(id).then(function (receiver) {
+        if (receiver.kind !== 'data') {
+          throw new Error('Expected a DataTrackReceiver');
+        }if (_this4._trackPriorityPromise !== trackPriorityPromise) {
+          return;
+        }
+
+        // NOTE(mmalavalli): The underlying RTCDataChannel is closed whenever
+        // the VMS instance fails over, and a new RTCDataChannel is created in order
+        // to resume sending Track Priority updates.
+        receiver.once('close', function () {
+          return _this4._teardownTrackPrioritySignaling();
+        });
+
+        var trackPrioritySignaling = new _this4._TrackPrioritySignaling(receiver.toDataTransport());
+        [].concat(_toConsumableArray(_this4.participants.values())).forEach(function (participant) {
+          participant.setTrackPrioritySignaling(trackPrioritySignaling);
+        });
+      });
+      this._trackPriorityPromise = trackPriorityPromise;
+    }
+  }, {
+    key: '_setupTrackSwitchOff',
+    value: function _setupTrackSwitchOff(trackSwitchOffSignaling) {
+      var _this5 = this;
+
+      this._trackSwitchOffSignaling = trackSwitchOffSignaling;
+      trackSwitchOffSignaling.on('updated', function (tracksOff, tracksOn) {
+        _this5.participants.forEach(function (participant) {
+          participant.tracks.forEach(function (track) {
+            if (tracksOff.includes(track.sid)) {
+              track.setSwitchedOff(true);
+            }
+            if (tracksOn.includes(track.sid)) {
+              track.setSwitchedOff(false);
+            }
+          });
+        });
+      });
+    }
+  }, {
+    key: '_setupTrackSwitchOffMonitor',
+    value: function _setupTrackSwitchOffMonitor(id) {
+      var _this6 = this;
+
+      this._teardownTrackSwitchOff();
+      var trackSwitchOffPromise = this._getTrackReceiver(id).then(function (receiver) {
+        if (receiver.kind !== 'data') {
+          throw new Error('Expected a DataTrackReceiver');
+        }if (_this6._trackSwitchOffPromise !== trackSwitchOffPromise) {
+          return;
+        }
+
+        // NOTE(mpatwardhan): The underlying RTCDataChannel is closed whenever
+        // the VMS instance fails over, and a new RTCDataChannel is created in order
+        // to resume sending Dominant Speaker updates.
+        receiver.once('close', function () {
+          return _this6._teardownTrackSwitchOff();
+        });
+
+        var trackSwitchOffSignaling = new _this6._TrackSwitchOffSignaling(receiver.toDataTransport());
+        _this6._setupTrackSwitchOff(trackSwitchOffSignaling);
+      });
+      this._trackSwitchOffPromise = trackSwitchOffPromise;
     }
 
     /**
@@ -37884,18 +28672,26 @@ var RoomV2 = function (_RoomSignaling) {
   }, {
     key: '_setupDataTransportBackedDominantSpeakerSignaling',
     value: function _setupDataTransportBackedDominantSpeakerSignaling(id) {
-      var _this4 = this;
+      var _this7 = this;
 
       this._teardownDominantSpeakerSignaling();
       var dominantSpeakerSignalingPromise = this._getTrackReceiver(id).then(function (receiver) {
         if (receiver.kind !== 'data') {
           throw new Error('Expected a DataTrackReceiver');
-        }if (_this4._dominantSpeakerSignalingPromise !== dominantSpeakerSignalingPromise) {
+        }if (_this7._dominantSpeakerSignalingPromise !== dominantSpeakerSignalingPromise) {
           // NOTE(mroberts): _teardownDominantSpeakerSignaling was called.
           return;
         }
-        var dominantSpeakerSignaling = new DominantSpeakerSignaling(receiver.toDataTransport());
-        _this4._setDominantSpeakerSignaling(dominantSpeakerSignaling);
+
+        // NOTE(mpatwardhan): The underlying RTCDataChannel is closed whenever
+        // the VMS instance fails over, and a new RTCDataChannel is created in order
+        // to resume sending Dominant Speaker updates.
+        receiver.once('close', function () {
+          return _this7._teardownDominantSpeakerSignaling();
+        });
+
+        var dominantSpeakerSignaling = new _this7._DominantSpeakerSignaling(receiver.toDataTransport());
+        _this7._setDominantSpeakerSignaling(dominantSpeakerSignaling);
       });
       this._dominantSpeakerSignalingPromise = dominantSpeakerSignalingPromise;
     }
@@ -37911,45 +28707,53 @@ var RoomV2 = function (_RoomSignaling) {
   }, {
     key: '_setupDataTransportBackedNetworkQualityMonitor',
     value: function _setupDataTransportBackedNetworkQualityMonitor(id) {
-      var _this5 = this;
+      var _this8 = this;
 
       var self = this;
       this._teardownNetworkQualityMonitor();
       var networkQualityMonitorPromise = this._getTrackReceiver(id).then(function (receiver) {
         if (receiver.kind !== 'data') {
           throw new Error('Expected a DataTrackReceiver');
-        }if (_this5._networkQualityMonitorPromise !== networkQualityMonitorPromise) {
+        }if (_this8._networkQualityMonitorPromise !== networkQualityMonitorPromise) {
           // NOTE(mroberts): _teardownNetworkQualityMonitor was called.
           return;
         }
-        var networkQualitySignaling = new _this5._NetworkQualitySignaling(receiver.toDataTransport(), self._networkQualityConfiguration);
-        var networkQualityMonitor = new _this5._NetworkQualityMonitor(_this5._peerConnectionManager, networkQualitySignaling);
-        _this5._setNetworkQualityMonitor(networkQualityMonitor);
+
+        // NOTE(mpatwardhan): The underlying RTCDataChannel is closed whenever
+        // the VMS instance fails over, and new a RTCDataChannel is created in order
+        // to resume exchanging Network Quality messages.
+        receiver.once('close', function () {
+          return _this8._teardownNetworkQualityMonitor();
+        });
+
+        var networkQualitySignaling = new _this8._NetworkQualitySignaling(receiver.toDataTransport(), self._networkQualityConfiguration);
+        var networkQualityMonitor = new _this8._NetworkQualityMonitor(_this8._peerConnectionManager, networkQualitySignaling);
+        _this8._setNetworkQualityMonitor(networkQualityMonitor);
       });
       this._networkQualityMonitorPromise = networkQualityMonitorPromise;
     }
   }, {
     key: '_setDominantSpeakerSignaling',
     value: function _setDominantSpeakerSignaling(dominantSpeakerSignaling) {
-      var _this6 = this;
+      var _this9 = this;
 
       this._dominantSpeakerSignaling = dominantSpeakerSignaling;
       dominantSpeakerSignaling.on('updated', function () {
-        return _this6.setDominantSpeaker(dominantSpeakerSignaling.loudestParticipantSid);
+        return _this9.setDominantSpeaker(dominantSpeakerSignaling.loudestParticipantSid);
       });
     }
   }, {
     key: '_setNetworkQualityMonitor',
     value: function _setNetworkQualityMonitor(networkQualityMonitor) {
-      var _this7 = this;
+      var _this10 = this;
 
       this._networkQualityMonitor = networkQualityMonitor;
       networkQualityMonitor.on('updated', function () {
-        if (_this7.mediaConnectionState === 'failed') {
+        if (_this10.mediaConnectionState === 'failed') {
           return;
         }
-        _this7.localParticipant.setNetworkQualityLevel(networkQualityMonitor.level, networkQualityMonitor.levels);
-        _this7.participants.forEach(function (participant) {
+        _this10.localParticipant.setNetworkQualityLevel(networkQualityMonitor.level, networkQualityMonitor.levels);
+        _this10.participants.forEach(function (participant) {
           var levels = networkQualityMonitor.remoteLevels.get(participant.sid);
           if (levels) {
             participant.setNetworkQualityLevel(levels.level, levels);
@@ -37973,6 +28777,22 @@ var RoomV2 = function (_RoomSignaling) {
         this._networkQualityMonitor = null;
       }
     }
+  }, {
+    key: '_teardownTrackPrioritySignaling',
+    value: function _teardownTrackPrioritySignaling() {
+      this._trackPrioritySignaling = null;
+      this._trackPriorityPromise = null;
+      this.localParticipant.setTrackPrioritySignaling(null);
+      this.participants.forEach(function (participant) {
+        participant.setTrackPrioritySignaling(null);
+      });
+    }
+  }, {
+    key: '_teardownTrackSwitchOff',
+    value: function _teardownTrackSwitchOff() {
+      this._trackSwitchOffSignaling = null;
+      this._trackSwitchOffPromise = null;
+    }
 
     /**
      * Get the {@link RoomV2}'s media statistics.
@@ -37982,7 +28802,7 @@ var RoomV2 = function (_RoomSignaling) {
   }, {
     key: 'getStats',
     value: function getStats() {
-      var _this8 = this;
+      var _this11 = this;
 
       return this._peerConnectionManager.getStats().then(function (responses) {
         return new Map(Array.from(responses).map(function (_ref) {
@@ -37991,10 +28811,10 @@ var RoomV2 = function (_RoomSignaling) {
               response = _ref2[1];
 
           return [id, Object.assign({}, response, {
-            localAudioTrackStats: filterAndAddLocalTrackSids(_this8, response.localAudioTrackStats),
-            localVideoTrackStats: filterAndAddLocalTrackSids(_this8, response.localVideoTrackStats),
-            remoteAudioTrackStats: filterAndAddRemoteTrackSids(_this8, response.remoteAudioTrackStats),
-            remoteVideoTrackStats: filterAndAddRemoteTrackSids(_this8, response.remoteVideoTrackStats)
+            localAudioTrackStats: filterAndAddLocalTrackSids(_this11, response.localAudioTrackStats),
+            localVideoTrackStats: filterAndAddLocalTrackSids(_this11, response.localVideoTrackStats),
+            remoteAudioTrackStats: filterAndAddRemoteTrackSids(_this11, response.remoteAudioTrackStats),
+            remoteVideoTrackStats: filterAndAddRemoteTrackSids(_this11, response.remoteVideoTrackStats)
           })];
         }));
       });
@@ -38076,15 +28896,15 @@ function filterAndAddRemoteTrackSids(roomV2, remoteTrackStats) {
  */
 
 function handleLocalParticipantEvents(roomV2, localParticipant) {
-  var renegotiate = util.oncePerTick(function () {
-    var trackSenders = util.flatMap(localParticipant.tracks, function (trackV2) {
+  var localParticipantUpdated = oncePerTick(function () {
+    roomV2._publishNewLocalParticipantState();
+  });
+
+  var renegotiate = oncePerTick(function () {
+    var trackSenders = flatMap(localParticipant.tracks, function (trackV2) {
       return trackV2.trackTransceiver;
     });
     roomV2._peerConnectionManager.setTrackSenders(trackSenders);
-  });
-
-  var localParticipantUpdated = util.oncePerTick(function () {
-    roomV2._publishNewLocalParticipantState();
   });
 
   localParticipant.on('trackAdded', renegotiate);
@@ -38149,11 +28969,10 @@ function handleTransportEvents(roomV2, transport) {
  * Periodically publish {@link StatsReport}s.
  * @private
  * @param {RoomV2} roomV2
- * @param {LocalParticipantV2} localParticipant
  * @param {Transport} transport
  * @param {Number} intervalMs
  */
-function periodicallyPublishStats(roomV2, localParticipant, transport, intervalMs) {
+function periodicallyPublishStats(roomV2, transport, intervalMs) {
   var interval = setInterval(function () {
     roomV2.getStats().then(function (stats) {
       stats.forEach(function (response, id) {
@@ -38166,9 +28985,7 @@ function periodicallyPublishStats(roomV2, localParticipant, transport, intervalM
           audioTrackStats: report.remoteAudioTrackStats,
           localAudioTrackStats: report.localAudioTrackStats,
           localVideoTrackStats: report.localVideoTrackStats,
-          participantSid: localParticipant.sid,
           peerConnectionId: report.peerConnectionId,
-          roomSid: roomV2.sid,
           videoTrackStats: report.remoteVideoTrackStats
         });
 
@@ -38193,21 +29010,17 @@ function periodicallyPublishStats(roomV2, localParticipant, transport, intervalM
 }
 
 function handleSubscriptions(room) {
-  var trackSignalings = new Map(util.flatMap(room.participants, function (participant) {
-    return Array.from(participant.tracks.values()).map(function (track) {
-      return [track.sid, track];
-    });
-  }));
+  var trackSidsToTrackSignalings = room._getTrackSidsToTrackSignalings();
 
   room._subscriptionFailures.forEach(function (error, trackSid) {
-    var trackSignaling = trackSignalings.get(trackSid);
+    var trackSignaling = trackSidsToTrackSignalings.get(trackSid);
     if (trackSignaling) {
       room._subscriptionFailures.delete(trackSid);
       trackSignaling.subscribeFailed(createTwilioError(error.code, error.message));
     }
   });
 
-  trackSignalings.forEach(function (trackSignaling) {
+  trackSidsToTrackSignalings.forEach(function (trackSignaling) {
     var trackId = room._subscribed.get(trackSignaling.sid);
     if (!trackId || trackSignaling.isSubscribed && trackSignaling.trackTransceiver.id !== trackId) {
       trackSignaling.setTrackTransceiver(null);
@@ -38244,7 +29057,7 @@ function replaceNullsWithDefaults(activeIceCandidatePair, peerConnectionId) {
     totalRoundTripTime: 0,
     transportId: '',
     writable: false
-  }, util.filterObject(activeIceCandidatePair || {}, null));
+  }, filterObject(activeIceCandidatePair || {}, null));
 
   activeIceCandidatePair.localCandidate = Object.assign({
     candidateType: 'host',
@@ -38255,7 +29068,7 @@ function replaceNullsWithDefaults(activeIceCandidatePair, peerConnectionId) {
     protocol: 'udp',
     relayProtocol: 'udp',
     url: ''
-  }, util.filterObject(activeIceCandidatePair.localCandidate || {}, null));
+  }, filterObject(activeIceCandidatePair.localCandidate || {}, null));
 
   activeIceCandidatePair.remoteCandidate = Object.assign({
     candidateType: 'host',
@@ -38264,140 +29077,58 @@ function replaceNullsWithDefaults(activeIceCandidatePair, peerConnectionId) {
     priority: 0,
     protocol: 'udp',
     url: ''
-  }, util.filterObject(activeIceCandidatePair.remoteCandidate || {}, null));
+  }, filterObject(activeIceCandidatePair.remoteCandidate || {}, null));
 
   return activeIceCandidatePair;
 }
 
 module.exports = RoomV2;
-},{"../../stats/statsreport":227,"../../util":236,"../../util/twilio-video-errors":249,"../room":179,"./dominantspeakersignaling":182,"./networkqualitymonitor":187,"./networkqualitysignaling":188,"./recording":191,"./remoteparticipant":192}],195:[function(require,module,exports){
+},{"../../stats/statsreport":194,"../../util":203,"../../util/twilio-video-errors":216,"../room":146,"./dominantspeakersignaling":149,"./networkqualitymonitor":155,"./networkqualitysignaling":156,"./recording":159,"./remoteparticipant":160,"./trackprioritysignaling":163,"./trackswitchoffsignaling":164}],163:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var SIP = require('../../sip');
-
-var SIPJSMediaHandler = function () {
-  function SIPJSMediaHandler(peerConnectionManager, createMessage) {
-    _classCallCheck(this, SIPJSMediaHandler);
+var TrackPrioritySignaling = function () {
+  /**
+   * Construct a {@link TrackPrioritySignaling}.
+   * @param {MediaSignalingTransport} mediaSignalingTransport
+   */
+  function TrackPrioritySignaling(mediaSignalingTransport) {
+    _classCallCheck(this, TrackPrioritySignaling);
 
     Object.defineProperties(this, {
-      createMessage: {
-        enumerable: true,
-        value: createMessage
-      },
-      peerConnectionManager: {
-        enumerable: true,
-        value: peerConnectionManager
+      _mediaSignalingTransport: {
+        value: mediaSignalingTransport
       }
     });
   }
 
-  _createClass(SIPJSMediaHandler, [{
-    key: 'close',
-    value: function close() {
-      this.peerConnectionManager.close();
-    }
-  }, {
-    key: 'getDescription',
-    value: function getDescription() {
-      var connectMessage = Object.assign({
-        /* eslint camelcase:0 */
-        peer_connections: this.peerConnectionManager.getStates()
-      }, this.createMessage());
-      return Promise.resolve({
-        body: JSON.stringify(connectMessage),
-        contentType: 'application/room-signaling+json'
-      });
-    }
-  }, {
-    key: 'hasDescription',
-    value: function hasDescription() {
-      return true;
-    }
-  }, {
-    key: 'hold',
-    value: function hold() {
-      // NOTE(mroberts): We don't use SIP.js's hold functionality.
-    }
-  }, {
-    key: 'isReady',
-    value: function isReady() {
-      // NOTE(mroberts): We don't use SIP.js's isReady functionality.
-      return true;
-    }
-  }, {
-    key: 'isMuted',
-    value: function isMuted() {
-      // NOTE(mroberts): We don't use SIP.js's isMuted functionality.
-      return {
-        audio: false,
-        video: false
-      };
-    }
-  }, {
-    key: 'mute',
-    value: function mute() {
-      // NOTE(mroberts): We don't use SIP.js's mute functionality.
-    }
-  }, {
-    key: 'render',
-    value: function render() {
-      // NOTE(mroberts): We don't use SIP.js's render functionality.
-    }
-  }, {
-    key: 'setDescription',
-    value: function setDescription(message) {
-      var roomState = getRoomState(message);
-      if (roomState) {
-        var peerConnectionStates = roomState.peer_connections;
-        if (peerConnectionStates) {
-          return this.peerConnectionManager.update(peerConnectionStates);
-        }
-      }
-      return Promise.resolve();
-    }
-  }, {
-    key: 'unhold',
-    value: function unhold() {
-      // NOTE(mroberts): We don't use SIP.js's unhold functionality.
-    }
-  }, {
-    key: 'unmute',
-    value: function unmute() {
-      // NOTE(mroberts): We don't use SIP.js's unmute functionality.
-    }
-  }, {
-    key: 'updateIceServers',
-    value: function updateIceServers() {
-      // NOTE(mroberts): We don't use SIP.js's ICE server functionality.
-    }
-  }], [{
-    key: 'defaultFactory',
-    value: function defaultFactory() {
-      // NOTE(mroberts): We don't use SIP.js's defaultFactory functionality.
+  /**
+   * @param {Track.SID} trackSid
+   * @param {'publish'|'subscribe'} publishOrSubscribe
+   * @param {Track.Priority} priority
+   */
+
+
+  _createClass(TrackPrioritySignaling, [{
+    key: 'sendTrackPriorityUpdate',
+    value: function sendTrackPriorityUpdate(trackSid, publishOrSubscribe, priority) {
+      this._mediaSignalingTransport.publish(_defineProperty({
+        type: 'track_priority',
+        track: trackSid
+      }, publishOrSubscribe, priority));
     }
   }]);
 
-  return SIPJSMediaHandler;
+  return TrackPrioritySignaling;
 }();
 
-SIPJSMediaHandler.defaultFactory.isSupported = function isSupported() {
-  return SIP.WebRTC.isSupported();
-};
-
-function getRoomState(message) {
-  try {
-    return JSON.parse(message.body);
-  } catch (error) {
-    return null;
-  }
-}
-
-module.exports = SIPJSMediaHandler;
-},{"../../sip":198}],196:[function(require,module,exports){
+module.exports = TrackPrioritySignaling;
+},{}],164:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -38408,613 +29139,62 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var _require = require('@twilio/webrtc/lib/util/sdp'),
-    getSdpFormat = _require.getSdpFormat;
-
-var constants = require('../../util/constants');
-var packageInfo = require('../../../package.json');
-var InsightsPublisher = require('../../util/insightspublisher');
-var NullInsightsPublisher = require('../../util/insightspublisher/null');
-var SIP = require('../../sip');
-var DefaultSIPJSMediaHandler = require('./sipjsmediahandler');
-var StateMachine = require('../../statemachine');
-
-var _require2 = require('../../util'),
-    createMediaSignalingPayload = _require2.createMediaSignalingPayload,
-    getUserAgent = _require2.getUserAgent,
-    makeServerSIPURI = _require2.makeServerSIPURI,
-    withJitter = _require2.withJitter;
-
-var _require3 = require('../../util/twilio-video-errors'),
-    RoomCompletedError = _require3.RoomCompletedError;
-
-var _require4 = require('../../util/twilio-video-errors'),
-    SignalingConnectionDisconnectedError = _require4.SignalingConnectionDisconnectedError,
-    SignalingConnectionError = _require4.SignalingConnectionError,
-    SignalingConnectionTimeoutError = _require4.SignalingConnectionTimeoutError,
-    SignalingIncomingMessageInvalidError = _require4.SignalingIncomingMessageInvalidError,
-    createTwilioError = _require4.createTwilioError;
-
-var RSP_VERSION = 2;
-var SDK_NAME = packageInfo.name + '.js';
-var SDK_VERSION = packageInfo.version;
-
-/*
-Transport States
-----------------
-
-                      +-----------+
-                      |           |
-                      |  syncing  |---------+
-                      |           |         |
-                      +-----------+         |
-                         ^     |            |
-                         |     |            |
-                         |     v            v
-    +------------+    +-----------+    +--------------+
-    |            |    |           |    |              |
-    | connecting |--->| connected |--->| disconnected |
-    |            |    |           |    |              |
-    +------------+    +-----------+    +--------------+
-             |                              ^
-             |                              |
-             |                              |
-             +------------------------------+
-
-*/
-
-var states = {
-  connecting: ['connected', 'disconnected'],
-  connected: ['disconnected', 'syncing'],
-  syncing: ['connected', 'disconnected'],
-  disconnected: []
-};
+var _require = require('events'),
+    EventEmitter = _require.EventEmitter;
 
 /**
- * A {@link Transport} supports sending and receiving Room Signaling Protocol
- * (RSP) messages. It also supports RSP requests, such as Sync and Disconnect.
- * @extends StateMachine
- * @implements MediaSignalingTransport
- * @emits Transport#connected
- * @emits Transport#message
+ * @emits TrackSwitchOffSignalinging#updated
  */
 
-var Transport = function (_StateMachine) {
-  _inherits(Transport, _StateMachine);
+
+var TrackSwitchOffSignaling = function (_EventEmitter) {
+  _inherits(TrackSwitchOffSignaling, _EventEmitter);
 
   /**
-   * Construct a {@link Transport}.
-   * @param {?string} name
-   * @param {string} accessToken
-   * @param {ParticipantSignaling} localParticipant
-   * @param {PeerConnectionManager} peerConnectionManager
-   * @param {object} ua
-   * @param {object} [options]
+   * Construct a {@link TrackSwitchOffSignaling}.
+   * @param {MediaSignalingTransport} mediaSignalingTransport
    */
-  function Transport(name, accessToken, localParticipant, peerConnectionManager, ua, options) {
-    _classCallCheck(this, Transport);
+  function TrackSwitchOffSignaling(mediaSignalingTransport) {
+    _classCallCheck(this, TrackSwitchOffSignaling);
 
-    options = Object.assign({
-      InsightsPublisher: InsightsPublisher,
-      NullInsightsPublisher: NullInsightsPublisher,
-      SIPJSMediaHandler: DefaultSIPJSMediaHandler,
-      sdpFormat: getSdpFormat(),
-      userAgent: getUserAgent()
-    }, options);
+    var _this = _possibleConstructorReturn(this, (TrackSwitchOffSignaling.__proto__ || Object.getPrototypeOf(TrackSwitchOffSignaling)).call(this));
 
-    var _this = _possibleConstructorReturn(this, (Transport.__proto__ || Object.getPrototypeOf(Transport)).call(this, 'connecting', states));
-
-    var eventPublisherOptions = {};
-    if (options.wsServerInsights) {
-      eventPublisherOptions.gateway = options.wsServerInsights;
-    }
-
-    var EventPublisher = options.insights ? options.InsightsPublisher : options.NullInsightsPublisher;
-    Object.defineProperties(_this, {
-      _eventPublisher: {
-        value: new EventPublisher(accessToken, SDK_NAME, SDK_VERSION, options.environment, options.realm, eventPublisherOptions)
-      },
-      _sdpFormat: {
-        value: options.sdpFormat
-      },
-      _updatesReceived: {
-        value: []
-      },
-      _updatesToSend: {
-        value: []
-      },
-      _userAgent: {
-        value: options.userAgent
+    mediaSignalingTransport.on('message', function (message) {
+      switch (message.type) {
+        case 'track_switch_off':
+          _this._setTrackSwitchOffUpdates(message.off || [], message.on || []);
+          break;
+        default:
+          break;
       }
     });
-
-    Object.defineProperties(_this, {
-      _session: {
-        value: createSession(_this, name, accessToken, localParticipant, peerConnectionManager, ua, options.SIPJSMediaHandler, options.iceServerSourceStatus, options.dominantSpeaker, options.networkQuality)
-      }
-    });
-    setupEventListeners(_this, _this._session, ua);
     return _this;
   }
 
   /**
-   * Disconnect the {@link Transport}. Returns true if calling the method resulted
-   * in disconnection.
-   * @param {TwilioError} [error]
-   * @returns {boolean}
+   * @private
+   * @param {[Track.SID]} tracksSwitchedOff
+   * @param {[Track.SID]} tracksSwitchedOn
+   * @returns {void}
    */
 
 
-  _createClass(Transport, [{
-    key: 'disconnect',
-    value: function disconnect(error) {
-      if (this.state !== 'disconnected') {
-        this.preempt('disconnected', null, [error]);
-        this._session.terminate({
-          body: JSON.stringify({
-            type: 'disconnect',
-            version: RSP_VERSION
-          }),
-          extraHeaders: ['Content-Type: application/room-signaling+json']
-        });
-        this._eventPublisher.disconnect();
-        return true;
-      }
-      return false;
-    }
-
-    /**
-     * Publish an RSP Update. Returns true if calling the method resulted in
-     * publishing (or eventually publishing) the update.
-     * @param {object} update
-     * @returns {boolean}
-     */
-
-  }, {
-    key: 'publish',
-    value: function publish(update) {
-      update = Object.assign({
-        type: 'update',
-        version: RSP_VERSION
-      }, update);
-      switch (this.state) {
-        case 'connected':
-          publishWithRetries(this, this._session, update);
-          return true;
-        case 'connecting':
-        case 'syncing':
-          this._updatesToSend.push(update);
-          return true;
-        case 'disconnected':
-        default:
-          return false;
-      }
-    }
-
-    /**
-     * Publish (or queue) an event to the Insights gateway.
-     * @param {string} groupName - Event group name
-     * @param {string} eventName - Event name
-     * @param {object} payload - Event payload
-     * @returns {boolean} true if queued or published, false if disconnected from the Insights gateway
-     */
-
-  }, {
-    key: 'publishEvent',
-    value: function publishEvent(groupName, eventName, payload) {
-      return this._eventPublisher.publish(groupName, eventName, payload);
-    }
-
-    /**
-     * Sync the {@link Transport}. Returns true if calling the method resulted in
-     * syncing.
-     * @returns {boolean}
-     */
-
-  }, {
-    key: 'sync',
-    value: function sync() {
-      if (this.state === 'connected') {
-        this.preempt('syncing');
-        this._session.sendReinvite();
-        return true;
-      }
-      return false;
+  _createClass(TrackSwitchOffSignaling, [{
+    key: '_setTrackSwitchOffUpdates',
+    value: function _setTrackSwitchOffUpdates(tracksSwitchedOff, tracksSwitchedOn) {
+      this.emit('updated', tracksSwitchedOff, tracksSwitchedOn);
     }
   }]);
 
-  return Transport;
-}(StateMachine);
+  return TrackSwitchOffSignaling;
+}(EventEmitter);
 
 /**
- * @event Transport#connected
- * @param {object} initialState
+ * @event TrackSwitchOffSignaling#updated
  */
 
-/**
- * @event Transport#message
- * @param {object} state
- */
-
-function createSession(transport, name, accessToken, localParticipant, peerConnectionManager, ua, SIPJSMediaHandler, iceServerSourceStatus, dominantSpeaker, networkQuality) {
-  var target = 'sip:' + makeServerSIPURI();
-  return ua.invite(target, {
-    extraHeaders: [constants.headers.X_TWILIO_ACCESSTOKEN + ': ' + accessToken, 'Session-Expires: 120'],
-    media: { stream: {} },
-    mediaHandlerFactory: function mediaHandlerFactory() {
-      return new SIPJSMediaHandler(peerConnectionManager, function createMessage() {
-        if (transport.state === 'disconnected') {
-          return {
-            type: 'disconnect',
-            version: RSP_VERSION
-          };
-        }
-        var type = {
-          connecting: 'connect',
-          syncing: 'sync'
-        }[transport.state] || 'update';
-
-        var message = {
-          name: name,
-          participant: localParticipant.getState(),
-          type: type,
-          version: RSP_VERSION
-        };
-
-        if (message.type === 'connect') {
-          message.ice_servers = iceServerSourceStatus;
-          message.publisher = {
-            name: SDK_NAME,
-            sdk_version: SDK_VERSION,
-            user_agent: transport._userAgent
-          };
-          message.media_signaling = createMediaSignalingPayload(dominantSpeaker, networkQuality);
-        }
-
-        var sdpFormat = transport._sdpFormat;
-        if (type === 'connect' && sdpFormat) {
-          message.format = sdpFormat;
-        }
-
-        return message;
-      });
-    },
-    onInfo: function onInfo(request) {
-      this.emit('info', request);
-      request.reply(200);
-    }
-  });
-}
-
-function publishWithRetries(transport, session, payload, attempts) {
-  attempts = attempts || 0;
-  return new Promise(function (resolve, reject) {
-    function receiveResponse(response) {
-      switch (Math.floor(response.status_code / 100)) {
-        case 2:
-          resolve();
-          break;
-        case 5:
-          if (attempts < constants.PUBLISH_MAX_ATTEMPTS) {
-            resolve(publishWithRetries(transport, session, payload, ++attempts));
-          } else {
-            reject(new Error('Transport failed to send a message even after ' + constants.PUBLISH_MAX_ATTEMPTS + ' attempts'));
-          }
-          break;
-        default:
-          reject(response);
-      }
-    }
-    function sendRequest() {
-      if (transport.state === 'disconnected') {
-        return;
-      }
-      session.sendRequest('INFO', {
-        body: JSON.stringify(payload),
-        extraHeaders: ['Content-Type: application/room-signaling+json', 'Event: room-signaling', 'Info-Package: room-signaling'],
-        receiveResponse: receiveResponse
-      });
-    }
-    if (attempts === 0) {
-      sendRequest();
-      return;
-    }
-
-    var backOffMs = (1 << attempts - 1) * constants.PUBLISH_BACKOFF_MS;
-    setTimeout(sendRequest, withJitter(backOffMs, constants.PUBLISH_BACKOFF_JITTER));
-  });
-}
-
-function reducePeerConnections(peerConnections) {
-  return Array.from(peerConnections.reduce(function (peerConnectionsById, update) {
-    var reduced = peerConnectionsById.get(update.id) || update;
-
-    // First, reduce the top-level `description` property.
-    if (!reduced.description && update.description) {
-      reduced.description = update.description;
-    } else if (reduced.description && update.description) {
-      if (update.description.revision > reduced.description.revision) {
-        reduced.description = update.description;
-      }
-    }
-
-    // Then, reduce the top-level `ice` property.
-    if (!reduced.ice && update.ice) {
-      reduced.ice = update.ice;
-    } else if (reduced.ice && update.ice) {
-      if (update.ice.revision > reduced.ice.revision) {
-        reduced.ice = update.ice;
-      }
-    }
-
-    // Finally, update the map.
-    peerConnectionsById.set(reduced.id, reduced);
-
-    return peerConnectionsById;
-  }, new Map()).values());
-}
-
-function reduceUpdates(updates) {
-  return updates.reduce(function (reduced, update) {
-    // First, reduce the top-level `participant` property.
-    if (!reduced.participant && update.participant) {
-      reduced.participant = update.participant;
-    } else if (reduced.participant && update.participant) {
-      if (update.participant.revision > reduced.participant.revision) {
-        reduced.participant = update.participant;
-      }
-    }
-
-    // Then, reduce the top-level `peer_connections` property.
-    /* eslint camelcase:0 */
-    if (!reduced.peer_connections && update.peer_connections) {
-      reduced.peer_connections = reducePeerConnections(update.peer_connections);
-    } else if (reduced.peer_connections && update.peer_connections) {
-      reduced.peer_connections = reducePeerConnections(reduced.peer_connections.concat(update.peer_connections));
-    }
-
-    return reduced;
-  }, {
-    type: 'update',
-    version: RSP_VERSION
-  });
-}
-
-/**
- * Parse the body of a SIP incoming request or response.
- * @param {object} requestOrResponse
- * @returns {?object}
- * @throws {SignalingIncomingMessageInvalidError}
- */
-function parseRequestOrResponseBody(requestOrResponse) {
-  if (requestOrResponse.body) {
-    try {
-      return JSON.parse(requestOrResponse.body);
-    } catch (e) {
-      throw new SignalingIncomingMessageInvalidError();
-    }
-  }
-  return null;
-}
-
-/**
- * Get a {@link TwilioError} for a SIP incoming request or response from its body.
- * @param {object} requestOrResponse
- * @returns {?TwilioError}
- */
-function getTwilioErrorFromRequestOrResponseBody(requestOrResponse) {
-  try {
-    var message = parseRequestOrResponseBody(requestOrResponse);
-    if (message) {
-      switch (message.type) {
-        case 'disconnected':
-          if (message.status === 'completed') {
-            return new RoomCompletedError();
-          }
-          break;
-        case 'error':
-          return createTwilioError(message.code, message.message);
-        default:
-          break;
-      }
-    }
-    return null;
-  } catch (error) {
-    return error;
-  }
-}
-
-/**
- * Get a {@link TwilioError} for a SIP incoming request or response from its headers.
- * @param {object} requestOrResponse
- * @returns {?TwilioError}
- */
-function getTwilioErrorFromRequestOrResponseHeaders(requestOrResponse) {
-  var headers = requestOrResponse.headers;
-  if (headers && headers['X-Twilio-Error']) {
-    var twilioErrorHeader = headers['X-Twilio-Error'][0].raw.split(' ');
-    var code = parseInt(twilioErrorHeader[0], 10);
-    var message = twilioErrorHeader.slice(1).join(' ');
-    return createTwilioError(code, message);
-  }
-  return null;
-}
-
-/**
- * Create a {@link TwilioError} from a SIP request or response.
- * @param {object} requestOrResponse - SIP request or response
- * @returns {?TwilioError}
- */
-function getTwilioErrorFromRequestOrResponse(requestOrResponse) {
-  return getTwilioErrorFromRequestOrResponseHeaders(requestOrResponse) || getTwilioErrorFromRequestOrResponseBody(requestOrResponse);
-}
-
-function setupEventListeners(transport, session, ua) {
-  function disconnect(requestOrResponse, cause) {
-    var twilioError = void 0;
-
-    if (requestOrResponse && !(requestOrResponse instanceof SIP.OutgoingRequest)) {
-      twilioError = getTwilioErrorFromRequestOrResponse(requestOrResponse);
-    }
-
-    if (!twilioError) {
-      switch (cause) {
-        case SIP.C.causes.REQUEST_TIMEOUT:
-          twilioError = new SignalingConnectionTimeoutError();
-          break;
-        case SIP.C.causes.CONNECTION_ERROR:
-          twilioError = new SignalingConnectionError();
-          break;
-        default:
-          twilioError = new SignalingConnectionDisconnectedError();
-      }
-    }
-
-    transport.disconnect(twilioError);
-  }
-
-  function handleRequestOrResponse(requestOrResponse) {
-    // We don't need to handle requests we sent ourselves.
-    if (requestOrResponse instanceof SIP.OutgoingRequest) {
-      return;
-    }
-
-    // Handle any errors first.
-    var error = void 0;
-    try {
-      error = getTwilioErrorFromRequestOrResponse(requestOrResponse);
-    } catch (e) {
-      if (e instanceof SignalingIncomingMessageInvalidError) {
-        return;
-      }
-      error = e;
-    }
-
-    // If we get an error other than a SignalingIncomingMessageInvalidError,
-    // then disconnect.
-    if (error) {
-      transport.disconnect(error);
-      return;
-    }
-
-    // Otherwise, try to parse the RSP message.
-    var message = void 0;
-    try {
-      message = parseRequestOrResponseBody(requestOrResponse);
-    } catch (e) {}
-    // Do nothing.
-
-
-    // If there's no RSP message to handle, just return.
-    if (!message) {
-      return;
-    }
-
-    switch (transport.state) {
-      case 'connected':
-        switch (message.type) {
-          case 'connected':
-          case 'synced':
-          case 'update':
-            transport.emit('message', message);
-            return;
-          case 'disconnected':
-            transport.disconnect(message.status === 'completed' ? new RoomCompletedError() : null);
-            return;
-          default:
-            // Do nothing.
-            return;
-        }
-      case 'connecting':
-        switch (message.type) {
-          case 'connected':
-            transport.emit('connected', message);
-            transport.preempt('connected');
-            return;
-          case 'synced':
-          case 'update':
-            transport._updatesReceived.push(message);
-            return;
-          case 'disconnected':
-            transport.disconnect(message.status === 'completed' ? new RoomCompletedError() : null);
-            return;
-          default:
-            // Do nothing.
-            return;
-        }
-      case 'disconnected':
-        // Do nothing.
-        return;
-      case 'syncing':
-        switch (message.type) {
-          case 'connected':
-          case 'update':
-            transport._updatesReceived.push(message);
-            return;
-          case 'synced':
-            transport.emit('message', message);
-            transport.preempt('connected');
-            return;
-          case 'disconnected':
-            transport.disconnect(message.status === 'completed' ? new RoomCompletedError() : null);
-            return;
-          default:
-            // Do nothing.
-            return;
-        }
-      default:
-        // Impossible
-        return;
-    }
-  }
-
-  session.on('info', handleRequestOrResponse);
-  session.once('bye', disconnect);
-
-  session.once('accepted', handleRequestOrResponse);
-  session.once('failed', disconnect);
-
-  transport.on('stateChanged', function stateChanged(state) {
-    switch (state) {
-      case 'connected':
-        {
-          session.removeListener('accepted', handleRequestOrResponse);
-          session.removeListener('failed', disconnect);
-
-          var updates = transport._updatesToSend.splice(0);
-          if (updates.length) {
-            transport.publish(reduceUpdates(updates));
-          }
-
-          transport._updatesReceived.splice(0).forEach(transport.emit.bind(transport, 'message'));
-
-          return;
-        }
-      case 'disconnected':
-        session.removeListener('accepted', handleRequestOrResponse);
-        session.removeListener('failed', disconnect);
-        session.removeListener('info', handleRequestOrResponse);
-        session.removeListener('bye', disconnect);
-        transport.removeListener('stateChanged', stateChanged);
-        ua.stop();
-        return;
-      case 'syncing':
-        // Do nothing.
-        return;
-      default:
-        // Impossible
-        return;
-    }
-  });
-
-  ua.once('disconnected', disconnect);
-  ua.once('keepAliveTimeout', function () {
-    return transport.disconnect(new SignalingConnectionTimeoutError());
-  });
-}
-
-module.exports = Transport;
-},{"../../../package.json":254,"../../sip":198,"../../statemachine":199,"../../util":236,"../../util/constants":234,"../../util/insightspublisher":237,"../../util/insightspublisher/null":238,"../../util/twilio-video-errors":249,"./sipjsmediahandler":195,"@twilio/webrtc/lib/util/sdp":73}],197:[function(require,module,exports){
+module.exports = TrackSwitchOffSignaling;
+},{"events":66}],165:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -39035,7 +29215,9 @@ var StateMachine = require('../../statemachine');
 var TwilioConnection = require('../../twilioconnection');
 
 var _require2 = require('../../util'),
+    createBandwidthProfilePayload = _require2.createBandwidthProfilePayload,
     createMediaSignalingPayload = _require2.createMediaSignalingPayload,
+    createSubscribePayload = _require2.createSubscribePayload,
     getUserAgent = _require2.getUserAgent,
     withJitter = _require2.withJitter;
 
@@ -39112,7 +29294,9 @@ var TwilioConnectionTransport = function (_StateMachine) {
       maxReconnectAttempts: MAX_RECONNECT_ATTEMPTS,
       reconnectBackOffJitter: RECONNECT_BACKOFF_JITTER,
       reconnectBackOffMs: RECONNECT_BACKOFF_MS,
-      sdpFormat: getSdpFormat(),
+      sdpFormat: getSdpFormat(options.sdpSemantics),
+      trackPriority: true,
+      trackSwitchOff: true,
       userAgent: getUserAgent()
     }, options);
 
@@ -39127,6 +29311,12 @@ var TwilioConnectionTransport = function (_StateMachine) {
     Object.defineProperties(_this, {
       _accessToken: {
         value: accessToken
+      },
+      _automaticSubscription: {
+        value: options.automaticSubscription
+      },
+      _bandwidthProfile: {
+        value: options.bandwidthProfile
       },
       _dominantSpeaker: {
         value: options.dominantSpeaker
@@ -39166,6 +29356,12 @@ var TwilioConnectionTransport = function (_StateMachine) {
         value: null,
         writable: true
       },
+      _trackPriority: {
+        value: options.trackPriority
+      },
+      _trackSwitchOff: {
+        value: options.trackSwitchOff
+      },
       _twilioConnection: {
         value: null,
         writable: true
@@ -39184,6 +29380,13 @@ var TwilioConnectionTransport = function (_StateMachine) {
       }
     });
     setupEventListeners(_this);
+
+    _this.once('connected', function (_ref) {
+      var sid = _ref.sid,
+          participant = _ref.participant;
+
+      _this._eventPublisher.connect(sid, participant.sid);
+    });
     return _this;
   }
 
@@ -39231,7 +29434,13 @@ var TwilioConnectionTransport = function (_StateMachine) {
           user_agent: this._userAgent
         };
 
-        message.media_signaling = createMediaSignalingPayload(this._dominantSpeaker, this._networkQuality);
+        if (this._bandwidthProfile) {
+          message.bandwidth_profile = createBandwidthProfilePayload(this._bandwidthProfile);
+        }
+
+        message.media_signaling = createMediaSignalingPayload(this._dominantSpeaker, this._networkQuality, this._trackPriority, this._trackSwitchOff);
+
+        message.subscribe = createSubscribePayload(this._automaticSubscription);
 
         var sdpFormat = this._options.sdpFormat;
         if (sdpFormat) {
@@ -39545,25 +29754,7 @@ function setupEventListeners(transport) {
 }
 
 module.exports = TwilioConnectionTransport;
-},{"../../../package.json":254,"../../statemachine":199,"../../twilioconnection":231,"../../util":236,"../../util/insightspublisher":237,"../../util/insightspublisher/null":238,"../../util/twilio-video-errors":249,"@twilio/webrtc/lib/util/sdp":73}],198:[function(require,module,exports){
-(function (global){
-'use strict';
-
-var toplevel = global.window || global;
-var Transport = require('@twilio/sip.js/src/Transport');
-var WebSocket = toplevel.WebSocket ? toplevel.WebSocket : require('ws');
-var addEventListener = toplevel.addEventListener ? toplevel.addEventListener.bind(toplevel) : null;
-
-module.exports = require('@twilio/sip.js/src/SIP')({
-  addEventListener: addEventListener,
-  console: toplevel.console,
-  Promise: toplevel.Promise,
-  WebSocket: WebSocket,
-  timers: toplevel,
-  Transport: Transport
-});
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"@twilio/sip.js/src/SIP":40,"@twilio/sip.js/src/Transport":49,"ws":255}],199:[function(require,module,exports){
+},{"../../../package.json":222,"../../statemachine":166,"../../twilioconnection":198,"../../util":203,"../../util/insightspublisher":204,"../../util/insightspublisher/null":205,"../../util/twilio-video-errors":216,"@twilio/webrtc/lib/util/sdp":39}],166:[function(require,module,exports){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -40065,7 +30256,7 @@ function createUnreachableError(here, there) {
 }
 
 module.exports = StateMachine;
-},{"./util":236,"events":100}],200:[function(require,module,exports){
+},{"./util":203,"events":66}],167:[function(require,module,exports){
 /* eslint no-undefined:0 */
 'use strict';
 
@@ -40084,7 +30275,7 @@ function average(xs) {
 }
 
 module.exports = average;
-},{}],201:[function(require,module,exports){
+},{}],168:[function(require,module,exports){
 'use strict';
 
 /**
@@ -40155,7 +30346,7 @@ var IceReport = function () {
 }();
 
 module.exports = IceReport;
-},{}],202:[function(require,module,exports){
+},{}],169:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -40214,7 +30405,7 @@ var IceReportFactory = function () {
 }();
 
 module.exports = IceReportFactory;
-},{"./icereport":201}],203:[function(require,module,exports){
+},{"./icereport":168}],170:[function(require,module,exports){
 'use strict';
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -40267,7 +30458,7 @@ var LocalAudioTrackStats = function (_LocalTrackStats) {
  */
 
 module.exports = LocalAudioTrackStats;
-},{"./localtrackstats":204}],204:[function(require,module,exports){
+},{"./localtrackstats":171}],171:[function(require,module,exports){
 'use strict';
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -40319,7 +30510,7 @@ var LocalTrackStats = function (_TrackStats) {
 }(TrackStats);
 
 module.exports = LocalTrackStats;
-},{"./trackstats":229}],205:[function(require,module,exports){
+},{"./trackstats":196}],172:[function(require,module,exports){
 'use strict';
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -40408,7 +30599,7 @@ var LocalVideoTrackStats = function (_LocalTrackStats) {
 }(LocalTrackStats);
 
 module.exports = LocalVideoTrackStats;
-},{"./localtrackstats":204}],206:[function(require,module,exports){
+},{"./localtrackstats":171}],173:[function(require,module,exports){
 'use strict';
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -40440,7 +30631,7 @@ var NetworkQualityAudioStats = function (_NetworkQualityMediaS) {
 }(NetworkQualityMediaStats);
 
 module.exports = NetworkQualityAudioStats;
-},{"./networkqualitymediastats":210}],207:[function(require,module,exports){
+},{"./networkqualitymediastats":177}],174:[function(require,module,exports){
 'use strict';
 
 /**
@@ -40484,7 +30675,7 @@ function NetworkQualityBandwidthStats(_ref) {
 };
 
 module.exports = NetworkQualityBandwidthStats;
-},{}],208:[function(require,module,exports){
+},{}],175:[function(require,module,exports){
 'use strict';
 
 /**
@@ -40521,7 +30712,7 @@ function NetworkQualityFractionLostStats(_ref) {
 };
 
 module.exports = NetworkQualityFractionLostStats;
-},{}],209:[function(require,module,exports){
+},{}],176:[function(require,module,exports){
 'use strict';
 
 /**
@@ -40565,7 +30756,7 @@ function NetworkQualityLatencyStats(_ref) {
 };
 
 module.exports = NetworkQualityLatencyStats;
-},{}],210:[function(require,module,exports){
+},{}],177:[function(require,module,exports){
 'use strict';
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -40623,7 +30814,7 @@ function NetworkQualityMediaStats(_ref) {
 };
 
 module.exports = NetworkQualityMediaStats;
-},{"./networkqualityrecvstats":211,"./networkqualitysendstats":213}],211:[function(require,module,exports){
+},{"./networkqualityrecvstats":178,"./networkqualitysendstats":180}],178:[function(require,module,exports){
 'use strict';
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -40656,7 +30847,7 @@ var NetworkQualityRecvStats = function (_NetworkQualitySendOr) {
 }(NetworkQualitySendOrRecvStats);
 
 module.exports = NetworkQualityRecvStats;
-},{"./networkqualitysendorrecvstats":212}],212:[function(require,module,exports){
+},{"./networkqualitysendorrecvstats":179}],179:[function(require,module,exports){
 'use strict';
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -40707,7 +30898,7 @@ function NetworkQualitySendOrRecvStats(_ref) {
 };
 
 module.exports = NetworkQualitySendOrRecvStats;
-},{"./networkqualitybandwidthstats":207,"./networkqualityfractionloststats":208,"./networkqualitylatencystats":209}],213:[function(require,module,exports){
+},{"./networkqualitybandwidthstats":174,"./networkqualityfractionloststats":175,"./networkqualitylatencystats":176}],180:[function(require,module,exports){
 'use strict';
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -40740,7 +30931,7 @@ var NetworkQualitySendStats = function (_NetworkQualitySendOr) {
 }(NetworkQualitySendOrRecvStats);
 
 module.exports = NetworkQualitySendStats;
-},{"./networkqualitysendorrecvstats":212}],214:[function(require,module,exports){
+},{"./networkqualitysendorrecvstats":179}],181:[function(require,module,exports){
 'use strict';
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -40788,7 +30979,7 @@ function NetworkQualityStats(_ref) {
 };
 
 module.exports = NetworkQualityStats;
-},{"./networkqualityaudiostats":206,"./networkqualityvideostats":215}],215:[function(require,module,exports){
+},{"./networkqualityaudiostats":173,"./networkqualityvideostats":182}],182:[function(require,module,exports){
 'use strict';
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -40820,7 +31011,7 @@ var NetworkQualityVideoStats = function (_NetworkQualityMediaS) {
 }(NetworkQualityMediaStats);
 
 module.exports = NetworkQualityVideoStats;
-},{"./networkqualitymediastats":210}],216:[function(require,module,exports){
+},{"./networkqualitymediastats":177}],183:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -40919,7 +31110,7 @@ var PeerConnectionReport = function () {
 }();
 
 module.exports = PeerConnectionReport;
-},{"./receiverreport":218,"./senderreport":225}],217:[function(require,module,exports){
+},{"./receiverreport":185,"./senderreport":192}],184:[function(require,module,exports){
 'use strict';
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
@@ -41447,7 +31638,7 @@ function updateChrome(factory) {
 }
 
 module.exports = PeerConnectionReportFactory;
-},{"./icereportfactory":202,"./peerconnectionreport":216,"./receiverreportfactory":219,"./senderreportfactory":226}],218:[function(require,module,exports){
+},{"./icereportfactory":169,"./peerconnectionreport":183,"./receiverreportfactory":186,"./senderreportfactory":193}],185:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -41595,7 +31786,7 @@ var ReceiverReport = function (_SenderOrReceiverRepo) {
 }(SenderOrReceiverReport);
 
 module.exports = ReceiverReport;
-},{"./average":200,"./senderorreceiverreport":223,"./sum":228}],219:[function(require,module,exports){
+},{"./average":167,"./senderorreceiverreport":190,"./sum":195}],186:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -41661,7 +31852,7 @@ var ReceiverReportFactory = function (_SenderOrReceiverRepo) {
 }(SenderOrReceiverReportFactory);
 
 module.exports = ReceiverReportFactory;
-},{"./receiverreport":218,"./senderorreceiverreportfactory":224}],220:[function(require,module,exports){
+},{"./receiverreport":185,"./senderorreceiverreportfactory":191}],187:[function(require,module,exports){
 'use strict';
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -41708,7 +31899,7 @@ var RemoteAudioTrackStats = function (_RemoteTrackStats) {
 }(RemoteTrackStats);
 
 module.exports = RemoteAudioTrackStats;
-},{"./remotetrackstats":221}],221:[function(require,module,exports){
+},{"./remotetrackstats":188}],188:[function(require,module,exports){
 'use strict';
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -41755,7 +31946,7 @@ var RemoteTrackStats = function (_TrackStats) {
 }(TrackStats);
 
 module.exports = RemoteTrackStats;
-},{"./trackstats":229}],222:[function(require,module,exports){
+},{"./trackstats":196}],189:[function(require,module,exports){
 'use strict';
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -41818,7 +32009,7 @@ var RemoteVideoTrackStats = function (_RemoteTrackStats) {
 }(RemoteTrackStats);
 
 module.exports = RemoteVideoTrackStats;
-},{"./remotetrackstats":221}],223:[function(require,module,exports){
+},{"./remotetrackstats":188}],190:[function(require,module,exports){
 'use strict';
 
 /**
@@ -41856,7 +32047,7 @@ function SenderOrReceiverReport(id, trackId, bitrate) {
 };
 
 module.exports = SenderOrReceiverReport;
-},{}],224:[function(require,module,exports){
+},{}],191:[function(require,module,exports){
 'use strict';
 
 /**
@@ -41896,7 +32087,7 @@ function SenderOrReceiverReportFactory(id, trackId, initialStats) {
 };
 
 module.exports = SenderOrReceiverReportFactory;
-},{}],225:[function(require,module,exports){
+},{}],192:[function(require,module,exports){
 /* eslint no-undefined:0 */
 'use strict';
 
@@ -41996,7 +32187,7 @@ var SenderReport = function (_SenderOrReceiverRepo) {
 }(SenderOrReceiverReport);
 
 module.exports = SenderReport;
-},{"./average":200,"./senderorreceiverreport":223,"./sum":228}],226:[function(require,module,exports){
+},{"./average":167,"./senderorreceiverreport":190,"./sum":195}],193:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -42062,7 +32253,7 @@ var SenderReportFactory = function (_SenderOrReceiverRepo) {
 }(SenderOrReceiverReportFactory);
 
 module.exports = SenderReportFactory;
-},{"./senderorreceiverreportfactory":224,"./senderreport":225}],227:[function(require,module,exports){
+},{"./senderorreceiverreportfactory":191,"./senderreport":192}],194:[function(require,module,exports){
 'use strict';
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -42126,7 +32317,7 @@ function StatsReport(peerConnectionId, statsResponse) {
 };
 
 module.exports = StatsReport;
-},{"./localaudiotrackstats":203,"./localvideotrackstats":205,"./remoteaudiotrackstats":220,"./remotevideotrackstats":222}],228:[function(require,module,exports){
+},{"./localaudiotrackstats":170,"./localvideotrackstats":172,"./remoteaudiotrackstats":187,"./remotevideotrackstats":189}],195:[function(require,module,exports){
 'use strict';
 
 /**
@@ -42141,7 +32332,7 @@ function sum(xs) {
 }
 
 module.exports = sum;
-},{}],229:[function(require,module,exports){
+},{}],196:[function(require,module,exports){
 'use strict';
 
 /**
@@ -42201,7 +32392,7 @@ function TrackStats(trackId, statsReport) {
 };
 
 module.exports = TrackStats;
-},{}],230:[function(require,module,exports){
+},{}],197:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -42271,7 +32462,7 @@ var TrackTransceiver = function (_EventEmitter) {
  */
 
 module.exports = TrackTransceiver;
-},{"events":100}],231:[function(require,module,exports){
+},{"events":66}],198:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -42803,7 +32994,7 @@ var TwilioConnection = function (_StateMachine) {
 
 module.exports = TwilioConnection;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./statemachine":199,"./util":236,"./util/log":239,"./util/timeout":247,"ws":255}],232:[function(require,module,exports){
+},{"./statemachine":166,"./util":203,"./util/log":206,"./util/timeout":214,"ws":223}],199:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -42891,7 +33082,7 @@ var AsyncVar = function () {
 }();
 
 module.exports = AsyncVar;
-},{"./":236}],233:[function(require,module,exports){
+},{"./":203}],200:[function(require,module,exports){
 'use strict';
 
 /**
@@ -43039,28 +33230,16 @@ var CancelablePromise = function () {
 }();
 
 module.exports = CancelablePromise;
-},{}],234:[function(require,module,exports){
+},{}],201:[function(require,module,exports){
 'use strict';
 
 module.exports.DEFAULT_ENVIRONMENT = 'prod';
 module.exports.DEFAULT_REALM = 'us1';
+module.exports.DEFAULT_REGION = 'gll';
 module.exports.DEFAULT_LOG_LEVEL = 'warn';
-module.exports.REGISTRAR_SERVER = 'endpoint.twilio.com';
-module.exports.WS_SERVER = function (environment, realm) {
-  switch (environment) {
-    case 'prod':
-      switch (realm) {
-        case 'us1':
-          return 'wss://endpoint.twilio.com';
-        default:
-          return 'wss://endpoint.' + realm + '.twilio.com';
-      }
-    default:
-      return 'wss://endpoint.' + environment + '-' + realm + '.twilio.com';
-  }
-};
-module.exports.WS_SERVER_TWILIOCONNECTION = function (environment) {
-  return environment === 'prod' ? 'wss://global.vss.twilio.com/signaling' : 'wss://global.vss.' + environment + '.twilio.com/signaling';
+module.exports.WS_SERVER = function (environment, region) {
+  region = region === 'gll' ? 'global' : encodeURIComponent(region);
+  return environment === 'prod' ? 'wss://' + region + '.vss.twilio.com/signaling' : 'wss://' + region + '.vss.' + environment + '.twilio.com/signaling';
 };
 module.exports.ECS_SERVER = function (environment, realm) {
   switch (environment) {
@@ -43109,7 +33288,7 @@ module.exports.typeErrors = {
     return new TypeError(name + ' must be ' + article(type) + ' ' + type);
   },
   INVALID_VALUE: function INVALID_VALUE(name, values) {
-    return new RangeError(name + ' must be one of ', values.join(', '));
+    return new RangeError(name + ' must be one of ' + values.join(', '));
   },
   REQUIRED_ARGUMENT: function REQUIRED_ARGUMENT(name) {
     return new TypeError(name + ' must be specified');
@@ -43119,7 +33298,28 @@ module.exports.typeErrors = {
 module.exports.DEFAULT_NQ_LEVEL_LOCAL = 1;
 module.exports.DEFAULT_NQ_LEVEL_REMOTE = 0;
 module.exports.MAX_NQ_LEVEL = 3;
-},{}],235:[function(require,module,exports){
+
+module.exports.ICE_ACTIVITY_CHECK_PERIOD_MS = 1000;
+module.exports.ICE_INACTIVITY_THRESHOLD_MS = 3000;
+
+module.exports.subscriptionMode = {
+  MODE_COLLABORATION: 'collaboration',
+  MODE_GRID: 'grid',
+  MODE_PRESENTATION: 'presentation'
+};
+
+module.exports.trackSwitchOffMode = {
+  MODE_DISABLED: 'disabled',
+  MODE_DETECTED: 'detected',
+  MODE_PREDICTED: 'predicted'
+};
+
+module.exports.trackPriority = {
+  PRIORITY_HIGH: 'high',
+  PRIORITY_LOW: 'low',
+  PRIORITY_STANDARD: 'standard'
+};
+},{}],202:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -43184,7 +33384,7 @@ var Filter = function () {
 }();
 
 module.exports = Filter;
-},{}],236:[function(require,module,exports){
+},{}],203:[function(require,module,exports){
 'use strict';
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
@@ -43202,6 +33402,10 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 var constants = require('./constants');
+var E = constants.typeErrors,
+    trackPriority = constants.trackPriority;
+
+var util = require('@twilio/webrtc/lib/util');
 
 /**
  * Return the given {@link LocalTrack} or a new {@link LocalTrack} for the
@@ -43218,23 +33422,24 @@ function asLocalTrack(track, options) {
   if (track instanceof options.MediaStreamTrack) {
     return track.kind === 'audio' ? new options.LocalAudioTrack(track, options) : new options.LocalVideoTrack(track, options);
   }
-  throw constants.typeErrors.INVALID_TYPE('track', 'LocalAudioTrack, LocalVideoTrack, LocalDataTrack, or MediaStreamTrack');
+  /* eslint new-cap:0 */
+  throw E.INVALID_TYPE('track', 'LocalAudioTrack, LocalVideoTrack, LocalDataTrack, or MediaStreamTrack');
 }
 
 /**
  * Create a new {@link LocalTrackPublication} for the given {@link LocalTrack}.
  * @param {LocalTrack} track
- * @param {string} sid
+ * @param {LocalTrackPublicationSignaling} signaling
  * @param {function(track: LocalTrackPublication): void} unpublish
  * @param {object} options
  */
-function asLocalTrackPublication(track, sid, unpublish, options) {
+function asLocalTrackPublication(track, signaling, unpublish, options) {
   var LocalTrackPublication = {
     audio: options.LocalAudioTrackPublication,
     video: options.LocalVideoTrackPublication,
     data: options.LocalDataTrackPublication
   }[track.kind];
-  return new LocalTrackPublication(sid, track, unpublish, options);
+  return new LocalTrackPublication(signaling, track, unpublish, options);
 }
 
 /**
@@ -43331,23 +33536,9 @@ function getUserAgent() {
 }
 
 /**
- * Construct the SIP URI for a client.
+ * Create a unique identifier.
  * @returns {string}
  */
-function makeClientSIPURI() {
-  /* eslint new-cap:0 */
-  return makeUUID() + '@' + constants.REGISTRAR_SERVER;
-}
-
-/**
- * Construct the SIP URI for the server.
- * @returns {string}
- */
-function makeServerSIPURI() {
-  /* eslint new-cap:0 */
-  return 'orchestrator@' + constants.REGISTRAR_SERVER;
-}
-
 function makeUUID() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
     var r = Math.random() * 16 | 0;
@@ -43491,6 +33682,49 @@ function delegateMethods(source, wrapper, target) {
 }
 
 /**
+ * Determine whether two values are deeply equal.
+ * @param {*} val1
+ * @param {*} val2
+ * @returns {boolean}
+ */
+function isDeepEqual(val1, val2) {
+  if (val1 === val2) {
+    return true;
+  }
+  if ((typeof val1 === 'undefined' ? 'undefined' : _typeof(val1)) !== (typeof val2 === 'undefined' ? 'undefined' : _typeof(val2))) {
+    return false;
+  }
+  if (val1 === null) {
+    return val2 === null;
+  }
+  if (val2 === null) {
+    return false;
+  }
+  if (Array.isArray(val1)) {
+    return Array.isArray(val2) && val1.length === val2.length && val1.every(function (val, i) {
+      return isDeepEqual(val, val2[i]);
+    });
+  }
+  if ((typeof val1 === 'undefined' ? 'undefined' : _typeof(val1)) === 'object') {
+    var val1Keys = Object.keys(val1).sort();
+    var val2Keys = Object.keys(val2).sort();
+    return !Array.isArray(val2) && isDeepEqual(val1Keys, val2Keys) && val1Keys.every(function (key) {
+      return isDeepEqual(val1[key], val2[key]);
+    });
+  }
+  return false;
+}
+
+/**
+ * Whether the given argument is a non-array object.
+ * @param {*} object
+ * @return {boolean}
+ */
+function isNonArrayObject(object) {
+  return (typeof object === 'undefined' ? 'undefined' : _typeof(object)) === 'object' && !Array.isArray(object);
+}
+
+/**
  * For each property name on the `source` prototype, add getters and/or setters
  * to `wrapper` that proxy to `target`.
  * @param {object} source
@@ -43601,18 +33835,6 @@ function trackPublicationClass(publication, local) {
 }
 
 /**
- * Throw if the given track is not a {@link LocalAudioTrack}, a
- * {@link LocalVideoTrack} or a MediaStreamTrack.
- * @param {*} track
- * @param {object} options
- */
-function validateLocalTrack(track, options) {
-  if (!(track instanceof options.LocalAudioTrack || track instanceof options.LocalDataTrack || track instanceof options.LocalVideoTrack || track instanceof options.MediaStreamTrack)) {
-    throw constants.typeErrors.INVALID_TYPE('track', 'LocalAudioTrack, LocalVideoTrack, LocalDataTrack, or MediaStreamTrack');
-  }
-}
-
-/**
  * Sets all underscore-prefixed properties on `object` non-enumerable.
  * @param {Object} object
  * @returns {void}
@@ -43679,6 +33901,7 @@ function hidePublicProperties(object) {
   var props = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
 
   props.forEach(function (name) {
+    // eslint-disable-next-line no-prototype-builtins
     if (object.hasOwnProperty(name)) {
       hideProperty(object, name);
     }
@@ -43756,20 +33979,106 @@ function valueToJSON(value) {
 }
 
 /**
+ * Create the bandwidth profile payload included in an RSP connect message.
+ * @param {BandwidthProfileOptions} bandwidthProfile
+ * @returns {object}
+ */
+function createBandwidthProfilePayload(bandwidthProfile) {
+  return createRSPPayload(bandwidthProfile, [{ prop: 'video', type: 'object', transform: createBandwidthProfileVideoPayload }]);
+}
+
+/**
+ * Create the bandwidth profile video payload included in an RSP connect message.
+ * @param {VideoBandwidthProfileOptions} bandwidthProfileVideo
+ * @returns {object}
+ */
+function createBandwidthProfileVideoPayload(bandwidthProfileVideo) {
+  return createRSPPayload(bandwidthProfileVideo, [{ prop: 'dominantSpeakerPriority', type: 'string', payloadProp: 'active_speaker_priority' }, { prop: 'maxSubscriptionBitrate', type: 'number', payloadProp: 'max_subscription_bandwidth' }, { prop: 'maxTracks', type: 'number', payloadProp: 'max_tracks' }, { prop: 'mode', type: 'string' }, { prop: 'renderDimensions', type: 'object', payloadProp: 'render_dimensions', transform: createRenderDimensionsPayload }, { prop: 'trackSwitchOffMode', type: 'string', payloadProp: 'track_switch_off' }]);
+}
+
+/**
  * Create the Media Signaling payload included in an RSP connect message.
  * @param {boolean} dominantSpeaker - whether to enable the Dominant Speaker
  *   protocol or not
  * @param {boolean} networkQuality - whether to enable the Network Quality
  *   protocol or not
+ * @param {boolean} trackPriority - whether to enable the Track Priority
+ *   protocol or not
+ * @param {boolean} trackSwitchOff - whether to enable the Track Switch-Off
+ *   protocol or not.
  * @returns {object}
  */
-function createMediaSignalingPayload(dominantSpeaker, networkQuality) {
+function createMediaSignalingPayload(dominantSpeaker, networkQuality, trackPriority, trackSwitchOff) {
   var transports = { transports: [{ type: 'data-channel' }] };
   return Object.assign(dominantSpeaker
   // eslint-disable-next-line
   ? { active_speaker: transports } : {}, networkQuality
   // eslint-disable-next-line
-  ? { network_quality: transports } : {});
+  ? { network_quality: transports } : {}, trackPriority
+  // eslint-disable-next-line
+  ? { track_priority: transports } : {}, trackSwitchOff
+  // eslint-disable-next-line
+  ? { track_switch_off: transports } : {});
+}
+
+/**
+ * Create {@link VideoTrack.Dimensions} RSP payload.
+ * @param {VideoTrack.Dimensions} [dimensions]
+ * @returns {object}
+ */
+function createDimensionsPayload(dimensions) {
+  return createRSPPayload(dimensions, [{ prop: 'height', type: 'number' }, { prop: 'width', type: 'number' }]);
+}
+
+/**
+ * Create {@link VideoRenderDimensions} RSP payload.
+ * @param renderDimensions
+ * @returns {object}
+ */
+function createRenderDimensionsPayload(renderDimensions) {
+  var PRIORITY_HIGH = trackPriority.PRIORITY_HIGH,
+      PRIORITY_LOW = trackPriority.PRIORITY_LOW,
+      PRIORITY_STANDARD = trackPriority.PRIORITY_STANDARD;
+
+  return createRSPPayload(renderDimensions, [{ prop: PRIORITY_HIGH, type: 'object', transform: createDimensionsPayload }, { prop: PRIORITY_LOW, type: 'object', transform: createDimensionsPayload }, { prop: PRIORITY_STANDARD, type: 'object', transform: createDimensionsPayload }]);
+}
+
+/**
+ * Create an RSP payload for the given object.
+ * @param {object} object - object for which RSP payload is to be generated
+ * @param {Array<object>} propConversions - conversion rules for object properties;
+ *   they specify how object properties should be converted to their corresponding
+ *   RSP payload properties
+ * @returns {object}
+ */
+function createRSPPayload(object, propConversions) {
+  return propConversions.reduce(function (payload, _ref6) {
+    var prop = _ref6.prop,
+        type = _ref6.type,
+        _ref6$payloadProp = _ref6.payloadProp,
+        payloadProp = _ref6$payloadProp === undefined ? prop : _ref6$payloadProp,
+        _ref6$transform = _ref6.transform,
+        transform = _ref6$transform === undefined ? function (x) {
+      return x;
+    } : _ref6$transform;
+
+    return _typeof(object[prop]) === type ? Object.assign(_defineProperty({}, payloadProp, transform(object[prop])), payload) : payload;
+  }, {});
+}
+
+/**
+ * Create the subscribe payload included in an RSP connect/update message.
+ * @param {boolean} automaticSubscription - whether to subscribe to all RemoteTracks
+ * @returns {object}
+ */
+function createSubscribePayload(automaticSubscription) {
+  return {
+    rules: [{
+      type: automaticSubscription ? 'include' : 'exclude',
+      all: true
+    }],
+    revision: 1
+  };
 }
 
 /**
@@ -43796,8 +34105,23 @@ function inRange(num, min, max) {
   return min <= num && num <= max;
 }
 
+/**
+ * returns true if given MediaStreamTrack is a screen share track
+ * @private
+ * @param {MediaStreamTrack} track
+ * @returns {boolean}
+ */
+function isChromeScreenShareTrack(track) {
+  // NOTE(mpatwardhan): Chrome creates screen share tracks with label like: "screen:69734272*"
+  // we will check for label that starts with "screen:D" where D being a digit.
+  var isChrome = util.guessBrowser() === 'chrome';
+  return isChrome && track.kind === 'video' && track.label && /^screen:[0-9]+/.test(track.label);
+}
+
 exports.constants = constants;
+exports.createBandwidthProfilePayload = createBandwidthProfilePayload;
 exports.createMediaSignalingPayload = createMediaSignalingPayload;
+exports.createSubscribePayload = createSubscribePayload;
 exports.asLocalTrack = asLocalTrack;
 exports.asLocalTrackPublication = asLocalTrackPublication;
 exports.capitalize = capitalize;
@@ -43808,9 +34132,9 @@ exports.flatMap = flatMap;
 exports.getUserAgent = getUserAgent;
 exports.hidePrivateProperties = hidePrivateProperties;
 exports.hidePrivateAndCertainPublicPropertiesInClass = hidePrivateAndCertainPublicPropertiesInClass;
+exports.isDeepEqual = isDeepEqual;
+exports.isNonArrayObject = isNonArrayObject;
 exports.inRange = inRange;
-exports.makeClientSIPURI = makeClientSIPURI;
-exports.makeServerSIPURI = makeServerSIPURI;
 exports.makeUUID = makeUUID;
 exports.oncePerTick = oncePerTick;
 exports.promiseFromEvents = promiseFromEvents;
@@ -43822,10 +34146,10 @@ exports.legacyPromise = legacyPromise;
 exports.buildLogLevels = buildLogLevels;
 exports.trackClass = trackClass;
 exports.trackPublicationClass = trackPublicationClass;
-exports.validateLocalTrack = validateLocalTrack;
 exports.valueToJSON = valueToJSON;
 exports.withJitter = withJitter;
-},{"./constants":234}],237:[function(require,module,exports){
+exports.isChromeScreenShareTrack = isChromeScreenShareTrack;
+},{"./constants":201,"@twilio/webrtc/lib/util":37}],204:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -43848,6 +34172,7 @@ var WS_CLOSE_NORMAL = 1000;
 
 var toplevel = global.window || global;
 var WebSocket = toplevel.WebSocket ? toplevel.WebSocket : require('ws');
+var util = require('../../util');
 
 /**
  * Publish events to the Insights gateway.
@@ -43889,6 +34214,9 @@ var InsightsPublisher = function (_EventEmitter) {
       _eventQueue: {
         value: []
       },
+      _readyToConnect: {
+        value: util.defer()
+      },
       _reconnectAttemptsLeft: {
         value: options.maxReconnectAttempts,
         writable: true
@@ -43902,30 +34230,48 @@ var InsightsPublisher = function (_EventEmitter) {
       }
     });
 
-    var self = _this;
+    _this._readyToConnect.promise.then(function (_ref) {
+      var roomSid = _ref.roomSid,
+          participantSid = _ref.participantSid;
 
-    _this.on('disconnected', function maybeReconnect(error) {
-      self._session = null;
-      if (error && self._reconnectAttemptsLeft > 0) {
-        self.emit('reconnecting');
-        reconnect(self, token, sdkName, sdkVersion, options);
-        return;
-      }
-      self.removeListener('disconnected', maybeReconnect);
+      var self = _this;
+      _this.on('disconnected', function maybeReconnect(error) {
+        self._session = null;
+        if (error && self._reconnectAttemptsLeft > 0) {
+          self.emit('reconnecting');
+          reconnect(self, token, sdkName, sdkVersion, roomSid, participantSid, options);
+          return;
+        }
+        self.removeListener('disconnected', maybeReconnect);
+      });
+      connect(_this, token, sdkName, sdkVersion, roomSid, participantSid, options);
+    }).catch(function () {
+      // ignore failures to connect
     });
-
-    connect(_this, token, sdkName, sdkVersion, options);
     return _this;
   }
 
   /**
-   * Publish an event to the Insights gateway.
-   * @private
-   * @param {*} event
+   * Start connecting to the Insights gateway.
+   * @param {string} roomSid
+   * @param {string} participantSid
+   * @returns {void}
    */
 
 
   _createClass(InsightsPublisher, [{
+    key: 'connect',
+    value: function connect(roomSid, participantSid) {
+      this._readyToConnect.resolve({ roomSid: roomSid, participantSid: participantSid });
+    }
+
+    /**
+     * Publish an event to the Insights gateway.
+     * @private
+     * @param {*} event
+     */
+
+  }, {
     key: '_publish',
     value: function _publish(event) {
       event.session = this._session;
@@ -43940,7 +34286,7 @@ var InsightsPublisher = function (_EventEmitter) {
   }, {
     key: 'disconnect',
     value: function disconnect() {
-      if (this._ws.readyState === this._WebSocket.CLOSING || this._ws.readyState === this._WebSocket.CLOSED) {
+      if (this._ws === null || this._ws.readyState === this._WebSocket.CLOSING || this._ws.readyState === this._WebSocket.CLOSED) {
         return false;
       }
 
@@ -43965,7 +34311,7 @@ var InsightsPublisher = function (_EventEmitter) {
   }, {
     key: 'publish',
     value: function publish(groupName, eventName, payload) {
-      if (this._ws.readyState === this._WebSocket.CLOSING || this._ws.readyState === this._WebSocket.CLOSED) {
+      if (this._ws !== null && (this._ws.readyState === this._WebSocket.CLOSING || this._ws.readyState === this._WebSocket.CLOSED)) {
         return false;
       }
 
@@ -43995,11 +34341,13 @@ var InsightsPublisher = function (_EventEmitter) {
  * @param {string} token
  * @param {string} sdkName
  * @param {string} sdkVersion
+ * @param {string} roomSid
+ * @param {string} participantSid
  * @param {InsightsPublisherOptions} options
  */
 
 
-function connect(publisher, token, sdkName, sdkVersion, options) {
+function connect(publisher, token, sdkName, sdkVersion, roomSid, participantSid, options) {
   publisher._connectTimestamp = Date.now();
   publisher._reconnectAttemptsLeft--;
   publisher._ws = new options.WebSocket(options.gateway);
@@ -44027,7 +34375,9 @@ function connect(publisher, token, sdkName, sdkVersion, options) {
     connectRequest.publisher = {
       name: sdkName,
       sdkVersion: sdkVersion,
-      userAgent: options.userAgent
+      userAgent: options.userAgent,
+      participantSid: participantSid,
+      roomSid: roomSid
     };
 
     ws.send(JSON.stringify(connectRequest));
@@ -44073,20 +34423,22 @@ function handleConnectResponse(publisher, response, options) {
  * @param {string} token
  * @param {string} sdkName
  * @param {string} sdkVersion
+ * @param {string} roomSid
+ * @param {string} participantSid
  * @param {InsightsPublisherOptions} options
  */
-function reconnect(publisher, token, sdkName, sdkVersion, options) {
+function reconnect(publisher, token, sdkName, sdkVersion, roomSid, participantSid, options) {
   var connectInterval = Date.now() - publisher._connectTimestamp;
   var timeToWait = options.reconnectIntervalMs - connectInterval;
 
   if (timeToWait > 0) {
     setTimeout(function () {
-      connect(publisher, token, sdkName, sdkVersion, options);
+      connect(publisher, token, sdkName, sdkVersion, roomSid, participantSid, options);
     }, timeToWait);
     return;
   }
 
-  connect(publisher, token, sdkName, sdkVersion, options);
+  connect(publisher, token, sdkName, sdkVersion, roomSid, participantSid, options);
 }
 
 /**
@@ -44115,7 +34467,8 @@ function reconnect(publisher, token, sdkName, sdkVersion, options) {
 
 module.exports = InsightsPublisher;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"..":236,"events":100,"ws":255}],238:[function(require,module,exports){
+},{"..":203,"../../util":203,"events":66,"ws":223}],205:[function(require,module,exports){
+// eslint-disable-next-line no-warning-comments
 // TODO(mroberts): This should be described as implementing some
 // InsightsPublisher interface.
 'use strict';
@@ -44141,12 +34494,21 @@ var InsightsPublisher = function () {
   }
 
   /**
-   * Disconnect.
-   * @returns {boolean}
+   * Connect
+   * @returns {void}
    */
 
 
   _createClass(InsightsPublisher, [{
+    key: 'connect',
+    value: function connect() {}
+
+    /**
+     * Disconnect.
+     * @returns {boolean}
+     */
+
+  }, {
     key: 'disconnect',
     value: function disconnect() {
       if (this._connected) {
@@ -44172,7 +34534,7 @@ var InsightsPublisher = function () {
 }();
 
 module.exports = InsightsPublisher;
-},{}],239:[function(require,module,exports){
+},{}],206:[function(require,module,exports){
 /* eslint new-cap:0, no-console:0 */
 'use strict';
 
@@ -44474,8 +34836,10 @@ function validateLogLevels(levels) {
 }
 
 module.exports = Log;
-},{"./constants":234}],240:[function(require,module,exports){
+},{"./constants":201}],207:[function(require,module,exports){
 'use strict';
+
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 var difference = require('../').difference;
 var flatMap = require('../').flatMap;
@@ -44533,6 +34897,18 @@ function createCodecMapForMediaSection(section) {
 }
 
 /**
+ * Create a Map of MIDs to m= sections for the given SDP.
+ * @param {string} sdp
+ * @returns {Map<string, string>}
+ */
+function createMidToMediaSectionMap(sdp) {
+  return getMediaSections(sdp).reduce(function (midsToMediaSections, mediaSection) {
+    var mid = getMidForMediaSection(mediaSection);
+    return mid ? midsToMediaSections.set(mid, mediaSection) : midsToMediaSections;
+  }, new Map());
+}
+
+/**
  * Create a Map from PTs to codec names for the given m= section.
  * @param {string} mediaSection - The given m= section.
  * @returns {Map<PT, Codec>} ptToCodecName
@@ -44544,6 +34920,39 @@ function createPtToCodecName(mediaSection) {
     var codecName = matches ? matches[1].toLowerCase() : ptToFixedBitrateAudioCodecName[pt] ? ptToFixedBitrateAudioCodecName[pt].toLowerCase() : '';
     return ptToCodecName.set(pt, codecName);
   }, new Map());
+}
+
+/**
+ * Get the associated fmtp attributes for the given Payload Type in an m= section.
+ * @param {PT} pt
+ * @param {string} mediaSection
+ * @returns {?object}
+ */
+function getFmtpAttributesForPt(pt, mediaSection) {
+  // In "a=fmtp:<pt> <name>=<value>[;<name>=<value>]*", the regex matches the codec
+  // profile parameters expressed as name/value pairs separated by ";".
+  var fmtpRegex = new RegExp('^a=fmtp:' + pt + ' (.+)$', 'm');
+  var matches = mediaSection.match(fmtpRegex);
+  return matches && matches[1].split(';').reduce(function (attrs, nvPair) {
+    var _nvPair$split = nvPair.split('='),
+        _nvPair$split2 = _slicedToArray(_nvPair$split, 2),
+        name = _nvPair$split2[0],
+        value = _nvPair$split2[1];
+
+    attrs[name] = isNaN(value) ? value : parseInt(value, 10);
+    return attrs;
+  }, {});
+}
+
+/**
+ * Get the MID for the given m= section.
+ * @param {string} mediaSection
+ * @return {?string}
+ */
+function getMidForMediaSection(mediaSection) {
+  // In "a=mid:<mid>", the regex matches <mid>.
+  var midMatches = mediaSection.match(/^a=mid:(.+)$/m);
+  return midMatches && midMatches[1];
 }
 
 /**
@@ -44572,16 +34981,16 @@ function getPayloadTypesInMediaSection(section) {
   var mLine = section.split('\r\n')[0];
 
   // In "m=<kind> <port> <proto> <payload_type_1> <payload_type_2> ... <payload_type_n>",
-  // the regex matches <port> and the PayloadTypes.
+  // the regex matches <port> and the Payload Types.
   var matches = mLine.match(/([0-9]+)/g);
 
-  // This should not happen, but in case there are no PayloadTypes in
+  // This should not happen, but in case there are no Payload Types in
   // the m= line, return an empty array.
   if (!matches) {
     return [];
   }
 
-  // Since only the PayloadTypes are needed, we discard the <port>.
+  // Since only the Payload Types are needed, we discard the <port>.
   return matches.slice(1).map(function (match) {
     return parseInt(match, 10);
   });
@@ -44731,17 +35140,236 @@ function setSimulcast(sdp, sdpFormat, trackIdsToAttributes) {
 }
 
 /**
- * Codec Payload Type.
- * @typedef {number} PayloadType
+ * Get the matching Payload Types in a unified plan local m= section for a particular remote codec.
+ * @param {Codec} remoteCodec
+ * @param {PT} remotePt
+ * @param {Map<Codec, PT>} localCodecsToPts
+ * @param {string} localSection
+ * @param {string} remoteSection
+ * @returns {Array<PT>}
  */
+function unifiedPlanGetMatchingLocalPayloadTypes(remoteCodec, remotePt, localCodecsToPts, localSection, remoteSection) {
+  // If there is at most one local Payload Type that matches the remote codec, retain it.
+  var matchingLocalPts = localCodecsToPts.get(remoteCodec) || [];
+  if (matchingLocalPts.length <= 1) {
+    return matchingLocalPts;
+  }
+
+  // If there are no fmtp attributes for the codec in the remote m= section,
+  // then we cannot get a match in the local m= section. In that case, retain
+  // all matching local Payload Types.
+  var remoteFmtpAttrs = getFmtpAttributesForPt(remotePt, remoteSection);
+  if (!remoteFmtpAttrs) {
+    return matchingLocalPts;
+  }
+
+  // Among the matched local Payload Types, find the one that matches the remote
+  // fmtp attributes.
+  var matchinglocalPt = matchingLocalPts.find(function (localPt) {
+    var localFmtpAttrs = getFmtpAttributesForPt(localPt, localSection);
+    return localFmtpAttrs && Object.keys(remoteFmtpAttrs).every(function (attr) {
+      return remoteFmtpAttrs[attr] === localFmtpAttrs[attr];
+    });
+  });
+
+  // If none of the matched local Payload Types also have matching fmtp attributes,
+  // then retain all of them, otherwise retain only the local Payload Type that
+  // matches the remote fmtp attributes.
+  return typeof matchinglocalPt === 'number' ? [matchinglocalPt] : matchingLocalPts;
+}
+
+/**
+ * Filter codecs in a local unified plan m= section based on its equivalent remote m= section.
+ * @param {string} localSection
+ * @param {Map<string, string>} remoteMidsToMediaSections
+ * @returns {string}
+ */
+function unifiedPlanFilterCodecsInLocalMediaSection(localSection, remoteMidsToMediaSections) {
+  // Do nothing if the local m= section represents neither audio nor video.
+  if (!/^m=(audio|video)/.test(localSection)) {
+    return localSection;
+  }
+
+  // Do nothing if the local m= section does not have an equivalent remote m= section.
+  var localMid = getMidForMediaSection(localSection);
+  var remoteSection = localMid && remoteMidsToMediaSections.get(localMid);
+  if (!remoteSection) {
+    return localSection;
+  }
+
+  // Construct a Map of the remote Payload Types to their codec names.
+  var remotePtToCodecs = createPtToCodecName(remoteSection);
+  // Construct a Map of the local codec names to their Payload Types.
+  var localCodecsToPts = createCodecMapForMediaSection(localSection);
+  // Maintain a list of local non-rtx Payload Types to retain.
+  var localPts = flatMap(Array.from(remotePtToCodecs), function (_ref) {
+    var _ref2 = _slicedToArray(_ref, 2),
+        remotePt = _ref2[0],
+        remoteCodec = _ref2[1];
+
+    return remoteCodec !== 'rtx' ? unifiedPlanGetMatchingLocalPayloadTypes(remoteCodec, remotePt, localCodecsToPts, localSection, remoteSection) : [];
+  });
+
+  // For each local Payload Type that will be retained, retain their
+  // corresponding rtx Payload Type if present.
+  var localRtxPts = localCodecsToPts.get('rtx') || [];
+  // In "a=fmtp:<rtxPt> apt=<apt>", extract the codec PT <apt> associated with rtxPt.
+  localPts = localPts.concat(localRtxPts.filter(function (rtxPt) {
+    var fmtpAttrs = getFmtpAttributesForPt(rtxPt, localSection);
+    return fmtpAttrs && localPts.includes(fmtpAttrs.apt);
+  }));
+
+  // Filter out the below mentioned attribute lines in the local m= section that
+  // do not belong to one of the local Payload Types that are to be retained.
+  // 1. "a=rtpmap:<pt> <codec>"
+  // 2. "a=rtcp-fb:<pt> <attr>[ <attr>]*"
+  // 3. "a=fmtp:<pt> <name>=<value>[;<name>=<value>]*"
+  var lines = localSection.split('\r\n').filter(function (line) {
+    var ptMatches = line.match(/^a=(rtpmap|fmtp|rtcp-fb):(.+) .+$/);
+    var pt = ptMatches && ptMatches[2];
+    return !ptMatches || pt && localPts.includes(parseInt(pt, 10));
+  });
+
+  // Filter the list of Payload Types in the first line of the m= section.
+  var orderedLocalPts = getPayloadTypesInMediaSection(localSection).filter(function (pt) {
+    return localPts.includes(pt);
+  });
+  return setPayloadTypesInMediaSection(orderedLocalPts, lines.join('\r\n'));
+}
+
+/**
+ * Filter local codecs based on the remote unified plan SDP.
+ * @param {string} localSdp
+ * @param {string} remoteSdp
+ * @returns {string} - Updated local SDP
+ */
+function unifiedPlanFilterLocalCodecs(localSdp, remoteSdp) {
+  var localMediaSections = getMediaSections(localSdp);
+  var localSession = localSdp.split('\r\nm=')[0];
+  var remoteMidsToMediaSections = createMidToMediaSectionMap(remoteSdp);
+  return [localSession].concat(localMediaSections.map(function (localSection) {
+    return unifiedPlanFilterCodecsInLocalMediaSection(localSection, remoteMidsToMediaSections);
+  })).join('\r\n');
+}
+
+/**
+ * Return a new SDP string after reverting simulcast for non vp8 sections in remote sdp.
+ * @param localSdp - simulcast enabled local sdp
+ * @param localSdpWithoutSimulcast - local sdp before simulcast was set
+ * @param remoteSdp - remote sdp
+ * @return {string} Updated SDP string
+ */
+function revertSimulcastForNonVP8MediaSections(localSdp, localSdpWithoutSimulcast, remoteSdp) {
+  var remoteMidToMediaSections = createMidToMediaSectionMap(remoteSdp);
+  var localMidToMediaSectionsWithoutSimulcast = createMidToMediaSectionMap(localSdpWithoutSimulcast);
+  var mediaSections = getMediaSections(localSdp);
+  var session = localSdp.split('\r\nm=')[0];
+  return [session].concat(mediaSections.map(function (section) {
+    section = section.replace(/\r\n$/, '');
+    if (!/^m=video/.test(section)) {
+      return section;
+    }
+    var midMatches = section.match(/^a=mid:(.+)$/m);
+    var mid = midMatches && midMatches[1];
+    if (!mid) {
+      return section;
+    }
+
+    var remoteSection = remoteMidToMediaSections.get(mid);
+    var remotePtToCodecs = createPtToCodecName(remoteSection);
+    var remotePayloadTypes = getPayloadTypesInMediaSection(remoteSection);
+
+    var isVP8ThePreferredCodec = remotePayloadTypes.length && remotePtToCodecs.get(remotePayloadTypes[0]) === 'vp8';
+    return isVP8ThePreferredCodec ? section : localMidToMediaSectionsWithoutSimulcast.get(mid).replace(/\r\n$/, '');
+  })).concat('').join('\r\n');
+}
+
+/**
+ * Add or rewrite MSIDs for new m= sections in the given Unified Plan SDP with their
+ * corresponding local MediaStreamTrack IDs. These can be different when previously
+ * removed MediaStreamTracks are added back (or Track IDs may not be present in the
+ * SDPs at all once browsers implement the latest WebRTC spec).
+ * @param {string} sdp
+ * @param {Map<string, Track.ID>} activeMidsToTrackIds
+ * @param {Map<Track.Kind, Array<Track.ID>>} trackIdsByKind
+ * @returns {string}
+ */
+function unifiedPlanAddOrRewriteNewTrackIds(sdp, activeMidsToTrackIds, trackIdsByKind) {
+  // NOTE(mmalavalli): The m= sections for the new MediaStreamTracks are usually
+  // present after the m= sections for the existing MediaStreamTracks, in order
+  // of addition.
+  var newMidsToTrackIds = Array.from(trackIdsByKind).reduce(function (midsToTrackIds, _ref3) {
+    var _ref4 = _slicedToArray(_ref3, 2),
+        kind = _ref4[0],
+        trackIds = _ref4[1];
+
+    var mediaSections = getMediaSections(sdp, kind, 'send(only|recv)');
+    var newMids = mediaSections.map(getMidForMediaSection).filter(function (mid) {
+      return !activeMidsToTrackIds.has(mid);
+    });
+    newMids.forEach(function (mid, i) {
+      return midsToTrackIds.set(mid, trackIds[i]);
+    });
+    return midsToTrackIds;
+  }, new Map());
+  return unifiedPlanAddOrRewriteTrackIds(sdp, newMidsToTrackIds);
+}
+
+/**
+ * Add or rewrite MSIDs in the given Unified Plan SDP with their corresponding local
+ * MediaStreamTrack IDs. These IDs need not be the same (or Track IDs may not be
+ * present in the SDPs at all once browsers implement the latest WebRTC spec).
+ * @param {string} sdp
+ * @param {Map<string, Track.ID>} midsToTrackIds
+ * @returns {string}
+ */
+function unifiedPlanAddOrRewriteTrackIds(sdp, midsToTrackIds) {
+  var mediaSections = getMediaSections(sdp);
+  var session = sdp.split('\r\nm=')[0];
+  return [session].concat(mediaSections.map(function (mediaSection) {
+    // Do nothing if the m= section represents neither audio nor video.
+    if (!/^m=(audio|video)/.test(mediaSection)) {
+      return mediaSection;
+    }
+    // This shouldn't happen, but in case there is no MID for the m= section, do nothing.
+    var mid = getMidForMediaSection(mediaSection);
+    if (!mid) {
+      return mediaSection;
+    }
+    // In case there is no Track ID for the given MID in the map, do nothing.
+    var trackId = midsToTrackIds.get(mid);
+    if (!trackId) {
+      return mediaSection;
+    }
+    // This shouldn't happen, but in case there is no a=msid: line, do nothing.
+    var attributes = (mediaSection.match(/^a=msid:(.+)$/m) || [])[1];
+    if (!attributes) {
+      return mediaSection;
+    }
+    // If the a=msid: line contains the "appdata" field, then replace it with the Track ID,
+    // otherwise append the Track ID.
+
+    var _attributes$split = attributes.split(' '),
+        _attributes$split2 = _slicedToArray(_attributes$split, 2),
+        msid = _attributes$split2[0],
+        trackIdToRewrite = _attributes$split2[1];
+
+    var msidRegex = new RegExp('msid:' + msid + (trackIdToRewrite ? ' ' + trackIdToRewrite : '') + '$', 'gm');
+    return mediaSection.replace(msidRegex, 'msid:' + msid + ' ' + trackId);
+  })).join('\r\n');
+}
 
 exports.createCodecMapForMediaSection = createCodecMapForMediaSection;
 exports.createPtToCodecName = createPtToCodecName;
 exports.getMediaSections = getMediaSections;
+exports.revertSimulcastForNonVP8MediaSections = revertSimulcastForNonVP8MediaSections;
 exports.setBitrateParameters = setBitrateParameters;
 exports.setCodecPreferences = setCodecPreferences;
 exports.setSimulcast = setSimulcast;
-},{"../":236,"./simulcast":242}],241:[function(require,module,exports){
+exports.unifiedPlanFilterLocalCodecs = unifiedPlanFilterLocalCodecs;
+exports.unifiedPlanAddOrRewriteNewTrackIds = unifiedPlanAddOrRewriteNewTrackIds;
+exports.unifiedPlanAddOrRewriteTrackIds = unifiedPlanAddOrRewriteTrackIds;
+},{"../":203,"./simulcast":209}],208:[function(require,module,exports){
 'use strict';
 
 var RTCSessionDescription = require('@twilio/webrtc').RTCSessionDescription;
@@ -44956,7 +35584,7 @@ function addFmtpAttributeForRtxPt(mediaSection, rtxPt, pt) {
 }
 
 module.exports = workaround;
-},{"./":240,"@twilio/webrtc":58}],242:[function(require,module,exports){
+},{"./":207,"@twilio/webrtc":24}],209:[function(require,module,exports){
 'use strict';
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
@@ -45294,7 +35922,7 @@ function setSimulcastInMediaSection(section, sdpFormat, trackIdsToAttributes) {
  */
 
 module.exports = setSimulcastInMediaSection;
-},{"../":236}],243:[function(require,module,exports){
+},{"../":203}],210:[function(require,module,exports){
 'use strict';
 
 /**
@@ -45315,18 +35943,18 @@ var IdentityTrackMatcher = function () {
     key: 'match',
 
     /**
-     * Match a given MediaStreamTrack with its ID.
-     * @param {RTCTrackEvent} event
-     * @returns {Track.ID}
-     */
+    * Match a given MediaStreamTrack with its ID.
+    * @param {RTCTrackEvent} event
+    * @returns {Track.ID}
+    */
     value: function match(event) {
       return event.track.id;
     }
 
     /**
-     * Update the {@link IdentityTrackMatcher} with a new SDP.
-     * @param {string} sdp
-     */
+    * Update the {@link IdentityTrackMatcher} with a new SDP.
+    * @param {string} sdp
+    */
 
   }, {
     key: 'update',
@@ -45337,7 +35965,7 @@ var IdentityTrackMatcher = function () {
 }();
 
 module.exports = IdentityTrackMatcher;
-},{}],244:[function(require,module,exports){
+},{}],211:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -45402,7 +36030,7 @@ var MIDTrackMatcher = function () {
 }();
 
 module.exports = MIDTrackMatcher;
-},{"../":240}],245:[function(require,module,exports){
+},{"../":207}],212:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -45544,8 +36172,8 @@ var OrderedTrackMatcher = function () {
 }();
 
 module.exports = OrderedTrackMatcher;
-},{"../":240,"../../":236}],246:[function(require,module,exports){
-/* globals RTCPeerConnection, webkitRTCPeerConnection, mozRTCPeerConnection, navigator */
+},{"../":207,"../../":203}],213:[function(require,module,exports){
+/* globals RTCPeerConnection, webkitRTCPeerConnection, mozRTCPeerConnection, chrome, navigator */
 'use strict';
 
 var _require = require('@twilio/webrtc/lib/util'),
@@ -45570,15 +36198,25 @@ function isGetUserMediaSupported() {
 }
 
 /**
+ * Check whether the current browser is non-Chromium Edge.
+ * @param {string} browser
+ * @returns {boolean}
+ */
+function isNonChromiumEdge(browser) {
+  return browser === 'chrome' && /Edge/.test(navigator.userAgent) && (typeof chrome === 'undefined' || typeof chrome.runtime === 'undefined');
+}
+
+/**
  * Check if the current environment is supported by the SDK.
  * @returns {boolean}
  */
 function isSupported() {
-  return !!guessBrowser() && isGetUserMediaSupported() && isRTCPeerConnectionSupported();
+  var browser = guessBrowser();
+  return !!browser && !isNonChromiumEdge(browser) && isGetUserMediaSupported() && isRTCPeerConnectionSupported();
 }
 
 module.exports = isSupported;
-},{"@twilio/webrtc/lib/util":71}],247:[function(require,module,exports){
+},{"@twilio/webrtc/lib/util":37}],214:[function(require,module,exports){
 'use strict';
 
 /**
@@ -45666,7 +36304,7 @@ var Timeout = function () {
 }();
 
 module.exports = Timeout;
-},{}],248:[function(require,module,exports){
+},{}],215:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -45827,7 +36465,7 @@ var TimeoutPromise = function (_EventEmitter) {
  */
 
 module.exports = TimeoutPromise;
-},{"./":236,"events":100}],249:[function(require,module,exports){
+},{"./":203,"events":66}],216:[function(require,module,exports){
 'use strict';
 
 // NOTE: Do not edit this file. This code is auto-generated. Contact the
@@ -47027,7 +37665,7 @@ var ConfigurationAcquireTurnFailedError = function (_TwilioError51) {
 
 exports.ConfigurationAcquireTurnFailedError = ConfigurationAcquireTurnFailedError;
 Object.defineProperty(TwilioErrorByCode, 53501, { value: ConfigurationAcquireTurnFailedError });
-},{"./twilioerror":250}],250:[function(require,module,exports){
+},{"./twilioerror":217}],217:[function(require,module,exports){
 'use strict';
 
 /**
@@ -47099,7 +37737,113 @@ var TwilioError = function (_Error) {
 }(Error);
 
 module.exports = TwilioError;
-},{}],251:[function(require,module,exports){
+},{}],218:[function(require,module,exports){
+'use strict';
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var _require = require('./'),
+    isNonArrayObject = _require.isNonArrayObject;
+
+var _require2 = require('./constants'),
+    E = _require2.typeErrors,
+    subscriptionMode = _require2.subscriptionMode,
+    trackPriority = _require2.trackPriority,
+    trackSwitchOffMode = _require2.trackSwitchOffMode;
+
+/**
+ * Validate the {@link BandwidthProfileOptions} object.
+ * @param {BandwidthProfileOptions} bandwidthProfile
+ * @returns {?Error} - null if valid, Error if not.
+ */
+
+
+function validateBandwidthProfile(bandwidthProfile) {
+  var error = validateObject(bandwidthProfile, 'options.bandwidthProfile');
+  if (!bandwidthProfile || error) {
+    return error;
+  }
+  error = validateObject(bandwidthProfile.video, 'options.bandwidthProfile.video', [{ prop: 'dominantSpeakerPriority', values: Object.values(trackPriority) }, { prop: 'maxSubscriptionBitrate', type: 'number' }, { prop: 'maxTracks', type: 'number' }, { prop: 'mode', values: Object.values(subscriptionMode) }, { prop: 'trackSwitchOffMode', values: Object.values(trackSwitchOffMode) }]);
+  return error || (bandwidthProfile.video ? validateRenderDimensions(bandwidthProfile.video.renderDimensions) : null);
+}
+
+/**
+ * Throw if the given track is not a {@link LocalAudioTrack}, a
+ * {@link LocalVideoTrack} or a MediaStreamTrack.
+ * @param {*} track
+ * @param {object} options
+ */
+function validateLocalTrack(track, options) {
+  if (!(track instanceof options.LocalAudioTrack || track instanceof options.LocalDataTrack || track instanceof options.LocalVideoTrack || track instanceof options.MediaStreamTrack)) {
+    /* eslint new-cap:0 */
+    throw E.INVALID_TYPE('track', 'LocalAudioTrack, LocalVideoTrack, LocalDataTrack, or MediaStreamTrack');
+  }
+}
+
+/**
+ * Validate an object. An object is valid if it is undefined or a non-null, non-array
+ * object whose properties satisfy the specified data-type or value-range requirements.
+ * @param {object} object - the object to be validated
+ * @param {string} name - the object name to be used to build the error message, if invalid
+ * @param {Array<object>} [propChecks] - optional data-type or value-range requirements
+ *   for the object's properties
+ * @returns {?Error} - null if object is valid, Error if not
+ */
+function validateObject(object, name) {
+  var propChecks = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+
+  // NOTE(mmalavalli): We determine that an undefined object is valid because this
+  // means the parent object does not contain this object as a property, which is
+  // a valid scenario.
+  if (typeof object === 'undefined') {
+    return null;
+  }
+  // NOTE(mmalavalli): We determine that if the object is null, or an Array, or
+  // any other non-object type, then it is invalid.
+  if (object === null || !isNonArrayObject(object)) {
+    return E.INVALID_TYPE(name, 'object');
+  }
+  // NOTE(mmalavalli): We determine that the object is invalid if at least one of
+  // its properties does not satisfy its data-type or value-range requirement.
+  return propChecks.reduce(function (error, _ref) {
+    var prop = _ref.prop,
+        type = _ref.type,
+        values = _ref.values;
+
+    if (error || !(prop in object)) {
+      return error;
+    }
+    var value = object[prop];
+    if (type && (typeof value === 'undefined' ? 'undefined' : _typeof(value)) !== type) {
+      return E.INVALID_TYPE(name + '.' + prop, type);
+    }
+    if (type === 'number' && isNaN(value)) {
+      return E.INVALID_TYPE(name + '.' + prop, type);
+    }
+    if (Array.isArray(values) && !values.includes(value)) {
+      return E.INVALID_VALUE(name + '.' + prop, values);
+    }
+    return error;
+  }, null);
+}
+
+/**
+ * Validate the {@link VideoRenderDimensions} object.
+ * @param {VideoRenderDimensions} renderDimensions
+ * @returns {?Error} - null if valid, Error if not.
+ */
+function validateRenderDimensions(renderDimensions) {
+  var name = 'options.bandwidthProfile.video.renderDimensions';
+  var error = validateObject(renderDimensions, name);
+  return renderDimensions ? error || Object.values(trackPriority).reduce(function (error, prop) {
+    return error || validateObject(renderDimensions[prop], name + '.' + prop, [{ prop: 'height', type: 'number' }, { prop: 'width', type: 'number' }]);
+  }, null) : error;
+}
+
+exports.validateBandwidthProfile = validateBandwidthProfile;
+exports.validateLocalTrack = validateLocalTrack;
+exports.validateObject = validateObject;
+},{"./":203,"./constants":201}],219:[function(require,module,exports){
 /* globals webkitAudioContext, AudioContext */
 'use strict';
 
@@ -47198,7 +37942,7 @@ var AudioContextFactory = function () {
 }();
 
 module.exports = new AudioContextFactory();
-},{}],252:[function(require,module,exports){
+},{}],220:[function(require,module,exports){
 'use strict';
 
 /**
@@ -47261,7 +38005,7 @@ function detectSilence(audioContext, stream, timeout) {
 }
 
 module.exports = detectSilence;
-},{}],253:[function(require,module,exports){
+},{}],221:[function(require,module,exports){
 'use strict';
 
 var detectSilence = require('./detectsilence');
@@ -47334,64 +38078,31 @@ to get a new one, but we\'ve run out of retries; returning it anyway.');
 }
 
 module.exports = workaround;
-},{"./audiocontext":251,"./detectsilence":252}],254:[function(require,module,exports){
+},{"./audiocontext":219,"./detectsilence":220}],222:[function(require,module,exports){
 module.exports={
-  "_args": [
-    [
-      "twilio-video@2.0.0-beta8",
-      "/var/www/xyzies/xys-vsp-be-video"
-    ]
-  ],
-  "_from": "twilio-video@2.0.0-beta8",
-  "_id": "twilio-video@2.0.0-beta8",
-  "_inBundle": false,
-  "_integrity": "sha512-5qU/mfL6XzqduvwuztlbXQr6UqUAn5T2tRuIX2nO+otD8FbJd53EpDJY3KSo4V4vyDEGW424gAgD+ahwtW56ig==",
-  "_location": "/twilio-video",
-  "_phantomChildren": {},
-  "_requested": {
-    "type": "version",
-    "registry": true,
-    "raw": "twilio-video@2.0.0-beta8",
-    "name": "twilio-video",
-    "escapedName": "twilio-video",
-    "rawSpec": "2.0.0-beta8",
-    "saveSpec": null,
-    "fetchSpec": "2.0.0-beta8"
-  },
-  "_requiredBy": [
-    "/"
-  ],
-  "_resolved": "https://registry.npmjs.org/twilio-video/-/twilio-video-2.0.0-beta8.tgz",
-  "_spec": "2.0.0-beta8",
-  "_where": "/var/www/xyzies/xys-vsp-be-video",
-  "author": {
-    "name": "Mark Andrus Roberts",
-    "email": "mroberts@twilio.com"
-  },
-  "browser": {
-    "ws": "./src/ws.js",
-    "xmlhttprequest": "./src/xmlhttprequest.js"
-  },
-  "bugs": {
-    "url": "https://github.com/twilio/twilio-video.js/issues"
-  },
-  "contributors": [
-    {
-      "name": "Ryan Rowland",
-      "email": "rrowland@twilio.com"
-    },
-    {
-      "name": "Manjesh Malavalli",
-      "email": "mmalavalli@twilio.com"
-    }
-  ],
-  "dependencies": {
-    "@twilio/sip.js": "^0.7.7",
-    "@twilio/webrtc": "4.0.0",
-    "ws": "^3.3.1",
-    "xmlhttprequest": "^1.8.0"
-  },
+  "name": "twilio-video",
+  "title": "Twilio Video",
   "description": "Twilio Video JavaScript library",
+  "version": "2.0.1",
+  "homepage": "https://twilio.com",
+  "author": "Mark Andrus Roberts <mroberts@twilio.com>",
+  "contributors": [
+    "Ryan Rowland <rrowland@twilio.com>",
+    "Manjesh Malavalli <mmalavalli@twilio.com>",
+    "Makarand Patwardhan <mpatwardhan@twilio.com>"
+  ],
+  "keywords": [
+    "twilio",
+    "webrtc",
+    "library",
+    "javascript",
+    "video",
+    "rooms"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/twilio/twilio-video.js.git"
+  },
   "devDependencies": {
     "@types/express": "^4.11.0",
     "@types/node": "^8.5.1",
@@ -47402,20 +38113,34 @@ module.exports={
     "browserify": "^14.3.0",
     "cheerio": "^0.22.0",
     "chromedriver": "2.28.0",
+    "cors": "^2.8.5",
+    "electron": "^5.0.1",
     "envify": "^4.0.0",
-    "eslint": "^4.9.0",
+    "eslint": "^6.2.1",
+    "eslint-config-standard": "^14.0.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-node": "^9.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
     "express": "^4.16.2",
     "geckodriver": "1.4.0",
     "ink-docstrap": "^1.3.2",
+    "inquirer": "^7.0.0",
+    "is-docker": "^2.0.0",
     "istanbul": "^0.4.5",
     "jsdoc": "^3.5.5",
+    "json-loader": "^0.5.7",
     "karma": "^1.6.0",
     "karma-browserify": "^5.1.1",
     "karma-chrome-launcher": "^2.0.0",
+    "karma-edgium-launcher": "^4.0.0-0",
+    "karma-electron": "^6.1.0",
     "karma-firefox-launcher": "^1.0.1",
+    "karma-htmlfile-reporter": "^0.3.8",
+    "karma-junit-reporter": "^1.2.0",
     "karma-mocha": "^1.3.0",
     "karma-safari-launcher": "^1.0.0",
-    "karma-spec-reporter": "^0.0.31",
+    "karma-spec-reporter": "0.0.32",
     "mocha": "^3.2.0",
     "npm-run-all": "^4.0.2",
     "puppeteer": "^1.11.0",
@@ -47423,6 +38148,7 @@ module.exports={
     "requirejs": "^2.3.3",
     "rimraf": "^2.6.1",
     "selenium-webdriver": "3.3.0",
+    "simple-git": "^1.126.0",
     "sinon": "^4.0.1",
     "travis-multirunner": "^4.0.0",
     "ts-node": "4.0.1",
@@ -47432,91 +38158,111 @@ module.exports={
     "uglify-js": "^2.8.22",
     "vinyl-fs": "^2.4.4",
     "vinyl-source-stream": "^1.1.0",
+    "watchify": "^3.11.1",
     "webrtc-adapter": "^4.1.1"
   },
   "engines": {
     "node": ">=0.12"
   },
-  "homepage": "https://twilio.com",
-  "keywords": [
-    "twilio",
-    "webrtc",
-    "library",
-    "javascript",
-    "video",
-    "rooms"
-  ],
   "license": "BSD-3-Clause",
   "main": "./es5/index.js",
-  "name": "twilio-video",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/twilio/twilio-video.js.git"
-  },
   "scripts": {
-    "build": "npm-run-all clean lint docs cover test:integration build:es5 build:js build:min.js test:umd",
-    "build:es5": "rimraf ./es5 && babel lib -d es5",
-    "build:js": "node ./scripts/build.js ./src/twilio-video.js ./LICENSE.md ./dist/twilio-video.js",
-    "build:min.js": "uglifyjs ./dist/twilio-video.js -o ./dist/twilio-video.min.js --comments \"/^! twilio-video.js/\" -b beautify=false,ascii_only=true",
-    "build:quick": "npm-run-all clean lint docs build:es5 build:js build:min.js",
-    "build:travis": "npm-run-all clean lint docs cover test:integration:travis build:es5 build:js build:min.js test:umd test:framework",
-    "clean": "rimraf ./coverage ./es5 ./dist",
-    "cover": "istanbul cover node_modules/mocha/bin/_mocha -- ./test/unit/index.js",
-    "docs": "node ./scripts/docs.js ./dist/docs",
-    "lint": "eslint ./lib ./test/*.js ./test/framework/*.js ./test/lib/*.js ./test/integration/** ./test/unit/**",
-    "test": "npm-run-all test:unit test:integration",
-    "test:crossbrowser": "npm-run-all test:crossbrowser:*",
-    "test:crossbrowser:build": "npm-run-all test:crossbrowser:build:*",
-    "test:crossbrowser:build:browser": "cd ./test/crossbrowser && browserify lib/crossbrowser/src/browser/index.js > src/browser/index.js",
+    "lint": "eslint ./lib ./test/*.js ./docker/**/*.js ./test/framework/*.js ./test/lib/*.js ./test/integration/** ./test/unit/**",
+    "test:unit": "mocha ./test/unit/index.js",
+    "test:integration:adapter": "node ./scripts/karma.js karma/integration.adapter.conf.js",
+    "test:integration:travis": "node ./scripts/integration.js",
+    "test:integration": "node ./scripts/karma.js karma/integration.conf.js",
+    "test:umd": "mocha ./test/umd/index.js",
     "test:crossbrowser:build:clean": "rimraf ./test/crossbrowser/lib ./test/crossbrowser/src/browser/index.js",
     "test:crossbrowser:build:lint": "cd ./test/crossbrowser && tslint --project tsconfig.json",
     "test:crossbrowser:build:tsc": "cd ./test/crossbrowser && tsc",
+    "test:crossbrowser:build:browser": "cd ./test/crossbrowser && browserify lib/crossbrowser/src/browser/index.js > src/browser/index.js",
+    "test:crossbrowser:build": "npm-run-all test:crossbrowser:build:*",
     "test:crossbrowser:test": "cd ./test/crossbrowser && mocha --compilers ts:ts-node/register test/integration/spec/**/*.ts",
-    "test:framework": "npm-run-all test:framework:angular test:framework:no-framework test:framework:react",
-    "test:framework:angular": "npm-run-all test:framework:angular:*",
-    "test:framework:angular:install": "cd ./test/framework/twilio-video-angular && rimraf ./node_modules && npm install",
-    "test:framework:angular:run": "mocha ./test/framework/twilio-video-angular.js",
-    "test:framework:no-framework": "npm-run-all test:framework:no-framework:*",
-    "test:framework:no-framework:run": "mocha ./test/framework/twilio-video-no-framework.js",
-    "test:framework:react": "npm-run-all test:framework:react:*",
-    "test:framework:react:build": "cd ./test/framework/twilio-video-react && npm run build",
-    "test:framework:react:install": "cd ./test/framework/twilio-video-react && rimraf ./node_modules && npm install",
-    "test:framework:react:run": "mocha ./test/framework/twilio-video-react.js",
-    "test:framework:react:test": "node ./scripts/framework.js twilio-video-react",
-    "test:integration": "node ./scripts/karma.js karma/integration.conf.js",
-    "test:integration:adapter": "node ./scripts/karma.js karma/integration.adapter.conf.js",
-    "test:integration:travis": "node ./scripts/integration.js",
-    "test:sdkdriver": "npm-run-all test:sdkdriver:*",
-    "test:sdkdriver:build": "npm-run-all test:sdkdriver:build:*",
+    "test:crossbrowser": "npm-run-all test:crossbrowser:*",
     "test:sdkdriver:build:clean": "rimraf ./test/lib/sdkdriver/lib ./test/lib/sdkdriver/test/integration/browser/index.js",
     "test:sdkdriver:build:lint": "cd ./test/lib/sdkdriver && tslint --project tsconfig.json",
     "test:sdkdriver:build:tsc": "cd ./test/lib/sdkdriver && tsc --rootDir src",
-    "test:sdkdriver:test": "npm-run-all test:sdkdriver:test:*",
-    "test:sdkdriver:test:integration": "npm-run-all test:sdkdriver:test:integration:*",
+    "test:sdkdriver:build": "npm-run-all test:sdkdriver:build:*",
+    "test:sdkdriver:test:unit": "cd ./test/lib/sdkdriver && mocha --compilers ts:ts-node/register test/unit/spec/**/*.ts",
     "test:sdkdriver:test:integration:browser": "cd ./test/lib/sdkdriver/test/integration && browserify browser/browser.js > browser/index.js",
     "test:sdkdriver:test:integration:run": "cd ./test/lib/sdkdriver && mocha --compilers ts:ts-node/register test/integration/spec/**/*.ts",
-    "test:sdkdriver:test:unit": "cd ./test/lib/sdkdriver && mocha --compilers ts:ts-node/register test/unit/spec/**/*.ts",
-    "test:umd": "mocha ./test/umd/index.js",
-    "test:unit": "mocha ./test/unit/index.js"
+    "test:sdkdriver:test:integration": "npm-run-all test:sdkdriver:test:integration:*",
+    "test:sdkdriver:test": "npm-run-all test:sdkdriver:test:*",
+    "test:sdkdriver": "npm-run-all test:sdkdriver:*",
+    "test:framework:angular:install": "cd ./test/framework/twilio-video-angular && rimraf ./node_modules package-lock.json && npm install",
+    "test:framework:angular:run": "mocha ./test/framework/twilio-video-angular.js",
+    "test:framework:angular": "npm-run-all test:framework:angular:*",
+    "test:framework:no-framework:run": "mocha ./test/framework/twilio-video-no-framework.js",
+    "test:framework:no-framework": "npm-run-all test:framework:no-framework:*",
+    "test:framework:react:install": "cd ./test/framework/twilio-video-react && rimraf ./node_modules package-lock.json && npm install",
+    "test:framework:react:test": "node ./scripts/framework.js twilio-video-react",
+    "test:framework:react:build": "cd ./test/framework/twilio-video-react && npm run build",
+    "test:framework:react:run": "mocha ./test/framework/twilio-video-react.js",
+    "test:framework:react": "npm-run-all test:framework:react:*",
+    "test:framework": "npm-run-all test:framework:angular test:framework:no-framework test:framework:react",
+    "test": "npm-run-all test:unit test:integration",
+    "build:es5": "rimraf ./es5 && babel lib -d es5",
+    "build:js": "node ./scripts/build.js ./src/twilio-video.js ./LICENSE.md ./dist/twilio-video.js",
+    "build:min.js": "uglifyjs ./dist/twilio-video.js -o ./dist/twilio-video.min.js --comments \"/^! twilio-video.js/\" -b beautify=false,ascii_only=true",
+    "build": "npm-run-all clean lint docs cover test:integration build:es5 build:js build:min.js test:umd",
+    "build:travis": "npm-run-all clean lint docs cover build:es5 build:js build:min.js test:umd test:framework",
+    "build:docker": "npm-run-all clean lint docs cover test:integration:travis build:es5 build:js build:min.js",
+    "build:quick": "npm-run-all clean lint docs build:es5 build:js build:min.js",
+    "docs": "node ./scripts/docs.js ./dist/docs",
+    "clean": "rimraf ./coverage ./es5 ./dist",
+    "cover": "istanbul cover node_modules/mocha/bin/_mocha -- ./test/unit/index.js"
   },
-  "title": "Twilio Video",
-  "version": "2.0.0-beta8"
+  "dependencies": {
+    "@twilio/webrtc": "4.1.3",
+    "ws": "^3.3.1",
+    "xmlhttprequest": "^1.8.0"
+  },
+  "browser": {
+    "ws": "./src/ws.js",
+    "xmlhttprequest": "./src/xmlhttprequest.js"
+  }
 }
 
-},{}],255:[function(require,module,exports){
+},{}],223:[function(require,module,exports){
 module.exports = WebSocket;
 
-},{}],256:[function(require,module,exports){
+},{}],224:[function(require,module,exports){
 exports.XMLHttpRequest = XMLHttpRequest;
 
-},{}],257:[function(require,module,exports){
+},{}],225:[function(require,module,exports){
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+  };
+} else {
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    var TempCtor = function () {}
+    TempCtor.prototype = superCtor.prototype
+    ctor.prototype = new TempCtor()
+    ctor.prototype.constructor = ctor
+  }
+}
+
+},{}],226:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],258:[function(require,module,exports){
+},{}],227:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -48106,7 +38852,7 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":257,"_process":110,"inherits":105}],259:[function(require,module,exports){
+},{"./support/isBuffer":226,"_process":75,"inherits":225}],228:[function(require,module,exports){
 'use strict';
 
 var alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_'.split('')
@@ -48176,7 +38922,7 @@ yeast.encode = encode;
 yeast.decode = decode;
 module.exports = yeast;
 
-},{}],260:[function(require,module,exports){
+},{}],229:[function(require,module,exports){
 /* eslint-disable no-use-before-define, no-console, no-undef */
 
 const Video = require('twilio-video');
@@ -48514,4 +39260,4 @@ function hideTurnOffDisplay() {
   document.querySelector('.power-off-display').style.display = 'none';
 }
 
-},{"@aspnet/signalr":21,"socket.io-client":111,"twilio-video":137}]},{},[260]);
+},{"@aspnet/signalr":21,"socket.io-client":76,"twilio-video":104}]},{},[229]);
