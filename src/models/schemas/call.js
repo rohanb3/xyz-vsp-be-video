@@ -11,4 +11,7 @@ module.exports = {
     lowercase: true,
   },
   tenantId: String,
+  waitingDuration: Number,
+  callStatus: String,
+  callDuration: Number,
 };

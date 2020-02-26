@@ -16,6 +16,11 @@ const validateTenantFilter = permission => async (request, res, next) => {
 
   try {
     if (!tenantId) {
+      const allowedTenantId = await publicApiRequests.getTenantIdByCompanyId(
+        companyId
+      );
+      request.query.tenantId = allowedTenantId;
+
       logger.info('middleware.validateTenantFilter.noTenantId');
     } else {
       const allowed = await permissionsHelper.isPermissionGranted(
