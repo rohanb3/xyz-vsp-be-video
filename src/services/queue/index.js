@@ -58,14 +58,19 @@ class Queue {
     return this.connector.getPeak();
   }
 
+  getItems() {
+    return this.connector.getItems();
+  }
+
   getSize() {
     return this.connector.getSize();
   }
 
   getQueueInfo() {
-    return Promise.all([this.getPeak(), this.getSize()]).then(
-      ([peak, size]) => ({ peak, size })
-    );
+    return Promise.all([
+      this.getPeak(),
+      this.getSize(),
+    ]).then(([peak, size]) => ({ peak, size }));
   }
 
   subscribeToItemEnqueueing(listener) {

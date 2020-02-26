@@ -600,7 +600,7 @@ var HttpConnection = /** @class */ (function () {
                         transport = this.resolveTransport(endpoint, requestedTransport, requestedTransferFormat);
                         if (!(typeof transport === "number")) return [3 /*break*/, 8];
                         this.transport = this.constructTransport(transport);
-                        if (negotiateResponse.connectionId) return [3 /*break*/, 5];
+                        if (!!negotiateResponse.connectionId) return [3 /*break*/, 5];
                         return [4 /*yield*/, this.getNegotiationResponse(url)];
                     case 4:
                         negotiateResponse = _a.sent();
@@ -2621,7 +2621,7 @@ module.exports={
   "_args": [
     [
       "@twilio/sip.js@0.7.7",
-      "/Users/vsmoliy/Desktop/xys-vsp-be-video"
+      "/var/www/xyzies/xys-vsp-be-video"
     ]
   ],
   "_from": "@twilio/sip.js@0.7.7",
@@ -2646,7 +2646,7 @@ module.exports={
   ],
   "_resolved": "https://registry.npmjs.org/@twilio/sip.js/-/sip.js-0.7.7.tgz",
   "_spec": "0.7.7",
-  "_where": "/Users/vsmoliy/Desktop/xys-vsp-be-video",
+  "_where": "/var/www/xyzies/xys-vsp-be-video",
   "author": {
     "name": "OnSIP",
     "email": "developer@onsip.com",
@@ -17068,7 +17068,7 @@ module.exports={
   "_args": [
     [
       "@twilio/webrtc@4.0.0",
-      "/Users/vsmoliy/Desktop/xys-vsp-be-video"
+      "/var/www/xyzies/xys-vsp-be-video"
     ]
   ],
   "_from": "@twilio/webrtc@4.0.0",
@@ -17093,7 +17093,7 @@ module.exports={
   ],
   "_resolved": "https://registry.npmjs.org/@twilio/webrtc/-/webrtc-4.0.0.tgz",
   "_spec": "4.0.0",
-  "_where": "/Users/vsmoliy/Desktop/xys-vsp-be-video",
+  "_where": "/var/www/xyzies/xys-vsp-be-video",
   "author": {
     "name": "Manjesh Malavalli",
     "email": "mmalavalli@twilio.com"
@@ -47339,7 +47339,7 @@ module.exports={
   "_args": [
     [
       "twilio-video@2.0.0-beta8",
-      "/Users/vsmoliy/Desktop/xys-vsp-be-video"
+      "/var/www/xyzies/xys-vsp-be-video"
     ]
   ],
   "_from": "twilio-video@2.0.0-beta8",
@@ -47363,7 +47363,7 @@ module.exports={
   ],
   "_resolved": "https://registry.npmjs.org/twilio-video/-/twilio-video-2.0.0-beta8.tgz",
   "_spec": "2.0.0-beta8",
-  "_where": "/Users/vsmoliy/Desktop/xys-vsp-be-video",
+  "_where": "/var/www/xyzies/xys-vsp-be-video",
   "author": {
     "name": "Mark Andrus Roberts",
     "email": "mroberts@twilio.com"
@@ -48188,17 +48188,36 @@ const {
 const io = require('socket.io-client');
 
 const isLocal = typeof prompt('Is local?') === 'string';
+console.log('isLocal', isLocal);
+
 const isDev = !isLocal && typeof prompt('Is dev?') === 'string';
+console.log('isDev', isDev);
+
 const isStage = !isLocal && !isDev && typeof prompt('Is stage?') === 'string';
+console.log('isStage', isStage);
+
 const isProd =
   !isLocal &&
   !isDev &&
   !isStage &&
   typeof prompt('Is production?') === 'string';
-const deviceId = prompt('Tell me device id') || 'new-device-id';
-const identity = prompt('Tell me your identity') || 'Joey';
+console.log('isProd', isProd);
+
+const deviceId =
+  prompt('Tell me device id ("new-device-id" by default)') || 'new-device-id';
+console.log('deviceId', deviceId);
+
+const identity = prompt('Tell me your identity ("Joey" by default)') || 'Joey';
+console.log('identity', identity);
+
+const securityToken =
+  prompt('Security Token ("mocked-device-user-token" by default)') ||
+  'mocked-device-user-token';
+console.log('securityToken', securityToken);
+
 const shouldConnectToDeviceManagement =
   typeof prompt('Conect to device management?') === 'string';
+console.log('shouldConnectToDeviceManagement', shouldConnectToDeviceManagement);
 
 let deviceManagementHost = 'https://dev-portal.xyzvsp.com';
 let socketUrl = 'wss://dev-portal.xyzvsp.com/customers';
@@ -48250,7 +48269,7 @@ let globalToken = null;
 let roomId = null;
 
 socket.on('connect', () => {
-  socket.emit('authentication', { identity, deviceId });
+  socket.emit('authentication', { identity, deviceId, token: securityToken });
   socket.on('authenticated', token => {
     console.log('authenticated');
     onTokenReceived({ token });
@@ -48321,9 +48340,10 @@ function requestConnection() {
     document.getElementById('button-join').style.display = 'none';
     document.getElementById('button-leave').style.display = 'inline';
   });
-  socket.once('call.accepted', ({ roomId, token }) =>
-    connectToRoom(roomId, token)
-  );
+  socket.once('call.accepted', ({ roomId, token }) => {
+    socket.emit('customer.connected');
+    return connectToRoom(roomId, token);
+  });
 }
 
 function onCallbackRequested() {
@@ -48359,10 +48379,7 @@ function connectToRoom(name, token) {
     connectOptions.tracks = previewTracks;
   }
 
-  return Video.connect(
-    token,
-    connectOptions
-  )
+  return Video.connect(token, connectOptions)
     .then(roomJoined)
     .catch(error => console.error('Could not connect: ', error.message));
 }

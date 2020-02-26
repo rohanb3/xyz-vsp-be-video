@@ -92,7 +92,7 @@ window.statisticsCallbacks = statisticsCallbacks;
 subscribeToControls();
 
 socket.on(SOCKET_EVENTS.CONNECT, () => {
-  socket.emit(SOCKET_EVENTS.AUTHENTICATION, { identity });
+  socket.emit(SOCKET_EVENTS.AUTHENTICATION, { identity, token: 'mocked-operator-user-token' });
   socket.on(SOCKET_EVENTS.AUTHENTICATED, onAuthenticated);
   socket.on(SOCKET_EVENTS.UNAUTHORIZED, onUnauthorized);
 });

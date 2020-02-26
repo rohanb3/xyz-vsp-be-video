@@ -1,4 +1,5 @@
 const twilio = require('@/services/twilio');
+const logger = require('@/services/logger')(module);
 const publicApi = require('@/services/httpServices/publicApiRequests');
 const identityApi = require('@/services/httpServices/identityApiRequests');
 
@@ -15,19 +16,11 @@ async function authenticateOperator(
   callback
 ) {
   const { identity, token } = data;
+  logger.debug('Operator: authentification', identity);
 
   if (!identity) {
     return callback(new Error(NO_IDENTITY));
   }
-
-  const tokenValid = await identityApi.checkTokenValidity(token);
-
-  if (!tokenValid) {
-    return callback(new Error(TOKEN_INVALID));
-  }
-
-  const companyId = await identityApi.getCompanyIdByUserId(identity);
-  const tenantId = await publicApi.getTenantIdByCompanyId(companyId);
 
   const oldSocket = await connectionsHeap.get(identity);
   if (oldSocket) {
@@ -35,11 +28,29 @@ async function authenticateOperator(
       !oldSocket.activeCallId ? oldSocket.socketId : socket.id
     );
   }
+
+  try {
+    const profile = await identityApi.getUserProfile(token);
+    const tenantId = await publicApi.getTenantIdByCompanyId(profile.companyId);
+
+    socket.identity = identity;
+    socket.securityToken = token;
+    socket.securityTokenLastChecked = new Date().getTime();
+    socket.tenantId = tenantId;
+    socket.role = profile.role;
+    socket.permissions = profile.scopes || [];
+
+    logger.debug(
+      'Operator: authentification data',
+      profile.role,
+      profile.scopes
+    );
+  } catch (e) {
+    logger.debug('Operator: authentification error', JSON.stringify(e));
+    return callback(new Error(TOKEN_INVALID));
+  }
+
   const twilioToken = twilio.getToken(identity);
-
-  socket.identity = identity;
-  socket.tenantId = tenantId;
-
   callback(null, twilioToken);
 }
 
@@ -53,22 +64,80 @@ async function authenticateCustomer(socket, data, callback) {
     return callback(new Error(NO_DEVICE_ID));
   }
 
-  const tokenValid = await identityApi.checkTokenValidity(token);
+  try {
+    const profile = await identityApi.getUserProfile(token);
+    const tenantId = await publicApi.getTenantIdByCompanyId(profile.companyId);
 
-  if (!tokenValid) {
+    socket.identity = identity;
+    socket.deviceId = deviceId;
+    socket.tenantId = tenantId;
+    socket.securityToken = token;
+    socket.securityTokenLastChecked = new Date().getTime();
+    socket.permissions = profile.scopes || [];
+
+    logger.debug(
+      'Customer: authentification data',
+      profile.role,
+      profile.scopes
+    );
+  } catch (e) {
+    logger.debug('Customer: authentification error', JSON.stringify(e));
     return callback(new Error(TOKEN_INVALID));
   }
 
-  const companyId = await identityApi.getCompanyIdByUserId(identity);
-  const tenantId = await publicApi.getTenantIdByCompanyId(companyId);
-
   const twilioToken = twilio.getToken(identity);
-  socket.identity = identity;
-  socket.deviceId = deviceId;
-  socket.tenantId = tenantId;
-
   callback(null, twilioToken);
+}
+
+async function verifyConnectionToken(connection) {
+  logger.debug('Connection: verify token', connection.identity);
+
+  const now = new Date().getTime();
+
+  if (now - (connection.securityTokenLastChecked || 0) > 1000 * 60) {
+    try {
+      const profile = await identityApi.getUserProfile(
+        connection.securityToken
+      );
+
+      connection.securityTokenLastChecked = new Date().getTime();
+      connection.permissions = profile.scopes || [];
+
+      logger.debug('Connection: token is correct', connection.identity);
+    } catch (e) {
+      logger.debug('Connection: invalid token', connection.identity);
+      return false;
+    }
+  } else {
+    logger.debug(
+      'Connection: token was verified less than 1 minute ago',
+      connection.identity
+    );
+  }
+
+  return true;
+}
+
+function checkConnectionPermission(connection, permission) {
+  if (!(connection.permissions || []).includes(permission)) {
+    logger.debug(
+      'Connection: permission denied',
+      connection.identity,
+      permission
+    );
+    return false;
+  }
+
+  logger.debug(
+    'Connection: check permission successfull',
+    connection.identity,
+    permission
+  );
+  return true;
 }
 
 exports.authenticateOperator = authenticateOperator;
 exports.authenticateCustomer = authenticateCustomer;
+
+exports.verifyConnectionToken = verifyConnectionToken;
+exports.checkConnectionPermission = checkConnectionPermission;

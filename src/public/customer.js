@@ -9,17 +9,36 @@ const {
 const io = require('socket.io-client');
 
 const isLocal = typeof prompt('Is local?') === 'string';
+console.log('isLocal', isLocal);
+
 const isDev = !isLocal && typeof prompt('Is dev?') === 'string';
+console.log('isDev', isDev);
+
 const isStage = !isLocal && !isDev && typeof prompt('Is stage?') === 'string';
+console.log('isStage', isStage);
+
 const isProd =
   !isLocal &&
   !isDev &&
   !isStage &&
   typeof prompt('Is production?') === 'string';
-const deviceId = prompt('Tell me device id') || 'new-device-id';
-const identity = prompt('Tell me your identity') || 'Joey';
+console.log('isProd', isProd);
+
+const deviceId =
+  prompt('Tell me device id ("new-device-id" by default)') || 'new-device-id';
+console.log('deviceId', deviceId);
+
+const identity = prompt('Tell me your identity ("Joey" by default)') || 'Joey';
+console.log('identity', identity);
+
+const securityToken =
+  prompt('Security Token ("mocked-device-user-token" by default)') ||
+  'mocked-device-user-token';
+console.log('securityToken', securityToken);
+
 const shouldConnectToDeviceManagement =
   typeof prompt('Conect to device management?') === 'string';
+console.log('shouldConnectToDeviceManagement', shouldConnectToDeviceManagement);
 
 let deviceManagementHost = 'https://dev-portal.xyzvsp.com';
 let socketUrl = 'wss://dev-portal.xyzvsp.com/customers';
@@ -71,7 +90,7 @@ let globalToken = null;
 let roomId = null;
 
 socket.on('connect', () => {
-  socket.emit('authentication', { identity, deviceId });
+  socket.emit('authentication', { identity, deviceId, token: securityToken });
   socket.on('authenticated', token => {
     console.log('authenticated');
     onTokenReceived({ token });
@@ -142,9 +161,10 @@ function requestConnection() {
     document.getElementById('button-join').style.display = 'none';
     document.getElementById('button-leave').style.display = 'inline';
   });
-  socket.once('call.accepted', ({ roomId, token }) =>
-    connectToRoom(roomId, token)
-  );
+  socket.once('call.accepted', ({ roomId, token }) => {
+    socket.emit('customer.connected');
+    return connectToRoom(roomId, token);
+  });
 }
 
 function onCallbackRequested() {
@@ -180,10 +200,7 @@ function connectToRoom(name, token) {
     connectOptions.tracks = previewTracks;
   }
 
-  return Video.connect(
-    token,
-    connectOptions
-  )
+  return Video.connect(token, connectOptions)
     .then(roomJoined)
     .catch(error => console.error('Could not connect: ', error.message));
 }
