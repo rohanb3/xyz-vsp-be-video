@@ -783,7 +783,9 @@ class OperatorsRoom {
 
     logger.debug(
       `Operators: emitOperatorsActivityChanged to ${groupName}`,
-      data
+      data,
+      'members count',
+      await this.getGroupMembersCount(groupName),
     );
   }
 
@@ -842,7 +844,7 @@ class OperatorsRoom {
   }
 
   /*
-    emitToLocalGroup is used for emitting event 
+    emitToLocalGroup is used for emitting event
     only for connections, connected to current
     instance of service. To emit event to all connections
     via RedisAdapter, use common this.operators.to(group).emit(type,data)
