@@ -30,7 +30,7 @@ server.on('connection', connection => {
 });
 
 process.on('unhandledRejection', (error = {}) => {
-  logger.error('unhandledRejection', error, error.message);
+  logger.error('unhandledRejection', error, error.message, error.stack);
 });
 
 process.on('SIGINT', () => shutDown(server, connections));
