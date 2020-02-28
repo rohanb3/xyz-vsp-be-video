@@ -1265,6 +1265,10 @@ describe('OperatorsRoom: ', () => {
         .fn()
         .mockResolvedValue(expectedInfo);
 
+      operatorsRoom.getGroupMembersCount = jest
+        .fn()
+        .mockResolvedValue(0);
+
       operatorsRoom.getRealtimeDashboardGroupName = jest.fn(
         () => realtimeDashboardGroupName
       );
