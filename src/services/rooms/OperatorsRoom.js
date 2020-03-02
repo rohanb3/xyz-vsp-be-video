@@ -110,7 +110,13 @@ class OperatorsRoom {
 
   disconnectOldSocket(socketId) {
     logger.debug('Operator: disconnectOldSocket was called', socketId);
-    const connectedOperator = this.getConnectedOperator(socketId);
+    const connectedOperator = this.operators.to(socketId);
+    logger.debug(
+      'Operator: disconnectOldSocket connectedOperator is',
+      connectedOperator
+    );
+
+    //this.getConnectedOperator(socketId);
     if (connectedOperator) {
       logger.debug(
         'Operator:disconnectOldSocket connectedOperator is',
@@ -603,12 +609,12 @@ class OperatorsRoom {
       );
 
       logger.debug(
-        'Operator: realtime dashboard waiting calls info emited to non empty group',
+        'Operator: realtime dashboard waiting calls info emitted to non empty group',
         groupName
       );
     } else {
       logger.debug(
-        "Operator: realtime dashboard waiting calls info didn't emited because group is empty",
+        "Operator: realtime dashboard waiting calls info didn't emitted because group is empty",
         groupName
       );
     }
