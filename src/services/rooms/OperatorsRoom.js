@@ -109,9 +109,19 @@ class OperatorsRoom {
   }
 
   disconnectOldSocket(socketId) {
+    logger.debug('Operator: disconnectOldSocket was called', socketId);
     const connectedOperator = this.getConnectedOperator(socketId);
     if (connectedOperator) {
+      logger.debug(
+        'Operator:disconnectOldSocket connectedOperator is',
+        connectedOperator
+      );
       connectedOperator.emit(CONNECTION_DROPPED);
+    } else {
+      logger.error(
+        'Operator: disconnectOldSocket error: connectedOperator was not found!',
+        socketId
+      );
     }
   }
 
@@ -785,7 +795,7 @@ class OperatorsRoom {
       `Operators: emitOperatorsActivityChanged to ${groupName}`,
       data,
       'members count',
-      await this.getGroupMembersCount(groupName),
+      await this.getGroupMembersCount(groupName)
     );
   }
 

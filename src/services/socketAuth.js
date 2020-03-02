@@ -24,8 +24,13 @@ async function authenticateOperator(
 
   const oldSocket = await connectionsHeap.get(identity);
   if (oldSocket) {
-    disconnectCallBack(
-      !oldSocket.activeCallId ? oldSocket.socketId : socket.id
+    const socketId = !oldSocket.activeCallId ? oldSocket.socketId : socket.id;
+    logger.debug('Operator: disconnectCallBack will be called with', socketId);
+
+    disconnectCallBack(socketId);
+  } else {
+    logger.debug(
+      "Operator: disconnectCallBack was not called because oldSocket doesn't exist"
     );
   }
 
