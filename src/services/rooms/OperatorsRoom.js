@@ -110,13 +110,13 @@ class OperatorsRoom {
 
   disconnectOldSocket(socketId) {
     logger.debug('Operator: disconnectOldSocket was called', socketId);
-    const connectedOperator = this.operators.to(socketId);
+    const connectedOperator = this.getConnectedOperator(socketId);
+
     logger.debug(
       'Operator: disconnectOldSocket connectedOperator is',
       connectedOperator
     );
 
-    //this.getConnectedOperator(socketId);
     if (connectedOperator) {
       logger.debug(
         'Operator:disconnectOldSocket connectedOperator is',
