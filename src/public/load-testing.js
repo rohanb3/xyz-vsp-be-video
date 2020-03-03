@@ -19,13 +19,15 @@ const {
 const isLocal = typeof window.prompt('Is local?') === 'string';
 const now = Date.now();
 const socketUrl = '/operators';
-const socketOptions = { transports: ['websocket'] };
+const identity = `${now}-operator-0`;
+const socketOptions = {
+  transports: ['websocket'],
+};
 
 if (!isLocal) {
   socketOptions.path = '/api/video/socket.io';
 }
 
-const identity = `${now}-operator-0`;
 const socket = io(socketUrl, socketOptions);
 
 let isStarted = false;
@@ -92,7 +94,10 @@ window.statisticsCallbacks = statisticsCallbacks;
 subscribeToControls();
 
 socket.on(SOCKET_EVENTS.CONNECT, () => {
-  socket.emit(SOCKET_EVENTS.AUTHENTICATION, { identity, token: 'mocked-operator-user-token' });
+  socket.emit(SOCKET_EVENTS.AUTHENTICATION, {
+    identity,
+    token: 'mocked-operator-user-token',
+  });
   socket.on(SOCKET_EVENTS.AUTHENTICATED, onAuthenticated);
   socket.on(SOCKET_EVENTS.UNAUTHORIZED, onUnauthorized);
 });
