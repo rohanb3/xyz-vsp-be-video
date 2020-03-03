@@ -285,18 +285,26 @@ function addActiveCallIdToConnections(call) {
   const { id, acceptedBy } = call;
   return connectionsHeap
     .update(acceptedBy, { activeCallId: id })
-    .catch((err) => {
-      logger.error('Connection not found during addActiveCallIdToConnections()', acceptedBy);
+    .catch(err => {
+      logger.error(
+        'Connection not found during addActiveCallIdToConnections()',
+        acceptedBy,
+        err
+      );
     })
-    .then(() => call)
+    .then(() => call);
 }
 
 function removeActiveCallIdFromConnections(call) {
   const { acceptedBy } = call;
   return connectionsHeap
     .update(acceptedBy, { activeCallId: null })
-    .catch((err) => {
-      logger.error('Connection not found during removeActiveCallIdFromConnections()', acceptedBy);
+    .catch(err => {
+      logger.error(
+        'Connection not found during removeActiveCallIdFromConnections()',
+        acceptedBy,
+        err
+      );
     })
     .then(() => call);
 }
