@@ -39,13 +39,7 @@ async function authenticateOperator(
       );
     }
   } catch (ex) {
-    logger.error(
-      'disconnectCallBack error',
-      JSON.stringify(ex),
-      Object.keys(ex),
-      ex && ex.trace,
-      ex && ex.message
-    );
+    logger.error('disconnectCallBack error', ex);
   }
 
   try {
