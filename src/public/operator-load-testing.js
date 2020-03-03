@@ -39,7 +39,10 @@ function connectToSocket() {
   const connectDelay = userNumber * connectionDelay;
   setTimeout(() => {
     startConnectingAt = getNowSeconds();
-    socket = window.io(socketUrl, socketOptions);
+    socket = window.io(socketUrl, {
+      ...socketOptions,
+      query: `identity=${identity}`,
+    });
 
     socket.once(SOCKET_EVENTS.CONNECT, () => {
       const now = getNowSeconds();
