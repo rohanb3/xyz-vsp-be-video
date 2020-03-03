@@ -633,23 +633,33 @@ class OperatorsRoom {
       });
   }
 
-  checkAndUnmapSocketIdentityFromId(socket) {
-    return socket.identity
-      ? connectionsHeap
-          .get(socket.identity)
-          .then(heapSocket => {
-            if (heapSocket.socketId === socket.id) {
-              return connectionsHeap.remove(socket.identity);
-            }
-          })
-          .catch(err =>
-            logger.error(
-              'Operator: unmapping identity from id failed',
-              socket.identity,
-              err
-            )
-          )
-      : Promise.resolve();
+  async checkAndUnmapSocketIdentityFromId(socket) {
+    try {
+      if (socket.identity) {
+        const heapSocket = await connectionsHeap.get(socket.identity);
+
+        logger.debug(
+          'Operator: unmapping identity from id heapSocket founded, heapSocket:',
+          { heapSocket },
+          'socket:',
+          { socket }
+        );
+
+        if (heapSocket.socketId === socket.id) {
+          logger.debug(
+            'Operator: unmapping identity from id heapSocket.socketId === socket.id'
+          );
+
+          return connectionsHeap.remove(socket.identity);
+        }
+      }
+    } catch (ex) {
+      logger.error(
+        'Operator: unmapping identity from id failed',
+        socket.identity,
+        ex
+      );
+    }
   }
 
   getSocketIdByIdentity(identity) {
