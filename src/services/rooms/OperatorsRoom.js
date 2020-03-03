@@ -110,28 +110,8 @@ class OperatorsRoom {
 
   disconnectOldSocket(socketId) {
     logger.debug('Operator: disconnectOldSocket was called', socketId);
-    // const connectedOperator = this.getConnectedOperator(socketId);
-
     this.operators.to(socketId).emit(CONNECTION_DROPPED);
     logger.debug('Operator:disconnectOldSocket was emitted to', socketId);
-
-    // logger.debug(
-    //   'Operator: disconnectOldSocket connectedOperator is',
-    //   connectedOperator
-    // );
-
-    // if (connectedOperator) {
-    //   logger.debug(
-    //     'Operator:disconnectOldSocket connectedOperator is',
-    //     connectedOperator
-    //   );
-    //   connectedOperator.emit(CONNECTION_DROPPED);
-    // } else {
-    //   logger.error(
-    //     'Operator: disconnectOldSocket error: connectedOperator was not found!',
-    //     socketId
-    //   );
-    // }
   }
 
   onOperatorConnected(operator) {
@@ -692,13 +672,6 @@ class OperatorsRoom {
   }
 
   getConnectedOperator(id) {
-    logger.debug('Operator: getConnectedOperator was called with', {
-      id,
-      connected: Object.keys(
-        (this.operators && this.operators.connected) || { empty: 'empty' }
-      ),
-    });
-
     return (this.operators.connected || {})[id];
   }
 

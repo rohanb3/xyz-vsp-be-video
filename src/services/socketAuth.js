@@ -42,7 +42,6 @@ async function authenticateOperator(
     logger.error(
       'disconnectCallBack error',
       JSON.stringify(ex),
-      Object.keys(ex),
       ex && ex.trace,
       ex && ex.message
     );
