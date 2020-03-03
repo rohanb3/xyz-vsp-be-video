@@ -691,7 +691,9 @@ class OperatorsRoom {
   getConnectedOperator(id) {
     logger.debug('Operator: getConnectedOperator was called with', {
       id,
-      operators: this.operators,
+      connected: Object.keys(
+        this.operators ? this.operators.connected : { empty: 'empty' }
+      ),
     });
 
     return (this.operators.connected || {})[id];
