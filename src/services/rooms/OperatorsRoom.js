@@ -783,6 +783,8 @@ class OperatorsRoom {
         groupName,
         error
       );
+
+      throw error;
     }
   }
 
