@@ -110,19 +110,8 @@ class OperatorsRoom {
 
   disconnectOldSocket(socketId) {
     logger.debug('Operator: disconnectOldSocket was called', socketId);
-    const connectedOperator = this.getConnectedOperator(socketId);
-    if (connectedOperator) {
-      logger.debug(
-        'Operator:disconnectOldSocket connectedOperator is',
-        connectedOperator
-      );
-      connectedOperator.emit(CONNECTION_DROPPED);
-    } else {
-      logger.error(
-        'Operator: disconnectOldSocket error: connectedOperator was not found!',
-        socketId
-      );
-    }
+    this.operators.to(socketId).emit(CONNECTION_DROPPED);
+    logger.debug('Operator:disconnectOldSocket was emitted to', socketId);
   }
 
   onOperatorConnected(operator) {
@@ -603,12 +592,12 @@ class OperatorsRoom {
       );
 
       logger.debug(
-        'Operator: realtime dashboard waiting calls info emited to non empty group',
+        'Operator: realtime dashboard waiting calls info emitted to non empty group',
         groupName
       );
     } else {
       logger.debug(
-        "Operator: realtime dashboard waiting calls info didn't emited because group is empty",
+        "Operator: realtime dashboard waiting calls info didn't emitted because group is empty",
         groupName
       );
     }
@@ -627,23 +616,38 @@ class OperatorsRoom {
       });
   }
 
-  checkAndUnmapSocketIdentityFromId(socket) {
-    return socket.identity
-      ? connectionsHeap
-          .get(socket.identity)
-          .then(heapSocket => {
-            if (heapSocket.socketId === socket.id) {
-              return connectionsHeap.remove(socket.identity);
-            }
-          })
-          .catch(err =>
-            logger.error(
-              'Operator: unmapping identity from id failed',
-              socket.identity,
-              err
-            )
-          )
-      : Promise.resolve();
+  async checkAndUnmapSocketIdentityFromId(socket) {
+    try {
+      if (socket.identity) {
+        const heapSocket = await connectionsHeap.get(socket.identity);
+
+        logger.debug(
+          'Operator: unmapping identity from id heapSocket founded, heapSocket:',
+          { heapSocket },
+          'socket:',
+          { socket }
+        );
+
+        if (heapSocket.socketId === socket.id) {
+          logger.debug(
+            'Operator: unmapping identity from id heapSocket.socketId === socket.id'
+          );
+
+          return connectionsHeap.remove(socket.identity);
+        }
+      } else {
+        logger.error(
+          'Operator: unmapping identity from id failed, no identity in socket:',
+          socket
+        );
+      }
+    } catch (ex) {
+      logger.error(
+        'Operator: unmapping identity from id failed',
+        socket.identity,
+        ex
+      );
+    }
   }
 
   getSocketIdByIdentity(identity) {
@@ -779,6 +783,8 @@ class OperatorsRoom {
         groupName,
         error
       );
+
+      throw error;
     }
   }
 

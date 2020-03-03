@@ -22,16 +22,24 @@ async function authenticateOperator(
     return callback(new Error(NO_IDENTITY));
   }
 
-  const oldSocket = await connectionsHeap.get(identity);
-  if (oldSocket) {
-    const socketId = !oldSocket.activeCallId ? oldSocket.socketId : socket.id;
-    logger.debug('Operator: disconnectCallBack will be called with', socketId);
+  try {
+    const oldSocket = await connectionsHeap.get(identity);
+    if (oldSocket) {
+      const socketId = !oldSocket.activeCallId ? oldSocket.socketId : socket.id;
+      logger.debug(
+        'disconnectCallBack will be called with',
+        socketId,
+        oldSocket
+      );
 
-    disconnectCallBack(socketId);
-  } else {
-    logger.debug(
-      "Operator: disconnectCallBack was not called because oldSocket doesn't exist"
-    );
+      disconnectCallBack(socketId);
+    } else {
+      logger.debug(
+        "disconnectCallBack was not called because oldSocket doesn't exist"
+      );
+    }
+  } catch (ex) {
+    logger.error('disconnectCallBack error', ex);
   }
 
   try {
