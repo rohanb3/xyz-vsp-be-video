@@ -652,6 +652,11 @@ class OperatorsRoom {
 
           return connectionsHeap.remove(socket.identity);
         }
+      } else {
+        logger.error(
+          'Operator: unmapping identity from id failed, no identity in socket:',
+          socket
+        );
       }
     } catch (ex) {
       logger.error(
@@ -684,6 +689,11 @@ class OperatorsRoom {
   }
 
   getConnectedOperator(id) {
+    logger.debug('Operator: getConnectedOperator was called with', {
+      id,
+      operators: this.operators,
+    });
+
     return (this.operators.connected || {})[id];
   }
 

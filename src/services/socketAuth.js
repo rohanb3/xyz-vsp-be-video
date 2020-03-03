@@ -26,7 +26,11 @@ async function authenticateOperator(
     const oldSocket = await connectionsHeap.get(identity);
     if (oldSocket) {
       const socketId = !oldSocket.activeCallId ? oldSocket.socketId : socket.id;
-      logger.debug('disconnectCallBack will be called with', socketId);
+      logger.debug(
+        'disconnectCallBack will be called with',
+        socketId,
+        oldSocket
+      );
 
       disconnectCallBack(socketId);
     } else {
@@ -35,7 +39,13 @@ async function authenticateOperator(
       );
     }
   } catch (ex) {
-    logger.error('disconnectCallBack error', JSON.stringify(ex));
+    logger.error(
+      'disconnectCallBack error',
+      JSON.stringify(ex),
+      Object.keys(ex),
+      ex && ex.trace,
+      ex && ex.message
+    );
   }
 
   try {
