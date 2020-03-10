@@ -1,7 +1,7 @@
 const moment = require('moment');
 
 function getDifferenceFromTo(from, to) {
-  return moment(to).diff(moment(from), 's');
+  return from && to ? moment(to).diff(moment(from), 's') : 0;
 }
 
 function formatTimeToFilter(time) {

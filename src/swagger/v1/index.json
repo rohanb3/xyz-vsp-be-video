@@ -152,6 +152,62 @@
         }
       }
     },
+    "/api/video/dashboard/durations": {
+      "get": {
+        "summary": "Get maximum and average waiting and call durations",
+        "produces": ["application/json"],
+        "tags": ["DashboardDurations"],
+        "parameters": [
+          {
+            "name": "tenantId",
+            "description": "Operator Id",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "from",
+            "description": "Date and time to start from",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "to",
+            "description": "Date and time to finish at",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "callType",
+            "description": "Type of call, one of: [call.video, call.audio]",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "callStatus",
+            "description": "Status of call, one of: [call.missed, call.answered]",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/DashboardDurations"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
     "/api/video/active-call-salesrep/{operatorId}": {
       "get": {
         "summary": "Get salesRep by active operator call",
@@ -343,6 +399,27 @@
         "salesRepId": {
           "type": "string"
         }
+      }
+    },
+    "DashboardDurations": {
+      "type": "object",
+      "required": [
+        "total",
+        "maxCallDuration",
+        "averageCallDuration",
+        "totalCallDuration",
+        "maxWaitingDuration",
+        "averageWaitingDuration",
+        "totalWaitingDuration"
+      ],
+      "properties": {
+        "total": { "type": "number" },
+        "maxCallDuration": { "type": "number" },
+        "averageCallDuration": { "type": "number" },
+        "totalCallDuration": { "type": "number" },
+        "maxWaitingDuration": { "type": "number" },
+        "averageWaitingDuration": { "type": "number" },
+        "totalWaitingDuration": { "type": "number" }
       }
     }
   }

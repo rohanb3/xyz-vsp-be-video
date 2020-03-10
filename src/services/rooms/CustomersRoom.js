@@ -88,7 +88,8 @@ class CustomersRoom {
       'Customer authenticated',
       customer.id,
       customer.identity,
-      customer.deviceId
+      customer.deviceId,
+      customer.tenantId
     );
     return this.getSocketIdByDeviceId(customer.deviceId)
       .then(socketId => {
@@ -185,7 +186,7 @@ class CustomersRoom {
     return this.getSocketIdByDeviceId(deviceId)
       .then(socketId => this.getCustomer(socketId, id, acceptedBy))
       .then(({ connectedCustomer, callData } = {}) => {
-        return repeatUntilDelivered(
+        return connectedCustomer && repeatUntilDelivered(
           () => this.emitCallAccepting(connectedCustomer, callData),
           delivered => {
             connectedCustomer.once(CUSTOMER_CONNECTED, delivered);

@@ -1,4 +1,5 @@
 /* eslint-disable no-use-before-define */
+const logger = require('@/services/logger')(module);
 const pendingCallsQueues = require('@/services/calls/pendingCallsQueue');
 const { activeCallsHeap } = require('@/services/calls/activeCallsHeap');
 const {
@@ -23,11 +24,12 @@ const {
   CALLBACK_REQUESTED,
   CALLBACK_ACCEPTED,
   CALLBACK_DECLINED,
+  CALL_ANSWERED,
   statuses,
   callTypes,
 } = require('@/constants/calls');
 const callsErrorHandler = require('@/services/calls/errorHandler');
-const { formattedTimestamp } = require('@/services/time');
+const time = require('@/services/time');
 
 function requestCall({
   requestedBy,
@@ -38,7 +40,7 @@ function requestCall({
 }) {
   const call = {
     requestedBy,
-    requestedAt: formattedTimestamp(),
+    requestedAt: time.formattedTimestamp(),
     deviceId,
     salesRepId,
     callbackEnabled,
@@ -63,27 +65,46 @@ function takeCall(tenantId) {
   return pendingCallsQueues.getPendingCallsQueue(tenantId).dequeue();
 }
 //TODO
-function acceptCall(operator) {
+async function acceptCall(operator) {
   const updates = {
     acceptedBy: operator.identity,
-    acceptedAt: formattedTimestamp(),
+    acceptedAt: time.formattedTimestamp(),
   };
   const call = {
     ...updates,
   };
-  return takeCall(operator.tenantId)
-    .then(callFromQueue => {
-      Object.assign(call, callFromQueue);
-      return activeCallsHeap.add(call.id, call);
-    })
-    .then(() => checkIsCallStillActive(call.id))
-    .then(() => twilio.ensureRoom(call.id))
-    .then(() => checkIsCallStillActive(call.id))
-    .then(() => callsDBClient.updateById(call.id, updates))
-    .then(() => checkIsCallStillActive(call.id))
-    .then(() => pubSubChannel.publish(CALL_ACCEPTED, call))
-    .then(() => addActiveCallIdToConnections(call))
-    .catch(err => callsErrorHandler.onAcceptCallFailed(err, call.id));
+
+  const callFromQueue = await takeCall(operator.tenantId);
+  logger.debug('call.accept.call.from.pending.queue.taken', callFromQueue);
+  const callFromDB = await callsDBClient.getById(callFromQueue.id);
+  logger.debug('call.accept.call.from.db.taken', callFromDB);
+  const { requestedAt } = callFromDB || {};
+  const updateMixin = {
+    callStatus: CALL_ANSWERED,
+    waitingDuration: time.getDifferenceFromTo(requestedAt, updates.acceptedAt),
+  };
+
+  Object.assign(call, callFromQueue, updateMixin);
+  Object.assign(updates, updateMixin);
+
+  try {
+    await activeCallsHeap.add(call.id, call);
+    logger.debug('call.accept.added.to.active.calls.heap', call.id, call);
+    await checkIsCallStillActive(call.id);
+    await twilio.ensureRoom(call.id);
+    await checkIsCallStillActive(call.id);
+    await callsDBClient.updateById(call.id, updates);
+    logger.debug('call.accept.updated.in.db', call.id, updates);
+    await checkIsCallStillActive(call.id);
+    await pubSubChannel.publish(CALL_ACCEPTED, call);
+    logger.debug('call.accept.publish.event.in.redis', CALL_ACCEPTED, call);
+    const res = await addActiveCallIdToConnections(call);
+    logger.debug('call.accept.added.id.to.connections', call);
+    return res;
+  } catch (err) {
+    logger.debug('call.accept.failed', err);
+    return callsErrorHandler.onAcceptCallFailed(err, call.id);
+  }
 }
 
 function requestCallback(callId) {
@@ -94,7 +115,7 @@ function requestCallback(callId) {
     .then(checkCallbackAvailability)
     .then(callFromDB => {
       const callback = {
-        requestedAt: formattedTimestamp(),
+        requestedAt: time.formattedTimestamp(),
       };
 
       const callbacks = callFromDB.callbacks
@@ -119,7 +140,7 @@ function acceptCallback(callId) {
     .take(callId)
     .then(callFromHeap => {
       const callbacks = [...callFromHeap.callbacks];
-      callbacks[callbacks.length - 1].acceptedAt = formattedTimestamp();
+      callbacks[callbacks.length - 1].acceptedAt = time.formattedTimestamp();
       Object.assign(call, callFromHeap, { callbacks });
       return activeCallsHeap.add(callId, call);
     })
@@ -136,7 +157,7 @@ function declineCallback(callId, reason = '') {
     .take(callId)
     .then(callFromHeap => {
       const callbacks = [...callFromHeap.callbacks];
-      callbacks[callbacks.length - 1].declinedAt = formattedTimestamp();
+      callbacks[callbacks.length - 1].declinedAt = time.formattedTimestamp();
       Object.assign(call, callFromHeap, { callbacks });
     })
     .then(() => pubSubChannel.publish(CALLBACK_DECLINED, { ...call, reason }))
@@ -206,8 +227,28 @@ function getCallsInfo(tenantId) {
   return pendingCallsQueues.getPendingCallsQueue(tenantId).getQueueInfo();
 }
 
+function getPendingCalls(tenantId) {
+  return pendingCallsQueues.getPendingCallsQueue(tenantId).getItems();
+}
+
 function subscribeToCallsLengthChanging(listener) {
   return pendingCallsQueues.subscribeOnQueuesChanges(listener);
+}
+
+function subscribeToActiveCallsHeapAdding(listener) {
+  return activeCallsHeap.subscribeToItemAdding(listener);
+}
+
+function subscribeToActiveCallsHeapTaking(listener) {
+  return activeCallsHeap.subscribeToItemTaking(listener);
+}
+
+function unsubscribeFromActiveCallsHeapAdding(listener) {
+  return activeCallsHeap.unsubscribeFromItemAdding(listener);
+}
+
+function unsubscribeFromActiveCallsHeapTaking(listener) {
+  return activeCallsHeap.unsubscribeFromItemTaking(listener);
 }
 
 function unsubscribeFromCallsLengthChanging(listener) {
@@ -244,6 +285,13 @@ function addActiveCallIdToConnections(call) {
   const { id, acceptedBy } = call;
   return connectionsHeap
     .update(acceptedBy, { activeCallId: id })
+    .catch(err => {
+      logger.error(
+        'Connection not found during addActiveCallIdToConnections()',
+        acceptedBy,
+        err
+      );
+    })
     .then(() => call);
 }
 
@@ -251,7 +299,20 @@ function removeActiveCallIdFromConnections(call) {
   const { acceptedBy } = call;
   return connectionsHeap
     .update(acceptedBy, { activeCallId: null })
+    .catch(err => {
+      logger.error(
+        'Connection not found during removeActiveCallIdFromConnections()',
+        acceptedBy,
+        err
+      );
+    })
     .then(() => call);
+}
+
+async function getActiveCallsByTenantId(tenantId) {
+  const calls = await activeCallsHeap.getAll();
+  const tenantCalls = calls.filter((call = {}) => call.tenantId === tenantId);
+  return tenantCalls;
 }
 
 exports.requestCall = requestCall;
@@ -263,6 +324,8 @@ exports.declineCallback = declineCallback;
 exports.getOldestCall = getOldestCall;
 exports.getPendingCallsLength = getPendingCallsLength;
 exports.getCallsInfo = getCallsInfo;
+exports.getPendingCalls = getPendingCalls;
+exports.getActiveCallsByTenantId = getActiveCallsByTenantId;
 
 exports.subscribeToCallRequesting = pubSubChannel.subscribe.bind(
   null,
@@ -314,4 +377,10 @@ exports.unsubscribeFromCallbackDeclining = pubSubChannel.unsubscribe.bind(
   null,
   CALLBACK_DECLINED
 );
+
+exports.subscribeToActiveCallsHeapAdding = subscribeToActiveCallsHeapAdding;
+exports.subscribeToActiveCallsHeapTaking = subscribeToActiveCallsHeapTaking;
+exports.unsubscribeFromActiveCallsHeapAdding = unsubscribeFromActiveCallsHeapAdding;
+exports.unsubscribeFromActiveCallsHeapTaking = unsubscribeFromActiveCallsHeapTaking;
+
 exports.unsubscribeFromCallsLengthChanging = unsubscribeFromCallsLengthChanging;

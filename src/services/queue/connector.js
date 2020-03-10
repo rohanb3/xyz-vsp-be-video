@@ -5,13 +5,21 @@ const errors = require('./errors');
 const setKey = (queueName, key) => client.lpush(queueName, key);
 const takeOldestKey = queueName => client.rpop(queueName);
 const removeKey = (queueName, key) => client.lrem(queueName, 1, key);
-const getOldestKey = queueName => client.lrange(queueName, -1, -1).then((item) => {
-  const isArray = Array.isArray(item);
-  return isArray ? item[0] : item;
-});
+const getOldestKey = queueName =>
+  client.lrange(queueName, -1, -1).then(item => {
+    const isArray = Array.isArray(item);
+    return isArray ? item[0] : item;
+  });
+const getKeys = queueName =>
+  client.lrange(queueName, 0, -1).then(item => {
+    const isArray = Array.isArray(item);
+    return isArray ? item : [item];
+  });
 
-const rejectWithNotFound = key => Promise.reject(new errors.NotFoundItemError(key));
-const rejectWithOverride = key => Promise.reject(new errors.OverrideItemError(key));
+const rejectWithNotFound = key =>
+  Promise.reject(new errors.NotFoundItemError(key));
+const rejectWithOverride = key =>
+  Promise.reject(new errors.OverrideItemError(key));
 const rejectWithEmptyQueue = () => Promise.reject(new errors.EmptyQueueError());
 
 class QueueConnector {
@@ -24,26 +32,33 @@ class QueueConnector {
       return Promise.resolve(false);
     }
     return this.isExist(key)
-      .then(exist => (exist ? rejectWithOverride(key) : setKey(this.queueName, key)))
-      .then(() => storage
-        .set(key, value)
-        .catch(err => removeKey(this.queueName, key).then(() => Promise.reject(err))));
+      .then(exist =>
+        exist ? rejectWithOverride(key) : setKey(this.queueName, key)
+      )
+      .then(() =>
+        storage
+          .set(key, value)
+          .catch(err =>
+            removeKey(this.queueName, key).then(() => Promise.reject(err))
+          )
+      );
   }
 
   dequeue() {
     let oldestKey = null;
     return takeOldestKey(this.queueName)
-      .then((key) => {
+      .then(key => {
         if (!key) {
           return rejectWithEmptyQueue();
         }
         oldestKey = key;
         return storage.take(key);
       })
-      .catch((err) => {
-        const error = err instanceof storage.errors.NotFoundItemError
-          ? new errors.NotFoundItemError(oldestKey)
-          : err;
+      .catch(err => {
+        const error =
+          err instanceof storage.errors.NotFoundItemError
+            ? new errors.NotFoundItemError(oldestKey)
+            : err;
         return Promise.reject(error);
       });
   }
@@ -53,21 +68,41 @@ class QueueConnector {
       return Promise.resolve(null);
     }
     return this.isExist(key)
-      .then(exist => (exist ? removeKey(this.queueName, key) : rejectWithNotFound(key)))
-      .then(() => storage.take(key).catch((err) => {
-        const error = err instanceof storage.errors.NotFoundItemError
-          ? new errors.NotFoundItemError(key)
-          : err;
-        return Promise.reject(error);
-      }));
+      .then(exist =>
+        exist ? removeKey(this.queueName, key) : rejectWithNotFound(key)
+      )
+      .then(() =>
+        storage.take(key).catch(err => {
+          const error =
+            err instanceof storage.errors.NotFoundItemError
+              ? new errors.NotFoundItemError(key)
+              : err;
+          return Promise.reject(error);
+        })
+      );
+  }
+
+  getItems() {
+    return getKeys(this.queueName).then(keys =>
+      keys.length
+        ? storage
+            // reverse() converts FILO queue stored in Redis to more usefull LIFO queue
+            .getMultiple(keys.reverse())
+            .then(items => items.filter(Boolean))
+        : []
+    );
   }
 
   getPeak() {
-    return getOldestKey(this.queueName).then(key => (key ? storage.get(key) : null));
+    return getOldestKey(this.queueName).then(key =>
+      key ? storage.get(key) : null
+    );
   }
 
   isExist(key) {
-    return client.lrange(this.queueName, 0, -1).then(items => !!items.find(item => item === key));
+    return client
+      .lrange(this.queueName, 0, -1)
+      .then(items => !!items.find(item => item === key));
   }
 
   getSize() {
