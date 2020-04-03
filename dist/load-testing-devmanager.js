@@ -128,7 +128,7 @@ var isStage = !isLocal && !isDev && typeof prompt('Is stage?') === 'string';
 var deviceManagementHost = 'http://127.0.0.1:8085';
 
 if (isDev) {
-  deviceManagementHost = 'https://dev-portal.xyzvsp.com';
+  deviceManagementHost = 'https://dev-port.xyzvsp.com';
 }
 
 if (isStage) {

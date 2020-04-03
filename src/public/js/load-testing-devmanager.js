@@ -4954,7 +4954,7 @@ let operator;
 let deviceCount;
 
 if(isDev){
-    deviceManagementHost = 'https://dev-portal.xyzvsp.com';
+    deviceManagementHost = 'https://dev-port.xyzvsp.com';
 }
 
 if (isStage) {
