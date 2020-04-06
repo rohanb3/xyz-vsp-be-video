@@ -6,4 +6,6 @@ WORKDIR /app
 
 RUN npm install
 
+RUN npm config set strict-ssl false
+
 CMD [ "pm2-runtime", "process.yml" ]
