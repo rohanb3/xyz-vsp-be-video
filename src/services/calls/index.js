@@ -91,8 +91,11 @@ async function acceptCall(operator) {
     await activeCallsHeap.add(call.id, call);
     logger.debug('call.accept.added.to.active.calls.heap', call.id, call);
     await checkIsCallStillActive(call.id);
+    logger.debug('call.accept.added.to.active.calls.heap -> checkIsCallStillActive', call.id, call);
     await twilio.ensureRoom(call.id);
+    logger.debug('call.accept.added.to.active.calls.heap -> checkIsCallStillActive -> twilio.ensureRoom', call.id, call);
     await checkIsCallStillActive(call.id);
+    logger.debug('call.accept.added.to.active.calls.heap -> checkIsCallStillActive -> twilio.ensureRoom -> checkIsCallStillActive', call.id, call);
     await callsDBClient.updateById(call.id, updates);
     logger.debug('call.accept.updated.in.db', call.id, updates);
     await checkIsCallStillActive(call.id);
