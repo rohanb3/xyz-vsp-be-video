@@ -12,6 +12,7 @@ exports.CALLS_CHANGED = 'calls.changed';
 exports.CALLS_EMPTY = 'calls.empty';
 exports.CALL_ACCEPTING_FAILED = 'call.accepting.failed';
 exports.CALLBACK_REQUESTING_FAILED = 'callback.requesting.failed';
+exports.CALLBACK_REQUESTING_ABORTED = 'callback.requesting.aborted';
 exports.PEER_OFFLINE = 'peer.offline';
 exports.PEER_BUSY = 'peer.busy';
 exports.CALL_FINISHED_BY_CUSTOMER = 'call.finished.by.customer';
@@ -38,4 +39,9 @@ exports.statuses = {
 exports.callTypes = {
   VIDEO: 'call.video',
   AUDIO: 'call.audio',
+};
+
+exports.callbackStatuses = {
+  ANSWERED: 'callback.answered',
+  MISSED: 'callback.missed',
 };

@@ -33,5 +33,6 @@ process.on('unhandledRejection', (error = {}) => {
   logger.error('unhandledRejection', error, error.message, error.stack);
 });
 
+
 process.on('SIGINT', () => shutDown(server, connections));
-process.on('SIGTERM', () => shutDown(server, connections));//
+process.on('SIGTERM', () => shutDown(server, connections));

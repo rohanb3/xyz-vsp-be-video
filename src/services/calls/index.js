@@ -1,5 +1,3 @@
-/* eslint-disable no-use-before-define */
-const logger = require('@/services/logger')(module);
 const pendingCallsQueues = require('@/services/calls/pendingCallsQueue');
 const { activeCallsHeap } = require('@/services/calls/activeCallsHeap');
 const {
@@ -25,11 +23,14 @@ const {
   CALLBACK_ACCEPTED,
   CALLBACK_DECLINED,
   CALL_ANSWERED,
+  CALLBACK_REQUESTING_ABORTED,
   statuses,
   callTypes,
 } = require('@/constants/calls');
 const callsErrorHandler = require('@/services/calls/errorHandler');
 const time = require('@/services/time');
+
+const logger = require('@/services/logger')(module);
 
 function requestCall({
   requestedBy,
@@ -166,53 +167,72 @@ function declineCallback(callId, reason = '') {
     .catch(err => callsErrorHandler.onDeclineCallbackFailed(err, callId));
 }
 
-function finishCall(callId, finishedBy) {
-  return storage
-    .get(callId)
-    .then(call => {
-      let finishingPromise = null;
-      const callStatus = callStatusHelper.getCallStatus(call);
-      const tenantId = call.tenantId;
+async function abortCallbackRequest(callId) {
+  try {
+    const call = {};
+    const callFromHeap = await pendingCallbacksHeap.take(callId);
 
-      switch (callStatus) {
-        case statuses.CALL_PENDING:
-          finishingPromise = callFinisher.markCallAsMissed(
-            callId,
-            finishedBy,
-            tenantId
-          );
-          break;
-        case statuses.CALL_ACTIVE:
-          finishingPromise = callFinisher.markCallAsFinished(
-            callId,
-            finishedBy
-          );
-          break;
-        case statuses.CALLBACK_PENDING:
-          finishingPromise = callFinisher.markLastCallbackAsMissed(
-            callId,
-            finishedBy
-          );
-          break;
-        case statuses.CALLBACK_ACTIVE:
-          finishingPromise = callFinisher.markLastCallbackAsFinished(
-            callId,
-            finishedBy
-          );
-          break;
-        default:
-          finishingPromise = Promise.resolve();
-          break;
-      }
+    const callbacks = [...callFromHeap.callbacks];
+    callbacks[callbacks.length - 1].declinedAt = time.formattedTimestamp();
+    Object.assign(call, callFromHeap, { callbacks });
 
-      return finishingPromise;
-    })
-    .then(call => {
-      pubSubChannel.publish(CALL_FINISHED, call);
-      return call;
-    })
-    .then(removeActiveCallIdFromConnections)
-    .catch(err => callsErrorHandler.onFinishCallFailed(err, callId));
+    pubSubChannel.publish(CALLBACK_REQUESTING_ABORTED, { ...call });
+
+    await callsDBClient.updateById(callId, { callbacks: call.callbacks });
+
+    return call;
+  } catch (err) {
+    return callsErrorHandler.onDeclineCallbackFailed(err, callId);
+  }
+}
+
+async function finishCall(callId, finishedBy) {
+  try {
+    logger.debug(`finishCall.started for ${callId} by ${finishedBy}`);
+    const call = await storage.get(callId);
+    const { tenantId } = call;
+    logger.debug('finishCall.call.fetched', callId, call);
+
+    let finishingPromise = null;
+    const callStatus = callStatusHelper.getCallStatus(call);
+    logger.debug('finishCall.call.status', callId, callStatus);
+
+    switch (callStatus) {
+      case statuses.CALL_PENDING:
+        finishingPromise = callFinisher.markCallAsMissed(
+          callId,
+          finishedBy,
+          tenantId
+        );
+        break;
+      case statuses.CALL_ACTIVE:
+        finishingPromise = callFinisher.markCallAsFinished(callId, finishedBy);
+        break;
+      case statuses.CALLBACK_PENDING:
+        finishingPromise = callFinisher.markLastCallbackAsMissed(
+          callId,
+          finishedBy
+        );
+        break;
+      case statuses.CALLBACK_ACTIVE:
+        finishingPromise = callFinisher.markLastCallbackAsFinished(
+          callId,
+          finishedBy
+        );
+        break;
+      default:
+        finishingPromise = Promise.resolve();
+        break;
+    }
+
+    const processedCall = await finishingPromise;
+
+    pubSubChannel.publish(CALL_FINISHED, processedCall);
+
+    return await removeActiveCallIdFromConnections(processedCall);
+  } catch (err) {
+    callsErrorHandler.onFinishCallFailed(err, callId);
+  }
 }
 
 function getOldestCall(tenantId) {
@@ -233,6 +253,14 @@ function getPendingCalls(tenantId) {
 
 function subscribeToCallsLengthChanging(listener) {
   return pendingCallsQueues.subscribeOnQueuesChanges(listener);
+}
+
+function subscribeToPendingCallbacksHeapAdding(listener) {
+  return pendingCallbacksHeap.subscribeToItemAdding(listener);
+}
+
+function subscribeToPendingCallbacksHeapTaking(listener) {
+  return pendingCallbacksHeap.subscribeToItemTaking(listener);
 }
 
 function subscribeToActiveCallsHeapAdding(listener) {
@@ -311,8 +339,12 @@ function removeActiveCallIdFromConnections(call) {
 
 async function getActiveCallsByTenantId(tenantId) {
   const calls = await activeCallsHeap.getAll();
-  const tenantCalls = calls.filter((call = {}) => call.tenantId === tenantId);
-  return tenantCalls;
+  return calls.filter((call = {}) => call.tenantId === tenantId);
+}
+
+async function getPendingCallbacksByTenantId(tenantId) {
+  const callbacks = await pendingCallbacksHeap.getAll();
+  return callbacks.filter((callback = {}) => callback.tenantId === tenantId);
 }
 
 exports.requestCall = requestCall;
@@ -321,11 +353,13 @@ exports.finishCall = finishCall;
 exports.requestCallback = requestCallback;
 exports.acceptCallback = acceptCallback;
 exports.declineCallback = declineCallback;
+exports.abortCallbackRequest = abortCallbackRequest;
 exports.getOldestCall = getOldestCall;
 exports.getPendingCallsLength = getPendingCallsLength;
 exports.getCallsInfo = getCallsInfo;
 exports.getPendingCalls = getPendingCalls;
 exports.getActiveCallsByTenantId = getActiveCallsByTenantId;
+exports.getPendingCallbacksByTenantId = getPendingCallbacksByTenantId;
 
 exports.subscribeToCallRequesting = pubSubChannel.subscribe.bind(
   null,
@@ -343,6 +377,7 @@ exports.subscribeToCallbackRequesting = pubSubChannel.subscribe.bind(
   null,
   CALLBACK_REQUESTED
 );
+
 exports.subscribeToCallbackAccepting = pubSubChannel.subscribe.bind(
   null,
   CALLBACK_ACCEPTED
@@ -357,6 +392,7 @@ exports.unsubscribeFromCallRequesting = pubSubChannel.unsubscribe.bind(
   null,
   CALL_REQUESTED
 );
+
 exports.unsubscribeFromCallAccepting = pubSubChannel.unsubscribe.bind(
   null,
   CALL_ACCEPTED
@@ -378,9 +414,21 @@ exports.unsubscribeFromCallbackDeclining = pubSubChannel.unsubscribe.bind(
   CALLBACK_DECLINED
 );
 
+exports.subscribeToCallbackAbort = pubSubChannel.subscribe.bind(
+  null,
+  CALLBACK_REQUESTING_ABORTED
+);
+exports.unsubscribeFromCallbackAbort = pubSubChannel.unsubscribe.bind(
+  null,
+  CALLBACK_REQUESTING_ABORTED
+);
+
 exports.subscribeToActiveCallsHeapAdding = subscribeToActiveCallsHeapAdding;
 exports.subscribeToActiveCallsHeapTaking = subscribeToActiveCallsHeapTaking;
-exports.unsubscribeFromActiveCallsHeapAdding = unsubscribeFromActiveCallsHeapAdding;
-exports.unsubscribeFromActiveCallsHeapTaking = unsubscribeFromActiveCallsHeapTaking;
+
+exports.subscribeToPendingCallbacksHeapAdding = subscribeToPendingCallbacksHeapAdding;
+exports.subscribeToPendingCallbacksHeapTaking = subscribeToPendingCallbacksHeapTaking;
 
 exports.unsubscribeFromCallsLengthChanging = unsubscribeFromCallsLengthChanging;
+exports.unsubscribeFromActiveCallsHeapAdding = unsubscribeFromActiveCallsHeapAdding;
+exports.unsubscribeFromActiveCallsHeapTaking = unsubscribeFromActiveCallsHeapTaking;

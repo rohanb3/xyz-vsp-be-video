@@ -4,31 +4,38 @@ const { REDIS_HOST, REDIS_PORT, REDIS_OPTIONS } = require('@/constants/redis');
 const { promiser } = require('@/services/redisUtils');
 const logger = require('@/services/logger')(module);
 
+let crossSlotRedisErrorDetected = false;
+
 const client = redis.createClient(REDIS_PORT, REDIS_HOST, REDIS_OPTIONS);
 client.on('error', err => logger.error(err));
 /*
  ** Unordered sets start
  */
 
-const sismember = (...args) => new Promise((resolve, reject) => (
-  client.sismember(...args, promiser(resolve, reject))
-));
+const sismember = (...args) =>
+  new Promise((resolve, reject) =>
+    client.sismember(...args, promiser(resolve, reject))
+  );
 
-const smembers = (...args) => new Promise((resolve, reject) => (
-  client.smembers(...args, promiser(resolve, reject))
-));
+const smembers = (...args) =>
+  new Promise((resolve, reject) =>
+    client.smembers(...args, promiser(resolve, reject))
+  );
 
-const sadd = (...args) => new Promise((resolve, reject) => (
-  client.sadd(...args, promiser(resolve, reject))
-));
+const sadd = (...args) =>
+  new Promise((resolve, reject) =>
+    client.sadd(...args, promiser(resolve, reject))
+  );
 
-const srem = (...args) => new Promise((resolve, reject) => (
-  client.srem(...args, promiser(resolve, reject))
-));
+const srem = (...args) =>
+  new Promise((resolve, reject) =>
+    client.srem(...args, promiser(resolve, reject))
+  );
 
-const scard = (...args) => new Promise((resolve, reject) => (
-  client.scard(...args, promiser(resolve, reject))
-));
+const scard = (...args) =>
+  new Promise((resolve, reject) =>
+    client.scard(...args, promiser(resolve, reject))
+  );
 
 /*
  ** Unordered sets finish
@@ -38,25 +45,30 @@ const scard = (...args) => new Promise((resolve, reject) => (
  ** Lists start
  */
 
-const lrange = (...args) => new Promise((resolve, reject) => (
-  client.lrange(...args, promiser(resolve, reject))
-));
+const lrange = (...args) =>
+  new Promise((resolve, reject) =>
+    client.lrange(...args, promiser(resolve, reject))
+  );
 
-const lpush = (...args) => new Promise((resolve, reject) => (
-  client.lpush(...args, promiser(resolve, reject))
-));
+const lpush = (...args) =>
+  new Promise((resolve, reject) =>
+    client.lpush(...args, promiser(resolve, reject))
+  );
 
-const rpop = (...args) => new Promise((resolve, reject) => (
-  client.rpop(...args, promiser(resolve, reject))
-));
+const rpop = (...args) =>
+  new Promise((resolve, reject) =>
+    client.rpop(...args, promiser(resolve, reject))
+  );
 
-const lrem = (...args) => new Promise((resolve, reject) => (
-  client.lrem(...args, promiser(resolve, reject))
-));
+const lrem = (...args) =>
+  new Promise((resolve, reject) =>
+    client.lrem(...args, promiser(resolve, reject))
+  );
 
-const llen = (...args) => new Promise((resolve, reject) => (
-  client.llen(...args, promiser(resolve, reject))
-));
+const llen = (...args) =>
+  new Promise((resolve, reject) =>
+    client.llen(...args, promiser(resolve, reject))
+  );
 
 /*
  ** Lists finish
@@ -66,13 +78,15 @@ const llen = (...args) => new Promise((resolve, reject) => (
  ** Hashes start
  */
 
-const hgetall = (...args) => new Promise((resolve, reject) => (
-  client.hgetall(...args, promiser(resolve, reject))
-));
+const hgetall = (...args) =>
+  new Promise((resolve, reject) =>
+    client.hgetall(...args, promiser(resolve, reject))
+  );
 
-const hmset = (...args) => new Promise((resolve, reject) => (
-  client.hmset(...args, promiser(resolve, reject))
-));
+const hmset = (...args) =>
+  new Promise((resolve, reject) =>
+    client.hmset(...args, promiser(resolve, reject))
+  );
 
 /*
  ** Hashes finish
@@ -82,25 +96,70 @@ const hmset = (...args) => new Promise((resolve, reject) => (
  ** General start
  */
 
-const get = (...args) => new Promise((resolve, reject) => (
-  client.get(...args, promiser(resolve, reject))
-));
+const get = (...args) =>
+  new Promise((resolve, reject) =>
+    client.get(...args, promiser(resolve, reject))
+  );
 
-const mget = (...args) => new Promise((resolve, reject) => (
-  client.mget(...args, promiser(resolve, reject))
-));
+const mget = (...args) =>
+  new Promise((resolve, reject) =>
+    client.mget(...args, promiser(resolve, reject))
+  );
 
-const set = (...args) => new Promise((resolve, reject) => (
-  client.set(...args, promiser(resolve, reject))
-));
+const mgetSafe = keys => {
+  const loadMultiple = () => mget(keys);
+  const loadInParallel = () => Promise.all(keys.map(key => get(key)));
 
-const del = (...args) => new Promise((resolve, reject) => (
-  client.del(...args, promiser(resolve, reject))
-));
+  return crossSlotRedisErrorDetected
+    ? loadInParallel()
+    : loadMultiple().catch(error => {
+        if (error.code === 'CROSSSLOT') {
+          logger.debug(
+            'MGET CROSSSLOT error detected. Fallback with parallel loading'
+          );
 
-const exists = (...args) => new Promise((resolve, reject) => (
-  client.exists(...args, promiser(resolve, reject))
-));
+          crossSlotRedisErrorDetected = true;
+          return loadInParallel();
+        }
+
+        return Promise.reject(error);
+      });
+};
+
+const set = (...args) =>
+  new Promise((resolve, reject) =>
+    client.set(...args, promiser(resolve, reject))
+  );
+
+const del = (...args) =>
+  new Promise((resolve, reject) =>
+    client.del(...args, promiser(resolve, reject))
+  );
+
+const mdelSafe = keys => {
+  const delMultiple = () => del(keys);
+  const delInParallel = () => Promise.all(keys.map(key => del(key)));
+
+  return crossSlotRedisErrorDetected
+    ? delInParallel()
+    : delMultiple().catch(error => {
+        if (error.code === 'CROSSSLOT') {
+          logger.debug(
+            'DEL CROSSSLOT error detected. Fallback with parallel loading'
+          );
+
+          crossSlotRedisErrorDetected = true;
+          return delInParallel();
+        }
+
+        return Promise.reject(error);
+      });
+};
+
+const exists = (...args) =>
+  new Promise((resolve, reject) =>
+    client.exists(...args, promiser(resolve, reject))
+  );
 
 /*
  ** General finish
@@ -122,7 +181,8 @@ exports.hgetall = hgetall;
 exports.hmset = hmset;
 
 exports.get = get;
-exports.mget = mget;
+exports.mget = mgetSafe;
 exports.set = set;
 exports.del = del;
+exports.mdel = mdelSafe;
 exports.exists = exists;

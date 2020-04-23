@@ -49,7 +49,7 @@ const isObject = value => {
 
 const formatObject = param => {
   if (isObject(param)) {
-    return JSON.stringify(param);
+    return param.toJSON ? param.toJSON() : JSON.stringify(param);
   }
   return param;
 };

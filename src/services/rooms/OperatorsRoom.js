@@ -2,6 +2,8 @@
 
 const socketIOAuth = require('socketio-auth');
 
+const { successEvent, failureEvent } = require('@/constants/utils');
+
 const {
   CONNECTION,
   DISCONNECT,
@@ -19,6 +21,7 @@ const {
   CALLS_CHANGED,
   CALL_ACCEPTING_FAILED,
   CALLBACK_REQUESTING_FAILED,
+  CALLBACK_REQUESTING_ABORTED,
   CUSTOMER_DISCONNECTED,
 } = require('@/constants/calls');
 
@@ -46,8 +49,11 @@ const {
   REALTIME_DASHBOARD_CALL_FINISHED,
   REALTIME_DASHBOARD_CALL_ACCEPTED,
   REALTIME_DASHBOARD_SUBSCRIPTION_ERROR,
+  REALTIME_DASHBOARD_CALLBACK_ACCEPTED,
+  REALTIME_DASHBOARD_CALLBACK_DECLINED,
   REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED,
   REALTIME_DASHBOARD_WAITING_CALLS_CHANGED,
+  REALTIME_DASHBOARD_WAITING_CALLBACKS_CHANGED,
   REALTIME_DASHBOARD_OPERATORS_STATUSES_CHANGED,
 } = require('@/constants/realtimeDashboard');
 
@@ -63,8 +69,6 @@ const { getOperatorCallFailReason } = require('./utils');
 const logger = require('@/services/logger')(module);
 
 const isMaster = !process.env.INSTANCE_ID || process.env.INSTANCE_ID === '0';
-
-// const operatorsGroups = {};
 
 class OperatorsRoom {
   constructor(io, mediator) {
@@ -89,6 +93,10 @@ class OperatorsRoom {
     calls.subscribeToCallFinishing(this.onCallFinished.bind(this));
     calls.subscribeToCallAccepting(this.onCallAccepted.bind(this));
 
+    calls.subscribeToCallbackAccepting(this.onCallbackAccepted.bind(this));
+    calls.subscribeToCallbackDeclining(this.onCallbackDeclined.bind(this));
+    calls.subscribeToCallbackAbort(this.onCallbackDeclined.bind(this));
+
     calls.subscribeToCallbackAccepting(
       this.checkOperatorAndEmitCallbackAccepting.bind(this)
     );
@@ -101,6 +109,13 @@ class OperatorsRoom {
     );
     calls.subscribeToActiveCallsHeapTaking(
       this.onActiveCallsHeapChanged.bind(this)
+    );
+
+    calls.subscribeToPendingCallbacksHeapAdding(
+      this.onPendingCallbacksHeapChanged.bind(this)
+    );
+    calls.subscribeToPendingCallbacksHeapTaking(
+      this.onPendingCallbacksHeapChanged.bind(this)
     );
 
     if (isMaster) {
@@ -136,6 +151,16 @@ class OperatorsRoom {
       callsAllowed
         ? this.onOperatorRequestedCallback.bind(this, operator)
         : this.emitOperationNotAllowed.bind(this, operator, CALLBACK_REQUESTED)
+    );
+    operator.on(
+      CALLBACK_REQUESTING_ABORTED,
+      callsAllowed
+        ? this.onOperatorCallbackRequestAborted.bind(this, operator)
+        : this.emitOperationNotAllowed.bind(
+            this,
+            operator,
+            CALLBACK_REQUESTING_ABORTED
+          )
     );
     operator.on(
       CALL_FINISHED,
@@ -270,6 +295,10 @@ class OperatorsRoom {
     this.emitRealtimeDashboardActiveCallsInfo(changedCall);
   }
 
+  onPendingCallbacksHeapChanged(changedCallback) {
+    this.emitRealtimeDashboardWaitingCallbacksInfo(changedCallback);
+  }
+
   onCallFinished(call) {
     const callFinishedNotByByOperator = call.finishedBy !== call.acceptedBy;
     if (callFinishedNotByByOperator) {
@@ -281,6 +310,53 @@ class OperatorsRoom {
 
   onCallAccepted(call) {
     this.emitRealtimeDashboardCallAccepted(call);
+  }
+
+  onCallbackAccepted(call) {
+    this.emitRealtimeDashboardCallbackAccepted(call);
+  }
+
+  onCallbackDeclined(call) {
+    this.emitRealtimeDashboardCallbackDeclined(call);
+  }
+
+  onOperatorCallbackRequestAborted(operator, callId) {
+    logger.debug(
+      'Operator callback: attempt to abort',
+      operator.identity,
+      callId
+    );
+
+    if (!callId) {
+      logger.error(
+        'Operator callback abort requested: no callId',
+        operator.identity
+      );
+      return Promise.resolve();
+    }
+
+    return calls
+      .abortCallbackRequest(callId)
+      .then(call => {
+        const connectedOperator = this.getConnectedOperator(operator.id);
+
+        if (connectedOperator) {
+          connectedOperator.emit(
+            successEvent(CALLBACK_REQUESTING_ABORTED),
+            call
+          );
+        }
+      })
+      .catch(err => {
+        const connectedOperator = this.getConnectedOperator(operator.id);
+
+        if (connectedOperator) {
+          connectedOperator.emit(
+            failureEvent(CALLBACK_REQUESTING_ABORTED),
+            err
+          );
+        }
+      });
   }
 
   onOperatorRequestedCallback(operator, callId) {
@@ -314,24 +390,27 @@ class OperatorsRoom {
       });
   }
 
-  onOperatorFinishedCall(operator, callId) {
-    logger.debug(
-      'Call: attempt to finish by operator',
-      callId,
-      operator.identity
-    );
-    return callId
-      ? calls
-          .finishCall(callId, operator.identity)
-          .then(() =>
-            logger.debug(
-              'Call: finished by operator',
-              callId,
-              operator.identity
-            )
-          )
-          .catch(err => logger.error('Call: finishing by operator failed', err))
-      : Promise.resolve();
+  async onOperatorFinishedCall(operator, callId) {
+    try {
+      logger.debug(
+        `Call: attempt to finish by operator`,
+        callId,
+        operator.identity
+      );
+
+      if (callId) {
+        await calls.finishCall(callId, operator.identity);
+
+        logger.debug('Call: finished by operator', callId, operator.identity);
+      } else {
+        logger.debug(
+          'Call: finished by operator error: no callId',
+          operator.identity
+        );
+      }
+    } catch (err) {
+      logger.error('Call: finishing by operator failed', err);
+    }
   }
 
   onOperatorDisconnected(operator, reason) {
@@ -527,6 +606,9 @@ class OperatorsRoom {
         this.emitOperatorsStatusesChangedDirectly(connectedOperator);
         this.emitRealtimeDashboardActiveCallsInfoDirectly(connectedOperator);
         this.emitRealtimeDashboardWaitingCallsInfoDirectly(connectedOperator);
+        this.emitRealtimeDashboardWaitingCallbacksInfoDirectly(
+          connectedOperator
+        );
       } else {
         connectedOperator.emit(REALTIME_DASHBOARD_SUBSCRIPTION_ERROR);
         logger.debug('Operator: not subscribed to realtime dashboard', id);
@@ -734,6 +816,32 @@ class OperatorsRoom {
     logger.debug(message, call);
   }
 
+  emitRealtimeDashboardCallbackAccepted(call) {
+    const groupName = this.getRealtimeDashboardGroupName(call.tenantId);
+
+    this.emitToLocalGroup(
+      groupName,
+      REALTIME_DASHBOARD_CALLBACK_ACCEPTED,
+      call
+    );
+
+    const message = `Operator: ${REALTIME_DASHBOARD_CALLBACK_ACCEPTED} emitted to tenant group ${call.tenantId} with call:`;
+    logger.debug(message, call);
+  }
+
+  emitRealtimeDashboardCallbackDeclined(call) {
+    const groupName = this.getRealtimeDashboardGroupName(call.tenantId);
+
+    this.emitToLocalGroup(
+      groupName,
+      REALTIME_DASHBOARD_CALLBACK_DECLINED,
+      call
+    );
+
+    const message = `Operator: ${REALTIME_DASHBOARD_CALLBACK_DECLINED} emitted to tenant group ${call.tenantId} with call:`;
+    logger.debug(message, call);
+  }
+
   async emitRealtimeDashboardActiveCallsInfoDirectly({ id }) {
     const connectedOperator = this.getConnectedOperator(id);
     if (connectedOperator) {
@@ -783,6 +891,69 @@ class OperatorsRoom {
         groupName,
         error
       );
+
+      throw error;
+    }
+  }
+
+  async emitRealtimeDashboardWaitingCallbacksInfoDirectly({ id }) {
+    const connectedOperator = this.getConnectedOperator(id);
+
+    if (connectedOperator && connectedOperator.realtimeDashboardTenantId) {
+      try {
+        const items = await calls.getPendingCallbacksByTenantId(
+          connectedOperator.realtimeDashboardTenantId
+        );
+
+        connectedOperator.emit(REALTIME_DASHBOARD_WAITING_CALLBACKS_CHANGED, {
+          count: items.length,
+          items,
+          serverTime: timeHelper.formattedTimestamp(),
+        });
+
+        const message = `Operator: ${REALTIME_DASHBOARD_WAITING_CALLBACKS_CHANGED} emitted directly for operator:`;
+        logger.debug(message, id);
+      } catch (error) {
+        const message = `Operator: ${REALTIME_DASHBOARD_WAITING_CALLBACKS_CHANGED} error:`;
+        logger.error(message, error, connectedOperator);
+
+        throw error;
+      }
+    } else {
+      const message = `Operator: ${REALTIME_DASHBOARD_WAITING_CALLBACKS_CHANGED} called without required data:`;
+      logger.error(message, { connectedOperator });
+    }
+  }
+
+  async emitRealtimeDashboardWaitingCallbacksInfo(changedCallback) {
+    const groupName = this.getRealtimeDashboardGroupName(
+      changedCallback.tenantId
+    );
+
+    try {
+      if (this.isLocalGroupNonEmpty(groupName)) {
+        const items = await calls.getPendingCallbacksByTenantId(
+          changedCallback.tenantId
+        );
+
+        this.emitToLocalGroup(
+          groupName,
+          REALTIME_DASHBOARD_WAITING_CALLBACKS_CHANGED,
+          {
+            count: items.length,
+            items,
+            serverTime: timeHelper.formattedTimestamp(),
+          }
+        );
+        const message = `Operator: ${REALTIME_DASHBOARD_WAITING_CALLBACKS_CHANGED} emitted to ${groupName} with calls:`;
+        logger.debug(message, items);
+      } else {
+        const message = `Operator: ${REALTIME_DASHBOARD_WAITING_CALLBACKS_CHANGED} didn't emitted to ${groupName} because group is empty`;
+        logger.debug(message, groupName);
+      }
+    } catch (error) {
+      const message = `Operator: ${REALTIME_DASHBOARD_WAITING_CALLBACKS_CHANGED} error`;
+      logger.error(message, groupName, error);
 
       throw error;
     }

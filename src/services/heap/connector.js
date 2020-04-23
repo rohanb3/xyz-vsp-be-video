@@ -82,7 +82,9 @@ class HeapConnector {
         return client.del(this.heapName);
       })
       .then(() =>
-        keysToRemove.length ? client.del(...keysToRemove) : Promise.resolve()
+        keysToRemove.length
+          ? client.mdel(keysToRemove)
+          : Promise.resolve()
       );
   }
 }

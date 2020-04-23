@@ -13,3 +13,9 @@ exports.REALTIME_DASHBOARD_CALL_FINISHED = 'realtimeDashboards.call.finished';
 exports.REALTIME_DASHBOARD_CALL_ACCEPTED = 'realtimeDashboards.call.accepted';
 exports.REALTIME_DASHBOARD_OPERATORS_STATUSES_CHANGED =
   'realtimeDashboards.operators.statusesChanged';
+exports.REALTIME_DASHBOARD_WAITING_CALLBACKS_CHANGED =
+  'realtimeDashboard.waitingCallbacks.changed';
+exports.REALTIME_DASHBOARD_CALLBACK_ACCEPTED =
+  'realtimeDashboards.callback.accepted';
+exports.REALTIME_DASHBOARD_CALLBACK_DECLINED =
+  'realtimeDashboards.callback.declined';

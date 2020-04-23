@@ -6,7 +6,7 @@ const {
 } = require('@/constants/permissions');
 const callFeedbackCustomer = require('@/routes/callFeedbackCustomer');
 const { getVersion } = require('@/routes/version');
-const { getDurations } = require('@/routes/dashboard');
+const { getDurations, getCallbacks } = require('@/routes/dashboard');
 const callFeedbackOperator = require('@/routes/callFeedbackOperator');
 const { getCalls, getCallsValidationArray } = require('@/routes/calls');
 const { getActiveCallSalesRep } = require('@/routes/activeCallSalesRep');
@@ -29,6 +29,13 @@ router
   .get(protectWithPermission(GET_DASHBOARD_PERMISSION))
   .get(validateTenantFilter(DASHBOARD_CHOOSE_TENANT_PERMISSION))
   .get(getDurations);
+
+router
+  .route('/dashboard/callbacks')
+  .get(authenticateRequest())
+  .get(protectWithPermission(GET_DASHBOARD_PERMISSION))
+  .get(validateTenantFilter(DASHBOARD_CHOOSE_TENANT_PERMISSION))
+  .get(getCallbacks);
 
 router
   .route('/call-feedback-customer')

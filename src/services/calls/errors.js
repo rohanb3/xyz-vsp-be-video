@@ -17,6 +17,7 @@ class CallNotFoundError extends Error {
     const message = `Call with ${id} id not found`;
     super(message);
     this.name = 'CallNotFoundError';
+    this.message = message;
 
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, this.constructor);
@@ -31,6 +32,7 @@ class CallOverrideError extends Error {
     const message = `Call with ${id} id already exists`;
     super(message);
     this.name = 'CallOverrideError';
+    this.message = message;
 
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, this.constructor);
@@ -45,6 +47,7 @@ class CallsPendingEmptyError extends Error {
     const message = 'Queue is empty';
     super(message);
     this.name = 'CallsPendingEmptyError';
+    this.message = message;
 
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, this.constructor);
@@ -59,6 +62,7 @@ class PeerOfflineError extends Error {
     const message = 'Peer offline';
     super(message);
     this.name = 'PeerOfflineError';
+    this.message = message;
 
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, this.constructor);
@@ -73,6 +77,7 @@ class CallbackDisabledError extends Error {
     const message = 'Callback disabled';
     super(message);
     this.name = 'CallbackDisabledError';
+    this.message = message;
 
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, this.constructor);

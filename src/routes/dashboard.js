@@ -17,3 +17,19 @@ exports.getDurations = async (request, response) => {
     return response.status(500).json(err);
   }
 };
+
+exports.getCallbacks = async (request, response) => {
+  const { tenantId, from, to } = request.query;
+
+  try {
+    const calls = await dashboard.getAggregatedCallbacks({
+      to,
+      from,
+      tenantId,
+    });
+
+    return response.status(200).json(calls);
+  } catch (err) {
+    return response.status(500).json(err);
+  }
+};

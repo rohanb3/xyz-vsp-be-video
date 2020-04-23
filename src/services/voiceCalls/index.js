@@ -50,6 +50,7 @@ function makeCall(request, response) {
 
 async function requestCall({
   callId,
+  tenantId,
   salesRepId,
   requestedBy,
   deviceId,
@@ -57,6 +58,7 @@ async function requestCall({
   to,
 }) {
   const call = {
+    tenantId,
     requestedBy,
     requestedAt: formattedTimestamp(),
     deviceId,

@@ -149,6 +149,7 @@ function onTokenReceived(data) {
   document.getElementById('button-leave').onclick = leaveRoomIfJoined;
 
   socket.on('callback.requested', onCallbackRequested);
+  socket.on('callback.requesting.aborted', hideIncoming);
 }
 
 function requestConnection() {

@@ -1,10 +1,11 @@
 const dashboard = require('@/services/calls/dashboard');
 const callsDBClient = require('@/services/calls/DBClient');
+const { callTypes } = require('@/constants/calls');
 
 describe('Dashboard service: ', () => {
   describe('getAggregatedDurations(): ', () => {
-    it('should return correct result', () => {
-      const result = [
+    it('should return correct result', async () => {
+      const aggregationResult = [
         {
           _id: null,
           total: 335,
@@ -16,7 +17,7 @@ describe('Dashboard service: ', () => {
           totalWaitingDuration: 392,
         },
       ];
-      const [expectedResult] = result;
+      const [expectedResult] = aggregationResult;
 
       const filters = {
         callStatus: 'call.answered',
@@ -26,11 +27,109 @@ describe('Dashboard service: ', () => {
         to: '2020-01-02',
       };
 
-      callsDBClient.aggregate = jest.fn().mockResolvedValue(result);
+      const aggregationArguments = [
+        {
+          $match: {
+            callStatus: 'call.answered',
+            callType: 'call.video',
+            tenantId: 'test',
+            requestedAt: { $lt: '2020-01-02', $gte: '2020-01-01' },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: 1 },
+            maxCallDuration: { $max: '$callDuration' },
+            averageCallDuration: { $avg: '$callDuration' },
+            totalCallDuration: { $sum: '$callDuration' },
+            maxWaitingDuration: { $max: '$waitingDuration' },
+            averageWaitingDuration: { $avg: '$waitingDuration' },
+            totalWaitingDuration: { $sum: '$waitingDuration' },
+          },
+        },
+      ];
 
-      return dashboard.getAggregatedDurations(filters).then(result => {
-        expect(result).toBe(expectedResult);
-      });
+      callsDBClient.aggregate = jest.fn().mockResolvedValue(aggregationResult);
+
+      const result = await dashboard.getAggregatedDurations(filters);
+
+      expect(callsDBClient.aggregate).toHaveBeenCalledWith(
+        aggregationArguments
+      );
+      expect(result).toBe(expectedResult);
+    });
+  });
+  describe('getAggregatedCallbacks(): ', () => {
+    it('should return correct result', async () => {
+      const aggregationResult = [
+        {
+          _id: null,
+          total: 335,
+          answered: 300,
+          missed: 35,
+        },
+      ];
+
+      const [expectedResult] = aggregationResult;
+
+      const filters = {
+        from: '2020-01-01',
+        tenantId: 'test',
+      };
+
+      const aggregationArguments = [
+        { $addFields: { callbacksCount: { $size: '$callbacks' } } },
+        {
+          $match: {
+            tenantId: 'test',
+            requestedAt: { $gte: '2020-01-01' },
+            callType: callTypes.VIDEO,
+            callbacksCount: { $gte: 1 },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: { $size: '$callbacks' } },
+            missed: {
+              $sum: {
+                $size: {
+                  $filter: {
+                    input: '$callbacks',
+                    as: 'callback',
+                    cond: {
+                      $ne: [{ $ifNull: ['$$callback.declinedAt', true] }, true],
+                    },
+                  },
+                },
+              },
+            },
+            answered: {
+              $sum: {
+                $size: {
+                  $filter: {
+                    input: '$callbacks',
+                    as: 'callback',
+                    cond: {
+                      $ne: [{ $ifNull: ['$$callback.acceptedAt', true] }, true],
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      ];
+
+      callsDBClient.aggregate = jest.fn().mockResolvedValue(aggregationResult);
+
+      const result = await dashboard.getAggregatedCallbacks(filters);
+
+      expect(callsDBClient.aggregate).toHaveBeenCalledWith(
+        aggregationArguments
+      );
+      expect(result).toBe(expectedResult);
     });
   });
 });

@@ -1,18 +1,21 @@
 jest.mock('socketio-auth', () => () => {});
 jest.mock('@/services/calls', () => ({
-  subscribeToCallbackAccepting: jest.fn(() => {}),
-  subscribeToCallbackDeclining: jest.fn(() => {}),
-  subscribeToCallsLengthChanging: jest.fn(() => {}),
-  subscribeToCallFinishing: jest.fn(() => {}),
-  subscribeToCallAccepting: jest.fn(() => {}),
-  subscribeToActiveCallsHeapAdding: jest.fn(() => {}),
-  subscribeToActiveCallsHeapTaking: jest.fn(() => {}),
-  unsubscribeFromActiveCallsHeapAdding: jest.fn(() => {}),
-  unsubscribeFromActiveCallsHeapTaking: jest.fn(() => {}),
-  getCallsInfo: jest.fn(() => Promise.resolve({})),
-  finishCall: jest.fn(() => Promise.resolve()),
-  requestCallback: jest.fn(() => Promise.resolve()),
-  acceptCall: jest.fn(() => Promise.resolve({})),
+  subscribeToCallbackAccepting: jest.fn(),
+  subscribeToCallbackDeclining: jest.fn(),
+  subscribeToCallbackAbort: jest.fn(),
+  subscribeToCallsLengthChanging: jest.fn(),
+  subscribeToCallFinishing: jest.fn(),
+  subscribeToCallAccepting: jest.fn(),
+  subscribeToActiveCallsHeapAdding: jest.fn(),
+  subscribeToActiveCallsHeapTaking: jest.fn(),
+  unsubscribeFromActiveCallsHeapAdding: jest.fn(),
+  unsubscribeFromActiveCallsHeapTaking: jest.fn(),
+  subscribeToPendingCallbacksHeapAdding: jest.fn(),
+  subscribeToPendingCallbacksHeapTaking: jest.fn(),
+  getCallsInfo: jest.fn().mockResolvedValue(),
+  finishCall: jest.fn().mockResolvedValue(),
+  requestCallback: jest.fn().mockResolvedValue(),
+  acceptCall: jest.fn().mockResolvedValue(),
 }));
 jest.mock('@/services/twilio');
 
@@ -47,8 +50,11 @@ const {
   REALTIME_DASHBOARD_UNSUBSCRIBE,
   REALTIME_DASHBOARD_CALL_FINISHED,
   REALTIME_DASHBOARD_CALL_ACCEPTED,
+  REALTIME_DASHBOARD_CALLBACK_ACCEPTED,
+  REALTIME_DASHBOARD_CALLBACK_DECLINED,
   REALTIME_DASHBOARD_ACTIVE_CALLS_CHANGED,
   REALTIME_DASHBOARD_WAITING_CALLS_CHANGED,
+  REALTIME_DASHBOARD_WAITING_CALLBACKS_CHANGED,
   REALTIME_DASHBOARD_OPERATORS_STATUSES_CHANGED,
   REALTIME_DASHBOARD_SUBSCRIBED,
   REALTIME_DASHBOARD_SUBSCRIPTION_ERROR,
@@ -77,6 +83,7 @@ let socketId;
 let operatorIdentity;
 let customerIdentity;
 let callId;
+let callbackId;
 let tenantId;
 let data;
 let realtimeDashboardGroupName;
@@ -106,6 +113,7 @@ describe('OperatorsRoom: ', () => {
     customerIdentity = 'customer91';
     tenantId = 'spectrum';
     callId = 'call42';
+    callbackId = 'call42-callback';
     realtimeDashboardGroupName = `tenant.${tenantId}.realtimeDashboard`;
     activeOperatorsGroupName = `tenant.${tenantId}.activeOperators`;
     inactiveOperatorsGroupName = `tenant.${tenantId}.inactiveOperators`;
@@ -166,8 +174,29 @@ describe('OperatorsRoom: ', () => {
       );
     });
 
+    it('should subscribe to callback request aborting', () => {
+      expect(calls.subscribeToCallbackAbort).toHaveBeenCalledWith(
+        expect.any(Function)
+      );
+    });
+
     it('should subscribe to pending calls length changing', () => {
       expect(calls.subscribeToCallsLengthChanging).toHaveBeenCalledWith(
+        expect.any(Function)
+      );
+      expect(calls.subscribeToActiveCallsHeapAdding).toHaveBeenCalledWith(
+        expect.any(Function)
+      );
+      expect(calls.subscribeToActiveCallsHeapTaking).toHaveBeenCalledWith(
+        expect.any(Function)
+      );
+    });
+
+    it('should subscribe to pending callbacks length changing', () => {
+      expect(calls.subscribeToPendingCallbacksHeapAdding).toHaveBeenCalledWith(
+        expect.any(Function)
+      );
+      expect(calls.subscribeToPendingCallbacksHeapTaking).toHaveBeenCalledWith(
         expect.any(Function)
       );
     });
@@ -1143,6 +1172,54 @@ describe('OperatorsRoom: ', () => {
       ).toHaveBeenCalledWith(call);
     });
   });
+
+  describe('onCallbackAccepted()', () => {
+    it('should call emitRealtimeDashboardCallbackAccepted', () => {
+      operatorsRoom.emitRealtimeDashboardCallbackAccepted = jest.fn();
+      const call = {
+        finishedBy: operatorIdentity,
+        acceptedBy: operatorIdentity,
+        id: callId,
+        callbacks: [
+          {
+            finishedBy: operatorIdentity,
+            acceptedBy: operatorIdentity,
+            id: callbackId,
+          },
+        ],
+      };
+
+      operatorsRoom.onCallbackAccepted(call);
+
+      expect(
+        operatorsRoom.emitRealtimeDashboardCallbackAccepted
+      ).toHaveBeenCalledWith(call);
+    });
+  });
+  describe('onCallbackDeclined()', () => {
+    it('should call emitRealtimeDashboardCallbackDeclined', () => {
+      operatorsRoom.emitRealtimeDashboardCallbackDeclined = jest.fn();
+      const call = {
+        finishedBy: operatorIdentity,
+        acceptedBy: operatorIdentity,
+        id: callId,
+        callbacks: [
+          {
+            finishedBy: operatorIdentity,
+            acceptedBy: operatorIdentity,
+            id: callbackId,
+          },
+        ],
+      };
+
+      operatorsRoom.onCallbackDeclined(call);
+
+      expect(
+        operatorsRoom.emitRealtimeDashboardCallbackDeclined
+      ).toHaveBeenCalledWith(call);
+    });
+  });
+
   describe('onActiveCallsHeapChanged()', () => {
     it('should call emitRealtimeDashboardActiveCallsInfo', () => {
       operatorsRoom.emitRealtimeDashboardActiveCallsInfo = jest.fn();
@@ -1160,6 +1237,25 @@ describe('OperatorsRoom: ', () => {
       ).toHaveBeenCalledWith(call);
     });
   });
+
+  describe('onPendingCallbacksHeapChanged()', () => {
+    it('should call emitRealtimeDashboardWaitingCallbacksInfo', () => {
+      operatorsRoom.emitRealtimeDashboardWaitingCallbacksInfo = jest.fn();
+      const call = {
+        finishedBy: operatorIdentity,
+        acceptedBy: operatorIdentity,
+        id: callId,
+        tenantId: tenantId,
+      };
+
+      operatorsRoom.onPendingCallbacksHeapChanged(call);
+
+      expect(
+        operatorsRoom.emitRealtimeDashboardWaitingCallbacksInfo
+      ).toHaveBeenCalledWith(call);
+    });
+  });
+
   describe('emitRealtimeDashboardActiveCallsInfo()', () => {
     it("should emit event to operators in non-empty group with only operator's tenant calls", async () => {
       const ownTenantCall = {
@@ -1206,6 +1302,66 @@ describe('OperatorsRoom: ', () => {
       expect(operatorsRoom.emitToLocalGroup).not.toHaveBeenCalled();
     });
   });
+  describe('emitRealtimeDashboardWaitingCallbacksInfo()', () => {
+    it("should emit event to operators in non-empty group with only operator's tenant callbacks", async () => {
+      const ownTenantCall = {
+        acceptedBy: operatorIdentity,
+        id: callId,
+        tenantId,
+        callbacks: [
+          {
+            acceptedBy: operatorIdentity,
+            id: callbackId,
+          },
+        ],
+      };
+      const expectedValue = {
+        count: 1,
+        items: [ownTenantCall],
+        serverTime: expect.any(String),
+      };
+
+      operatorsRoom.emitToLocalGroup = jest.fn();
+      operatorsRoom.isLocalGroupNonEmpty = jest.fn(() => true);
+      const groupName = `tenant.${tenantId}.realtimeDashboard`;
+
+      calls.getPendingCallbacksByTenantId = jest
+        .fn()
+        .mockResolvedValue([ownTenantCall]);
+
+      await operatorsRoom.emitRealtimeDashboardWaitingCallbacksInfo(
+        ownTenantCall
+      );
+
+      expect(calls.getPendingCallbacksByTenantId).toHaveBeenCalledWith(
+        tenantId
+      );
+      expect(operatorsRoom.emitToLocalGroup).toHaveBeenCalledWith(
+        groupName,
+        REALTIME_DASHBOARD_WAITING_CALLBACKS_CHANGED,
+        expectedValue
+      );
+    });
+    it('should not emit event to empty group', async () => {
+      const ownTenantCall = {
+        acceptedBy: operatorIdentity,
+        id: callId,
+        tenantId,
+      };
+      operatorsRoom.emitToLocalGroup = jest.fn();
+      operatorsRoom.isLocalGroupNonEmpty = jest.fn(() => false);
+
+      calls.getPendingCallbacksByTenantId = jest
+        .fn()
+        .mockResolvedValue([ownTenantCall]);
+      await operatorsRoom.emitRealtimeDashboardWaitingCallbacksInfo(
+        ownTenantCall
+      );
+
+      expect(calls.getPendingCallbacksByTenantId).not.toHaveBeenCalled();
+      expect(operatorsRoom.emitToLocalGroup).not.toHaveBeenCalled();
+    });
+  });
   describe('emitRealtimeDashboardCallFinished()', () => {
     it('should emit event to operators in group', () => {
       const call = {
@@ -1249,6 +1405,63 @@ describe('OperatorsRoom: ', () => {
     });
   });
 
+  describe('emitRealtimeDashboardCallbackAccepted()', () => {
+    it('should emit event to operators in group', () => {
+      const call = {
+        acceptedBy: operatorIdentity,
+        id: callId,
+        tenantId,
+        callbacks: [
+          {
+            finishedBy: operatorIdentity,
+            acceptedBy: operatorIdentity,
+            id: callbackId,
+          },
+        ],
+      };
+
+      const groupName = `tenant.${tenantId}.realtimeDashboard`;
+
+      operatorsRoom.emitToLocalGroup = jest.fn();
+
+      operatorsRoom.emitRealtimeDashboardCallbackAccepted(call);
+
+      expect(operatorsRoom.emitToLocalGroup).toHaveBeenCalledWith(
+        groupName,
+        REALTIME_DASHBOARD_CALLBACK_ACCEPTED,
+        call
+      );
+    });
+  });
+  describe('emitRealtimeDashboardCallbackDeclined()', () => {
+    it('should emit event to operators in group', () => {
+      const call = {
+        acceptedBy: operatorIdentity,
+        id: callId,
+        tenantId,
+        callbacks: [
+          {
+            finishedBy: operatorIdentity,
+            acceptedBy: operatorIdentity,
+            id: callbackId,
+          },
+        ],
+      };
+
+      const groupName = `tenant.${tenantId}.realtimeDashboard`;
+
+      operatorsRoom.emitToLocalGroup = jest.fn();
+
+      operatorsRoom.emitRealtimeDashboardCallbackDeclined(call);
+
+      expect(operatorsRoom.emitToLocalGroup).toHaveBeenCalledWith(
+        groupName,
+        REALTIME_DASHBOARD_CALLBACK_DECLINED,
+        call
+      );
+    });
+  });
+
   describe('emitOperatorsStatusesChanged():', () => {
     it('should emit data to realtime dashboard group', async () => {
       const operatorsCount = 5;
@@ -1265,9 +1478,7 @@ describe('OperatorsRoom: ', () => {
         .fn()
         .mockResolvedValue(expectedInfo);
 
-      operatorsRoom.getGroupMembersCount = jest
-        .fn()
-        .mockResolvedValue(0);
+      operatorsRoom.getGroupMembersCount = jest.fn().mockResolvedValue(0);
 
       operatorsRoom.getRealtimeDashboardGroupName = jest.fn(
         () => realtimeDashboardGroupName
@@ -1410,6 +1621,53 @@ describe('OperatorsRoom: ', () => {
     });
   });
 
+  describe('emitRealtimeDashboardWaitingCallbacksInfoDirectly(): ', () => {
+    it('should emit waiting calls info directly to operator', async () => {
+      operatorsRoom.operators = {
+        connected: {
+          [socketId]: operator,
+        },
+      };
+
+      const waitingCallbacks = [
+        { callbacks: [{ id: 'first-call' }] },
+        { callbacks: [{ id: 'second-call' }] },
+      ];
+
+      const expectedInfo = {
+        count: 2,
+        items: waitingCallbacks,
+        serverTime: expect.any(String),
+      };
+
+      calls.getPendingCallbacksByTenantId = jest
+        .fn()
+        .mockResolvedValue(waitingCallbacks);
+
+      await operatorsRoom.emitRealtimeDashboardWaitingCallbacksInfoDirectly(
+        operator
+      );
+
+      expect(calls.getPendingCallbacksByTenantId).toHaveBeenCalledWith(
+        tenantId
+      );
+      expect(operator.emit).toHaveBeenCalledWith(
+        REALTIME_DASHBOARD_WAITING_CALLBACKS_CHANGED,
+        expectedInfo
+      );
+    });
+    it('should do nothing if operator not found', async () => {
+      calls.getPendingCallbacksByTenantId = jest.fn().mockResolvedValue({});
+
+      await operatorsRoom.emitRealtimeDashboardWaitingCallbacksInfoDirectly(
+        operator
+      );
+
+      expect(calls.getPendingCallbacksByTenantId).not.toHaveBeenCalled();
+      expect(operator.emit).not.toHaveBeenCalled();
+    });
+  });
+
   describe('emitRealtimeDashboardWaitingCallsInfo(): ', () => {
     it('should emit waiting calls info if group is not empty', async () => {
       const groupName = `tenant.${tenantId}.realtimeDashboard`;
@@ -1476,6 +1734,7 @@ describe('OperatorsRoom: ', () => {
       operatorsRoom.emitOperatorsStatusesChangedDirectly = jest.fn();
       operatorsRoom.emitRealtimeDashboardActiveCallsInfoDirectly = jest.fn();
       operatorsRoom.emitRealtimeDashboardWaitingCallsInfoDirectly = jest.fn();
+      operatorsRoom.emitRealtimeDashboardWaitingCallbacksInfoDirectly = jest.fn();
       socketAuth.checkConnectionPermission = jest.fn(() => true);
       operator.join = jest.fn();
       operator.emit = jest.fn();
@@ -1500,6 +1759,9 @@ describe('OperatorsRoom: ', () => {
       ).toHaveBeenCalledWith(operator);
       expect(
         operatorsRoom.emitRealtimeDashboardWaitingCallsInfoDirectly
+      ).toHaveBeenCalledWith(operator);
+      expect(
+        operatorsRoom.emitRealtimeDashboardWaitingCallbacksInfoDirectly
       ).toHaveBeenCalledWith(operator);
     });
 

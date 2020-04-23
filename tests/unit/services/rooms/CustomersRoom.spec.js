@@ -2,6 +2,7 @@ jest.mock('socketio-auth', () => () => {});
 jest.mock('@/services/calls', () => ({
   subscribeToCallAccepting: jest.fn(() => {}),
   subscribeToCallbackRequesting: jest.fn(() => {}),
+  subscribeToCallbackAbort: jest.fn(() => {}),
   subscribeToCallFinishing: jest.fn(() => {}),
   requestCall: jest.fn(() => Promise.resolve()),
   acceptCallback: jest.fn(() => Promise.resolve({})),
@@ -91,6 +92,12 @@ describe('CustomersRoom: ', () => {
 
     it('should subscribe to callback requesting', () => {
       expect(calls.subscribeToCallbackRequesting).toHaveBeenCalledWith(
+        expect.any(Function)
+      );
+    });
+
+    it('should subscribe to callback request aborting', () => {
+      expect(calls.subscribeToCallbackAbort).toHaveBeenCalledWith(
         expect.any(Function)
       );
     });
@@ -289,6 +296,49 @@ describe('CustomersRoom: ', () => {
       };
       customersRoom.emitCallbackRequesting(customer, callback);
       expect(customer.emit).toHaveBeenCalledWith(CALLBACK_REQUESTED, callback);
+    });
+  });
+
+  describe('onCallbackRequestAborted(): ', () => {
+    it('should emit callback requesting abort to customer', async () => {
+      const call = {
+        deviceId,
+        id: callId,
+        callbacks: [{ requestedAt: 'time', declinedAt: 'another time' }],
+      };
+
+      customersRoom.getSocketIdByDeviceId = jest.fn(() =>
+        Promise.resolve(socketId)
+      );
+      customersRoom.emitCallbackRequestingAborted = jest.fn(() => {});
+      customersRoom.getConnectedCustomer = jest.fn(() => customer);
+
+      await customersRoom.onCallbackRequestAborted(call);
+
+      expect(customersRoom.getConnectedCustomer).toHaveBeenCalledWith(socketId);
+      expect(
+        customersRoom.emitCallbackRequestingAborted
+      ).toHaveBeenCalledWith(customer, { call });
+    });
+    it('should not emit callback requesting abort if customer was not found', async () => {
+      const call = {
+        deviceId,
+        id: callId,
+        callbacks: [{ requestedAt: 'time', declinedAt: 'another time' }],
+      };
+
+      customersRoom.getSocketIdByDeviceId = jest.fn(() =>
+        Promise.resolve(socketId)
+      );
+      customersRoom.emitCallbackRequestingAborted = jest.fn(() => {});
+      customersRoom.getConnectedCustomer = jest.fn(() => null);
+
+      await customersRoom.onCallbackRequestAborted(call);
+
+      expect(customersRoom.getConnectedCustomer).toHaveBeenCalledWith(socketId);
+      expect(
+        customersRoom.emitCallbackRequestingAborted
+      ).not.toHaveBeenCalledWith();
     });
   });
 

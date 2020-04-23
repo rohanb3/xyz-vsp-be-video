@@ -17,6 +17,7 @@ const {
   CALLBACK_REQUESTED,
   CALLBACK_ACCEPTED,
   CALLBACK_DECLINED,
+  CALLBACK_REQUESTING_ABORTED,
   PEER_BUSY,
   CUSTOMER_CONNECTED,
   CUSTOMER_DISCONNECTED,
@@ -53,6 +54,7 @@ class CustomersRoom {
       timeout: 15000,
     });
     calls.subscribeToCallAccepting(this.onCallAccepted.bind(this));
+    calls.subscribeToCallbackAbort(this.onCallbackRequestAborted.bind(this));
     calls.subscribeToCallFinishing(this.onCallFinished.bind(this));
     calls.subscribeToCallbackRequesting(
       this.checkCustomerAndEmitCallbackRequesting.bind(this)
@@ -186,16 +188,19 @@ class CustomersRoom {
     return this.getSocketIdByDeviceId(deviceId)
       .then(socketId => this.getCustomer(socketId, id, acceptedBy))
       .then(({ connectedCustomer, callData } = {}) => {
-        return connectedCustomer && repeatUntilDelivered(
-          () => this.emitCallAccepting(connectedCustomer, callData),
-          delivered => {
-            connectedCustomer.once(CUSTOMER_CONNECTED, delivered);
-            return () => connectedCustomer.off(CUSTOMER_CONNECTED, delivered);
-          }
-        ).catch(error => {
-          this.mediator.emit(CUSTOMER_DISCONNECTED, callData);
-          logger.error(error);
-        });
+        return (
+          connectedCustomer &&
+          repeatUntilDelivered(
+            () => this.emitCallAccepting(connectedCustomer, callData),
+            delivered => {
+              connectedCustomer.once(CUSTOMER_CONNECTED, delivered);
+              return () => connectedCustomer.off(CUSTOMER_CONNECTED, delivered);
+            }
+          ).catch(error => {
+            this.mediator.emit(CUSTOMER_DISCONNECTED, callData);
+            logger.error(error);
+          })
+        );
       });
   }
 
@@ -295,6 +300,10 @@ class CustomersRoom {
 
   emitCallAccepting(customer, callData) {
     customer.emit(CALL_ACCEPTED, callData);
+  }
+
+  emitCallbackRequestingAborted(customer, callData) {
+    customer.emit(CALLBACK_REQUESTING_ABORTED, callData);
   }
 
   emitCallbackRequesting(customer, callData) {
@@ -405,6 +414,22 @@ class CustomersRoom {
       logger.debug('Customers voice call insert in db failed', ex);
       throw ex;
     });
+  }
+
+  async onCallbackRequestAborted(call) {
+    const { deviceId } = call;
+    const socketId = await this.getSocketIdByDeviceId(deviceId);
+    const connectedCustomer = this.getConnectedCustomer(socketId);
+
+    if (connectedCustomer) {
+      logger.debug(
+        'Callback request aborted: emitting to customer',
+        call,
+        deviceId
+      );
+
+      this.emitCallbackRequestingAborted(connectedCustomer, { call });
+    }
   }
 }
 

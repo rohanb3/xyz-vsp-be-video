@@ -8,7 +8,15 @@ const callsDBClient = require('@/services/calls/DBClient');
 const logger = require('@/services/logger')(module);
 const time = require('@/services/time');
 
+const { modelObjectToJSON } = require('@/models/utils');
+
 async function markCallAsMissed(callId, finishedBy, tenantId) {
+  logger.debug(
+    'call.finished.start.of.method markCallAsMissed',
+    callId,
+    finishedBy,
+    tenantId
+  );
   await pendingCallsQueues.getPendingCallsQueue(tenantId).remove(callId);
   logger.debug(
     'call.missed.removed.from.queue markCallAsMissed',
@@ -27,12 +35,20 @@ async function markCallAsMissed(callId, finishedBy, tenantId) {
   };
 
   const res = await callsDBClient.updateById(callId, updates);
-  logger.debug('call.missed.updated.in.db markCallAsMissed', res);
+  logger.debug(
+    'call.missed.updated.in.db markCallAsMissed',
+    modelObjectToJSON(res)
+  );
 
   return res;
 }
 
 async function markCallAsFinished(callId, finishedBy) {
+  logger.debug(
+    'call.finished.start.of.method markCallAsFinished',
+    callId,
+    finishedBy
+  );
   await activeCallsHeap.remove(callId);
   logger.debug(
     'call.finished.removed.from.queue markCallAsFinished',
@@ -42,7 +58,11 @@ async function markCallAsFinished(callId, finishedBy) {
 
   const call = await callsDBClient.getById(callId);
   const finishedAt = time.formattedTimestamp();
-  logger.debug('call.finished.got.from.db markCallAsFinished', call);
+  logger.debug(
+    'call.finished.got.from.db markCallAsFinished',
+    modelObjectToJSON(call)
+  );
+
   const { acceptedAt } = call || {};
 
   const updates = {
@@ -53,12 +73,19 @@ async function markCallAsFinished(callId, finishedBy) {
   };
 
   const res = await callsDBClient.updateById(callId, updates);
-  logger.debug('call.finished.updated.in.db markCallAsFinished', res);
+  logger.debug(
+    'call.finished.updated.in.db markCallAsFinished',
+    modelObjectToJSON(res)
+  );
 
   return res;
 }
 
 async function markLastCallbackAsMissed(callId) {
+  logger.debug(
+    'call.finished.start.of.method markLastCallbackAsMissed',
+    callId
+  );
   const call = await pendingCallbacksHeap.remove(callId);
   logger.debug(
     'callback.missed.removed.from.queue markLastCallbackAsMissed',
@@ -71,12 +98,20 @@ async function markLastCallbackAsMissed(callId) {
 
   const updates = { callbacks };
   const res = await callsDBClient.updateById(callId, updates);
-  logger.debug('callback.missed.updated.in.db markLastCallbackAsMissed', res);
+  logger.debug(
+    'callback.missed.updated.in.db markLastCallbackAsMissed',
+    modelObjectToJSON(res)
+  );
 
   return res;
 }
 
 async function markLastCallbackAsFinished(callId, finishedBy) {
+  logger.debug(
+    'call.finished.start.of.method markLastCallbackAsFinished',
+    callId,
+    finishedBy
+  );
   const call = await activeCallsHeap.remove(callId);
   logger.debug(
     'callback.finished.removed.from.queue markLastCallbackAsFinished',
@@ -92,7 +127,7 @@ async function markLastCallbackAsFinished(callId, finishedBy) {
   const res = await callsDBClient.updateById(callId, updates);
   logger.debug(
     'callback.finished.updated.in.db markLastCallbackAsFinished',
-    res
+    modelObjectToJSON(res)
   );
 
   return res;

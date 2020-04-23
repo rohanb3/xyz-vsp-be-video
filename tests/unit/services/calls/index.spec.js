@@ -31,6 +31,7 @@ const {
   CALLBACK_ACCEPTED,
   CALLBACK_DECLINED,
   CALLBACK_REQUESTED,
+  CALLBACK_REQUESTING_ABORTED,
   statuses,
 } = require('@/constants/calls');
 
@@ -394,6 +395,50 @@ describe('calls: ', () => {
         expect(pendingCallbacksHeap.add).not.toHaveBeenCalled();
         expect(pubSubChannel.publish).not.toHaveBeenCalled();
         expect(callsDBClient.updateById).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('abortCallbackRequest():', () => {
+    it('should get call from DB, take callback item from heap, update it in DB and publish to channel', async () => {
+      const callbacks = [
+        {
+          requestedAt: 'some time',
+        },
+      ];
+      const expectedCallbacks = [
+        {
+          requestedAt: 'some time',
+          declinedAt: expect.any(String),
+        },
+      ];
+      const callId = 'call42';
+      const call = {
+        id: 'call42',
+        callbackEnabled: true,
+        callbacks,
+      };
+      const expectedCall = {
+        id: 'call42',
+        callbackEnabled: true,
+        callbacks: expectedCallbacks,
+      };
+
+      callsDBClient.updateById = jest.fn(() => Promise.resolve(expectedCall));
+      pendingCallbacksHeap.take = jest.fn(() => Promise.resolve(call));
+      connectionsHeap.isExist = jest.fn(() => Promise.resolve(true));
+      pubSubChannel.publish = jest.fn();
+
+      const result = await calls.abortCallbackRequest(callId);
+
+      expect(result).toEqual(expectedCall);
+      expect(pendingCallbacksHeap.take).toHaveBeenCalledWith(callId);
+      expect(pubSubChannel.publish).toHaveBeenCalledWith(
+        CALLBACK_REQUESTING_ABORTED,
+        expectedCall
+      );
+      expect(callsDBClient.updateById).toHaveBeenCalledWith(callId, {
+        callbacks: expectedCallbacks,
       });
     });
   });
