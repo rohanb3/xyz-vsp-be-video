@@ -10,11 +10,11 @@ let operator;
 let deviceCount;
 
 if(isDev){
-    deviceManagementHost = 'https://dev-portal.xyzvsp.com';
+    deviceManagementHost = 'https://dev-port.xyzvsp.com';
 }
 
 if (isStage) {
-  deviceManagementHost = 'https://stage-portal.xyzvsp.com';
+  deviceManagementHost = 'https://stage-port.xyzvsp.com';
 }
 
 const deviceManagementDevicePath = isLocal ? `${deviceManagementHost}/deviceSocket` : `${deviceManagementHost}/api/device-management-api/deviceSocket`;

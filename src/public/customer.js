@@ -40,8 +40,8 @@ const shouldConnectToDeviceManagement =
   typeof prompt('Conect to device management?') === 'string';
 console.log('shouldConnectToDeviceManagement', shouldConnectToDeviceManagement);
 
-let deviceManagementHost = 'https://dev-portal.xyzvsp.com';
-let socketUrl = 'wss://dev-portal.xyzvsp.com/customers';
+let deviceManagementHost = 'https://dev-port.xyzvsp.com';
+let socketUrl = 'wss://dev-port.xyzvsp.com/customers';
 let socketOptions = {
   path: '/api/video/socket.io',
   transports: ['websocket'],
@@ -53,17 +53,17 @@ if (isLocal) {
 }
 
 if (isDev) {
-  socketUrl = 'wss://dev-portal.xyzvsp.com/customers';
+  socketUrl = 'wss://dev-port.xyzvsp.com/customers';
 }
 
 if (isStage) {
-  socketUrl = 'wss://stage-portal.xyzvsp.com/customers';
-  deviceManagementHost = 'https://stage-portal.xyzvsp.com';
+  socketUrl = 'wss://stage-port.xyzvsp.com/customers';
+  deviceManagementHost = 'https://stage-port.xyzvsp.com';
 }
 
 if (isProd) {
-  socketUrl = 'wss://portal.xyzvsp.com/customers';
-  deviceManagementHost = 'https://portal.xyzvsp.com';
+  socketUrl = 'wss://port.xyzvsp.com/customers';
+  deviceManagementHost = 'https://port.xyzvsp.com';
 }
 
 const socket = io(socketUrl, socketOptions);

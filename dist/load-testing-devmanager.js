@@ -128,11 +128,11 @@ var isStage = !isLocal && !isDev && typeof prompt('Is stage?') === 'string';
 var deviceManagementHost = 'http://127.0.0.1:8085';
 
 if (isDev) {
-  deviceManagementHost = 'https://dev-portal.xyzvsp.com';
+  deviceManagementHost = 'https://dev-port.xyzvsp.com';
 }
 
 if (isStage) {
-  deviceManagementHost = 'https://stage-portal.xyzvsp.com';
+  deviceManagementHost = 'https://stage-port.xyzvsp.com';
 }
 
 var deviceManagementPath = "".concat(deviceManagementHost, "/api/device-management-api/deviceSocket");
